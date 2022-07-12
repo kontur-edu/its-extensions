@@ -1,0 +1,17 @@
+
+.selectionGroup_select {
+    /* flex-grow: 2; */
+    min-width: 300px;
+}
+
+.selectionGroup_link {
+    /* max-width: 30%; */
+}
+
+.selectionGroup__button_container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+
+    margin-top: 1em;
+}

@@ -1,0 +1,21 @@
+
+.selectionGroup_select {
+    min-width: 300px;
+}
+
+.selectionGroup__button_container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+
+    margin-top: 1em;
+}
+
+.mups__period {
+    display: flex;
+    align-items: center;
+}
+
+.period__input {
+    margin: 0 1em;
+}

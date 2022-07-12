@@ -257,6 +257,13 @@ export interface IAdmissionMeta {
     admissionsId: number;
 }
 
+export type MupIdToAdmissionId = {
+    [key: string]: number;
+}
+export type CompetitionGroupIdToMupAdmissions = {
+    [key: number]: MupIdToAdmissionId;
+}
+
 
 export interface IStudentAdmissionRaw {
     id: string;
@@ -284,7 +291,7 @@ export interface IStudent {
 
 export interface IStudentData {
     ids: string[];                  // personalNumber
-    data: {[key: number]: IStudent};
+    data: {[key: string]: IStudent};
 }
 
 // competitionGroup -> mup -> Admissions[]

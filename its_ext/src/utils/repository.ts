@@ -10,6 +10,12 @@ import {
 
     ICompetitionGroup,
     ICompetitionGroupData,
+    IStudentData,
+    AdmissionInfo,
+    IAdmissionMeta,
+    CompetitionGroupIdToMupAdmissions,
+    MupIdToAdmissionId,
+    IStudent,
 } from "../common/types";
 
 import { ITSApiService } from "./ITSApiService";
@@ -35,6 +41,10 @@ export class ITSRepository {
     competitionGroupToSubgroupIds: ICompetitionGroupToSubgroupIds = {};
     competitionGroupData: ICompetitionGroupData = {ids: [], data: {}};
     
+    studentData: IStudentData = {ids: [], data: {}};
+    competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions = {};
+    admissionInfo: AdmissionInfo = {};
+
     constructor(public api: ITSApiService) {
 
     }
@@ -138,8 +148,44 @@ export class ITSRepository {
         this.competitionGroupData = PrepareCompetitionGroupData(competitionGroups);
     }
 
-    async UpdateAdmissionMetas() {
+    async UpdateAdmissionMetas(competitionGroupIds: number[]) {
         console.log(`ITSRepository: UpdateAdmissionMetas`);
-        
+        const requests = competitionGroupIds.map(cgId => this.api.GetStudentAdmissionMetas(cgId));
+        const responses = await Promise.allSettled(requests);
+        for (let i = 0; i < competitionGroupIds.length; i++) {
+            const resp = responses[i];
+            const competitionGroupId = competitionGroupIds[i];
+            const mupIdToAdmissionId: MupIdToAdmissionId = {};
+            if (resp.status === 'fulfilled') {
+                for (const admissionMeta of resp.value) {
+                    mupIdToAdmissionId[admissionMeta.mupId] = admissionMeta.admissionsId;
+                }
+            }
+
+            this.competitionGroupIdToMupAdmissions[competitionGroupId] = mupIdToAdmissionId;
+        }
+    }
+
+    async UpdateStudentAdmissionsAndStudentData(admissionMeta: IAdmissionMeta) {
+        console.log(`ITSRepository: UpdateStudentAdmissions`);
+        const studentsRaw = await this.api.GetStudentsForAdmission(admissionMeta.admissionsId);
+        for (const studentRaw of studentsRaw) {
+            if (!this.studentData.data.hasOwnProperty(studentRaw.personalNumber)) {
+                this.studentData.ids.push(studentRaw.personalNumber);
+            }
+
+            const student: IStudent = {
+                personalNumber: studentRaw.personalNumber,
+                surname: studentRaw.surname,
+                firstname: studentRaw.firstname,
+                patronymic: studentRaw.patronymic,
+                rating: studentRaw.rating,
+                status: studentRaw.status,
+            };
+
+            this.studentData.data[studentRaw.personalNumber] = student;
+
+            // TODO: add student meta
+        }
     }
 }

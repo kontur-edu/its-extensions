@@ -127,22 +127,21 @@ module.exports.handler = async function (event, context) {
     for (const headerName in requestHeaders) {
         headersLower[headerName.toLowerCase()] = requestHeaders[headerName];
     }
+
     if (!headersLower.hasOwnProperty("x-url")) {
         return {
             statusCode: 400,
             body: {
                 success: false,
-                message: "Header X-Url not specified"
+                message: "x-url not specified"
             }
         };
     }
-
     const xUrl = headersLower["x-url"];
     const body = event.body;
     const isBase64Encoded = event.isBase64Encoded;
     const cookiesStr = event.headers.Cookie || '';
     const cookiesArr = cookiesStr.split(';').map(c => c.trim());
-    
     
     const response = await processRequest(
         method,

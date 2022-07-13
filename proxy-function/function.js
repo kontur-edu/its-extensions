@@ -1,7 +1,8 @@
+// import {processRequest} from "./utils.js";
+const utils = require("./utils");
 
 
-
-module.exports.handler = function (event, context) {
+module.exports.handler = async function (event, context) {
     const requestHeaders = event.headers;
     const method = event.httpMethod;
     if (!requestHeaders.hasOwnProperty("X-Url")) {
@@ -14,13 +15,24 @@ module.exports.handler = function (event, context) {
         };
     }
     const xUrl = requestHeaders["X-Url"];
-
-    const response = processRequest(
-        method, url, requestHeaders
+    const body = event.body;
+    const isBase64Encoded = event.isBase64Encoded;
+    const cookiesStr = event.headers.Cookie || '';
+    const cookiesArr = cookiesStr.split(';').map(c => c.trim());
+    const headersLower = {};
+    for (const headerName in requestHeaders) {
+        headersLower[headerName.toLowerCase()] = requestHeaders[headerName];
+    }
+    const response = await utils.processRequest(
+        method,
+        xUrl,
+        headersLower,
+        cookiesArr,
+        body,
+        isBase64Encoded
     );
-
-    // X-Cookie: ""
-    
 
     return response;
 };
+
+console.log("OK");

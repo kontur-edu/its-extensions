@@ -1,8 +1,9 @@
-import fetch from 'node-fetch';
+// import fetch from 'node-fetch';
+const fetch = require("node-fetch");
 
 
 
-export function GetCookiesFromHeadrs(headers) {
+function getCookiesFromHeadrs(headers) {
     if (!headers.has('set-cookie')) {
         return [];
     }
@@ -27,48 +28,43 @@ export function GetCookiesFromHeadrs(headers) {
 }
 
 
-export function formatCookies(cookies) {
-    const cookiesStrings = [];
-    for (let name in cookies) {
-        cookiesStrings.push(`${name}=${cookies[name]}`);
-    }
-    return cookiesStrings.join('; ');
-}
-
-
-export function decodeBase64(base64Data) {
+function decodeBase64(base64Data) {
     let buff = new Buffer(base64Data, "base64");
     const formData = buff.toString("utf-8");
     return formData;
 }
 
 
-export function prepareRequestHeaders(request) {
-    const cookiesFormatted = FormatCookies(request.cookies);
-    // const resultHeaders =  
-    const headers = {
-        "x-cookie": cookiesFormatted
-    };
-    if ("content-length" in request.headers) headers["content-length"] = request.headers["content-length"];
-    if ("content-type" in request.headers)  headers["content-type"] = request.headers["content-type"];
-    if ("accept" in request.headers)  headers["accept"] = request.headers["accept"];
-    if ("x-kl-ajax-reqyest" in request.headers)  headers["x-kl-ajax-reqyest"] = request.headers["x-kl-ajax-reqyest"];
-    if ("x-requested-with" in request.headers)  headers["x-requested-with"] = request.headers["x-requested-with"];
+function prepareRequestHeaders(requestHeaders, cookieString) {
+    const headers = {};
+    if (cookieString) {
+        headers.cookie = cookieString;
+    }
+    if ("content-length" in requestHeaders) headers["content-length"] = requestHeaders["content-length"];
+    if ("content-type" in requestHeaders)  headers["content-type"] = requestHeaders["content-type"];
+    if ("accept" in requestHeaders)  headers["accept"] = requestHeaders["accept"];
+    if ("x-kl-ajax-reqyest" in requestHeaders)  headers["x-kl-ajax-reqyest"] = requestHeaders["x-kl-ajax-reqyest"];
+    if ("x-requested-with" in requestHeaders)  headers["x-requested-with"] = requestHeaders["x-requested-with"];
     
     return headers;
 }
 
 
-export function processRequest(method, url, headers, body, isBodyBase64 = true) {
-    const redirect = req.headers["x-redirect"] ? req.headers["x-redirect"] : 'manual';
-    const preparedRequestHeaders = prepareRequestHeaders(headers);
+async function processRequest(method, url, headers, requestCookies, body, isBodyBase64 = true) {
+    const redirect = headers["x-redirect"] ? headers["x-redirect"] : 'manual';
+    const responseBodyFormat = headers["x-response-body"] ? headers["x-response-body"] : 'text';
+    // const requestCookies = cookies ? cookies : [];
+    const requestCookiesString = requestCookies.join('; ');
+    const preparedRequestHeaders = prepareRequestHeaders(headers, requestCookiesString);
     const options = {
         method: method,
         credentials: "inline",
         headers: preparedRequestHeaders,
         redirect: redirect,
     };
-    const requestBodyFormat = req.headers["x-body"] ? req.headers["x-body"] : 'form';
+    console.log("body");
+    console.log(body);
+    const requestBodyFormat = headers["x-body"] ? headers["x-body"] : 'form';
     if (body && isBodyBase64) {
         body = decodeBase64(body);
     }
@@ -77,14 +73,53 @@ export function processRequest(method, url, headers, body, isBodyBase64 = true) 
             const reqBody = formatFormBody(body);
             options.body = reqBody;
         } else {
-            options.body = JSON.stringify(body);
+            options.body = body;
         }
     }
-    etch(requestedUrl, options).then(response => {
-        
-    });
+    console.log("options");
+    console.log(options);
+    const resp = await fetch(url, options);
 
-    const data = {
-        
+    const newCookies = getCookiesFromHeadrs(resp.headers);
+    
+    const multiValueHeaders = {};
+    if (newCookies.length > 0) {
+        multiValueHeaders["set-cookie"] = [];
+        for (let cookie of newCookies) {
+            const cookieParts = cookie[0].split('=');
+            multiValueHeaders["set-cookie"].push(cookieParts);
+        }
+    }
+
+    const result = {
+        statusCode: resp.status,
+        multiValueHeaders: multiValueHeaders,
     };
+
+    if (resp.status !== 200 && resp.status != 201) {
+        return result;
+    }
+
+    // let value = null;
+    let resultBody = {
+        data: '',
+        status: resp.status,
+        message: "",
+    };
+    try {
+        if (responseBodyFormat === "text") {
+            resultBody.data = await resp.text();
+        } else {
+            resultBody.data = await resp.json();
+        }
+    } catch (e) {
+        resultBody.message = "Proxy: body parse error";
+        result.statusCode = 500;
+    }
+
+    result.body = JSON.stringify(resultBody);
+    return result;
 }
+
+
+module.exports.processRequest = processRequest;

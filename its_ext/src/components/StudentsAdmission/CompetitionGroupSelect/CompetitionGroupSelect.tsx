@@ -61,30 +61,11 @@ export function CompetitionGroupSelect(props: ICompetitionGroupSelectProps) {
         })
     }
 
-    const doStuff = () => {
-        const data = {"a": 1, "b": 2};
-        const headers = {
-            "Content-Type": "application/json",
-            "x-redirect": "manual",
-            "Accept": "*/*",
-            // "x-body": "json",
-        };
-        const options: any = {
-            method: "POST",
-            headers: headers,
-            body: data,
-            'credentials': 'include',
-            withCredentials: true,
-        };
-        fetch("https://functions.yandexcloud.net/d4eiimn6mlk4iokiparv", options)
-        .then(res => console.log(res));
-    }
-
     return (
         <section className="step__container">
             <article className={style.selectionGroup_select}>
                 <h3>Конкурсные группы</h3>
-                <button onClick={doStuff}>DO STUFF</button>
+                {/* <button onClick={doStuff}>DO STUFF</button> */}
                 <button className="step__button" onClick={handleRefreshCompetitionGroups}>Обновить</button>
                 <section className="table__container">
                     <table className="table">

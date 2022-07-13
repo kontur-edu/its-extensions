@@ -16,7 +16,6 @@ app.use(express.urlencoded({ extended: true }));
 
 
 app.get(/json\/.*$/, HandleRequest("GET", "json", 5));
-
 app.get(/text\/.*$/, HandleRequest("GET", "text", 5));
 
 app.post(/text\/.*$/, HandleRequest("POST", "text", 5));

@@ -45,6 +45,7 @@ export function decodeBase64(base64Data) {
 
 export function prepareRequestHeaders(request) {
     const cookiesFormatted = FormatCookies(request.cookies);
+    // const resultHeaders =  
     const headers = {
         "x-cookie": cookiesFormatted
     };
@@ -58,13 +59,13 @@ export function prepareRequestHeaders(request) {
 }
 
 
-export function processRequest(methd, url, headers, body, isBodyBase64 = true) {
+export function processRequest(method, url, headers, body, isBodyBase64 = true) {
     const redirect = req.headers["x-redirect"] ? req.headers["x-redirect"] : 'manual';
-    const preparedRequestHeaders = PrepareRequestHeaders(headers);
+    const preparedRequestHeaders = prepareRequestHeaders(headers);
     const options = {
         method: method,
         credentials: "inline",
-        headers: headers,
+        headers: preparedRequestHeaders,
         redirect: redirect,
     };
     const requestBodyFormat = req.headers["x-body"] ? req.headers["x-body"] : 'form';

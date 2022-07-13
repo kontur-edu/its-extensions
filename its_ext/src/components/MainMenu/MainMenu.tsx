@@ -1,11 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import style from "./MainMenu.module.css";
 import { IMainMenuProps } from "./types";
 import { useNavigate } from "react-router-dom";
 
 
 export function MainMenu(props: IMainMenuProps) {
+    const [url, setUrl] = useState<string>('');
     const navigate = useNavigate();
+
+    const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setUrl(event.target.value);
+    }
     const handleSemesterPreparation = () => {
         navigate('/semesterPreparation');
     };
@@ -27,13 +32,16 @@ export function MainMenu(props: IMainMenuProps) {
             'credentials': 'include',
             withCredentials: true,
         };
-        fetch("https://functions.yandexcloud.net/d4eiimn6mlk4iokiparv", options)
+        fetch(url, options)
         .then(res => console.log(res));
     }
     return (
         <section className={style.menu}>
             <div className={style.menu__container}>
-                <button onClick={doStuff}>DO STUFF</button>
+                <label>URL:
+                    <input value={url} onChange={handleUrlChange} type="text" />
+                    <button onClick={doStuff}>Send url</button>
+                </label>
                 <button className={style.menu__button} onClick={handleSemesterPreparation}>Подготовка семестра</button>
                 <button className={style.menu__button} onClick={handleStudentEnrollment}>Зачисление студентов</button>
             </div>

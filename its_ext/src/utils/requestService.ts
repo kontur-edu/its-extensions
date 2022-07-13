@@ -11,8 +11,6 @@ import {
 export type FormBodyObj = {[key: string] : string | number | string[]};
 
 
-
-
 export class RequestService {
     constructor(public proxyUrl: string, public loginUrl: string) {
         
@@ -106,7 +104,7 @@ export class RequestService {
             'credentials': 'include',
             withCredentials: true
         };
-    
+
         // submit form
         const responseAuth = await fetch(loginUrl, options);
         if (responseAuth.status === 302) {
@@ -124,28 +122,28 @@ export class RequestService {
             "X-Requested-With": "XMLHttpRequest",
             "x-redirect": "manual",
         };
-    
+
         const options: any = {
             method: 'GET',
             credentials: "include",
             headers: headers
         };
-    
+
         let result = await this.SendRequest(urlWithProxy, options);
-    
+
         if (result.hasOwnProperty("data")) {
             result = result["data"];
         }
         if (result.hasOwnProperty("data")) {
             result = result["data"];
         }
-        
+
         return result;
     }
 
     async PostFormData(url: string, data: FormBodyObj, bodyFormat: string = 'json') {
         console.log(`PostFormData: ${url}`);
-    
+
         const urlWithProxy = `${this.proxyUrl}/${bodyFormat}/${url}`;
         const headers = {
             "Content-Type": "application/x-www-form-urlencoded",
@@ -178,7 +176,7 @@ export class RequestService {
 
     async SendJson(url: string, data: any, method: string = 'POST', bodyFormat: string = 'json') {
         console.log(`SendJson: ${url}`);
-    
+
         const urlWithProxy = `${this.proxyUrl}/${bodyFormat}/${url}`;
         const headers = {
             "Content-Type": "application/json",

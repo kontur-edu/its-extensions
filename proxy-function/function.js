@@ -123,24 +123,27 @@ async function processRequest(method, url, headers, requestCookies, body, isBody
 module.exports.handler = async function (event, context) {
     const requestHeaders = event.headers;
     const method = event.httpMethod;
-    if (!requestHeaders.hasOwnProperty("X-Url")) {
-        return {
-            statusCode: 400,
-            body: {
-                success: false,
-                message: "X-Url not specified"
-            }
-        };
-    }
-    const xUrl = requestHeaders["X-Url"];
-    const body = event.body;
-    const isBase64Encoded = event.isBase64Encoded;
-    const cookiesStr = event.headers.Cookie || '';
-    const cookiesArr = cookiesStr.split(';').map(c => c.trim());
     const headersLower = {};
     for (const headerName in requestHeaders) {
         headersLower[headerName.toLowerCase()] = requestHeaders[headerName];
     }
+    if (!headersLower.hasOwnProperty("x-url")) {
+        return {
+            statusCode: 400,
+            body: {
+                success: false,
+                message: "Header X-Url not specified"
+            }
+        };
+    }
+
+    const xUrl = headersLower["x-url"];
+    const body = event.body;
+    const isBase64Encoded = event.isBase64Encoded;
+    const cookiesStr = event.headers.Cookie || '';
+    const cookiesArr = cookiesStr.split(';').map(c => c.trim());
+    
+    
     const response = await processRequest(
         method,
         xUrl,

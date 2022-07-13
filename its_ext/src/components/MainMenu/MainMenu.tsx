@@ -24,6 +24,7 @@ export function MainMenu(props: IMainMenuProps) {
             "x-redirect": "manual",
             "Accept": "*/*",
             // "x-body": "json",
+            "x-url": "https://example.com",
         };
         const options: any = {
             method: "POST",
@@ -32,6 +33,7 @@ export function MainMenu(props: IMainMenuProps) {
             'credentials': 'include',
             withCredentials: true,
         };
+        console.log(options);
         fetch(url, options)
         .then(res => console.log(res));
     }

@@ -76,13 +76,14 @@ async function processRequest(method, url, headers, requestCookieString, body, i
 
     const resultHeaders = {};
     for (var headerKeyValue of resp.headers.entries()) {
+        if (headerName === "set-cookie" || headerName === "content-encoding") continue;
         resultHeaders[headerKeyValue[0]] = headerKeyValue[1];
     }
 
     let status = resp.status;
     if (redirect === "manual" && status === 301 || status === 302) {
         delete resultHeaders["location"];
-        status = 200;
+        status = 204;
     } 
 
     const result = {
@@ -110,19 +111,6 @@ module.exports.handler = async function (event, context) {
         headersLower[headerName.toLowerCase()] = requestHeaders[headerName];
     }
 
-    // if (!headersLower.hasOwnProperty("x-url")) {
-    //     const body = JSON.stringify({
-    //         success: false,
-    //         message: "x-url not specified"
-    //     });
-    //     return {
-    //         statusCode: 400,
-    //         headers: {
-    //             "content-type": "application/json"
-    //         },
-    //         body: body,
-    //     };
-    // }
     const xUrl = event.params.requestUrl;
     const body = event.body;
     const isBase64Encoded = event.isBase64Encoded;

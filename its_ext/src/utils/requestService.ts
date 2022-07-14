@@ -109,7 +109,7 @@ export class RequestService {
         // submit form
         const responseAuth = await fetch(urlWithProxy, options);
 
-        if (responseAuth.status === 200) {
+        if (responseAuth.status === 200 || responseAuth.status === 204) {
             return true;
         }
 

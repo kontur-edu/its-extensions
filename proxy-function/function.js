@@ -46,6 +46,10 @@ function prepareRequestHeaders(url, requestHeaders, cookieString) {
 
 async function processRequest(method, url, headers, requestCookieString, body, isBodyBase64 = true) {
     console.log(url);
+    if (typeof body === 'object' && body !== null) {
+        body = JSON.stringify(body);
+    }
+
     const redirect = headers["x-redirect"] ? headers["x-redirect"] : 'manual';
     const preparedRequestHeaders = prepareRequestHeaders(url, headers, requestCookieString);
     const options = {

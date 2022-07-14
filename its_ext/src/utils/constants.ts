@@ -1,6 +1,6 @@
 
 
-export const PROXY_URL = "http://localhost:3000";
+export const PROXY_URL = "http://localhost:3000/proxy";
 
 export const CSRF_TOKEN_INPUT_NAME = "__RequestVerificationToken";
 

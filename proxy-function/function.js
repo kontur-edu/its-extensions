@@ -1,5 +1,4 @@
 
-// import fetch from 'node-fetch';
 const fetch = require("node-fetch");
 
 
@@ -9,67 +8,56 @@ function getCookiesFromHeadrs(headers) {
         return [];
     }
 
-    const cookies = [];
-    const cookiesRaw = headers.get('set-cookie');
+    const rawSetCookie = headers.raw()['set-cookie'];
+    const preparedCookies = rawSetCookie.map((entry) => {
+        const preparedCookie = entry.replace(/domain\s*=\s*[^;]+;\s?/gmi, "");
+        return preparedCookie;
+    });
 
-    const regexp = /([^=;,\s]+)=([^=;,\s]+)/g;
-    const systemFields = [
-        "path", "expires", "samesite"
-    ];
-    const matches = [...cookiesRaw.matchAll(regexp)];
+    return preparedCookies;
+}
 
-    for (let cookiePart of matches) {
-        if (systemFields.includes(cookiePart[1])) {
-            continue;
-        }
-        cookies.push([cookiePart[0]]);
+
+function decodeBase64(base64Data, encoding="utf-8") {
+    const decoded = Buffer.from(base64Data, "base64").toString(encoding);
+    return decoded;
+}
+
+
+function prepareRequestHeaders(url, requestHeaders, cookieString) {
+    // console.log(`prepareRequestHeaders ${url}`);
+    // console.log(requestHeaders);
+    // console.log(cookieString);
+
+    const headers = {...requestHeaders};
+    delete headers["host"];
+    delete headers["content-encoding"];
+    const host = url.match(/^(?:(http[s]?|ftp):\/)?\/?([^:\/\s]+)((?:\/\w+)*\/?)([\w\-\.]+[^#?\s]+)?(.*)?(#[\w\-]+)?$/mi)[2];
+    if (host) {
+        headers.host = host
     }
-
-    return cookies;
-}
-
-
-function decodeBase64(base64Data) {
-    const buff = Buffer.from(base64Data, "base64");
-    const formData = buff.toString("utf-8");
-    return formData;
-}
-
-
-function prepareRequestHeaders(requestHeaders, cookieString) {
-    const headers = {};
     if (cookieString) {
         headers.cookie = cookieString;
     }
-    if ("content-length" in requestHeaders) headers["content-length"] = requestHeaders["content-length"];
-    if ("content-type" in requestHeaders)  headers["content-type"] = requestHeaders["content-type"];
-    if ("accept" in requestHeaders)  headers["accept"] = requestHeaders["accept"];
-    if ("x-kl-ajax-reqyest" in requestHeaders)  headers["x-kl-ajax-reqyest"] = requestHeaders["x-kl-ajax-reqyest"];
-    if ("x-requested-with" in requestHeaders)  headers["x-requested-with"] = requestHeaders["x-requested-with"];
     
     return headers;
 }
 
 
-async function processRequest(method, url, headers, requestCookies, body, isBodyBase64 = true) {
+async function processRequest(method, url, headers, requestCookieString, body, isBodyBase64 = true) {
     const redirect = headers["x-redirect"] ? headers["x-redirect"] : 'manual';
-    const responseBodyFormat = headers["x-response-body"] ? headers["x-response-body"] : 'text';
-    // const requestCookies = cookies ? cookies : [];
-    const requestCookiesString = requestCookies.join('; ');
-    const preparedRequestHeaders = prepareRequestHeaders(headers, requestCookiesString);
+    const preparedRequestHeaders = prepareRequestHeaders(url, headers, requestCookieString);
     const options = {
         method: method,
-        credentials: "inline",
         headers: preparedRequestHeaders,
         redirect: redirect,
     };
-    // console.log("body");
-    // console.log(body);
-    // const requestBodyFormat = headers["x-body"] ? headers["x-body"] : 'form';
+
     if (body && isBodyBase64) {
         body = decodeBase64(body);
     }
-    if (body) {
+
+    if (body && !(body.constructor === Object && Object.keys(body).length === 0)) {
         options.body = body;
     }
     // console.log("options");
@@ -77,43 +65,37 @@ async function processRequest(method, url, headers, requestCookies, body, isBody
     const resp = await fetch(url, options);
 
     const newCookies = getCookiesFromHeadrs(resp.headers);
-    
+
     const multiValueHeaders = {};
     if (newCookies.length > 0) {
         multiValueHeaders["set-cookie"] = [];
         for (let cookie of newCookies) {
-            const cookieParts = cookie[0].split('=');
-            multiValueHeaders["set-cookie"].push(cookieParts);
+            multiValueHeaders["set-cookie"].push(cookie);
         }
     }
 
+    const resultHeaders = {};
+    for (var headerKeyValue of resp.headers.entries()) {
+        resultHeaders[headerKeyValue[0]] = headerKeyValue[1];
+    }
+
+    let status = resp.status;
+    if (redirect === "manual" && status === 301 || status === 302) {
+        delete resultHeaders["location"];
+        status = 200;
+    } 
+
     const result = {
-        statusCode: resp.status,
+        statusCode: status,
+        headers: resultHeaders,
         multiValueHeaders: multiValueHeaders,
     };
 
-    if (resp.status !== 200 && resp.status != 201) {
-        return result;
-    }
-
-    // let value = null;
-    let resultBody = {
-        data: '',
-        status: resp.status,
-        message: "",
-    };
     try {
-        if (responseBodyFormat === "text") {
-            resultBody.data = await resp.text();
-        } else {
-            resultBody.data = await resp.json();
-        }
+        result.body = await resp.text();
     } catch (e) {
-        resultBody.message = "Proxy: body parse error";
-        result.statusCode = 500;
+        console.log("Proxy: failed to get body.text()");
     }
-
-    result.body = JSON.stringify(resultBody);
     return result;
 }
 
@@ -129,25 +111,28 @@ module.exports.handler = async function (event, context) {
     }
 
     if (!headersLower.hasOwnProperty("x-url")) {
+        const body = JSON.stringify({
+            success: false,
+            message: "x-url not specified"
+        });
         return {
             statusCode: 400,
-            body: {
-                success: false,
-                message: "x-url not specified"
-            }
+            headers: {
+                "content-type": "application/json"
+            },
+            body: body,
         };
     }
     const xUrl = headersLower["x-url"];
     const body = event.body;
     const isBase64Encoded = event.isBase64Encoded;
-    const cookiesStr = event.headers.Cookie || '';
-    const cookiesArr = cookiesStr.split(';').map(c => c.trim());
+    const cookiesString = event.headers.Cookie || '';
     
     const response = await processRequest(
         method,
         xUrl,
         headersLower,
-        cookiesArr,
+        cookiesString,
         body,
         isBase64Encoded
     );

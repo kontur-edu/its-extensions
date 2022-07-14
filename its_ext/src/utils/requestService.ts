@@ -40,6 +40,7 @@ export class RequestService {
     }
 
     async SendRequest(url: string, options: any) {
+
         const response = await fetch(url, options);
         if (response.status === 401) {
             throw Error(REQUEST_ERROR_UNAUTHORIZED);
@@ -48,13 +49,15 @@ export class RequestService {
             throw Error(REQUEST_ERROR_REQUEST_FAILED);
         }
         if (response.status === 302 || response.status === 204) {
-            return {success: true};
+            return {success: true, data: ''};
         }
-        const jsonBody = await response.json();
-        if (!jsonBody.hasOwnProperty('data') || !jsonBody.hasOwnProperty('status')) {
-            throw Error(REQUEST_ERROR_REQUEST_FAILED);
-        }
-        return jsonBody;
+        const data = await response.text() as any;
+        return {success: true, data};
+        // const jsonBody = await response.json();
+        // if (!jsonBody.hasOwnProperty('data') || !jsonBody.hasOwnProperty('status')) {
+        //     throw Error(REQUEST_ERROR_REQUEST_FAILED);
+        // }
+        // return jsonBody;
     }
 
     async Authenticate(
@@ -62,14 +65,17 @@ export class RequestService {
     ): Promise<boolean> {
         console.log(`Authenticate ${this.loginUrl}`);
 
-        const loginUrl = `${this.proxyUrl}/text/${this.loginUrl}`;
+        // const loginUrl = `${this.proxyUrl}/text/${this.loginUrl}`;
         // Get token
         const optionsLoginPage: any = {
             method: 'GET',
             credentials: "include",
+            headers: {
+                "x-url": this.loginUrl,
+            },
         };
 
-        const jsonBody = await this.SendRequest(loginUrl, optionsLoginPage);
+        const jsonBody = await this.SendRequest(this.proxyUrl, optionsLoginPage);
 
         const pageString = jsonBody["data"];
         const tokens: string[] = FindCsrfTokens(pageString);
@@ -91,23 +97,24 @@ export class RequestService {
         const headers = {
             "Content-Type": "application/x-www-form-urlencoded",
             // "x-origin": "https://its.urfu.ru/Account/Login",
-            "x-redirect": "manual",
             "Accept": "*/*",
-            "x-body": "form",
-            // "Accept-Encoding": "gzip, deflate, br",
-            // "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+            "x-url": this.loginUrl,
+            "x-redirect": "manual",
         };
+    
         const options: any = {
             method: "POST",
             headers: headers,
             body: formData,
-            'credentials': 'include',
-            withCredentials: true
+            credentials: 'include',
+            withCredentials: true,
+            redirect: "manual", // not worked
         };
 
         // submit form
-        const responseAuth = await fetch(loginUrl, options);
-        if (responseAuth.status === 302) {
+        const responseAuth = await fetch(this.proxyUrl, options);
+
+        if (responseAuth.status === 200) {
             return true;
         }
 
@@ -116,21 +123,21 @@ export class RequestService {
 
     async GetJson(url: string): Promise<any> {
         console.log(`GetJson ${url}`);
-        const urlWithProxy = `${this.proxyUrl}/json/${url}`;
         const headers = {
             "X-KL-Ajax-Reqyest" : "Ajax_Request",
             "X-Requested-With": "XMLHttpRequest",
             "x-redirect": "manual",
+            "x-url": url,
         };
 
         const options: any = {
             method: 'GET',
             credentials: "include",
-            headers: headers
+            headers: headers,
         };
 
-        let result = await this.SendRequest(urlWithProxy, options);
-
+        let result = await this.SendRequest(this.proxyUrl, options);
+        result = JSON.parse(result.data);
         if (result.hasOwnProperty("data")) {
             result = result["data"];
         }
@@ -144,31 +151,23 @@ export class RequestService {
     async PostFormData(url: string, data: FormBodyObj, bodyFormat: string = 'json') {
         console.log(`PostFormData: ${url}`);
 
-        const urlWithProxy = `${this.proxyUrl}/${bodyFormat}/${url}`;
         const headers = {
             "Content-Type": "application/x-www-form-urlencoded",
             "x-redirect": "manual",
             "Accept": "*/*",
-            "x-body": "form",
+            "x-url": url,
         };
         const formData = RequestService.formatFormData(data);
-        console.log(formData);
 
         const options: any = {
             method: "POST",
             headers: headers,
             body: formData,
             'credentials': 'include',
-            withCredentials: true
+            withCredentials: true,
         };
 
-        let result = await this.SendRequest(urlWithProxy, options);
-        if (result.hasOwnProperty("data")) {
-            result = result["data"];
-        }
-        if (result.hasOwnProperty("data")) {
-            result = result["data"];
-        }
+        let result = await this.SendRequest(this.proxyUrl, options);
         console.log(`Result`);
         console.log(result);
         return result;
@@ -177,12 +176,13 @@ export class RequestService {
     async SendJson(url: string, data: any, method: string = 'POST', bodyFormat: string = 'json') {
         console.log(`SendJson: ${url}`);
 
-        const urlWithProxy = `${this.proxyUrl}/${bodyFormat}/${url}`;
+        // const urlWithProxy = `${this.proxyUrl}/${bodyFormat}/${url}`;
         const headers = {
             "Content-Type": "application/json",
             "x-redirect": "manual",
             "Accept": "*/*",
             "x-body": "json",
+            "x-url": url,
         };
         const options: any = {
             method: method,
@@ -192,14 +192,8 @@ export class RequestService {
             withCredentials: true,
         };
 
-        let result = await this.SendRequest(urlWithProxy, options);
-
-        if (result.hasOwnProperty("data")) {
-            result = result["data"];
-        }
-        if (result.hasOwnProperty("data")) {
-            result = result["data"];
-        }
+        let resultRaw = await this.SendRequest(this.proxyUrl, options);
+        let result = JSON.parse(resultRaw.data);
         console.log(`Result`);
         console.log(result);
         return result;

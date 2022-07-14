@@ -17,33 +17,34 @@ export function MainMenu(props: IMainMenuProps) {
     const handleStudentEnrollment = () => {
         navigate('/studentsAdmission');
     };
-    const doStuff = () => {
-        const data = {"a": 1, "b": 2};
-        const headers = {
-            "Content-Type": "application/json",
-            "x-redirect": "manual",
-            "Accept": "*/*",
-            // "x-body": "json",
-            "x-url": "https://example.com",
-        };
-        const options: any = {
-            method: "POST",
-            headers: headers,
-            body: data,
-            'credentials': 'include',
-            withCredentials: true,
-        };
-        console.log(options);
-        fetch(url, options)
-        .then(res => console.log(res));
-    }
+    // const doStuff = () => {
+    //     const data = {"a": 1, "b": 2};
+    //     const headers = {
+    //         "Content-Type": "application/json",
+    //         "x-redirect": "manual",
+    //         "Accept": "*/*",
+    //         // "x-body": "json",
+    //         "x-url": "https://its.urfu.ru/",
+    //     };
+    //     const options: any = {
+    //         method: "POST",
+    //         headers: headers,
+    //         body: JSON.stringify(data),
+    //         'credentials': 'include',
+    //         withCredentials: true,
+    //     };
+    //     // console.log(options);
+    //     fetch(url, options)
+    //     .then(res => res.text())
+    //     .then(res => console.log(res));
+    // }
     return (
         <section className={style.menu}>
             <div className={style.menu__container}>
-                <label>URL:
+                {/* <label>URL:
                     <input value={url} onChange={handleUrlChange} type="text" />
                     <button onClick={doStuff}>Send url</button>
-                </label>
+                </label> */}
                 <button className={style.menu__button} onClick={handleSemesterPreparation}>Подготовка семестра</button>
                 <button className={style.menu__button} onClick={handleStudentEnrollment}>Зачисление студентов</button>
             </div>

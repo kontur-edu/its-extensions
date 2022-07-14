@@ -1,7 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import { HandleRequest } from './utils.js';
+import { handleRequest } from './utils.js';
+import {handler} from "../proxy-function/function.js";
+
 
 const app = express();
 app.use(cors({
@@ -9,26 +11,39 @@ app.use(cors({
     credentials: true
 }));
 
-app.use(express.json());
+// app.use(express.urlencoded({ extended: true })); 
+// app.use(express.text());
+// app.use(express.json());
+let buffer = null;
+app.use(function(req, res, next) {
+    var data = [];
+    req.addListener("data", function(chunk) {
+        data.push(new Buffer(chunk));
+    });
+    req.addListener("end", function() {
+        buffer = Buffer.concat(data);
+        req.body = buffer.toString();
+        next();
+        // zlib.inflate(buffer, function(err, result) {
+        //     if (!err) {
+        //         req.body = result.toString();
+        //         next();
+        //     } else {
+        //         next(err);
+        //     }
+        // });
+    });
+});
 app.use(cookieParser());
-app.use(express.urlencoded({ extended: true })); 
 
 
+app.get('/proxy', handleRequest('GET', handler));
+app.post('/proxy', handleRequest('POST', handler));
+app.delete('/proxy', handleRequest('DELETE', handler));
 
-app.get(/json\/.*$/, HandleRequest("GET", "json", 5));
-app.get(/text\/.*$/, HandleRequest("GET", "text", 5));
-
-app.post(/text\/.*$/, HandleRequest("POST", "text", 5));
-app.post(/json\/.*$/, HandleRequest("POST", "json", 5));
-
-app.delete(/text\/.*$/, HandleRequest("DELETE", "text", 5));
-// app.delete(/json\/.*$/, HandleRequest("POST", "json", 5));
 
 const port = 3000;
 
 app.listen(port, () => {
     console.log(`Proxy is up on 0.0.0.0:${port}`);
 });
-
-
-// set NODE_DEBUG=http,net,stream&&node server.js

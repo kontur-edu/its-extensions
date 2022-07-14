@@ -178,12 +178,12 @@ export class ITSApiService {
         periodId: number, load: IMupLoad
     ): Promise<IActionResponse> {
         const url = "https://its.urfu.ru/MUP/AddTmer";
-    
+
         const data = {
             id: periodId,
             kmer: load.kmer,
         };
-    
+
         if (periodId !== 102 && periodId !== 103) {
             const message = `Not test Period periodId: ${periodId}`;
             alert(message);
@@ -275,14 +275,16 @@ export class ITSApiService {
             return {success: false, message};
         }
     
-        const result = await this.requestService.PostFormData(url, data, 'text');
-        const success = result === '';
+        const resultRaw = await this.requestService.PostFormData(url, data, 'text');
+        const success = resultRaw.data === '';
+        // const success = result === '';
         return {success};
     }
 
     async GetSubgroupMetas(competitionGroupId: number): Promise<ISubgroupMeta[]> {
         const url = `https://its.urfu.ru/MUPItsSubgroupMeta/Index?competitionGroupId=${competitionGroupId}`;
         const res = await this.requestService.GetJson(url);
+
         return res.map((obj: any) => {
             const subgroupMeta: ISubgroupMeta = {
                 id: obj["Id"],

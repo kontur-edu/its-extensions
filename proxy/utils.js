@@ -11,9 +11,7 @@ export const handleRequest = (httpMethod, handler) =>
         headers: {},
         body: '',
         isBase64Encoded: false,
-        params: {
-            requestUrl: requestUrl
-        },
+        url: req.originalUrl
     };
     event.headers = req.headers;
     event.body = req.body;

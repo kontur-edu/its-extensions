@@ -45,6 +45,7 @@ function prepareRequestHeaders(url, requestHeaders, cookieString) {
 
 
 async function processRequest(method, url, headers, requestCookieString, body, isBodyBase64 = true) {
+    console.log(url);
     const redirect = headers["x-redirect"] ? headers["x-redirect"] : 'manual';
     const preparedRequestHeaders = prepareRequestHeaders(url, headers, requestCookieString);
     const options = {
@@ -61,7 +62,7 @@ async function processRequest(method, url, headers, requestCookieString, body, i
         options.body = body;
     }
     // console.log("options");
-    // console.log(options);
+    
     const resp = await fetch(url, options);
 
     const newCookies = getCookiesFromHeadrs(resp.headers);
@@ -93,8 +94,12 @@ async function processRequest(method, url, headers, requestCookieString, body, i
     };
 
     try {
-        result.body = await resp.text();
+        if (status !== 204 && status !== 301 && status !== 302) {
+            result.body = await resp.text();
+            console.log(result.body.length);
+        }
     } catch (e) {
+        console.log(e);
         console.log("Proxy: failed to get body.text()");
     }
     return result;
@@ -111,7 +116,7 @@ module.exports.handler = async function (event, context) {
         headersLower[headerName.toLowerCase()] = requestHeaders[headerName];
     }
 
-    const xUrl = event.params.requestUrl;
+    const xUrl = event.url.replace('/proxy/', ''); // url is relative https://<...>/proxy/https://...
     const body = event.body;
     const isBase64Encoded = event.isBase64Encoded;
     const cookiesString = event.headers.Cookie || '';

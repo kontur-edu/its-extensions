@@ -24,22 +24,14 @@ app.use(function(req, res, next) {
         buffer = Buffer.concat(data);
         req.body = buffer.toString();
         next();
-        // zlib.inflate(buffer, function(err, result) {
-        //     if (!err) {
-        //         req.body = result.toString();
-        //         next();
-        //     } else {
-        //         next(err);
-        //     }
-        // });
     });
 });
 app.use(cookieParser());
 
 
-app.get('/proxy', handleRequest('GET', handler));
-app.post('/proxy', handleRequest('POST', handler));
-app.delete('/proxy', handleRequest('DELETE', handler));
+app.get(/proxy\/.+$/, handleRequest('GET', handler));
+app.post(/proxy\/.+$/, handleRequest('POST', handler));
+app.delete(/proxy\/.+$/, handleRequest('DELETE', handler));
 
 
 const port = 3000;

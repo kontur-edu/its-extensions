@@ -40,7 +40,6 @@ export class RequestService {
     }
 
     async SendRequest(url: string, options: any) {
-
         const response = await fetch(url, options);
         if (response.status === 401) {
             throw Error(REQUEST_ERROR_UNAUTHORIZED);
@@ -65,17 +64,14 @@ export class RequestService {
     ): Promise<boolean> {
         console.log(`Authenticate ${this.loginUrl}`);
 
-        // const loginUrl = `${this.proxyUrl}/text/${this.loginUrl}`;
+        const urlWithProxy = `${this.proxyUrl}/${this.loginUrl}`;
         // Get token
         const optionsLoginPage: any = {
             method: 'GET',
             credentials: "include",
-            headers: {
-                "x-url": this.loginUrl,
-            },
         };
 
-        const jsonBody = await this.SendRequest(this.proxyUrl, optionsLoginPage);
+        const jsonBody = await this.SendRequest(urlWithProxy, optionsLoginPage);
 
         const pageString = jsonBody["data"];
         const tokens: string[] = FindCsrfTokens(pageString);
@@ -98,7 +94,6 @@ export class RequestService {
             "Content-Type": "application/x-www-form-urlencoded",
             // "x-origin": "https://its.urfu.ru/Account/Login",
             "Accept": "*/*",
-            "x-url": this.loginUrl,
             "x-redirect": "manual",
         };
     
@@ -112,7 +107,7 @@ export class RequestService {
         };
 
         // submit form
-        const responseAuth = await fetch(this.proxyUrl, options);
+        const responseAuth = await fetch(urlWithProxy, options);
 
         if (responseAuth.status === 200) {
             return true;
@@ -123,6 +118,8 @@ export class RequestService {
 
     async GetJson(url: string): Promise<any> {
         console.log(`GetJson ${url}`);
+
+        const urlWithProxy = `${this.proxyUrl}/${url}`;
         const headers = {
             "X-KL-Ajax-Reqyest" : "Ajax_Request",
             "X-Requested-With": "XMLHttpRequest",
@@ -136,7 +133,7 @@ export class RequestService {
             headers: headers,
         };
 
-        let result = await this.SendRequest(this.proxyUrl, options);
+        let result = await this.SendRequest(urlWithProxy, options);
         result = JSON.parse(result.data);
         if (result.hasOwnProperty("data")) {
             result = result["data"];
@@ -151,11 +148,11 @@ export class RequestService {
     async PostFormData(url: string, data: FormBodyObj, bodyFormat: string = 'json') {
         console.log(`PostFormData: ${url}`);
 
+        const urlWithProxy = `${this.proxyUrl}/${url}`;
         const headers = {
             "Content-Type": "application/x-www-form-urlencoded",
             "x-redirect": "manual",
             "Accept": "*/*",
-            "x-url": url,
         };
         const formData = RequestService.formatFormData(data);
 
@@ -167,7 +164,7 @@ export class RequestService {
             withCredentials: true,
         };
 
-        let result = await this.SendRequest(this.proxyUrl, options);
+        let result = await this.SendRequest(urlWithProxy, options);
         console.log(`Result`);
         console.log(result);
         return result;
@@ -176,13 +173,12 @@ export class RequestService {
     async SendJson(url: string, data: any, method: string = 'POST', bodyFormat: string = 'json') {
         console.log(`SendJson: ${url}`);
 
-        // const urlWithProxy = `${this.proxyUrl}/${bodyFormat}/${url}`;
+        const urlWithProxy = `${this.proxyUrl}/${url}`;
         const headers = {
             "Content-Type": "application/json",
             "x-redirect": "manual",
             "Accept": "*/*",
             "x-body": "json",
-            "x-url": url,
         };
         const options: any = {
             method: method,
@@ -192,7 +188,7 @@ export class RequestService {
             withCredentials: true,
         };
 
-        let resultRaw = await this.SendRequest(this.proxyUrl, options);
+        let resultRaw = await this.SendRequest(urlWithProxy, options);
         let result = JSON.parse(resultRaw.data);
         console.log(`Result`);
         console.log(result);

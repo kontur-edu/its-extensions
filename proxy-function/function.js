@@ -110,20 +110,20 @@ module.exports.handler = async function (event, context) {
         headersLower[headerName.toLowerCase()] = requestHeaders[headerName];
     }
 
-    if (!headersLower.hasOwnProperty("x-url")) {
-        const body = JSON.stringify({
-            success: false,
-            message: "x-url not specified"
-        });
-        return {
-            statusCode: 400,
-            headers: {
-                "content-type": "application/json"
-            },
-            body: body,
-        };
-    }
-    const xUrl = headersLower["x-url"];
+    // if (!headersLower.hasOwnProperty("x-url")) {
+    //     const body = JSON.stringify({
+    //         success: false,
+    //         message: "x-url not specified"
+    //     });
+    //     return {
+    //         statusCode: 400,
+    //         headers: {
+    //             "content-type": "application/json"
+    //         },
+    //         body: body,
+    //     };
+    // }
+    const xUrl = event.params.requestUrl;
     const body = event.body;
     const isBase64Encoded = event.isBase64Encoded;
     const cookiesString = event.headers.Cookie || '';

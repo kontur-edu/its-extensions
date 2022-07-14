@@ -2,7 +2,8 @@
 
 export const handleRequest = (httpMethod, handler) =>
         async (req, res) => {
-    console.log(`${httpMethod} request ${req.originalUrl}`);
+    const requestUrl = req.originalUrl.substring("proxy/".length + 1);
+    console.log(`${httpMethod} request ${req.originalUrl} (${requestUrl})`);
     // console.log(req);
     // get data from req
     const event = {
@@ -10,6 +11,9 @@ export const handleRequest = (httpMethod, handler) =>
         headers: {},
         body: '',
         isBase64Encoded: false,
+        params: {
+            requestUrl: requestUrl
+        },
     };
     event.headers = req.headers;
     event.body = req.body;

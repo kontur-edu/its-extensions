@@ -76,7 +76,7 @@ async function processRequest(method, url, headers, requestCookieString, body, i
 
     const resultHeaders = {};
     for (var headerKeyValue of resp.headers.entries()) {
-        if (headerName === "set-cookie" || headerName === "content-encoding") continue;
+        if (headerKeyValue[0] === "set-cookie" || headerKeyValue[0] === "content-encoding") continue;
         resultHeaders[headerKeyValue[0]] = headerKeyValue[1];
     }
 

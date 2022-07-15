@@ -1,4 +1,2 @@
-rmdir /S /Q build 2>nul
-npm run build
-aws --endpoint-url=https://storage.yandexcloud.net s3 rm s3://its-extensions/ --recursive
-aws --endpoint-url=https://storage.yandexcloud.net s3 cp --recursive build/ s3://its-extensions/
+aws --endpoint-url=https://storage.yandexcloud.net s3 sync build/ s3://its-extensions/ --exclude "*.js" --delete
+aws --endpoint-url=https://storage.yandexcloud.net s3 sync build/ s3://its-extensions/ --exclude "*" --include "*.js" --content-type application/javascript

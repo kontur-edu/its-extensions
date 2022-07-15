@@ -280,6 +280,7 @@ export interface IStudentAdmissionRaw {
 
 
 export interface IStudent {
+    id: string;
     personalNumber: string;
     groupName: string;
 
@@ -312,7 +313,7 @@ export interface IStudentAdmission {
 export type AdmissionInfo = {
     // admissionId
     [key: number]: {
-        // studentId
+        // personalNumber
         [key: string]: IStudentAdmission
     }
 }

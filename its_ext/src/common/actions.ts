@@ -14,6 +14,7 @@ export enum ActionType {
     CreateSubgroups,
     UpdateSubgroupMetaLoadCount,
     UpdateTeacherForSubgroup,
+    UpdateTaskResult,
 };
 
 

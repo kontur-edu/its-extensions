@@ -70,6 +70,11 @@ export function createStudentItems(
                 }
 
                 const studentInfo = studentData.data[personalNumber];
+                console.log("studentInfo");
+                console.log(studentInfo);
+                if (studentInfo.status !== "Активный") {
+                    continue;
+                }
                 const studentItem: IStudentItem = {
                     group: studentInfo.groupName,
                     name: `${studentInfo.surname} ${studentInfo.firstname} ${studentInfo.patronymic}`,
@@ -142,7 +147,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
                 );
                 setStudentItems(studentItems);
             })
-    }, [admissionIds])
+    }, [admissionIds]);
 
     
     const handleMupChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -172,14 +177,16 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
         setTextAreaValue(value);
     }
 
-
     const renderRows = () => {
-        return Object.keys(studentItems).map(personalNumber => {
+        const studentPersonalNumbersSorted = Object.keys(studentItems).sort((lhs, rhs) => {
+            return studentItems[lhs].name.localeCompare(studentItems[rhs].name);
+        });
+        return studentPersonalNumbersSorted.map(personalNumber => {
             const studentItem = studentItems[personalNumber];
             const selected = studentItem.testResult !== null && studentItem.testResult > 0;
             return (
                 <tr onClick={() => handleStudentPassedToggle(personalNumber)}
-                    className={"selectable "}
+                    className={"selectable"}
                     key={personalNumber}
                 >
                     <th>{studentItem.group || personalNumber}</th>
@@ -194,7 +201,18 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     }
 
     const handleRefreshCompetitionGroups = () => {
-        alert("Refresh Students passed Entrance Task");
+        // alert("Refresh Students passed Entrance Task");
+        refreshAdmissionInfo();
+    }
+
+    const handleApply = () => {
+        const personalNumberToTaskResult: {[key: string]: number | null} = {};
+        for (const personalNumber in studentItems) {
+            const studentItem = studentItems[personalNumber];
+            personalNumberToTaskResult[personalNumber] = studentItem.testResult;
+        }
+
+        props.onApply(admissionIds, personalNumberToTaskResult);
     }
 
     return (
@@ -206,8 +224,10 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
                     {mupIds.map(mupId => <option key={mupId} value={mupId}>{getMupNameById(mupId)}</option>)}
                 </select>
                 <h3>Вставьте список ФИО студентов, прошедших тестовое или выберите студентов в таблице</h3>
-                <textarea value={textAreaValue} onChange={handleTextAreaChange} />
-                <h3>Студенты, прошедшие Тестовое</h3>
+                <textarea value={textAreaValue} onChange={handleTextAreaChange} 
+                    rows={8} cols={64}
+                />
+                <h3>Студенты (активные), прошедшие Тестовое</h3>
                 <button className="step__button" onClick={handleRefreshCompetitionGroups}>Обновить</button>
                 <section className="table__container">
                     <table className="table">
@@ -223,6 +243,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
                         </tbody>
                     </table>
                 </section>
+                <button className="step__button" onClick={handleApply}>Применить изменения</button>
             </article>
         </section>
     );

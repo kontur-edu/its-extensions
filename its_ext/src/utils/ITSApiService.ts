@@ -429,10 +429,29 @@ export class ITSApiService {
                 rating: obj["Rating"],
                 priority: obj["Priority"],
                 testResult: obj["TestResult"],
-                status: obj["Status"],
+                status: obj["StudentStatus"],
                 groupName: obj["GroupName"],
             };
             return admissionMeta;
         });
+    }
+
+    async UpdateStudentTestResults(studentId: string, admissionId: number, testResult: number) {
+        const url = "https://its.urfu.ru/MUPItsAdmission/EditTestResults";
+
+        const data = {
+            studentId: studentId,
+            id: admissionId,
+            resultValue: testResult,
+        };
+
+        if (admissionId < 146) {
+            const message = `Tried to update not test Admission id: ${admissionId}`;
+            alert(message);
+            return {success: false, message};
+        }
+    
+        const result = await this.requestService.PostFormData(url, data);
+        return result;
     }
 }

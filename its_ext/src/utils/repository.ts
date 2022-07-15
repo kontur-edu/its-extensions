@@ -180,6 +180,7 @@ export class ITSRepository {
             }
 
             const student: IStudent = {
+                id: studentRaw.id,
                 personalNumber: studentRaw.personalNumber,
                 surname: studentRaw.surname,
                 firstname: studentRaw.firstname,

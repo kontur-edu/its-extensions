@@ -10,6 +10,7 @@ import { TaskResultsInput } from "../TaskResultsInput";
 
 import { ITSAction, ExecuteActions } from "../../../common/actions";
 import {IActionResponse} from "../../../utils/ITSApiService";
+import { createTaskResultActions } from "../../../taskResultUpdater/actionCreator";
 
 
 export function StudentsAdmission(props: IStudentsAdmissionProps) {
@@ -65,12 +66,24 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
         setCompetitionGroupIds(newCompetitionGroupIds);
     }
 
-    const handleTaskResultsInputApply = () => {
+    const handleTaskResultsInputApply = (admissionIds: number[], personalNumberToTaskResult: {[key: string]: number | null}) => {
         alert(`Применение изменений`);
+        const actions = createTaskResultActions(
+            admissionIds,
+            personalNumberToTaskResult,
+            context.dataRepository.admissionInfo,
+            context.dataRepository.studentData
+        );
+        setTaskResultsActions(actions);
     }
 
     const handleTaskResultsInputApplyReal = () => {
         alert(`Настоящее применение изменений`);
+        return;
+        ExecuteActions(taskResultsActions, context)
+            .then(actionResults => {
+                setTaskResultsActionResults(actionResults);
+            });
     }
 
     const renderTaskResultsInput = () => {

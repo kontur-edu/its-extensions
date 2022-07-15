@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { handleRequest } from './utils.js';
-import {handler} from "../proxy-function/function.js";
+import {handler, convertArrayBufferToBase64} from "../proxy-function/function.js";
 
 
 const app = express();
@@ -14,15 +14,16 @@ app.use(cors({
 // app.use(express.urlencoded({ extended: true })); 
 // app.use(express.text());
 // app.use(express.json());
-let buffer = null;
+// let buffer = null;
 app.use(function(req, res, next) {
     var data = [];
     req.addListener("data", function(chunk) {
         data.push(new Buffer(chunk));
     });
     req.addListener("end", function() {
-        buffer = Buffer.concat(data);
-        req.body = buffer.toString();
+        const bodyBuffer = Buffer.concat(data);
+        req.body = convertArrayBufferToBase64(bodyBuffer);
+        // req.body = buffer.toString();
         next();
     });
 });

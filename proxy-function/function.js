@@ -2,7 +2,6 @@
 const fetch = require("node-fetch");
 
 
-
 function getCookiesFromHeadrs(headers) {
     if (!headers.has('set-cookie')) {
         return [];
@@ -18,16 +17,8 @@ function getCookiesFromHeadrs(headers) {
 }
 
 
-function decodeBase64(base64Data, encoding="utf-8") {
-    const decoded = Buffer.from(base64Data, "base64").toString(encoding);
-    return decoded;
-}
-
-
 function prepareRequestHeaders(url, requestHeaders, cookieString) {
     // console.log(`prepareRequestHeaders ${url}`);
-    // console.log(requestHeaders);
-    // console.log(cookieString);
 
     const headers = {...requestHeaders};
     delete headers["host"];
@@ -44,8 +35,33 @@ function prepareRequestHeaders(url, requestHeaders, cookieString) {
 }
 
 
+function convertArrayBufferToBase64(buffer) {
+    var binary = '';
+    var bytes = new Uint8Array(buffer);
+    var len = bytes.byteLength;
+    for (var i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+}
+
+function convertBase64ToArrayBuffer(base64) {
+    var binary_string = atob(base64);
+    var len = binary_string.length;
+    var bytes = new Uint8Array(len);
+    for (var i = 0; i < len; i++) {
+        bytes[i] = binary_string.charCodeAt(i);
+    }
+    return bytes.buffer;
+}
+
+
 async function processRequest(method, url, headers, requestCookieString, body, isBodyBase64 = true) {
     console.log(url);
+    if (typeof body === 'object' && body !== null) {
+        body = JSON.stringify(body);
+    }
+
     const redirect = headers["x-redirect"] ? headers["x-redirect"] : 'manual';
     const preparedRequestHeaders = prepareRequestHeaders(url, headers, requestCookieString);
     const options = {
@@ -55,14 +71,15 @@ async function processRequest(method, url, headers, requestCookieString, body, i
     };
 
     if (body && isBodyBase64) {
-        body = decodeBase64(body);
+        body = convertBase64ToArrayBuffer(body);
     }
 
     if (body && !(body.constructor === Object && Object.keys(body).length === 0)) {
         options.body = body;
     }
     // console.log("options");
-    
+    // console.log(options);
+
     const resp = await fetch(url, options);
 
     const newCookies = getCookiesFromHeadrs(resp.headers);
@@ -91,12 +108,16 @@ async function processRequest(method, url, headers, requestCookieString, body, i
         statusCode: status,
         headers: resultHeaders,
         multiValueHeaders: multiValueHeaders,
+        
     };
 
     try {
         if (status !== 204 && status !== 301 && status !== 302) {
-            result.body = await resp.text();
-            console.log(result.body.length);
+            const bodyBlob = await resp.blob();
+            const arrayBuffer = await bodyBlob.arrayBuffer();
+            const base64 = convertArrayBufferToBase64(arrayBuffer);
+            result.body = base64;
+            result.isBase64Encoded = true;
         }
     } catch (e) {
         console.log(e);
@@ -107,7 +128,7 @@ async function processRequest(method, url, headers, requestCookieString, body, i
 
 
 
-
+module.exports.convertArrayBufferToBase64 = convertArrayBufferToBase64;
 module.exports.handler = async function (event, context) {
     const requestHeaders = event.headers;
     const method = event.httpMethod;

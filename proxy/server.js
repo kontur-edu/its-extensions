@@ -13,7 +13,7 @@ app.use(cors({
 
 
 app.use(function(req, res, next) {
-    var data = [];
+    let data = [];
     req.addListener("data", function(chunk) {
         data.push(Buffer.from(chunk));
     });

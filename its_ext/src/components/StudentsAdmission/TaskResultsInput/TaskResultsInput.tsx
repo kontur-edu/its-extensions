@@ -41,7 +41,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
 
     return (
         <section className="step__container">
-            <article className={style.selectionGroup_select}>
+            <article>
                 <h3>Студенты, прошедшие Тестовое</h3>
                 <button className="step__button" onClick={handleRefreshCompetitionGroups}>Обновить</button>
                 <section className="table__container">

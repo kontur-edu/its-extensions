@@ -1,4 +1,4 @@
-
+import {convertArrayBufferToBase64} from "../proxy-function/function.js";
 
 export const handleRequest = (httpMethod, handler) =>
         async (req, res) => {
@@ -14,7 +14,11 @@ export const handleRequest = (httpMethod, handler) =>
         url: req.originalUrl
     };
     event.headers = req.headers;
+
     event.body = req.body;
+    event.isBase64Encoded = true;
+    
+
     
     // console.log("event");
     // console.log(event);
@@ -40,7 +44,11 @@ export const handleRequest = (httpMethod, handler) =>
     // send res
     res.status(result.statusCode);
     if (result.body) {
-        res.send(result.body);
+        let data = result.body;
+        if (result.isBase64Encoded) {
+            data = Buffer.from(data, 'base64');
+        }
+        res.send(data);
     } else {
         res.end();
     }

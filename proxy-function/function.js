@@ -2,7 +2,6 @@
 const fetch = require("node-fetch");
 
 
-
 function getCookiesFromHeadrs(headers) {
     if (!headers.has('set-cookie')) {
         return [];
@@ -18,16 +17,8 @@ function getCookiesFromHeadrs(headers) {
 }
 
 
-function decodeBase64(base64Data, encoding="utf-8") {
-    const decoded = Buffer.from(base64Data, "base64").toString(encoding);
-    return decoded;
-}
-
-
 function prepareRequestHeaders(url, requestHeaders, cookieString) {
     // console.log(`prepareRequestHeaders ${url}`);
-    // console.log(requestHeaders);
-    // console.log(cookieString);
 
     const headers = {...requestHeaders};
     delete headers["host"];
@@ -51,7 +42,7 @@ function convertArrayBufferToBase64(buffer) {
     for (var i = 0; i < len; i++) {
         binary += String.fromCharCode(bytes[i]);
     }
-    return btoa( binary );
+    return btoa(binary);
 }
 
 function convertBase64ToArrayBuffer(base64) {
@@ -80,7 +71,6 @@ async function processRequest(method, url, headers, requestCookieString, body, i
     };
 
     if (body && isBodyBase64) {
-        // body = decodeBase64(body);
         body = convertBase64ToArrayBuffer(body);
     }
 
@@ -123,16 +113,9 @@ async function processRequest(method, url, headers, requestCookieString, body, i
 
     try {
         if (status !== 204 && status !== 301 && status !== 302) {
-            // console.log()
             const bodyBlob = await resp.blob();
-            // console.log("bodyBlob");
-            // console.log(bodyBlob);
             const arrayBuffer = await bodyBlob.arrayBuffer();
-            // console.log("arrayBuffer");
-            // console.log(arrayBuffer);
             const base64 = convertArrayBufferToBase64(arrayBuffer);
-            // console.log("base64");
-            // console.log(base64);
             result.body = base64;
             result.isBase64Encoded = true;
         }
@@ -147,7 +130,6 @@ async function processRequest(method, url, headers, requestCookieString, body, i
 
 module.exports.convertArrayBufferToBase64 = convertArrayBufferToBase64;
 module.exports.handler = async function (event, context) {
-    // console.log(event);
     const requestHeaders = event.headers;
     const method = event.httpMethod;
     const headersLower = {};

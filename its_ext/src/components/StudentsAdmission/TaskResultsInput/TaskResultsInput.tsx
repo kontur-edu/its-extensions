@@ -5,6 +5,7 @@ import {StepMessages} from "../../../utils/constants";
 import { ITSContext } from "../../../common/Context";
 import { IAdmissionMeta, CompetitionGroupIdToMupAdmissions, AdmissionInfo, IStudentData } from "../../../common/types";
 import { isConstTypeReference } from "typescript";
+import { getNameRecords } from "../../../taskResultUpdater/studentNamesParser";
 
 
 export function getAdmissionIds(
@@ -174,6 +175,9 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
 
     const handleTextAreaChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = event.target.value;
+        const records = getNameRecords(value);
+        console.log("records");
+        console.log(records);
         setTextAreaValue(value);
     }
 

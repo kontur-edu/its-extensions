@@ -11,19 +11,15 @@ app.use(cors({
     credentials: true
 }));
 
-// app.use(express.urlencoded({ extended: true })); 
-// app.use(express.text());
-// app.use(express.json());
-// let buffer = null;
+
 app.use(function(req, res, next) {
     var data = [];
     req.addListener("data", function(chunk) {
-        data.push(new Buffer(chunk));
+        data.push(Buffer.from(chunk));
     });
     req.addListener("end", function() {
         const bodyBuffer = Buffer.concat(data);
         req.body = convertArrayBufferToBase64(bodyBuffer);
-        // req.body = buffer.toString();
         next();
     });
 });

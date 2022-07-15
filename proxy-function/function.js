@@ -18,8 +18,6 @@ function getCookiesFromHeadrs(headers) {
 
 
 function prepareRequestHeaders(url, requestHeaders, cookieString) {
-    // console.log(`prepareRequestHeaders ${url}`);
-
     const headers = {...requestHeaders};
     delete headers["host"];
     delete headers["content-encoding"];
@@ -36,20 +34,20 @@ function prepareRequestHeaders(url, requestHeaders, cookieString) {
 
 
 function convertArrayBufferToBase64(buffer) {
-    var binary = '';
-    var bytes = new Uint8Array(buffer);
-    var len = bytes.byteLength;
-    for (var i = 0; i < len; i++) {
+    let binary = '';
+    let bytes = new Uint8Array(buffer);
+    let len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
         binary += String.fromCharCode(bytes[i]);
     }
-    return btoa(binary);
+    return Buffer.from(binary, 'ascii').toString('base64');
 }
 
 function convertBase64ToArrayBuffer(base64) {
-    var binary_string = atob(base64);
-    var len = binary_string.length;
-    var bytes = new Uint8Array(len);
-    for (var i = 0; i < len; i++) {
+    let binary_string = Buffer.from(base64, 'base64').toString('ascii');
+    let len = binary_string.length;
+    let bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
         bytes[i] = binary_string.charCodeAt(i);
     }
     return bytes.buffer;
@@ -77,8 +75,6 @@ async function processRequest(method, url, headers, requestCookieString, body, i
     if (body && !(body.constructor === Object && Object.keys(body).length === 0)) {
         options.body = body;
     }
-    // console.log("options");
-    // console.log(options);
 
     const resp = await fetch(url, options);
 
@@ -93,7 +89,7 @@ async function processRequest(method, url, headers, requestCookieString, body, i
     }
 
     const resultHeaders = {};
-    for (var headerKeyValue of resp.headers.entries()) {
+    for (let headerKeyValue of resp.headers.entries()) {
         if (headerKeyValue[0] === "set-cookie" || headerKeyValue[0] === "content-encoding") continue;
         resultHeaders[headerKeyValue[0]] = headerKeyValue[1];
     }
@@ -108,7 +104,6 @@ async function processRequest(method, url, headers, requestCookieString, body, i
         statusCode: status,
         headers: resultHeaders,
         multiValueHeaders: multiValueHeaders,
-        
     };
 
     try {
@@ -137,7 +132,9 @@ module.exports.handler = async function (event, context) {
         headersLower[headerName.toLowerCase()] = requestHeaders[headerName];
     }
 
-    const xUrl = event.url.replace('/proxy/', ''); // url is relative https://<...>/proxy/https://...
+    // url is relative https://<...>/proxy/https://...
+    // replace will remove first match
+    const xUrl = event.url.replace('/proxy/', ''); 
     const body = event.body;
     const isBase64Encoded = event.isBase64Encoded;
     const cookiesString = event.headers.Cookie || '';

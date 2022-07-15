@@ -422,7 +422,7 @@ export class ITSApiService {
         return res.map((obj: any) => {
             const admissionMeta: IStudentAdmissionRaw = {
                 id: obj["Id"],
-                personalNumber: obj["PatronymicName"],
+                personalNumber: obj["PersonalNumber"],
                 surname: obj["Surname"],
                 firstname: obj["Name"],
                 patronymic: obj["PatronymicName"],
@@ -430,6 +430,7 @@ export class ITSApiService {
                 priority: obj["Priority"],
                 testResult: obj["TestResult"],
                 status: obj["Status"],
+                groupName: obj["GroupName"],
             };
             return admissionMeta;
         });

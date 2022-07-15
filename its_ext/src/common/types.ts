@@ -275,11 +275,13 @@ export interface IStudentAdmissionRaw {
     priority: number | null;
     testResult: number | null;
     status: string;
+    groupName: string;
 }
 
 
 export interface IStudent {
     personalNumber: string;
+    groupName: string;
 
     surname: string;
     firstname: string;
@@ -300,16 +302,16 @@ export interface IStudentData {
 //  - studentId
 //  - priority
 export interface IStudentAdmission {
-    id: number;
-    personalNumber: number;
-    mupId: string;
+    id: string;
+    // personalNumber: string;
+    // mupId: string;
     priority: number | null;
     testResult: number | null;
 }
 
 export type AdmissionInfo = {
-    // MupId
-    [key: string]: {
+    // admissionId
+    [key: number]: {
         // studentId
         [key: string]: IStudentAdmission
     }

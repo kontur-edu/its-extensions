@@ -16,6 +16,8 @@ import {
     CompetitionGroupIdToMupAdmissions,
     MupIdToAdmissionId,
     IStudent,
+    IStudentAdmission,
+    IStudentAdmissionRaw,
 } from "../common/types";
 
 import { ITSApiService } from "./ITSApiService";
@@ -166,9 +168,12 @@ export class ITSRepository {
         }
     }
 
-    async UpdateStudentAdmissionsAndStudentData(admissionMeta: IAdmissionMeta) {
-        console.log(`ITSRepository: UpdateStudentAdmissions`);
-        const studentsRaw = await this.api.GetStudentsForAdmission(admissionMeta.admissionsId);
+    
+    fillStudentRawInfoToStudentDataAndAdmissionInfo(
+        admissionId: number,
+        studentsRaw: IStudentAdmissionRaw[]
+    ) {
+        const studentAdmissionInfo: {[key: string]: IStudentAdmission} = {};
         for (const studentRaw of studentsRaw) {
             if (!this.studentData.data.hasOwnProperty(studentRaw.personalNumber)) {
                 this.studentData.ids.push(studentRaw.personalNumber);
@@ -181,11 +186,41 @@ export class ITSRepository {
                 patronymic: studentRaw.patronymic,
                 rating: studentRaw.rating,
                 status: studentRaw.status,
+                groupName: studentRaw.groupName,
             };
 
             this.studentData.data[studentRaw.personalNumber] = student;
 
             // TODO: add student meta
+            const studentAdmission: IStudentAdmission = {
+                id: studentRaw.id,
+                // personalNumber: studentRaw.personalNumber,
+                // mupId: admissionMeta.mupId,
+                priority: studentRaw.priority,
+                testResult: studentRaw.testResult,
+            };
+
+            studentAdmissionInfo[studentRaw.personalNumber] = studentAdmission;
+        }
+
+        this.admissionInfo[admissionId] = studentAdmissionInfo;
+    }
+
+    async UpdateStudentAdmissionsAndStudentData(admissionIds: number[]) {
+        console.log(`ITSRepository: UpdateStudentAdmissionsAndStudentData`);
+
+        const requests = admissionIds.map(aId => this.api.GetStudentsForAdmission(aId));
+        const responses = await Promise.allSettled(requests);
+        for (let i = 0; i < admissionIds.length; i++) {
+            const resp = responses[i];
+            const admissionId = admissionIds[i];
+            if (resp.status === 'fulfilled') {
+                // console.log("StudentAdmissions");
+                // console.log(resp.value);
+                this.fillStudentRawInfoToStudentDataAndAdmissionInfo(
+                    admissionId, resp.value
+                );
+            }
         }
     }
 }

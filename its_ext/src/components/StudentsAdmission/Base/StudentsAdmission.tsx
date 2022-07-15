@@ -6,13 +6,19 @@ import { ITSContext } from "../../../common/Context";
 import { CompetitionGroupSelect } from "../CompetitionGroupSelect";
 import { ICompetitionGroupItem } from "../CompetitionGroupSelect/types";
 import {REQUEST_ERROR_UNAUTHORIZED} from "../../../utils/constants";
-// import {}
+import { TaskResultsInput } from "../TaskResultsInput";
+
+import { ITSAction, ExecuteActions } from "../../../common/actions";
+import {IActionResponse} from "../../../utils/ITSApiService";
+
 
 export function StudentsAdmission(props: IStudentsAdmissionProps) {
     const [competitionGroupItems, setCompetitionGroupItems] = useState<ICompetitionGroupItem[]>([]);
     const [competitionGroupIds, setCompetitionGroupIds] = useState<number[]>([]);
     const competitionGroupRefreshInProgress = useRef<boolean>(false);
     const context = useContext(ITSContext)!;
+    const [taskResultsActions, setTaskResultsActions] = useState<ITSAction[]>([]);
+    const [taskResultsActionResults, setTaskResultsActionResults] = useState<IActionResponse[]>([]);
 
     // const requestCompetitionGroupsInProgress = useRef(false);
     
@@ -59,6 +65,14 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
         setCompetitionGroupIds(newCompetitionGroupIds);
     }
 
+    const handleTaskResultsInputApply = () => {
+        alert(`Применение изменений`);
+    }
+
+    const handleTaskResultsInputApplyReal = () => {
+        alert(`Настоящее применение изменений`);
+    }
+
     const renderTaskResultsInput = () => {
         return (
             <React.Fragment>
@@ -67,18 +81,20 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
                     <span className="step__header">Ввод результатов отборочных заданий</span>
                 </article>
 
-                {/* <SubgroupSelection
+                <TaskResultsInput
                     competitionGroupIds={competitionGroupIds}
+                    onApply={handleTaskResultsInputApply}
+                    onUnauthorized={props.onUnauthorized}
                 />
                 <ul>
-                    {subgroupSelectionActions.map((a: ITSAction, index: number) => <li key={index}>{a.getMessage()}</li>)}
+                    {taskResultsActions.map((a: ITSAction, index: number) => <li key={index}>{a.getMessage()}</li>)}
                 </ul>
-                <button className="step__button" onClick={handleSubgroupSelectionApplyReal}>Настоящее применение</button>
+                <button className="step__button" onClick={handleTaskResultsInputApplyReal}>Настоящее применение</button>
                 <ul>
-                    {subgroupSelectionActionsResults.map((ar: IActionResponse, index: number) =>
+                    {taskResultsActionResults.map((ar: IActionResponse, index: number) =>
                         <li key={index} className={ar.success ? "message_success" : "message_error"}>{ar.message}</li>
                     )}
-                </ul> */}
+                </ul>
             </React.Fragment>
         );
     };
@@ -96,6 +112,8 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
                 onRefresh={refreshCompetitionGroups}
                 onSelectionValid={handleCompetitionGroupsSelect}
             />
+
+            {competitionGroupIds.length === 2 ? renderTaskResultsInput() : null}
         </section>
     );
 }

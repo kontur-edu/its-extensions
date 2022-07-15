@@ -44,7 +44,7 @@ export function CompetitionGroupSelect(props: ICompetitionGroupSelectProps) {
         return props.competitionGroupsItems.map(cgItem => {
             const selected = selectedCompetitionGroupIds.includes(cgItem.id);
             return (
-                <tr onClick={() => handleCompetitionGroupToggle(cgItem.id)}
+                <tr key={cgItem.id} onClick={() => handleCompetitionGroupToggle(cgItem.id)}
                     className={"selectable " + (selected ? style.row_selected : '')}
                 >
                     <th>

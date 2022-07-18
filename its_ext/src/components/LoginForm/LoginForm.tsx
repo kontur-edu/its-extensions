@@ -3,6 +3,9 @@ import { ICredentials } from "../../common/types";
 import style from "./LoginForm.module.css";
 import { ILoginFormProps } from "./types";
 
+import TextField from '@mui/material/TextField';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 
 
 export function LoginForm(props: ILoginFormProps) {
@@ -33,18 +36,18 @@ export function LoginForm(props: ILoginFormProps) {
 
     return (
         <div className={style.litebox}>
-            <h2 className={style.litebox__header}>Вход в аккаунт</h2>
-            <form className={style.formGroup}>
+            <h2 className={style.litebox__header}>Вход в аккаунт its.urfu.ru</h2>
+            <Box className={style.formGroup} component="form" noValidate>
                 <div className={style.formGroup__Item}>
-                    <label htmlFor="loginFormUsername">Имя:</label>
-                    <input id="loginFormUsername" className={style.login__input} type="text" value={username} onChange={handleUsernameChange}/>
+                    <TextField className={style.login__input} value={username} onChange={handleUsernameChange}
+                        label="Логин" variant="outlined"  />
                 </div>
                 <div className={style.formGroup__Item}>
-                    <label htmlFor="loginFormPassword">Пароль:</label> 
-                    <input id="loginFormPassword" className={style.login__input} type="password" value={password} onChange={handlePasswordChange}/>
+                    <TextField className={style.login__input} value={password} onChange={handlePasswordChange}
+                        label="Пароль" type="password" variant="outlined"  />
                 </div>
-                <button onClick={handleSubmit} className={style.litebox__button} >Войти</button>
-            </form>
+                <Button onClick={handleSubmit} variant="contained" >Войти</Button>
+            </Box>
         </div>
     );
 }

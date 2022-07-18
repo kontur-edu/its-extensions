@@ -31,10 +31,6 @@ export function MupsList(props: IMupsListProps) {
             const mupEdit = props.mupEdits[mupId];
             return (
                 <tr key={mupId}>
-                    {/* <td>
-                        <input type="checkbox"
-                            checked={mupEdit.selected} onChange={handleToggle(mup.id)} />
-                    </td> */}
                     <td onClick={handleToggle(mup.id)}>
                         <Checkbox readOnly checked={mupEdit.selected} />
                         {mup.name}
@@ -43,12 +39,12 @@ export function MupsList(props: IMupsListProps) {
                         <Input type="number" value={mupEdit.limit} onChange={handleLimitChange(mup.id)}
                             className={style.limit__input}
                             disabled={!mupEdit.selected} />
-                        {/* <input className={style.limit__input} type="number"
-                            value={mupEdit.limit} onChange={handleLimitChange(mup.id)}
-                            disabled={!mupEdit.selected} /> */}
                         </td>
-                    {/* <td>{mupEdit.messages.map(message => <p>{message}</p>)}</td> */}
-                    <td>{mupEdit.messages.join('; ')}</td>
+                    <td>
+                        <ul>
+                            {mupEdit.messages.map((me, index) => <li key={index}>{me}</li>)}
+                        </ul>
+                    </td>
                 </tr>
             );
         })

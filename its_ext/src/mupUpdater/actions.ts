@@ -10,9 +10,14 @@ export class DeleteSubgroupsAction extends ITSAction {
         super(ActionType.DeleteSubgroupAction);
     }
 
+    getMessageSimple(): string {
+        const subgroupIdsString = JSON.stringify(this.subgroupIds);
+        return `Удалить подгруппы со следующими id: ${subgroupIdsString}`;
+    }
+
     getMessage(): string {
         const subgroupIdsString = JSON.stringify(this.subgroupIds);
-        return `Delete Subgroups ${subgroupIdsString}`;
+        return `Удалить подгруппы со следующими id: ${subgroupIdsString}`;
     }
 
     async execute(context: IITSContext): Promise<IActionResponse> {
@@ -26,10 +31,16 @@ export class UpdateSelectionGroupAction extends ITSAction {
         super(ActionType.UpdateSelectionGroup);
     }
 
+    getMessageSimple(): string {
+        const mupIdsString = this.mupIds.join(', ');
+        return `Изменить состав Группы выбора: ${this.selectionGroup.name}
+        (id: ${this.selectionGroup.id}) на идентификаторы МУПов: ${mupIdsString}`;
+    }
+
     getMessage(): string {
-        const mupIdsString = JSON.stringify(this.mupIds);
-        return `Update SelectionGroup ${this.selectionGroup.id}
-             (${this.selectionGroup.name}) set mupIds: ${mupIdsString}`;
+        const mupIdsString = this.mupIds.join(', ');
+        return `Изменить состав Группы выбора: ${this.selectionGroup.name}
+             (id: ${this.selectionGroup.id}) на идентификаторы МУПов: ${mupIdsString}`;
     }
 
     async execute(context: IITSContext): Promise<IActionResponse> {
@@ -42,9 +53,14 @@ export class RefreshSelectionGroupsAction extends ITSAction {
         super(ActionType.RefreshSelectionGroups);
     }
 
+    getMessageSimple(): string {
+        const selectionGroupIdsString = JSON.stringify(this.selectionGroupIds);
+        return `Запросить обновленные данные для Групп выбора с id: ${selectionGroupIdsString}`;
+    }
+
     getMessage(): string {
         const selectionGroupIdsString = JSON.stringify(this.selectionGroupIds);
-        return `Refresh SelectionGroup data for selectionGroupIds: ${selectionGroupIdsString}`;
+        return `Запросить обновленные данные для Групп выбора с id: ${selectionGroupIdsString}`;
     }
 
     async execute(context: IITSContext): Promise<IActionResponse> {
@@ -58,9 +74,14 @@ export class RefreshPeriodsAction extends ITSAction {
         super(ActionType.RefreshPeriods);
     }
 
+    getMessageSimple(): string {
+        const mupIdsString = JSON.stringify(this.mupIds);
+        return `Обновить период для МУПов с id: ${mupIdsString}`;
+    }
+
     getMessage(): string {
         const mupIdsString = JSON.stringify(this.mupIds);
-        return `Refresh Periods data for mupIds: ${mupIdsString}`;
+        return `Обновить период для МУПов с id: ${mupIdsString}`;
     }
 
     async execute(context: IITSContext): Promise<IActionResponse> {
@@ -74,8 +95,12 @@ export class UpdateLimitAction extends ITSAction {
         super(ActionType.UpdateLimit);
     }
 
+    getMessageSimple(): string {
+        return `Обновить Лимит для группы с id ${this.selectionGroupId}`;
+    }
+
     getMessage(): string {
-        return `Update Limit of MUP Id: ${this.mupId} new limit: ${this.limit} for Selection Group Id: ${this.selectionGroupId}`;
+        return `Обновить Лимит на ${this.limit} для МУПа с id: ${this.mupId} для Группы выбора с id: ${this.selectionGroupId}`;
     }
 
     async execute(context: IITSContext): Promise<IActionResponse> {
@@ -102,11 +127,14 @@ export class CreatePeriodAction extends ITSAction {
         super(ActionType.CreatePeriod);
     }
 
+    getMessageSimple(): string {
+        return `Создать период для курса: ${this.periodTimeInfo.course}`;
+    }
+
     getMessage(): string {
-        return `Create Period: year: ${this.periodTimeInfo.year}
-            semesterId: ${this.periodTimeInfo.semesterId}
-            course: ${this.periodTimeInfo.course}
-            mupId: ${this.mupId}`;
+        return `Создать период для МУПа с id: ${this.mupId}: Год: ${this.periodTimeInfo.year}
+            Тип семестра: ${this.periodTimeInfo.semesterId}
+            курс: ${this.periodTimeInfo.course}`;
     }
 
     async execute(context: IITSContext): Promise<IActionResponse> {
@@ -149,12 +177,16 @@ export class UpdatePeriodAction extends ITSAction {
         super(ActionType.UpdatePeriod);
     }
 
+    getMessageSimple(): string {
+        return `Обновить перид для курса: ${this.periodTimeInfo.course}`;
+    }
+
     getMessage(): string {
-        return `Update Period for: year: ${this.periodTimeInfo.year}
-            semesterId: ${this.periodTimeInfo.semesterId}
-            course: ${this.periodTimeInfo.course}
-            for mupId: ${this.mupId}
-            set dates [${this.periodTimeInfo.dates[0]}] [${this.periodTimeInfo.dates[1]}]`;
+        return `Обновить перид для МУПа с id: ${this.mupId}:
+            год: ${this.periodTimeInfo.year}
+            семестр: ${this.periodTimeInfo.semesterId}
+            курс: ${this.periodTimeInfo.course}
+            даты выбора с [${this.periodTimeInfo.dates[0]}] по [${this.periodTimeInfo.dates[1]}]`;
     }
 
     async execute(context: IITSContext): Promise<IActionResponse> {
@@ -187,12 +219,18 @@ export class AddLoadsAction extends ITSAction {
         super(ActionType.AddLoads);
     }
 
+    getMessageSimple(): string {
+        const loadsString = JSON.stringify(this.loads.map(l => `${l.name}`));
+        return `Добавить нагрузки: ${loadsString}`;
+    }
+
     getMessage(): string {
-        const loadsString = JSON.stringify(this.loads);
-        return `Add Loads to Period: year: ${this.periodTimeInfo.year}
-            semesterId: ${this.periodTimeInfo.semesterId}
-            course: ${this.periodTimeInfo.course} 
-            mupId: ${this.mupId} loads: ${loadsString}`;
+        const loadsString = JSON.stringify(this.loads.map(l => `${l.name} (${l.kmer})`));
+        return `Добавить нагрузки для МУПа с id: ${this.mupId}
+            в период: год: ${this.periodTimeInfo.year}
+            тип семестра: ${this.periodTimeInfo.semesterId}
+            курс: ${this.periodTimeInfo.course} 
+            нагрузки: ${loadsString}`;
     }
 
     async execute(context: IITSContext): Promise<IActionResponse> {

@@ -213,6 +213,13 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
         setMupEditorActions(actions);
     }
 
+    const handleMupEditorApply2 = (
+        actions: ITSAction[]
+    ) => {
+        alert(`Применение изменений`);
+        setMupEditorActions(actions);
+    }
+
     const handleMupEditorApplyReal = () => {
         // return; // TODO: Delete this;
         setMupEditorActionResults([]);
@@ -227,6 +234,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
                     throw err;
                 });
 
+        return;
         setMupEditorActions([]);
         prepareDataForSelectionGroups(selectionGroupsIds)
             .then(() => setSelectionGroupsIds([...selectionGroupsIds]))
@@ -287,15 +295,15 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
                 <MupEditor
                     selectionGroupIds={selectionGroupsIds}
                     dataIsPrepared={editorDataPrepared}
-                    onApply={handleMupEditorApply}
+                    onApply={handleMupEditorApply2}
                     onUnauthorized={props.onUnauthorized}
                 />
                 <ul>
                     {mupEditorActions.map((a: ITSAction, index: number) => <li key={index}>{a.getMessage()}</li>)}
                 </ul>
                 <Button onClick={handleMupEditorApplyReal}
-                        variant="contained" style={{backgroundColor: 'red', alignSelf: 'flex-start'}}
-                    >Настоящее применение</Button>
+                        variant="contained" style={{alignSelf: 'flex-start'}}
+                    >Применение изменений</Button>
                 {/* <button className="step__button" onClick={handleMupEditorApplyReal}>Настоящее применение</button> */}
                 <ul>
                     {mupEditorActionResults.map((ar: IActionResponse, index: number) =>

@@ -134,7 +134,7 @@ code {
 }
 
 .table__сontainer {
-  max-height: 900px;
+  max-height: 300px;
   overflow: auto;
 }
 

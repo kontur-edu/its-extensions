@@ -24,6 +24,7 @@ export abstract class ITSAction {
     }
 
     abstract getMessage(): string;
+    abstract getMessageSimple(): string;
     abstract execute(context: IITSContext): Promise<IActionResponse>;
 }
 

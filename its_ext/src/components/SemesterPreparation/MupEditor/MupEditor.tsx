@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useContext} from "react";
+import React, {useState, useEffect, useContext, useCallback, useRef} from "react";
 import { MupsList } from "../../MupsList";
 import style from "./MupEditor.module.css";
 import { IMupEditorProps } from "./types";
@@ -9,13 +9,15 @@ import {REQUEST_ERROR_UNAUTHORIZED} from "../../../utils/constants";
 import {
     CreateDiffForMup,
     UpdateMupDiffDateInfo,
-    UpdateMupEditMessage,
 } from "../../../mupUpdater/mupDifference";
 
 import { ITSContext } from "../../../common/Context";
 
 import Button from '@mui/material/Button';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import { ActionType, ITSAction } from "../../../common/actions";
+import { createActions, GetMupActions } from "../../../mupUpdater/actionCreater";
+import { UpdateSelectionGroupAction } from "../../../mupUpdater/actions";
 
 // Получение данных:
 // Запросить все Группы выбора
@@ -67,43 +69,35 @@ export function MupEditor(props: IMupEditorProps) {
     const [startDate, setStartDate] = useState<string>('');
     const [endDate, setEndDate] = useState<string>('');
 
+    const timeoutId = useRef<number | null>(null);
     const context = useContext(ITSContext)!;
 
     const onStartDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const dateFormatted = event.target.value;
-        // const dateFormatted = formatDate(newDate);
 
-        // Update Diff info
         const newMupDiffs = {...mupDiffs};
-        const newMupEdits = {...mupEdits};
         for (let mupId in newMupDiffs) {
             UpdateMupDiffDateInfo(newMupDiffs[mupId], [dateFormatted, endDate]);
-            UpdateMupEditMessage(newMupEdits[mupId], newMupDiffs[mupId])
         }
-        // Object.keys(newMupDiffs).forEach(mupId => UpdateMupDiffDateInfo(newMupDiffs[mupId], [dateFormatted, endDate]));
         setMupDiffs(newMupDiffs);
-        setMupEdits(newMupEdits);
 
         setStartDate(dateFormatted);
         console.log(`new start date: ${dateFormatted}`);
+        callDebouncedApply(newMupDiffs, mupEdits, [dateFormatted, endDate]);
     };
 
     const onEndDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const dateFormatted = event.target.value;
 
-        // Update Diff info
         const newMupDiffs = {...mupDiffs};
-        const newMupEdits = {...mupEdits};
         for (let mupId in newMupDiffs) {
             UpdateMupDiffDateInfo(newMupDiffs[mupId], [startDate, dateFormatted]);
-            UpdateMupEditMessage(newMupEdits[mupId], newMupDiffs[mupId])
         }
-        // Object.keys(newMupDiffs).forEach(mupId => UpdateMupDiffDateInfo(newMupDiffs[mupId], [startDate, dateFormatted]));
         setMupDiffs(newMupDiffs);
-        setMupEdits(newMupEdits);
 
         setEndDate(dateFormatted);
         console.log(`new end date: ${dateFormatted}`);
+        callDebouncedApply(newMupDiffs, mupEdits, [startDate, dateFormatted]);
     };
 
     const setUpInitDiffsAndDates = (selectedMupIdsSet: Set<string>)  => {
@@ -137,7 +131,6 @@ export function MupEditor(props: IMupEditorProps) {
             if (mupDiff) {
                 console.log("initMupDiff");
                 console.log(mupDiff);
-                UpdateMupEditMessage(mupEdit, mupDiff);
             }
 
             newMupEdits[mupId] = mupEdit;
@@ -147,7 +140,6 @@ export function MupEditor(props: IMupEditorProps) {
         if (initDates[0] || initDates[1]) {
             for (let mupId in newMupDiffs) {
                 UpdateMupDiffDateInfo(newMupDiffs[mupId], initDates);
-                UpdateMupEditMessage(newMupEdits[mupId], newMupDiffs[mupId])
             }
         }
         initDates[0] && setStartDate(initDates[0]);
@@ -172,8 +164,6 @@ export function MupEditor(props: IMupEditorProps) {
     }, [props.dataIsPrepared, props.selectionGroupIds]);
 
     const handleMupToggle = (mupId: string) => {
-        // update diff
-        // if not selected and was not selected, remove diff
         context.dataRepository.EnsurePeriodInfoFor(mupId).then(() => {
             let mupDiffsToCompareWith = mupDiffs;
             if (!mupDiffs.hasOwnProperty(mupId) || !mupDiffs[mupId]) {
@@ -187,29 +177,24 @@ export function MupEditor(props: IMupEditorProps) {
                 console.log(newInitDiff);
                 setMupDiffs(newMupDiffs);
             }
+
             const newMupEdits = {...mupEdits};
-            // if (!mupDiffsToCompareWith[mupId].canBeDeleted) {
-            //     newMupEdits[mupId].selected = true;
-            // }
             newMupEdits[mupId].selected = !newMupEdits[mupId].selected;
             
-            if (!newMupEdits[mupId].selected && mupDiffsToCompareWith[mupId].presentInGroups.length === 0) {
-                newMupEdits[mupId].messages = [];
-                // return;
-            } else {
-                UpdateMupEditMessage(newMupEdits[mupId], mupDiffsToCompareWith[mupId]);
-            }
             
             setMupEdits(newMupEdits);
+            const res: [{ [key: string]: IMupDiff }, { [x: string]: IMupEdit }] =
+                [mupDiffsToCompareWith, newMupEdits];
+            return res; 
+        }).then(mupDiffsAndEdits => {
+            callDebouncedApply(mupDiffsAndEdits[0], mupDiffsAndEdits[1], [startDate, endDate]);
         });
     };
 
     const handleMupLimitChange = (mupId: string, newLimit: number) => {
-        if (newLimit !== mupEdits[mupId].limit) {
-            const newEdits = {...mupEdits, [mupId]: {...mupEdits[mupId], limit: newLimit}};
-            UpdateMupEditMessage(newEdits[mupId], mupDiffs[mupId]);
-            setMupEdits(newEdits);
-        }
+        const newEdits = {...mupEdits, [mupId]: {...mupEdits[mupId], limit: newLimit}};
+        setMupEdits(newEdits);
+        callDebouncedApply(mupDiffs, newEdits, [startDate, endDate]);
     };
 
     const handleRefresh = () => {
@@ -239,6 +224,7 @@ export function MupEditor(props: IMupEditorProps) {
             context.dataRepository.UpdatePeriods(mupIdsToRefresh),
         ])
         .then(() => setUpInitDiffsAndDates(selectedMupIds))
+        .then(() => callDebouncedApply(mupDiffs, mupEdits, [startDate, endDate]))
         .catch(err => {
             if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
                 props.onUnauthorized();
@@ -248,7 +234,11 @@ export function MupEditor(props: IMupEditorProps) {
         });
     };
 
-    const handleApply = () => {
+    const generateActions = (
+        mupDiffs: {[key: string]: IMupDiff},
+        mupEdits: {[key: string]: IMupEdit},
+        newDates: [string, string]
+    ) => {
         const selectedMupIds: string[] = [];
         const mupLimits: {[key: string]: number} = {};
         for (let mupId of Object.keys(mupEdits)) {
@@ -258,15 +248,81 @@ export function MupEditor(props: IMupEditorProps) {
                 selectedMupIds.push(mupId);
             }
         }
+
+        const actions = createActions(
+            props.selectionGroupIds,
+            selectedMupIds,
+            mupDiffs,
+            newDates,
+            mupLimits,
+            context
+        );
         
-        props.onApply(selectedMupIds, mupDiffs, [startDate, endDate], mupLimits);
+        return actions;
     }
+
+    const setUpMupMessagesByActions = (actions: ITSAction[]) => {
+        const mupToActions = GetMupActions(actions);
+            
+            let selectedMups: Set<string> | null = null; 
+            for (const action of actions) {
+                if (action.actionType === ActionType.UpdateSelectionGroup) {
+                    const updateSelectionGroupAction = action as UpdateSelectionGroupAction;
+                    selectedMups = new Set<string>(updateSelectionGroupAction.mupIds);
+                    break;
+                }
+            }
+            const newMupEdits = {...mupEdits};
+            
+            for (const mupId in mupEdits) {
+                newMupEdits[mupId].messages = [];
+                if (selectedMups && mupDiffs.hasOwnProperty(mupId)) {
+                    if (selectedMups.has(mupId) && 
+                        mupDiffs[mupId].presentInGroups.length !== 2) {
+                        newMupEdits[mupId].messages.push('Добавить МУП в группы');
+                    } else if (!selectedMups.has(mupId) &&
+                        mupDiffs[mupId].presentInGroups.length > 0) {
+                        newMupEdits[mupId].messages.push('Удалить МУП из групп');
+                    }
+                }
+            }
+
+            for (const mupId in mupToActions) {
+                newMupEdits[mupId].messages.push(
+                    ...mupToActions[mupId].map(a => a.getMessageSimple())
+                );
+            }
+
+            setMupEdits(newMupEdits);
+    }
+
+    const callDebouncedApply = (
+        mupDiffs: {[key: string]: IMupDiff},
+        mupEdits: {[key: string]: IMupEdit},
+        newDates: [string, string]
+    ) => {
+        console.log("Debounce handleApply");
+        if (timeoutId.current) {
+            clearTimeout(timeoutId.current);
+        }
+        timeoutId.current = window.setTimeout(() => {
+            
+            const actions = generateActions(
+                mupDiffs,
+                mupEdits,
+                newDates
+            );
+    
+            setUpMupMessagesByActions(actions);
+
+            timeoutId.current = null;
+            props.onApply(actions);
+        }, 1000);
+    };
 
     return props.selectionGroupIds.length !== 2 ? null : (
         <section className="step__container">
             <article>
-                {/* <button className="step__button" onClick={handleRefresh}>Обновить</button> */}
-                
                 <h4>Выберите даты, в которые откроется выбор дисциплин в личном кабинете стедентов</h4>
                 <div className={style.mups__period}>
                     <label>Старт выбора
@@ -291,10 +347,6 @@ export function MupEditor(props: IMupEditorProps) {
                     onMupLimitChange={handleMupLimitChange}
                 />
                 
-                <Button onClick={handleApply}
-                        variant="contained" style={{marginTop: '2em'}}
-                    >Сохранить</Button>
-                {/* <button className="step__button" onClick={handleApply}>Применить изменения</button> */}
             </article>
         </section>
     );

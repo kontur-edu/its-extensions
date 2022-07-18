@@ -18,6 +18,10 @@ export class CreateSubgroupsAction extends ITSAction {
         return `Create Subgroups for CompetitionGroupId: ${this.competitionGroupId}`;
     }
 
+    getMessageSimple(): string {
+        return `Create Subgroups for CompetitionGroupId: ${this.competitionGroupId}`;
+    }
+
     async execute(context: IITSContext): Promise<IActionResponse> {
         return context.apiService.CreateSubgroups(this.competitionGroupId);
     }
@@ -32,6 +36,10 @@ export class UpdateSubgroupMetaLoadCountAction extends ITSAction {
         return `Update Subgroups Meta Load for subgroupMetaId: ${this.subgroupMetaId} newCount: ${this.newCount}`;
     }
 
+    getMessageSimple(): string {
+        return `Update Subgroups Meta Load for subgroupMetaId: ${this.subgroupMetaId} newCount: ${this.newCount}`;
+    }
+
     async execute(context: IITSContext): Promise<IActionResponse> {
         return context.apiService.UpdateSubgroupMetaLoadCount(this.subgroupMetaId, this.newCount);
     }
@@ -43,6 +51,11 @@ export class RefreshSubgroupsAction extends ITSAction {
     }
 
     getMessage(): string {
+        const competitionGroupIdsStr = JSON.stringify(this.competitionGroupIds);
+        return `Refresh Subgroups for subgroups: ${competitionGroupIdsStr}`;
+    }
+
+    getMessageSimple(): string {
         const competitionGroupIdsStr = JSON.stringify(this.competitionGroupIds);
         return `Refresh Subgroups for subgroups: ${competitionGroupIdsStr}`;
     }
@@ -63,6 +76,12 @@ export class UpdateTeacherForSubgroupAction extends ITSAction {
     }
 
     getMessage(): string {
+        return `Update Teacher ${this.teacherId} for subgroup: mupName: ${this.subgroupInfo.mupName}
+            load: ${this.subgroupInfo.load} number: ${this.subgroupInfo.number}
+            (competitionGroupId: ${this.competitionGroupId})`;
+    }
+
+    getMessageSimple(): string {
         return `Update Teacher ${this.teacherId} for subgroup: mupName: ${this.subgroupInfo.mupName}
             load: ${this.subgroupInfo.load} number: ${this.subgroupInfo.number}
             (competitionGroupId: ${this.competitionGroupId})`;

@@ -1,5 +1,5 @@
 import { IITSContext } from "../common/Context";
-import { ITSAction } from "../common/actions";
+import { ActionType, ITSAction } from "../common/actions";
 import {
     DeleteSubgroupsAction,
     UpdateSelectionGroupAction,
@@ -214,7 +214,6 @@ function generateUpdatePeriodActions(
                             mupId, periodTimeInfo
                         ));
                     }
-                    
                 }
             }
         }
@@ -276,6 +275,40 @@ export function createActions(
 
 
     return actions;
+}
+
+
+export function GetMupActions(actions: ITSAction[]): {[key: string]: ITSAction[]} {
+    const res: {[key: string]: ITSAction[]} = {};
+    for (const action of actions) {
+        if (action.actionType === ActionType.UpdateLimit) {
+            const updateLimitAction = action as UpdateLimitAction;
+            const mupId = updateLimitAction.mupId;
+
+            if (!res.hasOwnProperty(mupId)) res[mupId] = [];
+            res[mupId].push(action);
+        } else if (action.actionType === ActionType.CreatePeriod) {
+            const createPeriodAction = action as CreatePeriodAction;
+            const mupId = createPeriodAction.mupId;
+            
+            if (!res.hasOwnProperty(mupId)) res[mupId] = [];
+            res[mupId].push(action);
+        } else if (action.actionType === ActionType.AddLoads) {
+            const addLoadsAction = action as AddLoadsAction;
+            const mupId = addLoadsAction.mupId;
+            
+            if (!res.hasOwnProperty(mupId)) res[mupId] = [];
+            res[mupId].push(action);
+        } else if (action.actionType === ActionType.UpdatePeriod) {
+            const updatePeriodAction = action as UpdatePeriodAction;
+            const mupId = updatePeriodAction.mupId;
+            
+            if (!res.hasOwnProperty(mupId)) res[mupId] = [];
+            res[mupId].push(action);
+        }
+    }
+
+    return res;
 }
 
 

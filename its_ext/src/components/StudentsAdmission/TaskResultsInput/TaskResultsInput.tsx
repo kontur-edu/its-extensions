@@ -5,7 +5,11 @@ import {StepMessages} from "../../../utils/constants";
 import { ITSContext } from "../../../common/Context";
 import { IAdmissionMeta, CompetitionGroupIdToMupAdmissions, AdmissionInfo, IStudentData } from "../../../common/types";
 import { isConstTypeReference } from "typescript";
-import { getNameRecords } from "../../../taskResultUpdater/studentNamesParser";
+import {
+    getNameRecords,
+    getStudentNameToStudentNumbers,
+    TaskResultNameRecord
+} from "../../../taskResultUpdater/studentNamesParser";
 
 
 export function getAdmissionIds(
@@ -89,11 +93,14 @@ export function createStudentItems(
 }
 
 
+// fullname -> studentNumber[]
+
 export function TaskResultsInput(props: ITaskResultsInputProps) {
     const [selectedMupId, setSelectedMupId] = useState<string>('');
     const [admissionIds, setAdmissionIds] = useState<number[]>([]);
     const [mupIds, setMupIds] = useState<string[]>([]);
     const [studentItems, setStudentItems] = useState<{[key: string]: IStudentItem}>({});
+    const [studentFullNameToStudentNumbers, setStudentFullNameToStudentNumbers] = useState<{[key: string]: string[]}>({});
     
     const [textAreaValue, setTextAreaValue] = useState<string>('');
     
@@ -147,7 +154,10 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
                     context.dataRepository.studentData
                 );
                 setStudentItems(studentItems);
-            })
+
+                const newStudentFullNameToStudentNumbers = getStudentNameToStudentNumbers(studentItems);
+                setStudentFullNameToStudentNumbers(newStudentFullNameToStudentNumbers);
+            });
     }, [admissionIds]);
 
     
@@ -173,12 +183,34 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
         setStudentItems(newStudentItems);
     }
 
+    const selectStudentsByNameRecords = (nameRecords: TaskResultNameRecord[]) => {
+        for (const personalNumber in studentItems) {
+            studentItems[personalNumber].testResult = 0;
+        }
+
+        for (const nameRecord of nameRecords) {
+            if (studentFullNameToStudentNumbers.hasOwnProperty(nameRecord.fullnameLower)) {
+                const personalNumbers = studentFullNameToStudentNumbers[nameRecord.fullnameLower];
+                if (personalNumbers.length === 1) {
+                    studentItems[personalNumbers[0]].testResult = 1;
+                } else {
+                    for (const personalNumber of personalNumbers) {
+                        if (studentItems[personalNumber].group.toLocaleLowerCase() === nameRecord.group) {
+                            studentItems[personalNumbers[0]].testResult = 1;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     const handleTextAreaChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = event.target.value;
         const records = getNameRecords(value);
-        console.log("records");
-        console.log(records);
+        // console.log("records");
+        // console.log(records);
         setTextAreaValue(value);
+        selectStudentsByNameRecords(records);
     }
 
     const renderRows = () => {

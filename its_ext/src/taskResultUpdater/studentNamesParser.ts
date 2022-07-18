@@ -12,6 +12,7 @@ export function normalizeStudentNames(text: string): string[][] {
         const studentRecordSpaceSeparated = studentRecord
             .replace(/\s?-\s?/g, '-')
             .replace(/[,\s]+/g, ' ')
+            .trim()
             .toLowerCase();
         const parts = studentRecordSpaceSeparated.split(' ');
         result.push(parts);
@@ -31,8 +32,9 @@ export function getNameRecords(text: string): TaskResultNameRecord[] {
         if (studentRecordPart.length === 0) {
             continue;
         }
+
         let nameIndex = 0;
-        if (!/^\w+$/.test(studentRecordPart[0])) {
+        if (!/^[^-0-9_]+$/.test(studentRecordPart[0])) {
             nameIndex = 1;
             taskResultNameRecord.group = studentRecordPart[0];
         }
@@ -48,9 +50,18 @@ export function getNameRecords(text: string): TaskResultNameRecord[] {
     return result;
 }
 
-// function findPersonalNumbersByNameRecord(
-//     taskResultNameRecord: TaskResultNameRecord[],
-//     personalNumber
-// ) {
 
-// }
+export function getStudentNameToStudentNumbers(
+    personalNumberToStudentItem: {[key: string]: {name: string, group: string}}
+): {[key: string]: string[]} {
+    const res: {[key: string]: string[]} = {};
+    for (const personalNumber in personalNumberToStudentItem) {
+        const nameLower = personalNumberToStudentItem[personalNumber].name.toLowerCase();
+        if (!res.hasOwnProperty(nameLower)) {
+            res[nameLower] = [];
+        }
+        res[nameLower].push(personalNumber);
+    }
+
+    return res;
+}

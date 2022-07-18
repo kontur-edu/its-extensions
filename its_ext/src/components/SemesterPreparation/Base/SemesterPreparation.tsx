@@ -21,6 +21,8 @@ import { SubgroupSelection } from "../SubgroupSelection";
 import { Button } from "@mui/material";
 import SystemUpdateAltIcon from '@mui/icons-material/SystemUpdateAlt';
 
+import { CallDebounced } from "../../../utils/helpers";
+
 // Получение данных:
 // Запросить все Группы выбора
 // Запросить МУПы с Лимитами для выбранных Групп выбора
@@ -280,7 +282,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     const renderStep2 = () => {
         return (
             <article className="step" ref={stepTwoRef}>
-                <span className="step__header">2. Выберите МУПы и назначьте лимиты</span>
+                <h3 className="step__header">2. Лимиты МУПов и даты выбора</h3>
 
                 <MupEditor
                     selectionGroupIds={selectionGroupsIds}
@@ -291,7 +293,10 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
                 <ul>
                     {mupEditorActions.map((a: ITSAction, index: number) => <li key={index}>{a.getMessage()}</li>)}
                 </ul>
-                <button className="step__button" onClick={handleMupEditorApplyReal}>Настоящее применение</button>
+                <Button onClick={handleMupEditorApplyReal}
+                        variant="contained" style={{backgroundColor: 'red', alignSelf: 'flex-start'}}
+                    >Настоящее применение</Button>
+                {/* <button className="step__button" onClick={handleMupEditorApplyReal}>Настоящее применение</button> */}
                 <ul>
                     {mupEditorActionResults.map((ar: IActionResponse, index: number) =>
                         <li key={index} className={ar.success ? "message_success" : "message_error"}>{ar.message}</li>
@@ -302,15 +307,9 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     }
 
     const renderStep3 = () => {
-        console.log("renderStep3");
-        console.log("editorDataPrepared");
-        console.log(editorDataPrepared);
         return (
-            // <React.Fragment>
             <article className="step">
-                    {/* <div className="step__bage">3</div> */}
-                    <span className="step__header">Определите количество подгрупп для МУПов и выберите преподавателей</span>
-                {/* </article> */}
+                <h3 className="step__header">3. Определите количество подгрупп для МУПов и выберите преподавателей</h3>
 
                 <SubgroupSelection
                     selectionGroupIds={selectionGroupsIds}
@@ -321,7 +320,11 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
                 <ul>
                     {subgroupSelectionActions.map((a: ITSAction, index: number) => <li key={index}>{a.getMessage()}</li>)}
                 </ul>
-                <button className="step__button" onClick={handleSubgroupSelectionApplyReal}>Настоящее применение</button>
+                
+                <Button onClick={handleSubgroupSelectionApplyReal}
+                        variant="contained" style={{backgroundColor: 'red', alignSelf: 'flex-start'}}
+                    >Настоящее применение</Button>
+                {/* <button className="step__button" onClick={handleSubgroupSelectionApplyReal}>Настоящее применение</button> */}
                 <ul>
                     {subgroupSelectionActionsResults.map((ar: IActionResponse, index: number) =>
                         <li key={index} className={ar.success ? "message_success" : "message_error"}>{ar.message}</li>
@@ -335,10 +338,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
         <section className="page">
             <h2 className="action_header">Подготовка семестра</h2>
             <article className="step">
-                {/* <article className="step"> */}
-                    <span className="step__header">1. Выберите группы выбора: для 3-го и 4-го курсов</span>
-                {/* </article> */}
-
+                <h3 className="step__header">1. Выберите группы выбора: для третьего и четвертого курса</h3>
                 <GroupSelect
                     selectionGroupsList={selectionGroupsListItems}
                     onRefresh={refreshSelectionGroups}

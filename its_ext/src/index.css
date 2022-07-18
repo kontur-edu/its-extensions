@@ -59,6 +59,7 @@ code {
   /* margin-left: 0.5em; */
   font-size: 24px;
   font-weight: 500;
+  margin: 0.4em 0;
   /* align-self: flex-start; */
 }
 
@@ -108,21 +109,32 @@ code {
 
 
 .table, th, td {
-  border: 1px solid #000;
+  /* border: 1px solid #000; */
   border-collapse: collapse;
+  text-align: left;
+}
+
+.table th {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.table tr {
+  border-bottom: 2px solid #c9c9c9;
 }
 
 .table thead {
   position: sticky;
   top: 0;
   background-color: #fff;
+  z-index: 1;
 
-  box-shadow: 0 1px 0 0 #000;
-  box-shadow: 1px 0 0 0 #000;
+  /* box-shadow: 0 1px 0 0 #c9c9c9;
+  box-shadow: 1px 0 0 0 #c9c9c9; */
 }
 
 .table__сontainer {
-  max-height: 300px;
+  max-height: 900px;
   overflow: auto;
 }
 

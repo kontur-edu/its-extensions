@@ -251,6 +251,8 @@ export function UpdateMupEditMessage(mupEdit: IMupEdit, mupDiff: IMupDiff) {
         return;
     }
 
+    if (!mupEdit.selected) return;
+
     let needLimitUpdate = false;
     for (let initLimit of mupDiff.initLimits) {
         if (initLimit !== mupEdit.limit) {

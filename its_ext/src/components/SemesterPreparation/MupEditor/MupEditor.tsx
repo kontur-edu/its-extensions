@@ -14,6 +14,9 @@ import {
 
 import { ITSContext } from "../../../common/Context";
 
+import Button from '@mui/material/Button';
+import RefreshIcon from '@mui/icons-material/Refresh';
+
 // Получение данных:
 // Запросить все Группы выбора
 // Запросить МУПы с Лимитами для выбранных Групп выбора
@@ -261,8 +264,26 @@ export function MupEditor(props: IMupEditorProps) {
 
     return props.selectionGroupIds.length !== 2 ? null : (
         <section className="step__container">
-            <article className={style.mups_select}>
-                <button className="step__button" onClick={handleRefresh}>Обновить</button>
+            <article>
+                {/* <button className="step__button" onClick={handleRefresh}>Обновить</button> */}
+                
+                <h4>Выберите даты, в которые откроется выбор дисциплин в личном кабинете стедентов</h4>
+                <div className={style.mups__period}>
+                    <label>Старт выбора
+                        <input className={style.period__input} type="date"
+                            value={startDate} onChange={onStartDateChange}/>
+                    </label>
+                    <label>Завершение выбора
+                        <input className={style.period__input} type="date"
+                            value={endDate} onChange={onEndDateChange}/>
+                    </label>
+                </div>
+
+                <h4>Выберите МУПы и лимиты на количество зачисленных студентов</h4>
+
+                <Button onClick={handleRefresh}
+                    style={{fontSize: 12, marginBottom: '1em'}}
+                    variant='text' startIcon={<RefreshIcon />} >Обновить список</Button>
                 <MupsList 
                     mupData={context.dataRepository.mupData}
                     mupEdits={mupEdits}
@@ -270,17 +291,10 @@ export function MupEditor(props: IMupEditorProps) {
                     onMupLimitChange={handleMupLimitChange}
                 />
                 
-                <div className={style.mups__period}>
-                    <label>С 
-                        <input className={style.period__input} type="date"
-                            value={startDate} onChange={onStartDateChange}/>
-                    </label>
-                    <label>по 
-                        <input className={style.period__input} type="date"
-                            value={endDate} onChange={onEndDateChange}/>
-                    </label>
-                </div>
-                <button className="step__button" onClick={handleApply}>Применить изменения</button>
+                <Button onClick={handleApply}
+                        variant="contained" style={{marginTop: '2em'}}
+                    >Сохранить</Button>
+                {/* <button className="step__button" onClick={handleApply}>Применить изменения</button> */}
             </article>
         </section>
     );

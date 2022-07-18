@@ -88,6 +88,7 @@ export interface IMupEdit {
     selected: boolean;
     limit: number;
     messages: string[];
+    addLoadsManual?: boolean;
 }
 
 

@@ -3,6 +3,8 @@ import style from "./MupsList.module.css";
 import { IMupsListProps } from "./types";
 import Checkbox from '@mui/material/Checkbox';
 import Input from '@mui/material/Input';
+import { MUP_PERIOD_URL } from "../../utils/constants";
+import { Link } from '@mui/material';
 
 
 export function MupsList(props: IMupsListProps) {
@@ -41,8 +43,13 @@ export function MupsList(props: IMupsListProps) {
                             disabled={!mupEdit.selected} />
                         </td>
                     <td>
-                        <ul>
+                        <ul className={style.message__list}>
                             {mupEdit.messages.map((me, index) => <li key={index}>{me}</li>)}
+                            {!mupEdit.addLoadsManual ? null : <li>
+                                Заполните нагрузку <Link href={MUP_PERIOD_URL + mupId} rel="noreferrer" target="_blank"
+                                    style={{textDecoration: 'none', display: 'flex', alignItems: 'center', fontSize: 16}}
+                                    >в ИТС</Link>
+                                </li>}
                         </ul>
                     </td>
                 </tr>

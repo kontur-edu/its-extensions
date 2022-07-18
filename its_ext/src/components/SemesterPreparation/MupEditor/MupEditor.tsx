@@ -276,13 +276,18 @@ export function MupEditor(props: IMupEditorProps) {
             
             for (const mupId in mupEdits) {
                 newMupEdits[mupId].messages = [];
+                
                 if (selectedMups && mupDiffs.hasOwnProperty(mupId)) {
-                    if (selectedMups.has(mupId) && 
+                    const isSelected = selectedMups.has(mupId);
+                    if (isSelected && 
                         mupDiffs[mupId].presentInGroups.length !== 2) {
                         newMupEdits[mupId].messages.push('Добавить МУП в группы');
-                    } else if (!selectedMups.has(mupId) &&
+                    } else if (!isSelected &&
                         mupDiffs[mupId].presentInGroups.length > 0) {
                         newMupEdits[mupId].messages.push('Удалить МУП из групп');
+                    }
+                    if (isSelected && mupDiffs[mupId].addLoadsManual) {
+                        newMupEdits[mupId].addLoadsManual = true;
                     }
                 }
             }

@@ -22,8 +22,8 @@ export class CreateSubgroupsAction extends ITSAction {
         return `Create Subgroups for CompetitionGroupId: ${this.competitionGroupId}`;
     }
 
-    async execute(context: IITSContext): Promise<IActionResponse> {
-        return context.apiService.CreateSubgroups(this.competitionGroupId);
+    async execute(context: IITSContext): Promise<IActionResponse[]> {
+        return [await context.apiService.CreateSubgroups(this.competitionGroupId)];
     }
 }
 
@@ -40,8 +40,8 @@ export class UpdateSubgroupMetaLoadCountAction extends ITSAction {
         return `Update Subgroups Meta Load for subgroupMetaId: ${this.subgroupMetaId} newCount: ${this.newCount}`;
     }
 
-    async execute(context: IITSContext): Promise<IActionResponse> {
-        return context.apiService.UpdateSubgroupMetaLoadCount(this.subgroupMetaId, this.newCount);
+    async execute(context: IITSContext): Promise<IActionResponse[]> {
+        return [await context.apiService.UpdateSubgroupMetaLoadCount(this.subgroupMetaId, this.newCount)];
     }
 }
 
@@ -60,9 +60,9 @@ export class RefreshSubgroupsAction extends ITSAction {
         return `Refresh Subgroups for subgroups: ${competitionGroupIdsStr}`;
     }
 
-    async execute(context: IITSContext): Promise<IActionResponse> {
+    async execute(context: IITSContext): Promise<IActionResponse[]> {
         await context.dataRepository.UpdateSubgroups(this.competitionGroupIds);
-        return {success: true};
+        return [{success: true}];
     }
 }
 
@@ -87,7 +87,7 @@ export class UpdateTeacherForSubgroupAction extends ITSAction {
             (competitionGroupId: ${this.competitionGroupId})`;
     }
 
-    async execute(context: IITSContext): Promise<IActionResponse> {
+    async execute(context: IITSContext): Promise<IActionResponse[]> {
         const subgroupIds = context.dataRepository.competitionGroupToSubgroupIds[this.competitionGroupId];
         let subgroup: ISubgroup | null = null;
         for (let subgroupId of subgroupIds) {
@@ -108,6 +108,6 @@ export class UpdateTeacherForSubgroupAction extends ITSAction {
             ...subgroup,
             teacherId: this.teacherId
         };
-        return context.apiService.UpdateSubgroup(updatedSubgroup);
+        return [await context.apiService.UpdateSubgroup(updatedSubgroup)];
     }
 }

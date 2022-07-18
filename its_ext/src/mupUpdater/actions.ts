@@ -1,6 +1,6 @@
 import { IITSContext } from "../common/Context";
 import { ISelectionGroup, IPeriod, IMupLoad, IPeriodTimeInfo } from "../common/types";
-import { ActionType, ITSAction } from "../common/actions";
+import { ActionType, IActionExecutionLogItem, ITSAction } from "../common/actions";
 import {IActionResponse} from "../utils/ITSApiService";
 
 
@@ -20,8 +20,9 @@ export class DeleteSubgroupsAction extends ITSAction {
         return `Удалить подгруппы со следующими id: ${subgroupIdsString}`;
     }
 
-    async execute(context: IITSContext): Promise<IActionResponse> {
-        return context.apiService.DeleteSubgroup(this.subgroupIds);
+    async execute(context: IITSContext): Promise<IActionResponse[]> {
+        const res = await context.apiService.DeleteSubgroup(this.subgroupIds);
+        return [res];
     }
 }
 
@@ -43,8 +44,9 @@ export class UpdateSelectionGroupAction extends ITSAction {
              (id: ${this.selectionGroup.id}) на идентификаторы МУПов: ${mupIdsString}`;
     }
 
-    async execute(context: IITSContext): Promise<IActionResponse> {
-        return context.apiService.UpdateSelectionGroups(this.selectionGroup, this.mupIds);
+    async execute(context: IITSContext): Promise<IActionResponse[]> {
+        const res = await context.apiService.UpdateSelectionGroups(this.selectionGroup, this.mupIds);
+        return [res];
     }
 }
 
@@ -63,9 +65,9 @@ export class RefreshSelectionGroupsAction extends ITSAction {
         return `Запросить обновленные данные для Групп выбора с id: ${selectionGroupIdsString}`;
     }
 
-    async execute(context: IITSContext): Promise<IActionResponse> {
+    async execute(context: IITSContext): Promise<IActionResponse[]> {
         await context.dataRepository.UpdateSelectionGroupToMupsData(this.selectionGroupIds);
-        return {success: true};
+        return [{success: true}];
     }
 }
 
@@ -84,9 +86,9 @@ export class RefreshPeriodsAction extends ITSAction {
         return `Обновить период для МУПов с id: ${mupIdsString}`;
     }
 
-    async execute(context: IITSContext): Promise<IActionResponse> {
+    async execute(context: IITSContext): Promise<IActionResponse[]> {
         await context.dataRepository.UpdatePeriods(this.mupIds);
-        return {success: true};
+        return [{success: true}];
     }
 }
 
@@ -103,7 +105,7 @@ export class UpdateLimitAction extends ITSAction {
         return `Обновить Лимит на ${this.limit} для МУПа с id: ${this.mupId} для Группы выбора с id: ${this.selectionGroupId}`;
     }
 
-    async execute(context: IITSContext): Promise<IActionResponse> {
+    async execute(context: IITSContext): Promise<IActionResponse[]> {
         const groupMups = context.dataRepository.selectionGroupToMupsData;
         if (!groupMups.data.hasOwnProperty(this.selectionGroupId)) {
             throw Error(`SelectionGroupId ${this.selectionGroupId} not found in SelectionGroupToMupsData in repository`);
@@ -114,7 +116,8 @@ export class UpdateLimitAction extends ITSAction {
         }
         const connectionId = groupMupData.data[this.mupId].connectionId;
 
-        return context.apiService.UpdateMupLimit(connectionId, this.limit);
+        const res = await context.apiService.UpdateMupLimit(connectionId, this.limit);
+        return [res];
     }
 }
 
@@ -137,7 +140,7 @@ export class CreatePeriodAction extends ITSAction {
             курс: ${this.periodTimeInfo.course}`;
     }
 
-    async execute(context: IITSContext): Promise<IActionResponse> {
+    async execute(context: IITSContext): Promise<IActionResponse[]> {
         const period: IPeriod = {
             id: -1,
             year: this.periodTimeInfo.year,
@@ -147,7 +150,8 @@ export class CreatePeriodAction extends ITSAction {
             selectionDeadline: this.periodTimeInfo.dates[1],
             loads: [] 
         };
-        return context.apiService.CreatePeriod(this.mupId, period);
+        const res = await context.apiService.CreatePeriod(this.mupId, period);
+        return [res];
     }
 }
 
@@ -189,7 +193,7 @@ export class UpdatePeriodAction extends ITSAction {
             даты выбора с [${this.periodTimeInfo.dates[0]}] по [${this.periodTimeInfo.dates[1]}]`;
     }
 
-    async execute(context: IITSContext): Promise<IActionResponse> {
+    async execute(context: IITSContext): Promise<IActionResponse[]> {
         if (!context.dataRepository.mupToPeriods.hasOwnProperty(this.mupId)) {
             throw Error("Mup not found in MupToPeriods in repository");
         }
@@ -205,7 +209,8 @@ export class UpdatePeriodAction extends ITSAction {
             selectionDeadline: this.periodTimeInfo.dates[1]
         };
 
-        return context.apiService.UpdatePeriod(this.mupId, updatedPeriod);
+        const res = await context.apiService.UpdatePeriod(this.mupId, updatedPeriod);
+        return [res];
     }
 }
 
@@ -233,7 +238,7 @@ export class AddLoadsAction extends ITSAction {
             нагрузки: ${loadsString}`;
     }
 
-    async execute(context: IITSContext): Promise<IActionResponse> {
+    async execute(context: IITSContext): Promise<IActionResponse[]> {
         if (!context.dataRepository.mupToPeriods.hasOwnProperty(this.mupId)) {
             throw Error(`MupId ${this.mupId} not found in MupToPeriods in repository`);
         }
@@ -244,13 +249,15 @@ export class AddLoadsAction extends ITSAction {
             throw Error(`Current period ${periodTimeInfoStr} not found for Mup in MupToPeriods in repository`);
         }
 
-        const res: IActionResponse = {success: true, message: ""};
+        const res: IActionResponse[] = [];
         for (let load of this.loads) {
+            const ar: IActionResponse = {success: true, message: ""};
             const success = await context.apiService.AddLoadToPeriod(period.id, load);
             if (!success) {
-                res.success = false;
-                res.message += `Could not add load "${load.kmer}" to period id: ${period.id}`
+                ar.success = false;
+                ar.message = `Добавление  "${load.kmer}" к периоду с id: ${period.id}`
             }
+            res.push(ar);
         }
 
         return res;

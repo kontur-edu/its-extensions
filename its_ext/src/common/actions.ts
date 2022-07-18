@@ -17,6 +17,9 @@ export enum ActionType {
     UpdateTaskResult,
 };
 
+export interface IActionResultInfo {
+
+}
 
 export abstract class ITSAction {
     constructor(public actionType: ActionType) {
@@ -25,22 +28,31 @@ export abstract class ITSAction {
 
     abstract getMessage(): string;
     abstract getMessageSimple(): string;
-    abstract execute(context: IITSContext): Promise<IActionResponse>;
+    abstract execute(context: IITSContext): Promise<IActionResponse[]>;
 }
 
 
-export async function ExecuteActions(actions: ITSAction[], itsContext: IITSContext): Promise<IActionResponse[]> {
-    const results: IActionResponse[] = [];
+export interface IActionExecutionLogItem {
+    actionMessage: string;
+    actionResults: {success: boolean; message?: string}[];
+}
+
+
+export async function ExecuteActions(actions: ITSAction[], itsContext: IITSContext): Promise<IActionExecutionLogItem[]> {
+    const results: IActionExecutionLogItem[] = [];
     for (let action of actions) {
-        const actionResult = await action.execute(itsContext);
-        let resulMessage = `${action.getMessage()}`;
-        if (actionResult.message) {
-            resulMessage += ` ${actionResult.message}`;
-        }
-        results.push({
-            success: actionResult.success,
-            message: resulMessage,
+        const actionResults = await action.execute(itsContext);
+        const actionExecutionLogItem: IActionExecutionLogItem = {
+            actionMessage: action.getMessage(),
+            actionResults: []
+        };
+        actionResults.forEach(ar => {
+            actionExecutionLogItem.actionResults.push({
+                success: ar.success,
+                message: ar.message ?? 'выполнено'
+            });
         });
+        results.push(actionExecutionLogItem);
     }
     return results;
 }

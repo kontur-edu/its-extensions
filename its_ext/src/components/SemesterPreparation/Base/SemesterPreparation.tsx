@@ -14,7 +14,7 @@ import { UnionArrays } from "../../../utils/helpers";
 import {createActions} from "../../../mupUpdater/actionCreater";
 import {createSubgroupSelectionActions} from "../../../subgroupUpdater/actionCreator";
 import { ITSContext } from "../../../common/Context";
-import { ITSAction, ExecuteActions } from "../../../common/actions";
+import { ITSAction, ExecuteActions, IActionExecutionLogItem } from "../../../common/actions";
 import {IActionResponse} from "../../../utils/ITSApiService";
 import { SubgroupSelection } from "../SubgroupSelection";
 
@@ -67,9 +67,9 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     const [editorDataPrepared, setEditorDataPrepared] = useState<boolean>(false);
     const requestSelectionGroupsInProgress = useRef(false);
     const [mupEditorActions, setMupEditorActions] = useState<ITSAction[]>([]);
-    const [mupEditorActionResults, setMupEditorActionResults] = useState<IActionResponse[]>([]);
+    const [mupEditorActionResults, setMupEditorActionResults] = useState<IActionExecutionLogItem[]>([]);
     const [subgroupSelectionActions, setSubgroupSelectionActions] = useState<ITSAction[]>([]);
-    const [subgroupSelectionActionsResults, setSubgroupSelectionActionsResults] = useState<IActionResponse[]>([]);
+    const [subgroupSelectionActionsResults, setSubgroupSelectionActionsResults] = useState<IActionExecutionLogItem[]>([]);
 
     const stepTwoRef = useRef<HTMLElement | null>(null);
     const context = useContext(ITSContext)!;
@@ -288,6 +288,8 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     }, [props.isUnauthorized]);
 
     const renderStep2 = () => {
+        console.log("mupEditorActionResults");
+        console.log(mupEditorActionResults);
         return (
             <article className="step" ref={stepTwoRef}>
                 <h3 className="step__header">2. Лимиты МУПов и даты выбора</h3>
@@ -301,13 +303,28 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
                 <ul>
                     {mupEditorActions.map((a: ITSAction, index: number) => <li key={index}>{a.getMessage()}</li>)}
                 </ul>
-                <Button onClick={handleMupEditorApplyReal}
-                        variant="contained" style={{alignSelf: 'flex-start'}}
-                    >Применение изменений</Button>
+                <div>
+                    <Button onClick={handleMupEditorApplyReal}
+                        variant="contained"
+                        >Применение изменений</Button>
+                    <p className="warning">
+                        {mupEditorActionResults.every(logItem => logItem.actionResults.every(ar => ar.success)) ? null :
+                            "При сохранении изменений возникли ошибки. Чтобы перейти к следующему шагу исправьте ошибки"
+                        }
+                    </p>
+                </div>
+                
                 {/* <button className="step__button" onClick={handleMupEditorApplyReal}>Настоящее применение</button> */}
                 <ul>
-                    {mupEditorActionResults.map((ar: IActionResponse, index: number) =>
-                        <li key={index} className={ar.success ? "message_success" : "message_error"}>{ar.message}</li>
+                    {mupEditorActionResults.map((logItem: IActionExecutionLogItem, index: number) =>
+                        <li key={index}>{logItem.actionMessage}
+                            <ul>{logItem.actionResults.map((ar, arIdx) => 
+                                    <li key={arIdx} className={ar.success ? "message_success" : "message_error"}>
+                                        {ar.message}
+                                    </li>
+                                )}
+                            </ul>
+                        </li>
                     )}
                 </ul>
             </article>
@@ -334,9 +351,19 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
                     >Настоящее применение</Button>
                 {/* <button className="step__button" onClick={handleSubgroupSelectionApplyReal}>Настоящее применение</button> */}
                 <ul>
-                    {subgroupSelectionActionsResults.map((ar: IActionResponse, index: number) =>
-                        <li key={index} className={ar.success ? "message_success" : "message_error"}>{ar.message}</li>
+                    {subgroupSelectionActionsResults.map((logItem: IActionExecutionLogItem, index: number) =>
+                        <li key={index}>{logItem.actionMessage}
+                            <ul>{logItem.actionResults.map((ar, arIdx) => 
+                                    <li key={arIdx} className={ar.success ? "message_success" : "message_error"}>
+                                        {ar.message}
+                                    </li>
+                                )}
+                            </ul>
+                        </li>
                     )}
+                    {/* {subgroupSelectionActionsResults.map((ar: IActionResponse, index: number) =>
+                        <li key={index} className={ar.success ? "message_success" : "message_error"}>{ar.message}</li>
+                    )} */}
                 </ul>
             </article>
         );

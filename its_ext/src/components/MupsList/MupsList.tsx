@@ -13,10 +13,6 @@ export function MupsList(props: IMupsListProps) {
         props.onMupLimitChange(mupId, value);
     }
 
-    // const handleToggle = (mupId: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    //     props.onMupToggle(mupId);
-    // }
-
     const handleToggle = (mupId: string) => (event: React.MouseEvent<HTMLTableDataCellElement>) => {
         props.onMupToggle(mupId);
     }
@@ -43,7 +39,7 @@ export function MupsList(props: IMupsListProps) {
                             disabled={!mupEdit.selected} />
                         </td>
                     <td>
-                        <ul className={style.message__list}>
+                        <ul className={style.message__list + " warning"}>
                             {mupEdit.messages.map((me, index) => <li key={index}>{me}</li>)}
                             {!mupEdit.addLoadsManual ? null : <li>
                                 Заполните нагрузку <Link href={MUP_PERIOD_URL + mupId} rel="noreferrer" target="_blank"

@@ -80,10 +80,10 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
     const handleTaskResultsInputApplyReal = () => {
         alert(`Настоящее применение изменений`);
         return;
-        ExecuteActions(taskResultsActions, context)
-            .then(actionResults => {
-                setTaskResultsActionResults(actionResults);
-            });
+        // ExecuteActions(taskResultsActions, context)
+        //     .then(actionResults => {
+        //         setTaskResultsActionResults(actionResults);
+        //     });
     }
 
     const renderTaskResultsInput = () => {

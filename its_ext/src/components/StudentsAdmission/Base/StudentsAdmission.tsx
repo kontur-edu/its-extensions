@@ -114,10 +114,10 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
 
     return (
         <section className="page">
+        
             <h2 className="action_header">Зачисление студентов</h2>
             <article className="step">
-                <div className="step__bage">1</div>
-                <span className="step__header">Выберите конкурсные группы для 3-го и 4-го курсов</span>
+                <span className="step__header">1. Выберите конкурсные группы для 3-го и 4-го курсов</span>
             </article>
 
             <CompetitionGroupSelect

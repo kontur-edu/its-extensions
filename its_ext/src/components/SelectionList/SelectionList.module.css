@@ -2,11 +2,11 @@
 .list {
     list-style: none;
     padding: 0;
-    margin: 0;
+    margin: 1em 0;
     display: flex;
     flex-direction: column;
 
-    border: 2px solid #000;
+    /* border: 2px solid #000; */
     
     max-height: 300px;
     min-height: 100px;
@@ -17,8 +17,9 @@
 .list > li {
     cursor: pointer;
     display: flex;
+    align-items: center;
 }
 
-.list > li:hover {
+/* .list > li:hover {
     background-color: #eee;
-}
+} */

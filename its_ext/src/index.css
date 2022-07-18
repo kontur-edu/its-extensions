@@ -5,6 +5,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  background-color: #c6c6c6;
 }
 
 code {
@@ -13,21 +15,33 @@ code {
 }
 
 .action_header {
-  font-size: 24px;
+  font-size: 42px;
   font-weight: 500;
+  text-align: center;
+  padding: 0.5em 0;
+  margin: 0;
 }
 
 .page {
   padding: 0 2em;
+  /* background-color: #eee; */
 }
 
 
 .step {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   font-size: 18px;
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 2em;
 
-  margin-top: 2em;
+  margin: 2em 0;
+  /* -webkit-box-shadow: 0px 0px 32px 16px rgba(0,0,0,0.16);
+  -moz-box-shadow: 0px 0px 32px 16px rgba(0,0,0,0.16);
+  box-shadow: 0px 0px 32px 16px rgba(0,0,0,0.16); */
+
+  /* border: 2px solid salmon; */
 }
 
 .step__bage {
@@ -42,13 +56,18 @@ code {
 }
 
 .step__header {
-  margin-left: 0.5em;
+  /* margin-left: 0.5em; */
+  font-size: 24px;
+  font-weight: 500;
+  /* align-self: flex-start; */
 }
 
 .step__container {
   display: flex;
   flex-direction: column;
-  margin: 0 2.5em;
+  /* align-items: stretch; */
+  /* margin: 0 2.5em; */
+  font-size: 16px;
 }
 
 
@@ -67,7 +86,7 @@ code {
 
 .step__message_container {
   color: rgb(0, 197, 0);
-  font-size: 1.2em;
+  /* font-size: ; */
 }
 
 .message_error {
@@ -119,3 +138,4 @@ code {
 .selectable:hover {
   background-color: #eee;
 }
+

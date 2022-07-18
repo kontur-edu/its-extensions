@@ -9,6 +9,7 @@
     width: 100%;
     height: 100vh;
 
+    background-color: #fff;
     /* border: 2px solid purple; */
 }
 
@@ -31,14 +32,10 @@
 }
 
 .menu__button {
-    width: 90%;
-    /* margin-top: 1em; */
-    /* padding: 0.2em 0.1em; */
-    border-radius: 8px;
     background-color: #fff!;
-    font-size: 16px;
     color: #000;
-    /* border: 2px solid #000; */
+    margin: 0 0.4em;
+    font-size: 12px;
 }
 
 .menu__button:hover {

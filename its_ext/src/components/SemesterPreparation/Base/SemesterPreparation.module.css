@@ -11,6 +11,17 @@
     margin-top: 1em;
 }
 
+.next_step__container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.next_step__message {
+    color: #858585;
+}
+
+
 .mups__period {
     display: flex;
     align-items: center;
@@ -19,3 +30,4 @@
 .period__input {
     margin: 0 1em;
 }
+

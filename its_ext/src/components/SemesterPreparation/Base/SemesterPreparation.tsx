@@ -17,6 +17,10 @@ import { ITSContext } from "../../../common/Context";
 import { ITSAction, ExecuteActions } from "../../../common/actions";
 import {IActionResponse} from "../../../utils/ITSApiService";
 import { SubgroupSelection } from "../SubgroupSelection";
+
+import { Button } from "@mui/material";
+import SystemUpdateAltIcon from '@mui/icons-material/SystemUpdateAlt';
+
 // Получение данных:
 // Запросить все Группы выбора
 // Запросить МУПы с Лимитами для выбранных Групп выбора
@@ -65,6 +69,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     const [subgroupSelectionActions, setSubgroupSelectionActions] = useState<ITSAction[]>([]);
     const [subgroupSelectionActionsResults, setSubgroupSelectionActionsResults] = useState<IActionResponse[]>([]);
 
+    const stepTwoRef = useRef<HTMLElement | null>(null);
     const context = useContext(ITSContext)!;
 
     const refreshSelectionGroups = () => {
@@ -166,6 +171,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
 
     // selectionGroupMups, SubgroupGroupMetas, Subgroups 
     const handleSelectionGroupValid = (selectionGroupIds: number[]) => {
+        setEditorDataPrepared(false);
         console.log("handleSelectionGroupValid");
         // remember chosen selectionGroup ids
         setSelectionGroupsIds(selectionGroupIds);
@@ -180,7 +186,11 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
                 return;
             }
             throw err;
-        })
+        });
+    }
+
+    const handleGroupSelectButton = () => {
+        stepTwoRef.current?.scrollIntoView({behavior: 'smooth'});
     }
 
     const handleMupEditorApply = (
@@ -269,8 +279,8 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
 
     const renderStep2 = () => {
         return (
-            <React.Fragment>
-                <article className="step"><div className="step__bage">2</div><span className="step__header">Выберите МУПы и назначьте лимиты</span></article>
+            <article className="step" ref={stepTwoRef}>
+                <span className="step__header">2. Выберите МУПы и назначьте лимиты</span>
 
                 <MupEditor
                     selectionGroupIds={selectionGroupsIds}
@@ -287,7 +297,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
                         <li key={index} className={ar.success ? "message_success" : "message_error"}>{ar.message}</li>
                     )}
                 </ul>
-            </React.Fragment>
+            </article>
         );
     }
 
@@ -296,11 +306,11 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
         console.log("editorDataPrepared");
         console.log(editorDataPrepared);
         return (
-            <React.Fragment>
-                <article className="step">
-                    <div className="step__bage">3</div>
+            // <React.Fragment>
+            <article className="step">
+                    {/* <div className="step__bage">3</div> */}
                     <span className="step__header">Определите количество подгрупп для МУПов и выберите преподавателей</span>
-                </article>
+                {/* </article> */}
 
                 <SubgroupSelection
                     selectionGroupIds={selectionGroupsIds}
@@ -317,26 +327,40 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
                         <li key={index} className={ar.success ? "message_success" : "message_error"}>{ar.message}</li>
                     )}
                 </ul>
-            </React.Fragment>
+            </article>
         );
     }
     
     return (
         <section className="page">
             <h2 className="action_header">Подготовка семестра</h2>
-            <article className="step"><div className="step__bage">1</div><span className="step__header">Выберите группы выбора: для 3-го и 4-го курсов</span></article>
+            <article className="step">
+                {/* <article className="step"> */}
+                    <span className="step__header">1. Выберите группы выбора: для 3-го и 4-го курсов</span>
+                {/* </article> */}
 
-            <GroupSelect
-                selectionGroupsList={selectionGroupsListItems}
-                onRefresh={refreshSelectionGroups}
-                onSelectionValid={handleSelectionGroupValid}
-            />
+                <GroupSelect
+                    selectionGroupsList={selectionGroupsListItems}
+                    onRefresh={refreshSelectionGroups}
+                    onSelectionValid={handleSelectionGroupValid}
+                />
+
+                <div className={style.next_step__container}>
+                    <Button onClick={handleGroupSelectButton}
+                        variant="contained" style={{marginRight: '1em'}}
+                        endIcon={<SystemUpdateAltIcon />}
+                        >К следующему шагу</Button>
+                    <p className={style.next_step__message}>
+                        {selectionGroupsIds.length !== 2 ? "Выберите две группы для перехода к следующему шагу" : null}
+                    </p>
+                </div>
+                
+            </article>
 
             {selectionGroupsIds.length === 2 ? renderStep2() : null}
 
             {selectionGroupsIds.length === 2 && editorDataPrepared ? renderStep3() : null}
-
-            {/* <MupsList isUnauthorized={props.isUnauthorized} onUnauthorized={props.onUnauthorized} /> */}
+            
         </section>
     );
 }

@@ -55,9 +55,6 @@ export function Main(props: IMainProps) {
                 <Route path="/" element={<MainMenu login={currentLogin} />} />
                 <Route path="/semesterPreparation" element={
                     <React.Fragment>
-                        <h1 className={style.header} onClick={handleHeaderClick}>
-                            Индивидуальная траектория студента
-                        </h1>
                         <Modal visible={needAuthentication}>
                             <LoginForm onSubmit={handleLogin}/>
                         </Modal>
@@ -68,9 +65,6 @@ export function Main(props: IMainProps) {
 
                 <Route path="/studentsAdmission" element={
                     <React.Fragment>
-                        <h1 className={style.header} onClick={handleHeaderClick}>
-                            Индивидуальная траектория студента
-                        </h1>
                         <Modal visible={needAuthentication}>
                             <LoginForm onSubmit={handleLogin}/>
                         </Modal>

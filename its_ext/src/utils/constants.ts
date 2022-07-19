@@ -34,3 +34,5 @@ export const MupEditorMessages = {
     needApply: "Примените изменения",
     needManualLoadEdit: "Настройте нагрузку в its.urfu.ru",
 };
+
+export const DEBOUNCE_MS = 1000;

@@ -6,7 +6,7 @@ export interface TaskResultNameRecord {
     nameParts: string[];
 }
 
-export function normalizeStudentNames(text: string): string[][] {
+function normalizeStudentNames(text: string): string[][] {
     const result: string[][] = [];
     const studentRecords = text.split(/\r?\n/);
     for (const studentRecord of studentRecords) {
@@ -33,16 +33,15 @@ export function getNameRecords(text: string): TaskResultNameRecord[] {
         if (studentRecordPart.length === 0) {
             continue;
         }
-
-        let nameIndex = 0;
-        if (!/^[^-0-9_]+$/.test(studentRecordPart[0])) {
-            nameIndex = 1;
-            taskResultNameRecord.group = studentRecordPart[0];
+        
+        for (const part of studentRecordPart) {
+            if (!/^[^-0-9_]+$/.test(part)) {
+                taskResultNameRecord.group = part;
+            } else {
+                taskResultNameRecord.nameParts.push(part);
+            }
         }
-
-        for (let i = nameIndex; i < studentRecordPart.length; i++) {
-            taskResultNameRecord.nameParts.push(studentRecordPart[i]);
-        }
+    
         result.push(taskResultNameRecord);
     }
 
@@ -50,20 +49,20 @@ export function getNameRecords(text: string): TaskResultNameRecord[] {
 }
 
 
-export function getStudentNameToStudentNumbers(
-    personalNumberToStudentItem: {[key: string]: {name: string, group: string}}
-): {[key: string]: string[]} {
-    const res: {[key: string]: string[]} = {};
-    for (const personalNumber in personalNumberToStudentItem) {
-        const nameLower = personalNumberToStudentItem[personalNumber].name.toLowerCase();
-        if (!res.hasOwnProperty(nameLower)) {
-            res[nameLower] = [];
-        }
-        res[nameLower].push(personalNumber);
-    }
+// export function getStudentNameToStudentNumbers(
+//     personalNumberToStudentItem: {[key: string]: {name: string, group: string}}
+// ): {[key: string]: string[]} {
+//     const res: {[key: string]: string[]} = {};
+//     for (const personalNumber in personalNumberToStudentItem) {
+//         const nameLower = personalNumberToStudentItem[personalNumber].name.toLowerCase();
+//         if (!res.hasOwnProperty(nameLower)) {
+//             res[nameLower] = [];
+//         }
+//         res[nameLower].push(personalNumber);
+//     }
 
-    return res;
-}
+//     return res;
+// }
 
 
 // Определить фамилию по окончанию
@@ -95,7 +94,7 @@ export function getSurnameToKeys(
     return res;
 }
 
-export function getSurnameIdx(
+function getSurnameIdx(
     nameParts: string[],
     surnameToPersonalNumbers: {[key: string]: string[]}
 ): number {
@@ -108,14 +107,15 @@ export function getSurnameIdx(
     return -1;
 }
 
-export function tryFindByNameParts(
+function tryFindByNameParts(
     nameRecord: TaskResultNameRecord,
     personalNumbers: string[],
     studentData: IStudentData,
 ): string | null {
     for (const personalNumber of personalNumbers) {
         const testStudent = studentData.data[personalNumber];
-        if (nameRecord.group && nameRecord.group !== testStudent.groupName.toLowerCase()) {
+        if (nameRecord.group && nameRecord.group.toLowerCase() !== testStudent.groupName.toLowerCase()) {
+            console.log(`${nameRecord.group.toLowerCase()} !== ${testStudent.groupName.toLowerCase()}`);
             continue;
         }
         const partsFound = nameRecord.nameParts.every(
@@ -154,19 +154,19 @@ export function findPersonalNumber(
         if (res) {
             return res;
         }
-        for (const personalNumber of personalNumbers) {
-            const testStudent = studentData.data[personalNumber];
-            if (nameRecord.group && nameRecord.group !== testStudent.groupName.toLowerCase()) {
-                continue;
-            }
-            const partsFound = nameRecord.nameParts.every(
-                np => np === testStudent.firstname ||
-                        np === testStudent.surname ||
-                        np === testStudent.patronymic);
-            if (partsFound) {
-                return personalNumber;
-            }
-        }
+        // for (const personalNumber of personalNumbers) {
+        //     const testStudent = studentData.data[personalNumber];
+        //     if (nameRecord.group && nameRecord.group !== testStudent.groupName.toLowerCase()) {
+        //         continue;
+        //     }
+        //     const partsFound = nameRecord.nameParts.every(
+        //         np => np === testStudent.firstname ||
+        //                 np === testStudent.surname ||
+        //                 np === testStudent.patronymic);
+        //     if (partsFound) {
+        //         return personalNumber;
+        //     }
+        // }
     }
 
     const res = tryFindByNameParts(

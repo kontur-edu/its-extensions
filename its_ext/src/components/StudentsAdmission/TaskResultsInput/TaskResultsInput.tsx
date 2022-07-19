@@ -1,14 +1,13 @@
 import React, {useContext, useEffect, useRef, useState} from "react";
 import style from "./CompetitionGroupSelect.module.css";
 import { ITaskResultsInputProps } from "./types";
-import {StepMessages} from "../../../utils/constants";
+import {DEBOUNCE_MS, StepMessages} from "../../../utils/constants";
 import { ITSContext } from "../../../common/Context";
 import { IAdmissionMeta, CompetitionGroupIdToMupAdmissions, AdmissionInfo, IStudentData } from "../../../common/types";
 import { isConstTypeReference } from "typescript";
 import {
     findPersonalNumber,
     getNameRecords,
-    getStudentNameToStudentNumbers,
     getSurnameToKeys,
     TaskResultNameRecord
 } from "../../../taskResultUpdater/studentNamesParser";
@@ -119,9 +118,10 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     const [studentItems, setStudentItems] = useState<{[key: string]: IStudentItem}>({});
     // const [studentPersonalNumbers, setStudentPersonalNumbers] = useState<string[]>([]);
     // const [studentFullNameToStudentNumbers, setStudentFullNameToStudentNumbers] = useState<{[key: string]: string[]}>({});
-    
+    // const surnameToPErsonalNumbers = useRef<{[key: string]: string[]}>({});
     const [textAreaValue, setTextAreaValue] = useState<string>('');
-    
+    const timeoutId = useRef<number | null>(null);
+
     const context = useContext(ITSContext)!;
 
     const getMupNameById = (mupId: string) => {
@@ -256,8 +256,22 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
         console.log("records");
         console.log(records);
         setTextAreaValue(value);
-        selectStudentsByNameRecords(records);
+        // selectStudentsByNameRecords(records);
+        selectStudentsDebounced(records);
     }
+
+    const selectStudentsDebounced = (
+        records: TaskResultNameRecord[]
+    ) => {
+        console.log("Debounce studentSelect");
+        if (timeoutId.current) {
+            clearTimeout(timeoutId.current);
+        }
+        timeoutId.current = window.setTimeout(() => {
+            
+            selectStudentsByNameRecords(records);
+        }, DEBOUNCE_MS);
+    };
 
     const renderRows = () => {
     

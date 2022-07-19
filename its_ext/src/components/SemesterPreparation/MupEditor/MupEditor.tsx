@@ -4,7 +4,7 @@ import style from "./MupEditor.module.css";
 import { IMupEditorProps } from "./types";
 import { IMupEdit, IMupDiff } from "../../../common/types";
 
-import {REQUEST_ERROR_UNAUTHORIZED} from "../../../utils/constants";
+import {DEBOUNCE_MS, REQUEST_ERROR_UNAUTHORIZED} from "../../../utils/constants";
 
 import {
     CreateDiffForMup,
@@ -322,7 +322,7 @@ export function MupEditor(props: IMupEditorProps) {
 
             timeoutId.current = null;
             props.onApply(actions);
-        }, 1000);
+        }, DEBOUNCE_MS);
     };
 
     return props.selectionGroupIds.length !== 2 ? null : (

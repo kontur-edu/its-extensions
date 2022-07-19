@@ -6,8 +6,10 @@ import { ITSContext } from "../../../common/Context";
 import { IAdmissionMeta, CompetitionGroupIdToMupAdmissions, AdmissionInfo, IStudentData } from "../../../common/types";
 import { isConstTypeReference } from "typescript";
 import {
+    findPersonalNumber,
     getNameRecords,
     getStudentNameToStudentNumbers,
+    getSurnameToKeys,
     TaskResultNameRecord
 } from "../../../taskResultUpdater/studentNamesParser";
 
@@ -53,7 +55,9 @@ function getMupIdsToChoseFrom(
 
 export interface IStudentItem {
     group: string;
+
     name: string;
+
     testResult: number | null;
 }
 
@@ -92,6 +96,19 @@ export function createStudentItems(
     return personalNumberToStudentItems;
 }
 
+// function findCurrentPersonalNumbers(
+//     admissionIds: number[],
+//     admissionInfo: AdmissionInfo,
+// ): string[] {
+//     const res: string[] = [];
+//     for (const admissionId of admissionIds) {
+//         if (admissionInfo.hasOwnProperty(admissionId)) {
+//             res.push(...Object.keys(admissionInfo[admissionId]));
+//         }
+//     }
+//     return res;
+// }
+
 
 // fullname -> studentNumber[]
 
@@ -100,7 +117,8 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     const [admissionIds, setAdmissionIds] = useState<number[]>([]);
     const [mupIds, setMupIds] = useState<string[]>([]);
     const [studentItems, setStudentItems] = useState<{[key: string]: IStudentItem}>({});
-    const [studentFullNameToStudentNumbers, setStudentFullNameToStudentNumbers] = useState<{[key: string]: string[]}>({});
+    // const [studentPersonalNumbers, setStudentPersonalNumbers] = useState<string[]>([]);
+    // const [studentFullNameToStudentNumbers, setStudentFullNameToStudentNumbers] = useState<{[key: string]: string[]}>({});
     
     const [textAreaValue, setTextAreaValue] = useState<string>('');
     
@@ -149,14 +167,18 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     useEffect(() => {
         context.dataRepository.UpdateStudentAdmissionsAndStudentData(admissionIds)
             .then(() => {
+                // const personalNumbers = findCurrentPersonalNumbers(
+                //     admissionIds, context.dataRepository.admissionInfo
+                // );
+                // setStudentPersonalNumbers(personalNumbers);
                 const studentItems = createStudentItems(
                     admissionIds, context.dataRepository.admissionInfo,
                     context.dataRepository.studentData
                 );
                 setStudentItems(studentItems);
 
-                const newStudentFullNameToStudentNumbers = getStudentNameToStudentNumbers(studentItems);
-                setStudentFullNameToStudentNumbers(newStudentFullNameToStudentNumbers);
+                // const newStudentFullNameToStudentNumbers = getStudentNameToStudentNumbers(studentItems);
+                // setStudentFullNameToStudentNumbers(newStudentFullNameToStudentNumbers);
             });
     }, [admissionIds]);
 
@@ -184,36 +206,61 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     }
 
     const selectStudentsByNameRecords = (nameRecords: TaskResultNameRecord[]) => {
-        for (const personalNumber in studentItems) {
-            studentItems[personalNumber].testResult = 0;
-        }
+        // for (const personalNumber in studentItems) {
+        //     studentItems[personalNumber].testResult = 0;
+        // }
 
-        for (const nameRecord of nameRecords) {
-            if (studentFullNameToStudentNumbers.hasOwnProperty(nameRecord.fullnameLower)) {
-                const personalNumbers = studentFullNameToStudentNumbers[nameRecord.fullnameLower];
-                if (personalNumbers.length === 1) {
-                    studentItems[personalNumbers[0]].testResult = 1;
-                } else {
-                    for (const personalNumber of personalNumbers) {
-                        if (studentItems[personalNumber].group.toLocaleLowerCase() === nameRecord.group) {
-                            studentItems[personalNumbers[0]].testResult = 1;
-                        }
-                    }
-                }
+        // for (const nameRecord of nameRecords) {
+        //     if (studentFullNameToStudentNumbers.hasOwnProperty(nameRecord.fullnameLower)) {
+        //         const personalNumbers = studentFullNameToStudentNumbers[nameRecord.fullnameLower];
+        //         if (personalNumbers.length === 1) {
+        //             studentItems[personalNumbers[0]].testResult = 1;
+        //         } else {
+        //             for (const personalNumber of personalNumbers) {
+        //                 if (studentItems[personalNumber].group.toLocaleLowerCase() === nameRecord.group) {
+        //                     studentItems[personalNumbers[0]].testResult = 1;
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+        const personalNumbers = Object.keys(studentItems);
+        // console.log("studentItems");
+        // console.log(studentItems);
+        // console.log("personalNumbers");
+        // console.log(personalNumbers);
+        const surnameToPersonalNumbers = getSurnameToKeys(
+            personalNumbers,
+            context.dataRepository.studentData
+        );
+        const newStudentItems = {...studentItems};
+        personalNumbers.forEach(pn => newStudentItems[pn].testResult = 0);
+        for (const record of nameRecords) {
+            if (record.nameParts.length === 0) continue;
+            const personalNumber = findPersonalNumber(
+                record,
+                surnameToPersonalNumbers,
+                personalNumbers,
+                context.dataRepository.studentData
+            )
+            if (personalNumber) {
+                newStudentItems[personalNumber].testResult = 1;
             }
         }
+        setStudentItems(newStudentItems);
     }
 
     const handleTextAreaChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = event.target.value;
         const records = getNameRecords(value);
-        // console.log("records");
-        // console.log(records);
+        console.log("records");
+        console.log(records);
         setTextAreaValue(value);
         selectStudentsByNameRecords(records);
     }
 
     const renderRows = () => {
+    
         const studentPersonalNumbersSorted = Object.keys(studentItems).sort((lhs, rhs) => {
             return studentItems[lhs].name.localeCompare(studentItems[rhs].name);
         });

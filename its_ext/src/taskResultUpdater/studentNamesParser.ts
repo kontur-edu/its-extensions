@@ -1,8 +1,9 @@
+import { IStudentData } from "../common/types";
 
 
 export interface TaskResultNameRecord {
     group: string;
-    fullnameLower: string;
+    nameParts: string[];
 }
 
 export function normalizeStudentNames(text: string): string[][] {
@@ -27,7 +28,7 @@ export function getNameRecords(text: string): TaskResultNameRecord[] {
     for (const studentRecordPart of studentRecordParts) {
         const taskResultNameRecord: TaskResultNameRecord = {
             group: "",
-            fullnameLower: ""
+            nameParts: []
         };
         if (studentRecordPart.length === 0) {
             continue;
@@ -39,11 +40,9 @@ export function getNameRecords(text: string): TaskResultNameRecord[] {
             taskResultNameRecord.group = studentRecordPart[0];
         }
 
-        let nameParts: string[] = [];
         for (let i = nameIndex; i < studentRecordPart.length; i++) {
-            nameParts.push(studentRecordPart[i]);
+            taskResultNameRecord.nameParts.push(studentRecordPart[i]);
         }
-        taskResultNameRecord.fullnameLower = nameParts.join(' ');
         result.push(taskResultNameRecord);
     }
 
@@ -65,3 +64,119 @@ export function getStudentNameToStudentNumbers(
 
     return res;
 }
+
+
+// Определить фамилию по окончанию
+// Составить Фамилия -> personalNumber[]
+// Если несколько проверить вхождение остальных частей
+// Если нет проверить вхождение остальных частей
+// имя -> personalNumber[]
+// interface IHaveName {
+//     surname: string;
+//     firstname: string;
+//     patronymic: string;
+// }
+
+export function getSurnameToKeys(
+    personalNumbers: string[],
+    studentData: IStudentData,
+): {[key: string]: string[]} {
+    const res: {[key: string]: string[]} = {};
+    for (const personalNumber of personalNumbers) {
+        console.log("personalNumber");
+        console.log(personalNumber);
+        const student = studentData.data[personalNumber];
+        const surnameLower = student.surname.toLowerCase(); 
+        if (!res.hasOwnProperty(surnameLower)) {
+            res[surnameLower] = [];
+        } 
+        res[surnameLower].push(personalNumber);
+    }
+    return res;
+}
+
+export function getSurnameIdx(
+    nameParts: string[],
+    surnameToPersonalNumbers: {[key: string]: string[]}
+): number {
+    for (let i = 0; i < nameParts.length; i++) {
+        if (surnameToPersonalNumbers.hasOwnProperty(nameParts[i])) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+export function tryFindByNameParts(
+    nameRecord: TaskResultNameRecord,
+    personalNumbers: string[],
+    studentData: IStudentData,
+): string | null {
+    for (const personalNumber of personalNumbers) {
+        const testStudent = studentData.data[personalNumber];
+        if (nameRecord.group && nameRecord.group !== testStudent.groupName.toLowerCase()) {
+            continue;
+        }
+        const partsFound = nameRecord.nameParts.every(
+            np => np === testStudent.firstname.toLowerCase() ||
+                    np === testStudent.surname.toLowerCase() ||
+                    np === testStudent.patronymic.toLowerCase());
+        if (partsFound) {
+            return personalNumber;
+        }
+    }
+    return null;
+}
+
+export function findPersonalNumber(
+    nameRecord: TaskResultNameRecord,
+    surnameToPersonalNumbers: {[key: string]: string[]},
+    personalNumbers: string[],
+    studentData: IStudentData,
+) : string | null {
+    console.log("findPersonalNumber");
+    console.log("nameRecord");
+    console.log(nameRecord);
+    const surnameIdx = getSurnameIdx(nameRecord.nameParts, surnameToPersonalNumbers);
+    if (surnameIdx >= 0) {
+        console.log(`surname = ${nameRecord.nameParts[surnameIdx]}`);
+        const surname = nameRecord.nameParts[surnameIdx];
+        const personalNumbers = surnameToPersonalNumbers[surname];
+        console.log(`surname -> personalNumbers`);
+        console.log(personalNumbers);
+        if (personalNumbers.length === 1) {
+            return personalNumbers[0];
+        }
+        const res = tryFindByNameParts(nameRecord, personalNumbers, studentData);
+        console.log(`tryFindByNameParts`);
+        console.log(res);
+        if (res) {
+            return res;
+        }
+        for (const personalNumber of personalNumbers) {
+            const testStudent = studentData.data[personalNumber];
+            if (nameRecord.group && nameRecord.group !== testStudent.groupName.toLowerCase()) {
+                continue;
+            }
+            const partsFound = nameRecord.nameParts.every(
+                np => np === testStudent.firstname ||
+                        np === testStudent.surname ||
+                        np === testStudent.patronymic);
+            if (partsFound) {
+                return personalNumber;
+            }
+        }
+    }
+
+    const res = tryFindByNameParts(
+        nameRecord,
+        personalNumbers,
+        studentData
+    );
+    console.log(`tryFindByNameParts all personalNumbers`);
+    console.log(res);
+    return res;
+}
+// Найти список фамилий 
+// Вытащить фамилии из входных данных по этому списку

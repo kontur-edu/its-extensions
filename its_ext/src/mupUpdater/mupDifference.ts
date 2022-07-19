@@ -168,67 +168,67 @@ export function UpdateMupDiffDateInfo(mupDiff: IMupDiff, dates: [string, string]
     mupDiff.changeDates = needToChangeDates;
 }
 
-export function UpdateMupEditMessage(mupEdit: IMupEdit, mupDiff: IMupDiff) {
-    let messageParts: string[] = [];
+// export function UpdateMupEditMessage(mupEdit: IMupEdit, mupDiff: IMupDiff) {
+//     let messageParts: string[] = [];
 
-    if (mupEdit.selected && mupDiff.presentInGroups.length !== 2) {
-        messageParts.push("Добавить МУП в группы");
-    }
+//     if (mupEdit.selected && mupDiff.presentInGroups.length !== 2) {
+//         messageParts.push("Добавить МУП в группы");
+//     }
 
-    if (!mupEdit.selected && mupDiff.presentInGroups.length !== 0) {
-        if (!mupDiff.canBeDeleted) {
-            messageParts.push("Не может быть удален, так как период выбора начался!!!")    
-        } else {
-            messageParts.push("Удалить МУП из групп");
-        }
-        mupEdit.messages = messageParts;
-        return;
-    }
+//     if (!mupEdit.selected && mupDiff.presentInGroups.length !== 0) {
+//         if (!mupDiff.canBeDeleted) {
+//             messageParts.push("Не может быть удален, так как период выбора начался!!!")    
+//         } else {
+//             messageParts.push("Удалить МУП из групп");
+//         }
+//         mupEdit.messages = messageParts;
+//         return;
+//     }
 
-    if (!mupEdit.selected) return;
+//     if (!mupEdit.selected) return;
 
-    let needLimitUpdate = false;
-    for (let initLimit of mupDiff.initLimits) {
-        if (initLimit !== mupEdit.limit) {
-            needLimitUpdate = true;
-            break;
-        }
-    }
-    if (needLimitUpdate) {
-        messageParts.push("Обновить Лимит");
-    }
+//     let needLimitUpdate = false;
+//     for (let initLimit of mupDiff.initLimits) {
+//         if (initLimit !== mupEdit.limit) {
+//             needLimitUpdate = true;
+//             break;
+//         }
+//     }
+//     if (needLimitUpdate) {
+//         messageParts.push("Обновить Лимит");
+//     }
 
-    const havePeriodFor3 = mupDiff.courseToCurrentPeriod.hasOwnProperty(3) && mupDiff.courseToCurrentPeriod[3];
-    const havePeriodFor4 = mupDiff.courseToCurrentPeriod.hasOwnProperty(4) && mupDiff.courseToCurrentPeriod[4];
-    if (!havePeriodFor3 || !havePeriodFor4) {
-        let message = "Создать период для курсов: ";
-        if (!havePeriodFor3) message += '3 ';
-        if (!havePeriodFor4) message += '4 ';
-        messageParts.push(message);
-    }
+//     const havePeriodFor3 = mupDiff.courseToCurrentPeriod.hasOwnProperty(3) && mupDiff.courseToCurrentPeriod[3];
+//     const havePeriodFor4 = mupDiff.courseToCurrentPeriod.hasOwnProperty(4) && mupDiff.courseToCurrentPeriod[4];
+//     if (!havePeriodFor3 || !havePeriodFor4) {
+//         let message = "Создать период для курсов: ";
+//         if (!havePeriodFor3) message += '3 ';
+//         if (!havePeriodFor4) message += '4 ';
+//         messageParts.push(message);
+//     }
 
-    if (mupDiff.changeDates) {
-        messageParts.push("Обновить дату");
-    }
+//     if (mupDiff.changeDates) {
+//         messageParts.push("Обновить дату");
+//     }
 
-    if (mupDiff.addLoadsManual) {
-        messageParts.push("(Вручную) создать нагрузки");
-    }
+//     if (mupDiff.addLoadsManual) {
+//         messageParts.push("(Вручную) создать нагрузки");
+//     }
 
-    const resulLoads = Object.values(createResultLoads(mupDiff));
-    for (let course of [3, 4]) {
-        if (mupDiff.courseToCurrentPeriod.hasOwnProperty(course)) {
-            const currentPeriod = mupDiff.courseToCurrentPeriod[course];
-            const loadsToAdd: IMupLoad[] = findLoadsToAdd(currentPeriod, resulLoads);
-            if (loadsToAdd.length > 0) {
-                messageParts.push("Скопировать недостающие нагрузки в периоды");
-                break;
-            }
-        }
-    }
-    // const kmerToLoad: {[key: string]: IMupLoad} = {};
-    // for (const load of currentPeriod.loads) {
-    //     kmerToLoad[load.kmer] = load;
-    // }
-    mupEdit.messages = messageParts;
-}
+//     const resulLoads = Object.values(createResultLoads(mupDiff));
+//     for (let course of [3, 4]) {
+//         if (mupDiff.courseToCurrentPeriod.hasOwnProperty(course)) {
+//             const currentPeriod = mupDiff.courseToCurrentPeriod[course];
+//             const loadsToAdd: IMupLoad[] = findLoadsToAdd(currentPeriod, resulLoads);
+//             if (loadsToAdd.length > 0) {
+//                 messageParts.push("Скопировать недостающие нагрузки в периоды");
+//                 break;
+//             }
+//         }
+//     }
+//     // const kmerToLoad: {[key: string]: IMupLoad} = {};
+//     // for (const load of currentPeriod.loads) {
+//     //     kmerToLoad[load.kmer] = load;
+//     // }
+//     mupEdit.messages = messageParts;
+// }

@@ -166,16 +166,17 @@ export function CheckDateIsLess(dateStr: string, timeStamp: number) {
 
 
 
-export function CallDebounced(func: () => any, ms: number) {
+export function CreateDebouncedWrapper(ms: number) {
     let timeoutId: number | null = null;
 
-    return () => {
+    return (func: () => any, newMs?: number) => {
         if (timeoutId) {
             clearTimeout(timeoutId);
         }
+
         timeoutId = window.setTimeout(() => {
             func();
             timeoutId = null;
-        }, ms);
+        }, newMs || ms);
     };
 }

@@ -155,3 +155,10 @@ code {
 .warning {
   color: #ef8b17;
 }
+
+
+.apply_button__container {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}

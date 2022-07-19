@@ -16,7 +16,6 @@ import {
 } from "../common/types";
 
 import { ITSRepository } from "../utils/repository";
-import {IActionResponse} from "../utils/ITSApiService";
 
 
 function generateDeleteSubgroupsActions(

@@ -42,6 +42,8 @@ export async function ExecuteActions(actions: ITSAction[], itsContext: IITSConte
     const results: IActionExecutionLogItem[] = [];
     for (let action of actions) {
         const actionResults = await action.execute(itsContext);
+        console.log("actionResults");
+        console.log(actionResults);
         const actionExecutionLogItem: IActionExecutionLogItem = {
             actionMessage: action.getMessage(),
             actionResults: []

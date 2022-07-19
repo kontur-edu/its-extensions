@@ -169,7 +169,12 @@ export class ITSApiService {
                 alert(message);
                 return {success: false, message};
         }
-        const result = await this.requestService.PostFormData(url, data);
+        const response = await this.requestService.PostFormData(url, data);
+        const result = {success: response.success, message: response.data};
+        if (response.success && response.data) {
+            const bodyJson = JSON.parse(response.data);
+            return bodyJson;
+        }
         return result;
     }
     
@@ -190,7 +195,12 @@ export class ITSApiService {
             return {success: false, message};
         }
     
-        const result = await this.requestService.PostFormData(url, data);
+        const response = await this.requestService.PostFormData(url, data);
+        const result = {success: response.success, message: response.data};
+        if (response.success && response.data) {
+            const bodyJson = JSON.parse(response.data);
+            return bodyJson;
+        }
         return result;
     }
     
@@ -211,7 +221,12 @@ export class ITSApiService {
             return {success: false, message};
         }
         
-        const result = await this.requestService.PostFormData(url, data);
+        const response = await this.requestService.PostFormData(url, data);
+        const result = {success: response.success, message: response.data};
+        if (response.success && response.data) {
+            const bodyJson = JSON.parse(response.data);
+            return bodyJson;
+        }
         return result;
     }
     
@@ -255,7 +270,12 @@ export class ITSApiService {
             return {success: false, message};
         }
 
-        const result = await this.requestService.PostFormData(url, data);
+        const response = await this.requestService.PostFormData(url, data);
+        const result = {success: response.success, message: response.data};
+        if (response.success && response.data) {
+            const bodyJson = JSON.parse(response.data);
+            return bodyJson;
+        }
         return result;
     }
     
@@ -275,10 +295,13 @@ export class ITSApiService {
             return {success: false, message};
         }
     
-        const resultRaw = await this.requestService.PostFormData(url, data, 'text');
-        const success = resultRaw.data === '';
-        // const success = result === '';
-        return {success};
+        const response = await this.requestService.PostFormData(url, data, 'text');
+        const result = {success: response.success && response.data === '', message: response.data};
+        if (response.success && response.data) {
+            const bodyJson = JSON.parse(response.data);
+            return bodyJson;
+        }
+        return result;
     }
 
     async GetSubgroupMetas(competitionGroupId: number): Promise<ISubgroupMeta[]> {
@@ -367,7 +390,12 @@ export class ITSApiService {
             }
         }
 
-        const result = await this.requestService.SendJson(url, data, 'DELETE', 'text');
+        const response = await this.requestService.SendJson(url, data, 'DELETE', 'text');
+        const result = {success: response.success, message: response.data};
+        if (response.success && response.data) {
+            const bodyJson = JSON.parse(response.data);
+            return bodyJson;
+        }
         return result;
     }
 

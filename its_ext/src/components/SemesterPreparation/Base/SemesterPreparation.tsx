@@ -4,7 +4,7 @@ import { ISelectionListItem } from "../../SelectionList/types";
 import style from "./SemesterPreparation.module.css";
 import { ISemesterPreparationProps } from "./types";
 import { IMupDiff, ISubgoupDiffInfo } from "../../../common/types";
-import { REQUEST_ERROR_UNAUTHORIZED} from "../../../utils/constants";
+import { DEBOUNCE_MS, REQUEST_ERROR_UNAUTHORIZED} from "../../../utils/constants";
 
 // import { context.dataRepository } from "../../../utils/repository";
 import { GroupSelect } from "../GroupSelect/GroupSelect";
@@ -20,8 +20,7 @@ import { SubgroupSelection } from "../SubgroupSelection";
 
 import { Button } from "@mui/material";
 import SystemUpdateAltIcon from '@mui/icons-material/SystemUpdateAlt';
-
-import { CallDebounced } from "../../../utils/helpers";
+import { CreateDebouncedWrapper } from "../../../utils/helpers";
 
 // Получение данных:
 // Запросить все Группы выбора
@@ -55,6 +54,10 @@ import { CallDebounced } from "../../../utils/helpers";
 // mupId -> limit
 // AllMups if (limit > 0) new
 // mupsUpdate {ids: [], data: {id: {id, limit}}}
+
+
+const debouncedWrapperForApply = CreateDebouncedWrapper(DEBOUNCE_MS);
+
 
 export function SemesterPreparation(props: ISemesterPreparationProps) {
     // TODO: вынести в отдельный компонент
@@ -195,64 +198,19 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
         stepTwoRef.current?.scrollIntoView({behavior: 'smooth'});
     }
 
-    const handleMupEditorApply = (
-        selectedMupsIds: string[],
-        mupDiffs: {[key: string]: IMupDiff},
-        newDates: [string, string],
-        mupLimits: {[key: string]: number},
-    ) => {
-        alert(`Применение изменений`);
-        const actions = createActions(
-            selectionGroupsIds,
-            selectedMupsIds,
-            mupDiffs,
-            newDates,
-            mupLimits,
-            context
-        );
-        setMupEditorActions(actions);
-    }
 
     const handleMupEditorApply2 = (
         actions: ITSAction[]
     ) => {
-        alert(`Применение изменений`);
+        alert(`Сохранение actions`);
         setMupEditorActions(actions);
     }
-
-    const handleMupEditorApplyReal = () => {
-        // return; // TODO: Delete this;
-        setMupEditorActionResults([]);
-        ExecuteActions(mupEditorActions, context)
-                .then(results => setMupEditorActionResults(results))
-                .then(() => alert("Изменения применены"))
-                .catch(err => {
-                    if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-                        props.onUnauthorized();
-                        return;
-                    }
-                    throw err;
-                });
-
-        return;
-        setMupEditorActions([]);
-        prepareDataForSelectionGroups(selectionGroupsIds)
-            .then(() => setSelectionGroupsIds([...selectionGroupsIds]))
-            .catch(err => {
-                if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-                    props.onUnauthorized();
-                    return;
-                }
-                throw err;
-            });
-    }
-
 
     const handleSubgroupSelectionApply = (
         competitionGroupIds: number[],
         subgroupInfo: ISubgoupDiffInfo
     ) => {
-        alert(`Применение изменений`);
+        alert(`Сохраненние action`);
         const actions = createSubgroupSelectionActions(
             competitionGroupIds,
             subgroupInfo,
@@ -300,33 +258,6 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
                     onApply={handleMupEditorApply2}
                     onUnauthorized={props.onUnauthorized}
                 />
-                <ul>
-                    {mupEditorActions.map((a: ITSAction, index: number) => <li key={index}>{a.getMessage()}</li>)}
-                </ul>
-                <div>
-                    <Button onClick={handleMupEditorApplyReal}
-                        variant="contained"
-                        >Применение изменений</Button>
-                    <p className="warning">
-                        {mupEditorActionResults.every(logItem => logItem.actionResults.every(ar => ar.success)) ? null :
-                            "При сохранении изменений возникли ошибки. Чтобы перейти к следующему шагу исправьте ошибки"
-                        }
-                    </p>
-                </div>
-                
-                {/* <button className="step__button" onClick={handleMupEditorApplyReal}>Настоящее применение</button> */}
-                <ul>
-                    {mupEditorActionResults.map((logItem: IActionExecutionLogItem, index: number) =>
-                        <li key={index}>{logItem.actionMessage}
-                            <ul>{logItem.actionResults.map((ar, arIdx) => 
-                                    <li key={arIdx} className={ar.success ? "message_success" : "message_error"}>
-                                        {ar.message}
-                                    </li>
-                                )}
-                            </ul>
-                        </li>
-                    )}
-                </ul>
             </article>
         );
     }

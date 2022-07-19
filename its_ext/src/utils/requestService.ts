@@ -134,6 +134,7 @@ export class RequestService {
         };
 
         let result = await this.SendRequest(urlWithProxy, options);
+        if (!result.data) return result;
         result = JSON.parse(result.data);
         if (result.hasOwnProperty("data")) {
             result = result["data"];
@@ -189,9 +190,6 @@ export class RequestService {
         };
 
         let resultRaw = await this.SendRequest(urlWithProxy, options);
-        let result = JSON.parse(resultRaw.data);
-        console.log(`Result`);
-        console.log(result);
-        return result;
+        return resultRaw;
     }
 }

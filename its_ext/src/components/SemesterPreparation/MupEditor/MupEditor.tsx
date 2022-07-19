@@ -15,9 +15,11 @@ import { ITSContext } from "../../../common/Context";
 
 import Button from '@mui/material/Button';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { ActionType, ITSAction } from "../../../common/actions";
+import { ActionType, ITSAction, ExecuteActions } from "../../../common/actions";
 import { createActions, GetMupActions } from "../../../mupUpdater/actionCreater";
 import { UpdateSelectionGroupAction } from "../../../mupUpdater/actions";
+import { CreateDebouncedWrapper } from "../../../utils/helpers";
+import { IActionExecutionLogItem } from "../../../common/actions";
 
 // Получение данных:
 // Запросить все Группы выбора
@@ -63,13 +65,17 @@ const findInitDates = (initDiffs: {[key: string]: IMupDiff}): [string, string] =
     return dates;
 }
 
+const debouncedWrapperForApply = CreateDebouncedWrapper(DEBOUNCE_MS);
+
 export function MupEditor(props: IMupEditorProps) {
     const [mupEdits, setMupEdits] = useState<{[key: string]: IMupEdit}>({});
     const [mupDiffs, setMupDiffs] = useState<{[key: string]: IMupDiff}>({});
     const [startDate, setStartDate] = useState<string>('');
     const [endDate, setEndDate] = useState<string>('');
 
-    const timeoutId = useRef<number | null>(null);
+    const [mupEditorActions, setMupEditorActions] = useState<ITSAction[]>([]);
+    const [mupEditorActionResults, setMupEditorActionResults] = useState<IActionExecutionLogItem[]>([]);
+
     const context = useContext(ITSContext)!;
 
     const onStartDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,7 +106,7 @@ export function MupEditor(props: IMupEditorProps) {
         callDebouncedApply(newMupDiffs, mupEdits, [startDate, dateFormatted]);
     };
 
-    const setUpInitDiffsAndDates = (selectedMupIdsSet: Set<string>)  => {
+    const createInitDiffsAndDates = (selectedMupIdsSet: Set<string>) => {
         const newMupEdits: {[key: string]: IMupEdit} = {};
         const newMupDiffs: {[key: string]: IMupDiff} = {};
         context.dataRepository.mupData.ids.forEach(mupId => {
@@ -142,11 +148,18 @@ export function MupEditor(props: IMupEditorProps) {
                 UpdateMupDiffDateInfo(newMupDiffs[mupId], initDates);
             }
         }
-        initDates[0] && setStartDate(initDates[0]);
-        initDates[1] && setEndDate(initDates[1]);
+        // initDates[0] && setStartDate(initDates[0]);
+        // initDates[1] && setEndDate(initDates[1]);
 
-        setMupDiffs(newMupDiffs);
-        setMupEdits(newMupEdits);
+        // setMupDiffs(newMupDiffs);
+        // setMupEdits(newMupEdits);
+
+        const res: [
+            {[key: string]: IMupDiff},
+            {[key: string]: IMupEdit},
+            [string, string]
+        ] = [newMupDiffs, newMupEdits, initDates];
+        return res;
     }
 
     
@@ -159,7 +172,13 @@ export function MupEditor(props: IMupEditorProps) {
             mupIdUnionArr.push(context.dataRepository.selectionGroupToMupsData.data[sgId].ids);
         }
         const mupIdUnion = new Set(mupIdUnionArr.flat());
-        setUpInitDiffsAndDates(mupIdUnion);
+        const [newMupDiffs, newMupEdits, initDates] = createInitDiffsAndDates(mupIdUnion);
+
+        initDates[0] && setStartDate(initDates[0]);
+        initDates[1] && setEndDate(initDates[1]);
+
+        setMupDiffs(newMupDiffs);
+        setMupEdits(newMupEdits);
 
     }, [props.dataIsPrepared, props.selectionGroupIds]);
 
@@ -217,14 +236,14 @@ export function MupEditor(props: IMupEditorProps) {
                 });
                 return context.dataRepository.UpdateSubgroups(competitionGroupIds);
             });
-        Promise.all([
+        return Promise.all([
             updateSelectionGroupsThenSubgroupsPromise,
             context.dataRepository.UpdateMupData(),
             context.dataRepository.UpdateSelectionGroupToMupsData(props.selectionGroupIds),
             context.dataRepository.UpdatePeriods(mupIdsToRefresh),
         ])
-        .then(() => setUpInitDiffsAndDates(selectedMupIds))
-        .then(() => callDebouncedApply(mupDiffs, mupEdits, [startDate, endDate]))
+        .then(() => createInitDiffsAndDates(selectedMupIds))
+        .then(([newMupDiffs, newMupEdits, initDates]) => callDebouncedApply(newMupDiffs, newMupEdits, initDates))
         .catch(err => {
             if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
                 props.onUnauthorized();
@@ -261,7 +280,7 @@ export function MupEditor(props: IMupEditorProps) {
         return actions;
     }
 
-    const setUpMupMessagesByActions = (actions: ITSAction[]) => {
+    const setUpMupMessagesByActions = (mupDiffs: {[key: string]: IMupDiff}, mupEdits: {[key: string]: IMupEdit}, actions: ITSAction[]) => {
         const mupToActions = GetMupActions(actions);
             
             let selectedMups: Set<string> | null = null; 
@@ -306,11 +325,9 @@ export function MupEditor(props: IMupEditorProps) {
         mupEdits: {[key: string]: IMupEdit},
         newDates: [string, string]
     ) => {
+
         console.log("Debounce handleApply");
-        if (timeoutId.current) {
-            clearTimeout(timeoutId.current);
-        }
-        timeoutId.current = window.setTimeout(() => {
+        debouncedWrapperForApply(() => {
             
             const actions = generateActions(
                 mupDiffs,
@@ -318,12 +335,31 @@ export function MupEditor(props: IMupEditorProps) {
                 newDates
             );
     
-            setUpMupMessagesByActions(actions);
-
-            timeoutId.current = null;
+            setUpMupMessagesByActions(mupDiffs, mupEdits, actions);
+            setMupEditorActions(actions);
             props.onApply(actions);
-        }, DEBOUNCE_MS);
+        });
     };
+
+    const handleApplyReal = () => {
+        ExecuteActions(mupEditorActions, context)
+            .then(results => setMupEditorActionResults(results))
+            .then(() => alert("Изменения применены"))
+            .then(() => handleRefresh()) // refresh
+            .catch(err => {
+                if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+                    props.onUnauthorized();
+                    return;
+                }
+                throw err;
+            });
+    }
+
+    const handleApplyRealDebounced = () => {
+        console.log("Debounce handleApplyRealDebounced");
+
+        debouncedWrapperForApply(() => handleApplyReal());
+    }
 
     return props.selectionGroupIds.length !== 2 ? null : (
         <section className="step__container">
@@ -352,6 +388,33 @@ export function MupEditor(props: IMupEditorProps) {
                     onMupLimitChange={handleMupLimitChange}
                 />
                 
+                <ul>
+                    {mupEditorActions.map((a: ITSAction, index: number) => <li key={index}>{a.getMessage()}</li>)}
+                </ul>
+                <div className="apply_button__container">
+                    <Button onClick={handleApplyRealDebounced}
+                        variant="contained" style={{marginRight: '1em'}}
+                        >Применение изменений</Button>
+                    <p className="warning">
+                        {mupEditorActionResults.every(logItem => logItem.actionResults.every(ar => ar.success)) ? null :
+                            "При сохранении изменений возникли ошибки. Чтобы перейти к следующему шагу исправьте ошибки"
+                        }
+                    </p>
+                </div>
+                
+                {/* <button className="step__button" onClick={handleMupEditorApplyReal}>Настоящее применение</button> */}
+                <ul>
+                    {mupEditorActionResults.map((logItem: IActionExecutionLogItem, index: number) =>
+                        <li key={index}>{logItem.actionMessage}
+                            <ul>{logItem.actionResults.map((ar, arIdx) => 
+                                    <li key={arIdx} className={ar.success ? "message_success" : "message_error"}>
+                                        {ar.message}
+                                    </li>
+                                )}
+                            </ul>
+                        </li>
+                    )}
+                </ul>
             </article>
         </section>
     );

@@ -6,9 +6,9 @@ import { COMPETITION_GROUP_URL, COMPETITION_GROUP_SUBGROUP_META_URL, DEBOUNCE_MS
 import { ISubgoupDiffInfo, IMupSubgroupDiff } from "../../../common/types";
 import { CreateSubgroupDiffInfo, CreateDiffMessages } from "../../../subgroupUpdater/subgroupDifference";
 import {REQUEST_ERROR_UNAUTHORIZED} from "../../../utils/constants";
-import { ITSAction } from "../../../common/actions";
+import { ActionType, ITSAction } from "../../../common/actions";
 import { IActionExecutionLogItem } from "../../../common/actions";
-import {createSubgroupSelectionActions} from "../../../subgroupUpdater/actionCreator";
+import {createSubgroupSelectionActions, GetMupNameActions} from "../../../subgroupUpdater/actionCreator";
 import { CreateDebouncedWrapper } from "../../../utils/helpers";
 import { ExecuteActions } from "../../../common/actions";
 
@@ -229,6 +229,42 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
         });
     }
     
+    const setUpDiffMessagesByActions = (
+        actions: ITSAction[],
+    ) => {
+        const mupToActions = GetMupNameActions(actions);
+
+        const newDiffMessages = {...diffMessages};
+        console.log("newDiffMessages");
+        console.log(newDiffMessages);
+
+        let needToCreateSubgroups = false;
+        for (const action of actions) {
+            if (action.actionType === ActionType.CreateSubgroups) {
+                needToCreateSubgroups = true;
+                break;
+            }
+        }
+
+        // for (const mupName in newDiffMessages) {
+        //     newDiffMessages[mupName].todos = [];
+        //     if (needToCreateSubgroups) {
+        //         newDiffMessages[mupName].todos.push(`Примените изменения для создания подгрупп`);
+        //     }
+        // }
+
+        // for (const mupName in mupToActions) {
+        //     console.log(`mupName: ${mupName}`);
+        //     if (newDiffMessages.hasOwnProperty(mupName)) {
+        //         newDiffMessages[mupName].todos.push(
+        //             ...mupToActions[mupName].map(a => a.getMessageSimple())
+        //         );
+        //     }
+        // }
+
+        // setDiffMessages(newDiffMessages);
+    }
+
     const handleApply = () => {
         if (subgroupDiffInfo) {
             const actions = createSubgroupSelectionActions(
@@ -238,6 +274,8 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
             );
             // alert(actions.length);
             setSubgroupSelectionActions(actions);
+
+            setUpDiffMessagesByActions(actions);
             // props.onApply(competitionGroupIds, subgroupDiffInfo);
         } else {
             // alert("subgroupDiffInfo is null");

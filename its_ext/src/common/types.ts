@@ -223,6 +223,12 @@ export interface ISubgoupDiffInfo {
 export interface IMupSubgroupDiff {
     differences: string[];
     todos: string[];
+    addLoadsManualFor: number[],
+    loadsToGroupsNeeded: {[key: string]: number};
+    createSubgroupsFor: number[];
+    subgroupCount: {[key: string]: [number | null, number | null]}
+    absentSubgroupsForLoad_number: [string[], string[]];
+    loadToTeachers: {[key: string]: [string | null, string | null]}; 
 }
 
 export interface ISubgroupInfo {

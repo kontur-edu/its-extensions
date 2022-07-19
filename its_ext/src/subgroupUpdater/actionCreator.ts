@@ -1,5 +1,5 @@
 import { IITSContext } from "../common/Context";
-import { ITSAction } from "../common/actions";
+import { ITSAction, ActionType } from "../common/actions";
 import {ISubgoupDiffInfo, ISubgroupData, ISubgroupInfo, SubgroupAndMetaAreSameDiffs} from "../common/types";
 import {IActionResponse} from "../utils/ITSApiService";
 import {
@@ -41,11 +41,11 @@ function generateUpdateSubgroupMetaLoadCountActions(
                     const maxCount = Math.max(fCount, sCount);
                     if (fCount !== maxCount) {
                         actions.push(new UpdateSubgroupMetaLoadCountAction(
-                            first[load].id, maxCount
+                            first[load].id, maxCount, mupName
                         ));
                     } else if (sCount !== maxCount) {
                         actions.push(new UpdateSubgroupMetaLoadCountAction(
-                            second[load].id, maxCount
+                            second[load].id, maxCount, mupName
                         ));
                     }
                 }
@@ -116,12 +116,15 @@ function generateUpdateTeacherForSubgroupActions(
                     if (teacherId) {
                         if (!fSubgroup.teacherId) {
                             actions.push(new UpdateTeacherForSubgroupAction(
-                                competitionGroupIds[0], subgroupInfo, teacherId
+                                competitionGroupIds[0], subgroupInfo, teacherId,
+                                mupName,
+                                
                             ));
                         }
                         if (!sSubgroup.teacherId) {
                             actions.push(new UpdateTeacherForSubgroupAction(
-                                competitionGroupIds[1], subgroupInfo, teacherId
+                                competitionGroupIds[1], subgroupInfo, teacherId,
+                                mupName
                             ));
                         }
                     }
@@ -135,7 +138,8 @@ function generateUpdateTeacherForSubgroupActions(
                 };
                 if (fSubgroup.teacherId) {
                     actions.push(new UpdateTeacherForSubgroupAction(
-                        competitionGroupIds[1], subgroupInfo, fSubgroup.teacherId
+                        competitionGroupIds[1], subgroupInfo, fSubgroup.teacherId,
+                        mupName
                     ));
                 }
             } else if (sHas) {
@@ -147,7 +151,8 @@ function generateUpdateTeacherForSubgroupActions(
                 };
                 if (sSubgroup.teacherId) {
                     actions.push(new UpdateTeacherForSubgroupAction(
-                        competitionGroupIds[0], subgroupInfo, sSubgroup.teacherId
+                        competitionGroupIds[0], subgroupInfo, sSubgroup.teacherId,
+                        mupName
                     ));
                 }
             }
@@ -211,3 +216,26 @@ export function createSubgroupSelectionActions(
     return actions;
 }
 
+
+
+
+export function GetMupNameActions(actions: ITSAction[]): {[key: string]: ITSAction[]} {
+    const res: {[key: string]: ITSAction[]} = {};
+    for (const action of actions) {
+        if (action.actionType === ActionType.UpdateSubgroupMetaLoadCount) {
+            const updateLimitAction = action as UpdateSubgroupMetaLoadCountAction;
+            const mupName = updateLimitAction.mupName;
+
+            if (!res.hasOwnProperty(mupName)) res[mupName] = [];
+            res[mupName].push(action);
+        } else if (action.actionType === ActionType.UpdateTeacherForSubgroup) {
+            const updateLimitAction = action as UpdateTeacherForSubgroupAction;
+            const mupName = updateLimitAction.mupName;
+
+            if (!res.hasOwnProperty(mupName)) res[mupName] = [];
+            res[mupName].push(action);
+        }
+    }
+
+    return res;
+}

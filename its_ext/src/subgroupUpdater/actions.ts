@@ -15,11 +15,11 @@ export class CreateSubgroupsAction extends ITSAction {
     }
 
     getMessage(): string {
-        return `Create Subgroups for CompetitionGroupId: ${this.competitionGroupId}`;
+        return `Создать подгруппы для Конкурсной группы с id: ${this.competitionGroupId}`;
     }
 
     getMessageSimple(): string {
-        return `Create Subgroups for CompetitionGroupId: ${this.competitionGroupId}`;
+        return `Создать подгруппы для Конкурсной группы`;
     }
 
     async execute(context: IITSContext): Promise<IActionResponse[]> {
@@ -28,16 +28,16 @@ export class CreateSubgroupsAction extends ITSAction {
 }
 
 export class UpdateSubgroupMetaLoadCountAction extends ITSAction {
-    constructor(public subgroupMetaId: number, public newCount: number) {
+    constructor(public subgroupMetaId: number, public newCount: number, public mupName: string) {
         super(ActionType.UpdateSubgroupMetaLoadCount);
     }
 
     getMessage(): string {
-        return `Update Subgroups Meta Load for subgroupMetaId: ${this.subgroupMetaId} newCount: ${this.newCount}`;
+        return `Обновить количество подгрупп на ${this.newCount} для нагрузки c id: ${this.subgroupMetaId}`;
     }
 
     getMessageSimple(): string {
-        return `Update Subgroups Meta Load for subgroupMetaId: ${this.subgroupMetaId} newCount: ${this.newCount}`;
+        return this.getMessage();
     }
 
     async execute(context: IITSContext): Promise<IActionResponse[]> {
@@ -52,12 +52,11 @@ export class RefreshSubgroupsAction extends ITSAction {
 
     getMessage(): string {
         const competitionGroupIdsStr = JSON.stringify(this.competitionGroupIds);
-        return `Refresh Subgroups for subgroups: ${competitionGroupIdsStr}`;
+        return `Запросить обновление данных для Конкурсных групп: ${competitionGroupIdsStr}`;
     }
 
     getMessageSimple(): string {
-        const competitionGroupIdsStr = JSON.stringify(this.competitionGroupIds);
-        return `Refresh Subgroups for subgroups: ${competitionGroupIdsStr}`;
+        return this.getMessage();
     }
 
     async execute(context: IITSContext): Promise<IActionResponse[]> {
@@ -70,21 +69,22 @@ export class UpdateTeacherForSubgroupAction extends ITSAction {
     constructor(
         public competitionGroupId: number,
         public subgroupInfo: ISubgroupInfo,
-        public teacherId: string
+        public teacherId: string,
+        public mupName: string,
     ) {
         super(ActionType.UpdateTeacherForSubgroup);
     }
 
     getMessage(): string {
-        return `Update Teacher ${this.teacherId} for subgroup: mupName: ${this.subgroupInfo.mupName}
-            load: ${this.subgroupInfo.load} number: ${this.subgroupInfo.number}
-            (competitionGroupId: ${this.competitionGroupId})`;
+        return `Обновить преподавателя с id: ${this.teacherId} для МУПа: ${this.subgroupInfo.mupName}
+        нагрузки: ${this.subgroupInfo.load} с номером: ${this.subgroupInfo.number}
+        (Конкурсная группа с id:${this.competitionGroupId})`;
     }
 
     getMessageSimple(): string {
-        return `Update Teacher ${this.teacherId} for subgroup: mupName: ${this.subgroupInfo.mupName}
-            load: ${this.subgroupInfo.load} number: ${this.subgroupInfo.number}
-            (competitionGroupId: ${this.competitionGroupId})`;
+        return `Обновить преподавателя с id: ${this.teacherId} для МУПа: ${this.subgroupInfo.mupName}
+            нагрузки: ${this.subgroupInfo.load} с номером: ${this.subgroupInfo.number}
+            (Конкурсная группа с id:${this.competitionGroupId})`;
     }
 
     async execute(context: IITSContext): Promise<IActionResponse[]> {

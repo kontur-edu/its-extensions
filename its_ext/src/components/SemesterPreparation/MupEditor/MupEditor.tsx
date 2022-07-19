@@ -20,7 +20,8 @@ import { createActions, GetMupActions } from "../../../mupUpdater/actionCreater"
 import { UpdateSelectionGroupAction } from "../../../mupUpdater/actions";
 import { CreateDebouncedWrapper } from "../../../utils/helpers";
 import { IActionExecutionLogItem } from "../../../common/actions";
-
+import DoneIcon from '@mui/icons-material/Done';
+import SystemUpdateAltIcon from '@mui/icons-material/SystemUpdateAlt';
 // Получение данных:
 // Запросить все Группы выбора
 // Запросить МУПы с Лимитами для выбранных Групп выбора
@@ -374,6 +375,48 @@ export function MupEditor(props: IMupEditorProps) {
 
         debouncedWrapperForApply(() => handleApplyReal());
     }
+    
+    const renderSuccessButtonWithNextStep = () => {
+        return (
+            <React.Fragment>
+                <span className="message_success__container"><DoneIcon />Сохранено, с этого шага можно безопасно уходить</span>
+                <Button onClick={props.onNextStep}
+                        variant="contained" style={{marginRight: '1em'}}
+                        endIcon={<SystemUpdateAltIcon />}
+                        >К следующему шагу</Button>
+            </React.Fragment>
+        );
+    }
+
+    const renderApplyButtonWithMessage = () => {
+        return (
+            <React.Fragment>
+                <Button onClick={handleApplyRealDebounced}
+                    variant="contained" style={{marginRight: '1em'}}
+                    >Применение изменений</Button>
+                <p className="warning">
+                    {mupEditorActionResults.every(logItem => logItem.actionResults.every(ar => ar.success)) ? null :
+                        "При сохранении изменений возникли ошибки. Чтобы перейти к следующему шагу исправьте ошибки"
+                    }
+                </p>
+            </React.Fragment>
+        );
+    }
+    const renderButtons = () => {
+        const haveOnlyRefreshActions = mupEditorActions.every(a => 
+            a.actionType === ActionType.RefreshSelectionGroups ||
+            a.actionType === ActionType.RefreshPeriods);
+
+        
+        return (
+            <div className="apply_button__container">
+                {haveOnlyRefreshActions ?
+                   renderSuccessButtonWithNextStep() :
+                   renderApplyButtonWithMessage()}
+                
+            </div>
+        );
+    }
 
     return props.selectionGroupIds.length !== 2 ? null : (
         <section className="step__container">
@@ -405,16 +448,7 @@ export function MupEditor(props: IMupEditorProps) {
                 <ul>
                     {mupEditorActions.map((a: ITSAction, index: number) => <li key={index}>{a.getMessage()}</li>)}
                 </ul>
-                <div className="apply_button__container">
-                    <Button onClick={handleApplyRealDebounced}
-                        variant="contained" style={{marginRight: '1em'}}
-                        >Применение изменений</Button>
-                    <p className="warning">
-                        {mupEditorActionResults.every(logItem => logItem.actionResults.every(ar => ar.success)) ? null :
-                            "При сохранении изменений возникли ошибки. Чтобы перейти к следующему шагу исправьте ошибки"
-                        }
-                    </p>
-                </div>
+                {renderButtons()}
                 
                 {/* <button className="step__button" onClick={handleMupEditorApplyReal}>Настоящее применение</button> */}
                 <ul>

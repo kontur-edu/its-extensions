@@ -14,5 +14,6 @@ export interface IMupEditorProps {
     onApply: (
         actions: ITSAction[],
     ) => void;
+    onNextStep: () => void;
     onUnauthorized: () => void;
 }

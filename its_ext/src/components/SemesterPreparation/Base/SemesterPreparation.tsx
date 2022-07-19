@@ -75,6 +75,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     const [subgroupSelectionActionsResults, setSubgroupSelectionActionsResults] = useState<IActionExecutionLogItem[]>([]);
 
     const stepTwoRef = useRef<HTMLElement | null>(null);
+    const stepThreeRef = useRef<HTMLElement | null>(null);
     const context = useContext(ITSContext)!;
 
     const refreshSelectionGroups = () => {
@@ -198,6 +199,10 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
         stepTwoRef.current?.scrollIntoView({behavior: 'smooth'});
     }
 
+    const handleMupEditorNextStepButton = () => {
+        stepThreeRef.current?.scrollIntoView({behavior: 'smooth'});
+    }
+
 
     const handleMupEditorApply2 = (
         actions: ITSAction[]
@@ -256,6 +261,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
                     selectionGroupIds={selectionGroupsIds}
                     dataIsPrepared={editorDataPrepared}
                     onApply={handleMupEditorApply2}
+                    onNextStep={handleMupEditorNextStepButton}
                     onUnauthorized={props.onUnauthorized}
                 />
             </article>
@@ -264,7 +270,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
 
     const renderStep3 = () => {
         return (
-            <article className="step">
+            <article className="step" ref={stepThreeRef}>
                 <h3 className="step__header">3. Определите количество подгрупп для МУПов и выберите преподавателей</h3>
 
                 <SubgroupSelection

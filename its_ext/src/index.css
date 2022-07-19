@@ -98,6 +98,17 @@ code {
   color: rgb(0, 197, 0);
 }
 
+.message_success__container {
+  border-radius: 4px;
+  background-color: #d7f8ae;
+  color: #477916;
+  display: flex;
+  align-items: center;
+  padding: 0.4em 0.6em;
+  margin-right: 1em;
+}
+
+
 /* .message_success {
   color: greenyellow;
 } */
@@ -162,3 +173,5 @@ code {
   align-items: center;
   flex-wrap: wrap;
 }
+
+

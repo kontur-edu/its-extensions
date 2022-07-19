@@ -78,12 +78,12 @@ export class RefreshPeriodsAction extends ITSAction {
 
     getMessageSimple(): string {
         const mupIdsString = JSON.stringify(this.mupIds);
-        return `Обновить период для МУПов с id: ${mupIdsString}`;
+        return `Запросить обновленные периода для МУПов с id: ${mupIdsString}`;
     }
 
     getMessage(): string {
         const mupIdsString = JSON.stringify(this.mupIds);
-        return `Обновить период для МУПов с id: ${mupIdsString}`;
+        return `Запросить обновленные периода для МУПов с id: ${mupIdsString}`;
     }
 
     async execute(context: IITSContext): Promise<IActionResponse[]> {

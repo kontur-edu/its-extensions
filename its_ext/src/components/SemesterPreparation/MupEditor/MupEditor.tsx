@@ -162,7 +162,17 @@ export function MupEditor(props: IMupEditorProps) {
         return res;
     }
 
-    
+    const setUpDiffsAndDates = (
+        newMupDiffs: {[key: string]: IMupDiff},
+        newMupEdits: {[key: string]: IMupEdit},
+        newDates: [string, string]
+    ) => {
+        newDates[0] && setStartDate(newDates[0]);
+        newDates[1] && setEndDate(newDates[1]);
+
+        setMupDiffs(newMupDiffs);
+        setMupEdits(newMupEdits);
+    }
 
     useEffect(() => {
         if (!props.dataIsPrepared) return;
@@ -174,11 +184,12 @@ export function MupEditor(props: IMupEditorProps) {
         const mupIdUnion = new Set(mupIdUnionArr.flat());
         const [newMupDiffs, newMupEdits, initDates] = createInitDiffsAndDates(mupIdUnion);
 
-        initDates[0] && setStartDate(initDates[0]);
-        initDates[1] && setEndDate(initDates[1]);
+        setUpDiffsAndDates(newMupDiffs, newMupEdits, initDates);
+        // initDates[0] && setStartDate(initDates[0]);
+        // initDates[1] && setEndDate(initDates[1]);
 
-        setMupDiffs(newMupDiffs);
-        setMupEdits(newMupEdits);
+        // setMupDiffs(newMupDiffs);
+        // setMupEdits(newMupEdits);
 
     }, [props.dataIsPrepared, props.selectionGroupIds]);
 
@@ -243,7 +254,10 @@ export function MupEditor(props: IMupEditorProps) {
             context.dataRepository.UpdatePeriods(mupIdsToRefresh),
         ])
         .then(() => createInitDiffsAndDates(selectedMupIds))
-        .then(([newMupDiffs, newMupEdits, initDates]) => callDebouncedApply(newMupDiffs, newMupEdits, initDates))
+        .then(([newMupDiffs, newMupEdits, initDates]) => {
+            setUpDiffsAndDates(newMupDiffs, newMupEdits, initDates);
+            callDebouncedApply(newMupDiffs, newMupEdits, initDates);
+        })
         .catch(err => {
             if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
                 props.onUnauthorized();

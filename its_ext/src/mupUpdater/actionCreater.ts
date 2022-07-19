@@ -46,6 +46,14 @@ function generateDeleteSubgroupsActions(
     return actions;
 }
 
+export function CheckSetsEqual(lhs: Set<string>, rhs: Set<string>) {
+    if (lhs.size !== rhs.size) return false;
+    for (const val of Array.from(lhs.values())) {
+        if (!rhs.has(val)) return false;
+    }
+    return true;
+}
+
 function generateUpdateSelectionGroupActions(
     selectionGroupsIds: number[],
     selectedMupsIds: string[],
@@ -53,6 +61,14 @@ function generateUpdateSelectionGroupActions(
 ) {
     const actions: ITSAction[] = [];
     for (let selectionGroupId of selectionGroupsIds) {
+        // check if need update
+        const selectionGroupMups = repository.selectionGroupToMupsData.data[selectionGroupId];
+        const initMups = new Set(selectionGroupMups.ids);
+        const newMups = new Set(selectedMupsIds);
+        if (CheckSetsEqual(initMups, newMups)) {
+            continue;
+        }
+
         const selectionGroup = repository.selectionGroupData.data[selectionGroupId];
         actions.push(new UpdateSelectionGroupAction(selectionGroup, selectedMupsIds))
     }
@@ -86,6 +102,7 @@ function generateUpdateLimitActions(
             const selectionGroupId = selectionGroupsIds[i];
             const initLimit = mupDiffs[mupId].initLimits[i];
             // alert(mupDiffs[mupId].initLimits);
+            console.log(`initLimit: ${initLimit} newLimit: ${newLimit}`);
             if (initLimit !== newLimit) {
                 actions.push(new UpdateLimitAction(mupId, selectionGroupId, newLimit));
             }

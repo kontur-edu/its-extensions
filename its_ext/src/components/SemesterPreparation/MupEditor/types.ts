@@ -11,9 +11,9 @@ export interface IMupEditorProps {
     //     newDates: [string, string],
     //     limits: {[key: string]: number}
     // ) => void;
-    onApply: (
-        actions: ITSAction[],
-    ) => void;
+    // onApply: (
+    //     actions: ITSAction[],
+    // ) => void;
     onNextStep: () => void;
     onUnauthorized: () => void;
 }

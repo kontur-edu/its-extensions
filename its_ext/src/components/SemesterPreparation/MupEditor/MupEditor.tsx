@@ -13,13 +13,14 @@ import {
 
 import { ITSContext } from "../../../common/Context";
 
-import Button from '@mui/material/Button';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import { ActionType, ITSAction, ExecuteActions } from "../../../common/actions";
 import { createActions, GetMupActions } from "../../../mupUpdater/actionCreater";
 import { UpdateSelectionGroupAction } from "../../../mupUpdater/actions";
 import { CreateDebouncedWrapper } from "../../../utils/helpers";
 import { IActionExecutionLogItem } from "../../../common/actions";
+
+import Button from '@mui/material/Button';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import DoneIcon from '@mui/icons-material/Done';
 import SystemUpdateAltIcon from '@mui/icons-material/SystemUpdateAlt';
 // Получение данных:
@@ -268,6 +269,10 @@ export function MupEditor(props: IMupEditorProps) {
         });
     };
 
+    const handleRefreshDebounced = () => {
+        debouncedWrapperForApply(handleRefresh);
+    }
+
     const generateActions = (
         mupDiffs: {[key: string]: IMupDiff},
         mupEdits: {[key: string]: IMupEdit},
@@ -352,7 +357,7 @@ export function MupEditor(props: IMupEditorProps) {
     
             setUpMupMessagesByActions(mupDiffs, mupEdits, actions);
             setMupEditorActions(actions);
-            props.onApply(actions);
+            // props.onApply(actions);
         });
     };
 
@@ -435,7 +440,7 @@ export function MupEditor(props: IMupEditorProps) {
 
                 <h4>Выберите МУПы и лимиты на количество зачисленных студентов</h4>
 
-                <Button onClick={handleRefresh}
+                <Button onClick={handleRefreshDebounced}
                     style={{fontSize: 12, marginBottom: '1em'}}
                     variant='text' startIcon={<RefreshIcon />} >Обновить список</Button>
                 <MupsList 

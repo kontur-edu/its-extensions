@@ -69,10 +69,10 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     // const [mupToPerionds, setMupToPerionds] = useState<IMupToPeriods | null>(null);
     const [editorDataPrepared, setEditorDataPrepared] = useState<boolean>(false);
     const requestSelectionGroupsInProgress = useRef(false);
-    const [mupEditorActions, setMupEditorActions] = useState<ITSAction[]>([]);
-    const [mupEditorActionResults, setMupEditorActionResults] = useState<IActionExecutionLogItem[]>([]);
-    const [subgroupSelectionActions, setSubgroupSelectionActions] = useState<ITSAction[]>([]);
-    const [subgroupSelectionActionsResults, setSubgroupSelectionActionsResults] = useState<IActionExecutionLogItem[]>([]);
+    // const [mupEditorActions, setMupEditorActions] = useState<ITSAction[]>([]);
+    // const [mupEditorActionResults, setMupEditorActionResults] = useState<IActionExecutionLogItem[]>([]);
+    // const [subgroupSelectionActions, setSubgroupSelectionActions] = useState<ITSAction[]>([]);
+    // const [subgroupSelectionActionsResults, setSubgroupSelectionActionsResults] = useState<IActionExecutionLogItem[]>([]);
 
     const stepTwoRef = useRef<HTMLElement | null>(null);
     const stepThreeRef = useRef<HTMLElement | null>(null);
@@ -204,46 +204,46 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     }
 
 
-    const handleMupEditorApply2 = (
-        actions: ITSAction[]
-    ) => {
-        alert(`Сохранение actions`);
-        setMupEditorActions(actions);
-    }
+    // const handleMupEditorApply2 = (
+    //     actions: ITSAction[]
+    // ) => {
+    //     alert(`Сохранение actions`);
+    //     setMupEditorActions(actions);
+    // }
 
-    const handleSubgroupSelectionApply = (
-        competitionGroupIds: number[],
-        subgroupInfo: ISubgoupDiffInfo
-    ) => {
-        alert(`Сохраненние action`);
-        const actions = createSubgroupSelectionActions(
-            competitionGroupIds,
-            subgroupInfo,
-            context.dataRepository.subgroupData
-        );
-        console.log("handleSubgroupSelectionApply");
-        console.log(actions);
-        setSubgroupSelectionActions(actions);
-    }
+    // const handleSubgroupSelectionApply = (
+    //     competitionGroupIds: number[],
+    //     subgroupInfo: ISubgoupDiffInfo
+    // ) => {
+    //     alert(`Сохраненние action`);
+    //     const actions = createSubgroupSelectionActions(
+    //         competitionGroupIds,
+    //         subgroupInfo,
+    //         context.dataRepository.subgroupData
+    //     );
+    //     console.log("handleSubgroupSelectionApply");
+    //     console.log(actions);
+    //     setSubgroupSelectionActions(actions);
+    // }
 
-    const handleSubgroupSelectionApplyReal = () => {
-        // return; // TODO: Delete this;
-        setMupEditorActionResults([]);
-        ExecuteActions(subgroupSelectionActions, context)
-                .then(results => setSubgroupSelectionActionsResults(results))
-                .then(() => alert("Изменения применены"));
+    // const handleSubgroupSelectionApplyReal = () => {
+    //     // return; // TODO: Delete this;
+    //     // setMupEditorActionResults([]);
+    //     ExecuteActions(subgroupSelectionActions, context)
+    //             .then(results => setSubgroupSelectionActionsResults(results))
+    //             .then(() => alert("Изменения применены"));
 
-        setSubgroupSelectionActions([]);
-        prepareDataForSelectionGroups(selectionGroupsIds)
-        .then(() => setSelectionGroupsIds([...selectionGroupsIds]))
-        .catch(err => {
-            if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-                props.onUnauthorized();
-                return;
-            }
-            throw err;
-        });
-    }
+    //     setSubgroupSelectionActions([]);
+    //     prepareDataForSelectionGroups(selectionGroupsIds)
+    //     .then(() => setSelectionGroupsIds([...selectionGroupsIds]))
+    //     .catch(err => {
+    //         if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+    //             props.onUnauthorized();
+    //             return;
+    //         }
+    //         throw err;
+    //     });
+    // }
 
     useEffect(() => {
         refreshSelectionGroups();
@@ -251,8 +251,8 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     }, [props.isUnauthorized]);
 
     const renderStep2 = () => {
-        console.log("mupEditorActionResults");
-        console.log(mupEditorActionResults);
+        // console.log("mupEditorActionResults");
+        // console.log(mupEditorActionResults);
         return (
             <article className="step" ref={stepTwoRef}>
                 <h3 className="step__header">2. Лимиты МУПов и даты выбора</h3>
@@ -260,7 +260,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
                 <MupEditor
                     selectionGroupIds={selectionGroupsIds}
                     dataIsPrepared={editorDataPrepared}
-                    onApply={handleMupEditorApply2}
+                    // onApply={() => {}}
                     onNextStep={handleMupEditorNextStepButton}
                     onUnauthorized={props.onUnauthorized}
                 />
@@ -276,17 +276,16 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
                 <SubgroupSelection
                     selectionGroupIds={selectionGroupsIds}
                     dataIsPrepared={editorDataPrepared}
-                    onApply={handleSubgroupSelectionApply}
+                    // onApply={handleSubgroupSelectionApply}
                     onUnauthorized={props.onUnauthorized}
                 />
-                <ul>
+                {/* <ul>
                     {subgroupSelectionActions.map((a: ITSAction, index: number) => <li key={index}>{a.getMessage()}</li>)}
                 </ul>
                 
                 <Button onClick={handleSubgroupSelectionApplyReal}
                         variant="contained" style={{backgroundColor: 'red', alignSelf: 'flex-start'}}
                     >Настоящее применение</Button>
-                {/* <button className="step__button" onClick={handleSubgroupSelectionApplyReal}>Настоящее применение</button> */}
                 <ul>
                     {subgroupSelectionActionsResults.map((logItem: IActionExecutionLogItem, index: number) =>
                         <li key={index}>{logItem.actionMessage}
@@ -298,10 +297,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
                             </ul>
                         </li>
                     )}
-                    {/* {subgroupSelectionActionsResults.map((ar: IActionResponse, index: number) =>
-                        <li key={index} className={ar.success ? "message_success" : "message_error"}>{ar.message}</li>
-                    )} */}
-                </ul>
+                </ul> */}
             </article>
         );
     }

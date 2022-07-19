@@ -49,9 +49,13 @@ export async function ExecuteActions(actions: ITSAction[], itsContext: IITSConte
             actionResults: []
         };
         actionResults.forEach(ar => {
+            let message = 'выполнено';
+            if (ar.summary || ar.message) {
+                message = `${ar.summary || ''} ${ar.message || ''}`;
+            }
             actionExecutionLogItem.actionResults.push({
                 success: ar.success,
-                message: ar.message ?? 'выполнено'
+                message: message
             });
         });
         results.push(actionExecutionLogItem);

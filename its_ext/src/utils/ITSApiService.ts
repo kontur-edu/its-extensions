@@ -26,6 +26,7 @@ import { reformatItsDate } from "./helpers";
 export interface IActionResponse {
     success: boolean;
     message?: string;
+    summary?: string;
 }
 
 
@@ -170,10 +171,15 @@ export class ITSApiService {
                 return {success: false, message};
         }
         const response = await this.requestService.PostFormData(url, data);
-        const result = {success: response.success, message: response.data};
+        const result: IActionResponse = {
+            success: response.success,
+            message: response.data,
+            summary: `${url} ${JSON.stringify(data)}`
+        };
         if (response.success && response.data) {
             const bodyJson = JSON.parse(response.data);
-            return bodyJson;
+            result.success = bodyJson.success;
+            result.message = bodyJson.message;
         }
         return result;
     }
@@ -196,10 +202,15 @@ export class ITSApiService {
         }
     
         const response = await this.requestService.PostFormData(url, data);
-        const result = {success: response.success, message: response.data};
+        const result = {
+            success: response.success,
+            message: response.data,
+            summary: `${url} ${JSON.stringify(data)}`
+        };
         if (response.success && response.data) {
             const bodyJson = JSON.parse(response.data);
-            return bodyJson;
+            result.success = bodyJson.success;
+            result.message = bodyJson.message;
         }
         return result;
     }
@@ -222,10 +233,15 @@ export class ITSApiService {
         }
         
         const response = await this.requestService.PostFormData(url, data);
-        const result = {success: response.success, message: response.data};
+        const result = {
+            success: response.success,
+            message: response.data,
+            summary: `${url} ${JSON.stringify(data)}`
+        };
         if (response.success && response.data) {
             const bodyJson = JSON.parse(response.data);
-            return bodyJson;
+            result.success = bodyJson.success;
+            result.message = bodyJson.message;
         }
         return result;
     }
@@ -271,10 +287,15 @@ export class ITSApiService {
         }
 
         const response = await this.requestService.PostFormData(url, data);
-        const result = {success: response.success, message: response.data};
+        const result = {
+            success: response.success,
+            message: response.data,
+            summary: `${url} ${JSON.stringify(data)}`
+        };
         if (response.success && response.data) {
             const bodyJson = JSON.parse(response.data);
-            return bodyJson;
+            result.success = bodyJson.success;
+            result.message = bodyJson.message;
         }
         return result;
     }
@@ -296,10 +317,15 @@ export class ITSApiService {
         }
     
         const response = await this.requestService.PostFormData(url, data, 'text');
-        const result = {success: response.success && response.data === '', message: response.data};
+        const result = {
+            success: response.success && response.data === '',
+            message: response.data,
+            summary: `${url} ${JSON.stringify(data)}`
+        };
         if (response.success && response.data) {
             const bodyJson = JSON.parse(response.data);
-            return bodyJson;
+            result.success = bodyJson.success;
+            result.message = bodyJson.message;
         }
         return result;
     }
@@ -394,7 +420,8 @@ export class ITSApiService {
         const result = {success: response.success, message: response.data};
         if (response.success && response.data) {
             const bodyJson = JSON.parse(response.data);
-            return bodyJson;
+            result.success = bodyJson.success;
+            result.message = bodyJson.message;
         }
         return result;
     }

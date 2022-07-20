@@ -17,12 +17,12 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { IActionExecutionLogItem, ITSAction, ExecuteActions } from "../../../common/actions";
+import { createTaskResultActions } from "../../../taskResultUpdater/actionCreator";
+import { CreateDebouncedWrapper } from "../../../utils/helpers";
 
 import Button from '@mui/material/Button';
-import { createTaskResultActions } from "../../../taskResultUpdater/actionCreator";
+import RefreshIcon from '@mui/icons-material/Refresh';
 
-
-import { CreateDebouncedWrapper } from "../../../utils/helpers";
 
 
 const debouncedWrapperForApply = CreateDebouncedWrapper(DEBOUNCE_MS);
@@ -248,6 +248,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
                 newInvalidStudentRows.push(i);
             }
         }
+
         setStudentItems(newStudentItems);
         setInvalidStudentRows(newInvalidStudentRows);
         return newStudentItems;
@@ -296,7 +297,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
         })
     }
 
-    const handleRefreshCompetitionGroups = () => {
+    const handleRefreshAdmissionInfo = () => {
         // alert("Refresh Students passed Entrance Task");
         refreshAdmissionInfo();
     }
@@ -373,7 +374,10 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
                 />
                 {invalidStudentRows.length > 0 && renderInvalidStudentRows()}
                 <h3>Студенты (активные), прошедшие Тестовое</h3>
-                <button className="step__button" onClick={handleRefreshCompetitionGroups}>Обновить</button>
+
+                <Button onClick={handleRefreshAdmissionInfo}
+                    style={{fontSize: 12, marginBottom: '1em'}}
+                    variant='text' startIcon={<RefreshIcon />} >Обновить список</Button>
                 <section className="table__container">
                     <table className="table">
                         <thead>

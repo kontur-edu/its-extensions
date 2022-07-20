@@ -294,7 +294,7 @@ export function CreateUpdateSubgroupMetaLoadCountBySubgroupDiff(
         const [sm1, sm2] = sDiff.loadsToMetas[load];
 
         if (sm1 !== null && sm2 !== null) {
-            if (sm1.count !== sm2.count) {
+            if (sm1.count !== sm2.count && (!sm1.count || !sm2.count)) {
                 const maxCount = Math.max(sm1.count, sm2.count);
                 if (sm1.count !== maxCount) { // change c1
                     actions.push(new UpdateSubgroupMetaLoadCountAction(

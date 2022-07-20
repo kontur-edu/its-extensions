@@ -19,14 +19,7 @@ import Button from '@mui/material/Button';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import Link from '@mui/material/Link';
 import NorthEastIcon from '@mui/icons-material/NorthEast';
-// import {ISubgoupMetaDiff} from "../../../common/types";
-// Для выбранных групп выбора получить ID их Конкурсных групп
 
-// Запросить конкурсные группы
-// https://its.urfu.ru/MUPItsSubgroupMeta/Index?competitionGroupId=24&_dc=1657456081410&page=1&start=0&limit=300&filter=%5B%7B%22property%22%3A%22title%22%2C%22value%22%3A%22%22%7D%2C%7B%22property%22%3A%22discipline%22%2C%22value%22%3A%22%22%7D%2C%7B%22property%22%3A%22count%22%2C%22value%22%3A%22%22%7D%5D
-// https://its.urfu.ru/MUPItsSubgroupMeta/Edit
-// id: 421
-// groupCount: 1
 
 function checkArraysSame(arr1: any[], arr2: any[]) {
     return arr1.sort().join(',') === arr2.sort().join(',');
@@ -78,7 +71,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
                 const mup = context.dataRepository.mupData.data[mupId];
                 mupNames.push(mup.name);
             }
-            console.log("creating subgoupDiffInfo");
+            // console.log("creating subgoupDiffInfo");
             
             const newSubgoupDiffInfo: ISubgoupDiffInfo = CreateSubgroupDiffInfo(
                 newCompetitionGroupIds,
@@ -86,8 +79,8 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
                 context.dataRepository.competitionGroupToSubgroupIds,
                 context.dataRepository.subgroupData,
             );
-            console.log("subgoupDiffInfo");
-            console.log(newSubgoupDiffInfo);
+            // console.log("subgoupDiffInfo");
+            // console.log(newSubgoupDiffInfo);
             setSubgroupDiffInfo(newSubgoupDiffInfo);
 
             const newMupToDiffs: {[key: string]: IMupSubgroupDiff} = CreateSubgroupDiffs(
@@ -96,19 +89,18 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
                 newSubgoupDiffInfo,
                 context.dataRepository.subgroupData
             );
-            console.log("newMupToDiffs");
-            console.log(newMupToDiffs);
+            // console.log("newMupToDiffs");
+            // console.log(newMupToDiffs);
             setMupToDiffs(newMupToDiffs);
             
             const newMupToDifferenceMessages = CreateMupToDifferenceMessages(
                 mupNames,
                 newMupToDiffs,
-                newCompetitionGroupIds,
+                // newCompetitionGroupIds,
                 newSubgoupDiffInfo
             );
-            console.log("newMupToDifferenceMessages");
-            console.log(newMupToDifferenceMessages);
-            // setMupToDifferenceTodoMessages(newMupToDifferenceMessages);
+            // console.log("newMupToDifferenceMessages");
+            // console.log(newMupToDifferenceMessages);
 
             const newActions = CreateActionsByDiffs(
                 newCompetitionGroupIds,
@@ -117,7 +109,6 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
                 context.dataRepository.subgroupData
             );
 
-            // alert(`${newActions.length} actions created`);
             
             setSubgroupSelectionActions(newActions);
 
@@ -140,11 +131,6 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
                     newMupToDifferenceMessages[mupName],
                     todoMessages
                 ];
-                // if (subgoupDiffInfo.subgroupAndMetaAreSameDiffs.hasOwnProperty(mupName)) {
-                //     const [s1, s2] = subgoupDiffInfo.subgroupAndMetaAreSameDiffs[mupName];
-                //     if (!s1 || !s2) {
-                //     }
-                // }
             }
 
             setMupToDifferenceTodoMessages(mupToDifferenceTodoMessages);
@@ -208,12 +194,10 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
                 </ul>
                 <p>
                     Создайте недостающие Конкрусные группы и укажите Группы
-                        выбора <Link href={COMPETITION_GROUP_URL} rel="noreferrer" target="_blank"
+                    выбора <Link href={COMPETITION_GROUP_URL} rel="noreferrer" target="_blank"
                                 style={{textDecoration: 'none', display: 'flex', alignItems: 'center', fontSize: 16}} >
                                     <NorthEastIcon />в ИТС
                             </Link>
-                        
-                        {/* <a href={COMPETITION_GROUP_URL} rel="noreferrer" target="_blank">тут -	&#62; its.urfu.ru</a> */}
                 </p>
                 
             </div>
@@ -235,9 +219,6 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
                                 style={{textDecoration: 'none', display: 'flex', alignItems: 'center', fontSize: 16}} >
                                     <NorthEastIcon />{competitionGroupName}
                             </Link>
-                            {/* <a href={link}  rel="noreferrer" target="_blank">
-                                {competitionGroupName}
-                            </a> */}
                         </li>
                     })}
                 </ul>
@@ -303,7 +284,6 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
                 <Button onClick={refreshDataDebounced}
                     style={{fontSize: 12}}
                     variant='text' startIcon={<RefreshIcon />} >Обновить список</Button>
-                {/* <button className="step__button" onClick={refreshData}>Обновить</button> */}
                 {competitionGroupIds.length !== 2 && renderCompetitionGroupIsMissingMessage()}
                 {renderCompetitionGroupSubgroupMetaLinks()}
                 {renderMupsAreDifferent()}
@@ -329,7 +309,6 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
                 <Button onClick={handleApplyReal}
                     variant="contained" style={{marginRight: '1em'}}
                     >Применение изменений</Button>
-                {/* <button className="step__button" onClick={handleSubgroupSelectionApplyReal}>Настоящее применение</button> */}
                 <ul>
                     {subgroupSelectionActionsResults.map((logItem: IActionExecutionLogItem, index: number) =>
                         <li key={index}>{logItem.actionMessage}
@@ -341,12 +320,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
                             </ul>
                         </li>
                     )}
-                    {/* {subgroupSelectionActionsResults.map((ar: IActionResponse, index: number) =>
-                        <li key={index} className={ar.success ? "message_success" : "message_error"}>{ar.message}</li>
-                    )} */}
                 </ul>
-                
-                {/* <button className="step__button" onClick={handleApply}>Применить действия</button> */}
             </article>
         </section>
     );

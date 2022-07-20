@@ -328,9 +328,3 @@ export function getMupActions(actions: ITSAction[]): {[key: string]: ITSAction[]
 }
 
 
-// export interface IActionResult {
-//     message: string;
-//     success: boolean;
-// }
-
-

@@ -134,15 +134,6 @@ export function CreateUpdateTeacherActionsBySubgroupDiff(
     // subgroupData: ISubgroupData,
 ): ITSAction[] {
     const actions: ITSAction[] = [];
-    // if (!subgroupInfo.subgroupDiffs.hasOwnProperty(mupName)) return actions;
-
-    // const subgroupDiff = subgroupInfo.subgroupDiffs[mupName];
-    // if (!subgroupDiff.hasOwnProperty(competitionGroupIds[0])
-    //         || !subgroupDiff.hasOwnProperty(competitionGroupIds[1])) {
-    //     return [];
-    // }
-
-    // const firstSubgroup = subgroupDiff[competitionGroupIds[0]];
     for (const load_number in sDiff.loadToTeachers) {
         const [t1, t2] = sDiff.loadToTeachers[load_number];
 
@@ -150,12 +141,6 @@ export function CreateUpdateTeacherActionsBySubgroupDiff(
         const load: string = load_number_parts[0];
         const number: number = Number(load_number_parts[1]);
         if (t1 || t2) {
-            // const fSubgroup = subgroupData.data[firstSubgroup[load_number]];
-            // const subgroupInfo: ISubgroupInfo = {
-            //     mupName: mupName,
-            //     load: fSubgroup.load,
-            //     number: fSubgroup.number,
-            // };
             const subgroupInfo: ISubgroupInfo = {
                 mupName: mupName,
                 load: load,

@@ -35,13 +35,6 @@ export interface ISelectionGroupMup {
     mupId: string;
 }
 
-// export interface IPeriod {
-//     id: number;
-//     year: number;
-//     semesterId: number;
-//     selectionBegin: string;
-//     selectionDeadline: string;
-// }
 
 export interface IMupLoad { // Tmer
     id: number;
@@ -113,18 +106,6 @@ export interface IPeriodTimeInfo {
     dates: [string, string];
 }
 
-// export interface IMupEditorUpdate {
-//     date
-// }
-
-// Выбранные МУПы
-// Все мупы
-// Периоды для каждого МУПа выбранного МУПа
-
-// При выборе мупа, unfocus если limit изменен
-// Делается запрос периода и лимита для МУПа
-// Если период выбора уже есть
-
 
 export interface ISubgroupMeta {
     id: number;
@@ -163,22 +144,9 @@ export type IMupNameToSubgroups = {[key: string]: number[]}
 export type ICompetitionGroupToMupSubgroups = {[key: number]: IMupNameToSubgroups};
 
 
-// export type ICompetitionGroupToSubgroupIds = {[key: number]: number[]};
-
-// mupId -> {CGid -> [], CGid -> []}
-// count
-// names
-// export interface ISubgoupDiff {
-    
-// }
 
 export type SubgroupMetaData = {[key: string]: {[key: number]: {[key: string]: ISubgroupMeta}}};
 
-// export interface ISubgoupMetaDiff {
-//     mupId: string;
-//     difference: string;
-//     todo: string;
-// }
 
 export type MetaDiffs = {
     // disipline
@@ -211,20 +179,11 @@ export interface ISubgoupDiffInfo {
     metaDiffs: MetaDiffs;
     subgroupDiffs: SubgroupDiffs;
     subgroupAndMetaAreSameDiffs: SubgroupAndMetaAreSameDiffs;
-    // metasAndSubgroupsAreSame: boolean;
-    // loadToCounts: {[key: string]: (ISubgroupMeta | null)[]};
-    // nameToTeacherIds: {[key: string]: (number | null)[]}
 }
 
 
 export interface IMupSubgroupDiff {
-    // differences: string[]; // not needed
-    // todos: string[]; // not needed
-    // addLoadsManualFor: number[], // not needed
-    // loadsToGroupsNeeded: {[key: string]: number};
-    // createSubgroupsFor: number[];
     loadsToMetas: {[key: string]: [ISubgroupMeta | null, ISubgroupMeta | null]} // load -> [[],[]]
-    // abse/ntSubgroupsForLoad_number: [string[], string[]];
     loadToTeachers: {[key: string]: [string | null, string | null]}; // load_number -> [t1, t2]
 }
 

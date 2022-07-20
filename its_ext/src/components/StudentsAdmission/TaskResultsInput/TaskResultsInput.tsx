@@ -110,21 +110,6 @@ export function createStudentItems(
     return personalNumberToStudentItems;
 }
 
-// function findCurrentPersonalNumbers(
-//     admissionIds: number[],
-//     admissionInfo: AdmissionInfo,
-// ): string[] {
-//     const res: string[] = [];
-//     for (const admissionId of admissionIds) {
-//         if (admissionInfo.hasOwnProperty(admissionId)) {
-//             res.push(...Object.keys(admissionInfo[admissionId]));
-//         }
-//     }
-//     return res;
-// }
-
-
-// fullname -> studentNumber[]
 
 export function TaskResultsInput(props: ITaskResultsInputProps) {
     const [selectedMupId, setSelectedMupId] = useState<string>('');
@@ -135,7 +120,6 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     const [taskResultsActionResults, setTaskResultsActionResults] = useState<IActionExecutionLogItem[]>([]);
     const [textAreaValue, setTextAreaValue] = useState<string>('');
     const [invalidStudentRows, setInvalidStudentRows] = useState<number[]>([])
-    // const timeoutId = useRef<number | null>(null);
 
     const context = useContext(ITSContext)!;
 
@@ -184,8 +168,6 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     }, [props.competitionGroupIds]);
 
     useEffect(() => {
-        // const need
-        // if (context.dataRepository.admissionInfo.hasOwnProperty())
         context.dataRepository.UpdateStudentAdmissionsAndStudentData(admissionIds)
             .then(() => {
                 const newStudentItems = createStudentItems(
@@ -263,7 +245,6 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
         console.log("records");
         console.log(records);
         setTextAreaValue(value);
-        // selectStudentsByNameRecords(records);
         selectStudentsDebounced(records);
     }
 
@@ -301,7 +282,6 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     }
 
     const handleRefreshAdmissionInfo = () => {
-        // alert("Refresh Students passed Entrance Task");
         refreshAdmissionInfo();
     }
 

@@ -98,15 +98,6 @@ export function mupExistsInAnySelectionGroups(mupId: number, selectionGroupIds: 
 
 
 
-// export function formatDate(date: Date) {
-//     let mm = date.getMonth() + 1;
-//     let dd = date.getDate();
-  
-//     return [
-//         date.getFullYear(), (mm > 9 ? '' : '0') + mm, (dd > 9 ? '' : '0') + dd
-//     ].join('-');
-// };
-
 export function formatDate(date: Date) {
     let mm = date.getMonth() + 1;
     let dd = date.getDate();
@@ -134,35 +125,12 @@ export function reformatItsDate(itsDate: string) {
 };
 
 
-// export function formatDateForITS(date: Date) {
-//     let mm = date.getMonth() + 1;
-//     let dd = date.getDate();
-  
-//     return [
-//         (dd > 9 ? '' : '0') + dd,
-//         (mm > 9 ? '' : '0') + mm,
-//         date.getFullYear(),
-//     ].join('-');
-// };
-
-// dd.mm.yyyy
-// export function parseDate(dateStr: string) {
-//     return new Date(dateStr.split('.').reverse().join(' '));
-// }
 
 export function checkDateIsLess(dateStr: string, timeStamp: number) {
     // return parseDate(dateStr).getTime() < timeStamp;
     if (!dateStr) return false;
     return (new Date(dateStr)).getTime() < timeStamp;
 }
-
-// export function CompareDates(dateStr1: string, dateStr2: string) {
-//     const d1 = dateStr1.split('.').reverse().join(".");
-//     const d2 = dateStr2.split('.').reverse().join(".");
-//     if (d1 < d2) return -1;
-//     if (d1 > d2) return 1;
-//     return 0;
-// }
 
 
 

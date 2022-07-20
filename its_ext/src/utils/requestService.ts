@@ -52,11 +52,6 @@ export class RequestService {
         }
         const data = await response.text() as any;
         return {success: true, data};
-        // const jsonBody = await response.json();
-        // if (!jsonBody.hasOwnProperty('data') || !jsonBody.hasOwnProperty('status')) {
-        //     throw Error(REQUEST_ERROR_REQUEST_FAILED);
-        // }
-        // return jsonBody;
     }
 
     async Authenticate(

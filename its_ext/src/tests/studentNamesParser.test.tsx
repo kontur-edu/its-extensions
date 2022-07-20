@@ -112,7 +112,7 @@ describe("findPersonalNumber", () => {
         expect(actual).toBe(personalNumbers[1]);
     });
 
-    it('finds personalNumber matches any if have several people', () => {
+    it('finds personalNumber matches none if have several people', () => {
         const actual = findPersonalNumber(
             nameRecords[6],
             surnameToPersonalNumbers,
@@ -120,6 +120,6 @@ describe("findPersonalNumber", () => {
             studentData
         );
 
-        expect(actual).toBeTruthy();
+        expect(actual).toBeFalsy();
     });
 });

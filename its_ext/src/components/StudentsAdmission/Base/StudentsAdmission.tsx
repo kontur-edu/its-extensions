@@ -60,7 +60,6 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
     
     useEffect(() => {
         refreshCompetitionGroups();
-
     }, []);
 
     const handleCompetitionGroupsSelect = (newCompetitionGroupIds: number[]) => {
@@ -71,25 +70,6 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
         stepTwoRef.current?.scrollIntoView({behavior: 'smooth'});
     }
 
-    // const handleTaskResultsInputApply = (admissionIds: number[], personalNumberToTaskResult: {[key: string]: number | null}) => {
-    //     alert(`Применение изменений`);
-    //     const actions = createTaskResultActions(
-    //         admissionIds,
-    //         personalNumberToTaskResult,
-    //         context.dataRepository.admissionInfo,
-    //         context.dataRepository.studentData
-    //     );
-    //     setTaskResultsActions(actions);
-    // }
-
-    // const handleTaskResultsInputApplyReal = () => {
-    //     alert(`Настоящее применение изменений`);
-    //     return;
-        // ExecuteActions(taskResultsActions, context)
-        //     .then(actionResults => {
-        //         setTaskResultsActionResults(actionResults);
-        //     });
-    // }
 
     const renderTaskResultsInput = () => {
         return (
@@ -99,19 +79,9 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
                 
                     <TaskResultsInput
                         competitionGroupIds={competitionGroupIds}
-                        // onApply={handleTaskResultsInputApply}
                         onUnauthorized={props.onUnauthorized}
                     />
                 </article>
-                {/* <ul>
-                    {taskResultsActions.map((a: ITSAction, index: number) => <li key={index}>{a.getMessage()}</li>)}
-                </ul>
-                <button className="step__button" onClick={handleTaskResultsInputApplyReal}>Настоящее применение</button>
-                <ul>
-                    {taskResultsActionResults.map((ar: IActionResponse, index: number) =>
-                        <li key={index} className={ar.success ? "message_success" : "message_error"}>{ar.message}</li>
-                    )}
-                </ul> */}
             </React.Fragment>
         );
     };

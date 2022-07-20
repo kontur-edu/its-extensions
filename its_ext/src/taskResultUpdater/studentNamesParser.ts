@@ -12,9 +12,10 @@ function normalizeStudentNames(text: string): string[][] {
     for (const studentRecord of studentRecords) {
         const studentRecordSpaceSeparated = studentRecord
             .replace(/\s?-\s?/g, '-')
-            .replace(/[,\s]+/g, ' ')
-            .trim()
-            .toLowerCase();
+            .replace(/[,;.\s]+/g, ' ')
+            .toLowerCase()
+            .replace(/ё/g, 'е')
+            .trim();
         const parts = studentRecordSpaceSeparated.split(' ');
         result.push(parts);
     }
@@ -47,22 +48,6 @@ export function getNameRecords(text: string): TaskResultNameRecord[] {
 
     return result;
 }
-
-
-// export function getStudentNameToStudentNumbers(
-//     personalNumberToStudentItem: {[key: string]: {name: string, group: string}}
-// ): {[key: string]: string[]} {
-//     const res: {[key: string]: string[]} = {};
-//     for (const personalNumber in personalNumberToStudentItem) {
-//         const nameLower = personalNumberToStudentItem[personalNumber].name.toLowerCase();
-//         if (!res.hasOwnProperty(nameLower)) {
-//             res[nameLower] = [];
-//         }
-//         res[nameLower].push(personalNumber);
-//     }
-
-//     return res;
-// }
 
 
 // Определить фамилию по окончанию
@@ -111,22 +96,24 @@ function tryFindByNameParts(
     nameRecord: TaskResultNameRecord,
     personalNumbers: string[],
     studentData: IStudentData,
-): string | null {
+): string[] {
+    const res: string[] = [];
     for (const personalNumber of personalNumbers) {
         const testStudent = studentData.data[personalNumber];
         if (nameRecord.group && nameRecord.group.toLowerCase() !== testStudent.groupName.toLowerCase()) {
             console.log(`${nameRecord.group.toLowerCase()} !== ${testStudent.groupName.toLowerCase()}`);
             continue;
         }
+        const fname = testStudent.firstname.toLowerCase().replace('ё', 'e');
+        const sname = testStudent.surname.toLowerCase().replace('ё', 'e');
+        const pname = testStudent.patronymic.toLowerCase().replace('ё', 'e');
         const partsFound = nameRecord.nameParts.every(
-            np => np === testStudent.firstname.toLowerCase() ||
-                    np === testStudent.surname.toLowerCase() ||
-                    np === testStudent.patronymic.toLowerCase());
+            np => np === fname ||  np === sname || np === pname);
         if (partsFound) {
-            return personalNumber;
+            res.push(personalNumber);
         }
     }
-    return null;
+    return res;
 }
 
 export function findPersonalNumber(
@@ -151,22 +138,11 @@ export function findPersonalNumber(
         const res = tryFindByNameParts(nameRecord, personalNumbers, studentData);
         console.log(`tryFindByNameParts`);
         console.log(res);
-        if (res) {
-            return res;
+        if (res.length === 1) {
+            return res[0];
+        } else {
+            return null;
         }
-        // for (const personalNumber of personalNumbers) {
-        //     const testStudent = studentData.data[personalNumber];
-        //     if (nameRecord.group && nameRecord.group !== testStudent.groupName.toLowerCase()) {
-        //         continue;
-        //     }
-        //     const partsFound = nameRecord.nameParts.every(
-        //         np => np === testStudent.firstname ||
-        //                 np === testStudent.surname ||
-        //                 np === testStudent.patronymic);
-        //     if (partsFound) {
-        //         return personalNumber;
-        //     }
-        // }
     }
 
     const res = tryFindByNameParts(
@@ -176,7 +152,11 @@ export function findPersonalNumber(
     );
     console.log(`tryFindByNameParts all personalNumbers`);
     console.log(res);
-    return res;
+    if (res.length === 1) {
+        return res[0];
+    }
+    return null;
+    // return res;
 }
 // Найти список фамилий 
 // Вытащить фамилии из входных данных по этому списку

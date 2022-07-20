@@ -134,6 +134,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     const [taskResultsActions, setTaskResultsActions] = useState<ITSAction[]>([]);
     const [taskResultsActionResults, setTaskResultsActionResults] = useState<IActionExecutionLogItem[]>([]);
     const [textAreaValue, setTextAreaValue] = useState<string>('');
+    const [invalidStudentRows, setInvalidStudentRows] = useState<number[]>([])
     // const timeoutId = useRef<number | null>(null);
 
     const context = useContext(ITSContext)!;
@@ -162,11 +163,11 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
         if (context.dataRepository.mupData.ids.length === 0) {
             await context.dataRepository.UpdateMupData();
         }
-        const mupIds = getMupIdsToChoseFrom(
+        const newMupIds = getMupIdsToChoseFrom(
             props.competitionGroupIds,
             context.dataRepository.competitionGroupIdToMupAdmissions
         );
-        setMupIds(mupIds);
+        setMupIds(newMupIds);
 
         // request admission metas
         await context.dataRepository.UpdateAdmissionMetas(props.competitionGroupIds);
@@ -175,6 +176,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     }
     
     useEffect(() => {
+        if (props.competitionGroupIds.length !== 2) return;
         refreshAdmissionInfo();
     }, [props.competitionGroupIds]);
 
@@ -230,7 +232,9 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
 
         const newStudentItems = {...studentItems};
         personalNumbers.forEach(pn => newStudentItems[pn].testResult = 0);
-        for (const record of nameRecords) {
+        const newInvalidStudentRows: number[] = [];
+        for (let i = 0; i < nameRecords.length; i++) {
+            const record = nameRecords[i];
             if (record.nameParts.length === 0) continue;
             const personalNumber = findPersonalNumber(
                 record,
@@ -240,9 +244,12 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
             )
             if (personalNumber) {
                 newStudentItems[personalNumber].testResult = 1;
+            } else {
+                newInvalidStudentRows.push(i);
             }
         }
         setStudentItems(newStudentItems);
+        setInvalidStudentRows(newInvalidStudentRows);
         return newStudentItems;
     }
 
@@ -325,6 +332,23 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
 
     const handleRealApplyDebounced = () => debouncedWrapperForApply(handleRealApply);
 
+    const renderInvalidStudentRows = () => {
+        const rows = textAreaValue.split('\n');
+        const res: JSX.Element[] = [];
+        for (const rowIdx of invalidStudentRows) {
+            if (rowIdx < rows.length) {
+                res.push(<li key={rowIdx}>{rows[rowIdx]}</li>);
+            }
+        }
+        return (
+            <article className="warning">
+                <h4 className={style.not_parsed_rows__header}>Не получилось однозначно найти студентов по строкам:</h4>
+                <ul className={style.list}>
+                    {res}
+                </ul>
+            </article>);
+    }
+
     return (
         <section className="step__container">
             <article>
@@ -347,6 +371,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
                 <textarea value={textAreaValue} onChange={handleTextAreaChange} 
                     rows={8} cols={64}
                 />
+                {invalidStudentRows.length > 0 && renderInvalidStudentRows()}
                 <h3>Студенты (активные), прошедшие Тестовое</h3>
                 <button className="step__button" onClick={handleRefreshCompetitionGroups}>Обновить</button>
                 <section className="table__container">

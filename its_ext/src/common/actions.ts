@@ -38,7 +38,7 @@ export interface IActionExecutionLogItem {
 }
 
 
-export async function ExecuteActions(actions: ITSAction[], itsContext: IITSContext): Promise<IActionExecutionLogItem[]> {
+export async function executeActions(actions: ITSAction[], itsContext: IITSContext): Promise<IActionExecutionLogItem[]> {
     const results: IActionExecutionLogItem[] = [];
     for (let action of actions) {
         const actionResults = await action.execute(itsContext);

@@ -1,4 +1,4 @@
-import { FindCsrfTokens } from "./parser";
+import { findCsrfTokens } from "./parser";
 import { ICredentials } from '../common/types'
 import {
     CSRF_TOKEN_INPUT_NAME,
@@ -74,7 +74,7 @@ export class RequestService {
         const jsonBody = await this.SendRequest(urlWithProxy, optionsLoginPage);
 
         const pageString = jsonBody["data"];
-        const tokens: string[] = FindCsrfTokens(pageString);
+        const tokens: string[] = findCsrfTokens(pageString);
     
         console.log(`tokens found: ${tokens.length}`);
         if (tokens.length !== 1) {

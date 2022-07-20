@@ -1,6 +1,6 @@
 import { IITSContext } from "../common/Context";
 import { ISelectionGroup, IPeriod, IMupLoad, IPeriodTimeInfo } from "../common/types";
-import { ActionType, IActionExecutionLogItem, ITSAction } from "../common/actions";
+import { ActionType, ITSAction } from "../common/actions";
 import {IActionResponse} from "../utils/ITSApiService";
 
 

@@ -46,7 +46,7 @@ function generateDeleteSubgroupsActions(
     return actions;
 }
 
-export function CheckSetsEqual(lhs: Set<string>, rhs: Set<string>) {
+export function checkSetsEqual(lhs: Set<string>, rhs: Set<string>) {
     if (lhs.size !== rhs.size) return false;
     for (const val of Array.from(lhs.values())) {
         if (!rhs.has(val)) return false;
@@ -65,7 +65,7 @@ function generateUpdateSelectionGroupActions(
         const selectionGroupMups = repository.selectionGroupToMupsData.data[selectionGroupId];
         const initMups = new Set(selectionGroupMups.ids);
         const newMups = new Set(selectedMupsIds);
-        if (CheckSetsEqual(initMups, newMups)) {
+        if (checkSetsEqual(initMups, newMups)) {
             continue;
         }
 
@@ -294,7 +294,7 @@ export function createActions(
 }
 
 
-export function GetMupActions(actions: ITSAction[]): {[key: string]: ITSAction[]} {
+export function getMupActions(actions: ITSAction[]): {[key: string]: ITSAction[]} {
     const res: {[key: string]: ITSAction[]} = {};
     for (const action of actions) {
         if (action.actionType === ActionType.UpdateLimit) {

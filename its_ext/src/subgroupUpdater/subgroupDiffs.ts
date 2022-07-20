@@ -11,7 +11,7 @@ import {
 } from "../common/types"
 
 import {ITSAction} from '../common/actions';
-import { CheckSetsEqual } from "../mupUpdater/actionCreater";
+import { checkSetsEqual } from "../mupUpdater/actionCreater";
 
 
 function checkIfMetasAndSubgroupsAreSameForMupAndSubgroup(
@@ -94,7 +94,7 @@ function createSubgroupAndMetaAreSameDiffs(
 }
 
 
-export function CreateSubgroupDiffInfo(
+export function createSubgroupDiffInfo(
     competitionGroupIds: number[],
     competitionGroupToSubgroupMetas: ICompetitionGroupToSubgroupMetas,
     competitionGroupToSubgroupIds: ICompetitionGroupToSubgroupIds,
@@ -149,7 +149,7 @@ export function CreateSubgroupDiffInfo(
 }
 
 
-function CreateDiffMessageForMupByMeta(
+function createDiffMessageForMupByMeta(
     metaDiff: {
         [key: number]: {
             [key: string]: ISubgroupMeta
@@ -180,7 +180,7 @@ function CreateDiffMessageForMupByMeta(
 }
 
 
-function CreateDiffMessageForMupBySubgroups(
+function createDiffMessageForMupBySubgroups(
     subgroupDiff: {
         [key: number]: {
             [key: string]: number
@@ -226,7 +226,7 @@ function CreateDiffMessageForMupBySubgroups(
     }
 }
 
-export function CreateDiffMessageForMup(
+export function createDiffMessageForMup(
     mupName: string,
     competitionGroupIds: number[],
     subgroupDiffInfo: ISubgoupDiffInfo,
@@ -240,7 +240,7 @@ export function CreateDiffMessageForMup(
     if (subgroupDiffInfo.metaDiffs.hasOwnProperty(mupName)) {
         const metaDiff = subgroupDiffInfo.metaDiffs[mupName];
 
-        CreateDiffMessageForMupByMeta(
+        createDiffMessageForMupByMeta(
             metaDiff, competitionGroupIds,
             mupSubgroupDiff);
     }
@@ -248,7 +248,7 @@ export function CreateDiffMessageForMup(
     if (subgroupDiffInfo.subgroupDiffs.hasOwnProperty(mupName)) {
         const subgroupDiff = subgroupDiffInfo.subgroupDiffs[mupName];
         
-        CreateDiffMessageForMupBySubgroups(
+        createDiffMessageForMupBySubgroups(
             subgroupDiff, competitionGroupIds, subgroupData,
             mupSubgroupDiff);
     }
@@ -257,7 +257,7 @@ export function CreateDiffMessageForMup(
 }
 
 
-export function CreateSubgroupDiffs(
+export function createSubgroupDiffs(
     mupNames: string[],
     competitionGroupIds: number[],
     subgroupDiffInfo: ISubgoupDiffInfo,
@@ -265,7 +265,7 @@ export function CreateSubgroupDiffs(
 ): {[key: string]: IMupSubgroupDiff} {
     const res: {[key: string]: IMupSubgroupDiff} = {};
     mupNames.forEach(mupName => {
-        res[mupName] = CreateDiffMessageForMup(
+        res[mupName] = createDiffMessageForMup(
             mupName,
             competitionGroupIds,
             subgroupDiffInfo,
@@ -275,7 +275,7 @@ export function CreateSubgroupDiffs(
     return res;
 }
 
-export function CreateMupToDifferenceMessages(
+export function createMupToDifferenceMessages(
     mupNames: string[],
     sDiffs: {[key: string]: IMupSubgroupDiff},
     // competitionGroupIds: number[],
@@ -286,7 +286,7 @@ export function CreateMupToDifferenceMessages(
         if (!sDiffs.hasOwnProperty(mupName)) {
             throw new Error(`${mupName} has no corresponding SubgroupDiff`);
         }
-        res[mupName] = CreateDifferenceMessagesForMup(
+        res[mupName] = createDifferenceMessagesForMup(
             mupName,
             sDiffs[mupName],
             // competitionGroupIds,
@@ -296,14 +296,14 @@ export function CreateMupToDifferenceMessages(
     return res;
 }
 
-export function CreateDifferenceMessagesForMup(
+export function createDifferenceMessagesForMup(
     mupName: string,
     sDiff: IMupSubgroupDiff,
     // competitionGroupIds: number[],
     subgroupDiffInfo: ISubgoupDiffInfo,
 ): string[] {
     const messages: string[] = [];
-    messages.push(...CreateDifferenceMessagesForSubgroupDiff(
+    messages.push(...createDifferenceMessagesForSubgroupDiff(
         sDiff
     ));
     if (subgroupDiffInfo.subgroupAndMetaAreSameDiffs.hasOwnProperty(mupName)) {
@@ -326,31 +326,12 @@ export function CreateDifferenceMessagesForMup(
     if (haveLoadMetas && !haveCreatedSubgroups) {
         messages.push(`Не найдено созданных групп, примените изменения, чтобы создать подгруппы`);
     }
-    // if (subgroupDiffInfo.metaDiffs.hasOwnProperty(mupName)) {
-    //     const metaDiff = subgroupDiffInfo.metaDiffs[mupName]; 
-    //     if (!metaDiff.hasOwnProperty(competitionGroupIds[0])) {
-    //         messages.push(`Группа 1 не содержит нагрузок`);
-    //     }
-    //     if (!metaDiff.hasOwnProperty(competitionGroupIds[1])) {
-    //         messages.push(`Группа 2 не содержит нагрузок`);
-    //     }
-    // }
-
-    // if (subgroupDiffInfo.subgroupDiffs.hasOwnProperty(mupName)) {
-    //     const subgroupDiff = subgroupDiffInfo.subgroupDiffs[mupName];
-    //     if (!subgroupDiff.hasOwnProperty(competitionGroupIds[0])) {
-    //         messages.push(`Группа 1 не содержит созданных подгрупп`);
-    //     }
-    //     if (!subgroupDiff.hasOwnProperty(competitionGroupIds[1])) {
-    //         messages.push(`Группа 2 не содержит созданных подгрупп`);
-    //     }
-    // }
 
     return messages;
 }
 
 
-export function CreateDifferenceMessagesForSubgroupDiff(
+export function createDifferenceMessagesForSubgroupDiff(
     sDiff: IMupSubgroupDiff,
 ): string[] {
     const messages: string[] = [];
@@ -406,7 +387,7 @@ export function CreateDifferenceMessagesForSubgroupDiff(
         messages.push(`Группа 2 не имеет преподавателя для нагрузок: ${loadsStr}`);
     }
 
-    if (!CheckSetsEqual(teachers1, teachers2)) {
+    if (!checkSetsEqual(teachers1, teachers2)) {
         messages.push(`Наборы преподавателей отличаются`);
     }
 
@@ -414,20 +395,11 @@ export function CreateDifferenceMessagesForSubgroupDiff(
 }
 
 
-export function CreateTodoMessages(
-    sDiff: IMupSubgroupDiff,
+export function createTodoMessages(
+    // sDiff: IMupSubgroupDiff,
     actions: ITSAction[]
 ): string[] {
     const messages = actions.map(a => a.getMessageSimple());
-    // const haveLoadMetas = Object.keys(sDiff.loadsToMetas).length !== 0;
-    // const haveCreatedSubgroups = Object.keys(sDiff.loadToTeachers).length !== 0;
 
-    // if (haveLoadMetas) {
-    //     messages.push(``);
-    // }
-
-    // if (haveCreatedSubgroups) {
-    //     messages.push(`Примените изменения, чтобы создать подгруппы`);
-    // }
     return messages;
 }

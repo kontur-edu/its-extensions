@@ -16,16 +16,16 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import { IActionExecutionLogItem, ITSAction, ExecuteActions } from "../../../common/actions";
+import { IActionExecutionLogItem, ITSAction, executeActions } from "../../../common/actions";
 import { createTaskResultActions } from "../../../taskResultUpdater/actionCreator";
-import { CreateDebouncedWrapper } from "../../../utils/helpers";
+import { createDebouncedWrapper } from "../../../utils/helpers";
 
 import Button from '@mui/material/Button';
 import RefreshIcon from '@mui/icons-material/Refresh';
 
 
 
-const debouncedWrapperForApply = CreateDebouncedWrapper(DEBOUNCE_MS);
+const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
 
 export function getAdmissionIds(
@@ -163,14 +163,17 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
         if (context.dataRepository.mupData.ids.length === 0) {
             await context.dataRepository.UpdateMupData();
         }
+
+        // request admission metas
+        await context.dataRepository.UpdateAdmissionMetas(props.competitionGroupIds);
+        
         const newMupIds = getMupIdsToChoseFrom(
             props.competitionGroupIds,
             context.dataRepository.competitionGroupIdToMupAdmissions
         );
         setMupIds(newMupIds);
 
-        // request admission metas
-        await context.dataRepository.UpdateAdmissionMetas(props.competitionGroupIds);
+        
         
         setCurrentAdmissionIds(selectedMupId);
     }
@@ -325,7 +328,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
 
     const handleRealApply = () => {
         alert(`Настоящее применение изменений`);
-        ExecuteActions(taskResultsActions, context)
+        executeActions(taskResultsActions, context)
             .then(actionResults => {
                 setTaskResultsActionResults(actionResults);
             });

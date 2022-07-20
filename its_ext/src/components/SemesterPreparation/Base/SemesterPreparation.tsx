@@ -6,7 +6,7 @@ import { ISemesterPreparationProps } from "./types";
 import { DEBOUNCE_MS, REQUEST_ERROR_UNAUTHORIZED} from "../../../utils/constants";
 
 import { GroupSelect } from "../GroupSelect/GroupSelect";
-import { UnionArrays } from "../../../utils/helpers";
+import { unionArrays } from "../../../utils/helpers";
 import { ITSContext } from "../../../common/Context";
 import { SubgroupSelection } from "../SubgroupSelection";
 import { useNavigate } from "react-router-dom";
@@ -108,7 +108,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
             const secondSGId = ids[1];
             if (context.dataRepository.selectionGroupToMupsData.data.hasOwnProperty(firstSGId) &&
                 context.dataRepository.selectionGroupToMupsData.data.hasOwnProperty(secondSGId)) {
-                newChosenMups = UnionArrays(
+                newChosenMups = unionArrays(
                     context.dataRepository.selectionGroupToMupsData.data[firstSGId].ids,
                     context.dataRepository.selectionGroupToMupsData.data[secondSGId].ids,
                 );

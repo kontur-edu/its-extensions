@@ -7,16 +7,16 @@ import { IMupEdit, IMupDiff } from "../../../common/types";
 import {DEBOUNCE_MS, REQUEST_ERROR_UNAUTHORIZED} from "../../../utils/constants";
 
 import {
-    CreateDiffForMup,
-    UpdateMupDiffDateInfo,
+    createDiffForMup,
+    updateMupDiffDateInfo,
 } from "../../../mupUpdater/mupDifference";
 
 import { ITSContext } from "../../../common/Context";
 
-import { ActionType, ITSAction, ExecuteActions } from "../../../common/actions";
-import { createActions, GetMupActions } from "../../../mupUpdater/actionCreater";
+import { ActionType, ITSAction, executeActions } from "../../../common/actions";
+import { createActions, getMupActions } from "../../../mupUpdater/actionCreater";
 import { UpdateSelectionGroupAction } from "../../../mupUpdater/actions";
-import { CreateDebouncedWrapper } from "../../../utils/helpers";
+import { createDebouncedWrapper } from "../../../utils/helpers";
 import { IActionExecutionLogItem } from "../../../common/actions";
 
 import Button from '@mui/material/Button';
@@ -67,7 +67,7 @@ const findInitDates = (initDiffs: {[key: string]: IMupDiff}): [string, string] =
     return dates;
 }
 
-const debouncedWrapperForApply = CreateDebouncedWrapper(DEBOUNCE_MS);
+const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
 export function MupEditor(props: IMupEditorProps) {
     const [mupEdits, setMupEdits] = useState<{[key: string]: IMupEdit}>({});
@@ -85,7 +85,7 @@ export function MupEditor(props: IMupEditorProps) {
 
         const newMupDiffs = {...mupDiffs};
         for (let mupId in newMupDiffs) {
-            UpdateMupDiffDateInfo(newMupDiffs[mupId], [dateFormatted, endDate]);
+            updateMupDiffDateInfo(newMupDiffs[mupId], [dateFormatted, endDate]);
         }
         setMupDiffs(newMupDiffs);
 
@@ -99,7 +99,7 @@ export function MupEditor(props: IMupEditorProps) {
 
         const newMupDiffs = {...mupDiffs};
         for (let mupId in newMupDiffs) {
-            UpdateMupDiffDateInfo(newMupDiffs[mupId], [startDate, dateFormatted]);
+            updateMupDiffDateInfo(newMupDiffs[mupId], [startDate, dateFormatted]);
         }
         setMupDiffs(newMupDiffs);
 
@@ -116,7 +116,7 @@ export function MupEditor(props: IMupEditorProps) {
             let limit = 0;
             let mupDiff: IMupDiff | null = null;
             if (selected) {
-                mupDiff = CreateDiffForMup(
+                mupDiff = createDiffForMup(
                     mupId, props.selectionGroupIds, [startDate, endDate],
                     context.dataRepository.selectionGroupToMupsData,
                     context.dataRepository.selectionGroupData,
@@ -147,7 +147,7 @@ export function MupEditor(props: IMupEditorProps) {
         const initDates = findInitDates(newMupDiffs);
         if (initDates[0] || initDates[1]) {
             for (let mupId in newMupDiffs) {
-                UpdateMupDiffDateInfo(newMupDiffs[mupId], initDates);
+                updateMupDiffDateInfo(newMupDiffs[mupId], initDates);
             }
         }
         // initDates[0] && setStartDate(initDates[0]);
@@ -199,7 +199,7 @@ export function MupEditor(props: IMupEditorProps) {
         context.dataRepository.EnsurePeriodInfoFor(mupId).then(() => {
             let mupDiffsToCompareWith = mupDiffs;
             if (!mupDiffs.hasOwnProperty(mupId) || !mupDiffs[mupId]) {
-                const newInitDiff = CreateDiffForMup(
+                const newInitDiff = createDiffForMup(
                     mupId, props.selectionGroupIds, [startDate, endDate],
                     context.dataRepository.selectionGroupToMupsData, context.dataRepository.selectionGroupData,
                     context.dataRepository.mupToPeriods);
@@ -301,7 +301,7 @@ export function MupEditor(props: IMupEditorProps) {
     }
 
     const setUpMupMessagesByActions = (mupDiffs: {[key: string]: IMupDiff}, mupEdits: {[key: string]: IMupEdit}, actions: ITSAction[]) => {
-        const mupToActions = GetMupActions(actions);
+        const mupToActions = getMupActions(actions);
             
             let selectedMups: Set<string> | null = null; 
             for (const action of actions) {
@@ -362,7 +362,7 @@ export function MupEditor(props: IMupEditorProps) {
     };
 
     const handleApplyReal = () => {
-        ExecuteActions(mupEditorActions, context)
+        executeActions(mupEditorActions, context)
             .then(results => setMupEditorActionResults(results))
             .then(() => alert("Изменения применены"))
             .then(() => handleRefresh()) // refresh

@@ -12,10 +12,12 @@ import { SemesterPreparation } from '../SemesterPreparation/Base';
 import { StudentsAdmission } from "../StudentsAdmission/Base";
 import {ITSContext} from "../../common/Context";
 
+
 export function Main(props: IMainProps) {
     const [needAuthentication, setNeedAuthentication] = useState(false);
     const navigate = useNavigate();
     const context = useContext(ITSContext);
+    const [currentLogin, setCurrentLogin] = useState<string>('');
 
     const handleLogin = async (credentials: ICredentials) => {
         if (!credentials.username || !credentials.password) {
@@ -23,7 +25,10 @@ export function Main(props: IMainProps) {
         }
         const success = await context?.requestService.Authenticate(credentials);
         if (success) {
+            setCurrentLogin(credentials.username);
             setNeedAuthentication(false);
+        } else {
+            setCurrentLogin('');
         }
     };
 
@@ -39,15 +44,15 @@ export function Main(props: IMainProps) {
 
     return (
         <div>
-            <h1 className={style.header} onClick={handleHeaderClick}>
+            {/* <h1 className={style.header} onClick={handleHeaderClick}>
                 Индивидуальная траектория студента
-            </h1>
+            </h1> */}
             <Routes>
                 {/* <Route path="/editor" element={<Editor />}/>
                 <Route path="/educationalSpaces" element={<EducationalSpacesList />}/>
                 <Route path="/selectionGroups" element={<SelectionGroupsList />}/>
                 <Route path="/competitiveGroups" element={<CompetitiveGroupsList />}/> */}
-                <Route path="/" element={<MainMenu />} />
+                <Route path="/" element={<MainMenu login={currentLogin} />} />
                 <Route path="/semesterPreparation" element={
                     <React.Fragment>
                         <Modal visible={needAuthentication}>

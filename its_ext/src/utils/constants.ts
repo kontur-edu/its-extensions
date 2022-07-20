@@ -8,7 +8,7 @@ export const LOGIN_URL = "https://its.urfu.ru/Account/Login";
 export const EDU_SPACE_URL = "https://its.urfu.ru/EduSpace";
 export const COMPETITION_GROUP_URL = "https://its.urfu.ru/MUPItsCompetitionGroups";
 export const COMPETITION_GROUP_SUBGROUP_META_URL = "https://its.urfu.ru/MUPItsSubgroupMeta/Index?competitionGroupId=";
-
+export const MUP_PERIOD_URL = "https://its.urfu.ru/MUP/Periods/";
 // export const UNAUTHORIZED = "Unauthorized";
 
 export const REQUEST_ERROR_UNAUTHORIZED = "REQUEST_ERROR_UNAUTHORIZED";
@@ -34,3 +34,5 @@ export const MupEditorMessages = {
     needApply: "Примените изменения",
     needManualLoadEdit: "Настройте нагрузку в its.urfu.ru",
 };
+
+export const DEBOUNCE_MS = 1000;

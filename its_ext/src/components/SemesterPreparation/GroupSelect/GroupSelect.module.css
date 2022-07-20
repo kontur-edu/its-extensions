@@ -2,11 +2,21 @@
 .selectionGroup_select {
     /* flex-grow: 2; */
     min-width: 300px;
+    /* margin-left: 1em; */
 }
 
 .selectionGroup_link {
     /* max-width: 30%; */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* border: 2px solid red; */
+    
 }
+
+/* .selectionGroup_link > p {
+    align-self: start;
+} */
 
 .selectionGroup__button_container {
     display: flex;

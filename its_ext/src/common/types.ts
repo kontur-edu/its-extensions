@@ -1,4 +1,3 @@
-import { updateExpressionWithTypeArguments } from "typescript";
 
 
 export interface ICredentials {
@@ -36,13 +35,6 @@ export interface ISelectionGroupMup {
     mupId: string;
 }
 
-// export interface IPeriod {
-//     id: number;
-//     year: number;
-//     semesterId: number;
-//     selectionBegin: string;
-//     selectionDeadline: string;
-// }
 
 export interface IMupLoad { // Tmer
     id: number;
@@ -88,6 +80,7 @@ export interface IMupEdit {
     selected: boolean;
     limit: number;
     messages: string[];
+    addLoadsManual?: boolean;
 }
 
 
@@ -112,18 +105,6 @@ export interface IPeriodTimeInfo {
     course: number;
     dates: [string, string];
 }
-
-// export interface IMupEditorUpdate {
-//     date
-// }
-
-// Выбранные МУПы
-// Все мупы
-// Периоды для каждого МУПа выбранного МУПа
-
-// При выборе мупа, unfocus если limit изменен
-// Делается запрос периода и лимита для МУПа
-// Если период выбора уже есть
 
 
 export interface ISubgroupMeta {
@@ -163,22 +144,9 @@ export type IMupNameToSubgroups = {[key: string]: number[]}
 export type ICompetitionGroupToMupSubgroups = {[key: number]: IMupNameToSubgroups};
 
 
-// export type ICompetitionGroupToSubgroupIds = {[key: number]: number[]};
-
-// mupId -> {CGid -> [], CGid -> []}
-// count
-// names
-// export interface ISubgoupDiff {
-    
-// }
 
 export type SubgroupMetaData = {[key: string]: {[key: number]: {[key: string]: ISubgroupMeta}}};
 
-// export interface ISubgoupMetaDiff {
-//     mupId: string;
-//     difference: string;
-//     todo: string;
-// }
 
 export type MetaDiffs = {
     // disipline
@@ -204,25 +172,19 @@ export type SubgroupDiffs = {
 
 export type SubgroupAndMetaAreSameDiffs = {
     // discipline
-    [key: string]: {
-        // competitionGroupId
-        [key: number]: boolean
-    }
+    [key: string]: [boolean, boolean] // for 2 competitonGroups
 }
 
 export interface ISubgoupDiffInfo {
     metaDiffs: MetaDiffs;
     subgroupDiffs: SubgroupDiffs;
     subgroupAndMetaAreSameDiffs: SubgroupAndMetaAreSameDiffs;
-    // metasAndSubgroupsAreSame: boolean;
-    // loadToCounts: {[key: string]: (ISubgroupMeta | null)[]};
-    // nameToTeacherIds: {[key: string]: (number | null)[]}
 }
 
 
 export interface IMupSubgroupDiff {
-    differences: string[];
-    todos: string[];
+    loadsToMetas: {[key: string]: [ISubgroupMeta | null, ISubgroupMeta | null]} // load -> [[],[]]
+    loadToTeachers: {[key: string]: [string | null, string | null]}; // load_number -> [t1, t2]
 }
 
 export interface ISubgroupInfo {

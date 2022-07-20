@@ -8,9 +8,12 @@ import { ICompetitionGroupItem } from "../CompetitionGroupSelect/types";
 import {REQUEST_ERROR_UNAUTHORIZED} from "../../../utils/constants";
 import { TaskResultsInput } from "../TaskResultsInput";
 
-import { ITSAction, ExecuteActions } from "../../../common/actions";
-import {IActionResponse} from "../../../utils/ITSApiService";
-import { createTaskResultActions } from "../../../taskResultUpdater/actionCreator";
+import { ITSAction } from "../../../common/actions";
+import { useNavigate } from "react-router-dom";
+
+import { Button } from "@mui/material";
+import WestIcon from '@mui/icons-material/West';
+import SystemUpdateAltIcon from '@mui/icons-material/SystemUpdateAlt';
 
 
 export function StudentsAdmission(props: IStudentsAdmissionProps) {
@@ -19,10 +22,14 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
     const competitionGroupRefreshInProgress = useRef<boolean>(false);
     const context = useContext(ITSContext)!;
     const [taskResultsActions, setTaskResultsActions] = useState<ITSAction[]>([]);
-    const [taskResultsActionResults, setTaskResultsActionResults] = useState<IActionResponse[]>([]);
-
-    // const requestCompetitionGroupsInProgress = useRef(false);
+    const stepTwoRef = useRef<HTMLElement | null>(null);
     
+    const navigate = useNavigate();
+
+    const handleBackButton = () => {
+        navigate('/');
+    }
+
     const refreshCompetitionGroups = () => {
         if (props.isUnauthorized || competitionGroupRefreshInProgress.current) {
             return;
@@ -59,72 +66,62 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
     
     useEffect(() => {
         refreshCompetitionGroups();
-
     }, []);
 
     const handleCompetitionGroupsSelect = (newCompetitionGroupIds: number[]) => {
         setCompetitionGroupIds(newCompetitionGroupIds);
     }
 
-    const handleTaskResultsInputApply = (admissionIds: number[], personalNumberToTaskResult: {[key: string]: number | null}) => {
-        alert(`Применение изменений`);
-        const actions = createTaskResultActions(
-            admissionIds,
-            personalNumberToTaskResult,
-            context.dataRepository.admissionInfo,
-            context.dataRepository.studentData
-        );
-        setTaskResultsActions(actions);
+    const handleCompetitionGroupSelectButton = () => {
+        stepTwoRef.current?.scrollIntoView({behavior: 'smooth'});
     }
 
-    const handleTaskResultsInputApplyReal = () => {
-        alert(`Настоящее применение изменений`);
-        return;
-        ExecuteActions(taskResultsActions, context)
-            .then(actionResults => {
-                setTaskResultsActionResults(actionResults);
-            });
-    }
 
     const renderTaskResultsInput = () => {
         return (
             <React.Fragment>
-                <article className="step">
-                    <div className="step__bage">2</div>
-                    <span className="step__header">Ввод результатов отборочных заданий</span>
+                <article className="step" ref={stepTwoRef}>
+                    <span className="step__header">2. Ввод результатов отборочных заданий</span>
+                
+                    <TaskResultsInput
+                        competitionGroupIds={competitionGroupIds}
+                        onUnauthorized={props.onUnauthorized}
+                    />
                 </article>
-
-                <TaskResultsInput
-                    competitionGroupIds={competitionGroupIds}
-                    onApply={handleTaskResultsInputApply}
-                    onUnauthorized={props.onUnauthorized}
-                />
-                <ul>
-                    {taskResultsActions.map((a: ITSAction, index: number) => <li key={index}>{a.getMessage()}</li>)}
-                </ul>
-                <button className="step__button" onClick={handleTaskResultsInputApplyReal}>Настоящее применение</button>
-                <ul>
-                    {taskResultsActionResults.map((ar: IActionResponse, index: number) =>
-                        <li key={index} className={ar.success ? "message_success" : "message_error"}>{ar.message}</li>
-                    )}
-                </ul>
             </React.Fragment>
         );
     };
 
     return (
         <section className="page">
-            <h2 className="action_header">Зачисление студентов</h2>
+            
+            <h2 className="action_header">
+                <Button onClick={handleBackButton}
+                    variant="text" style={{position: 'absolute', left: 0, top: '50%', transform: 'translate(0, -50%)'}}
+                    startIcon={<WestIcon />}
+                    >Вернуться назад</Button>
+                Зачисление студентов
+            </h2>
             <article className="step">
-                <div className="step__bage">1</div>
-                <span className="step__header">Выберите конкурсные группы для 3-го и 4-го курсов</span>
-            </article>
+                <span className="step__header">1. Выберите конкурсные группы для 3-го и 4-го курсов</span>
+            
+                <CompetitionGroupSelect
+                    competitionGroupsItems={competitionGroupItems}
+                    onRefresh={refreshCompetitionGroups}
+                    onSelectionValid={handleCompetitionGroupsSelect}
+                />
 
-            <CompetitionGroupSelect
-                competitionGroupsItems={competitionGroupItems}
-                onRefresh={refreshCompetitionGroups}
-                onSelectionValid={handleCompetitionGroupsSelect}
-            />
+                <div className="next_step__container">
+                    <Button onClick={handleCompetitionGroupSelectButton}
+                        variant="contained" style={{marginRight: '1em'}}
+                        endIcon={<SystemUpdateAltIcon />}
+                        >К следующему шагу</Button>
+                    <p className="next_step__message">
+                        {competitionGroupIds.length !== 2 ? "Выберите две группы для перехода к следующему шагу" : null}
+                    </p>
+                </div>
+
+            </article>
 
             {competitionGroupIds.length === 2 ? renderTaskResultsInput() : null}
         </section>

@@ -2,7 +2,7 @@
 import {CSRF_TOKEN_INPUT_NAME} from "./constants";
 
 
-export function FindCsrfTokens(page: string) {
+export function findCsrfTokens(page: string) {
     const tokens: string[] = [];
     let lastStringIndexOfTokenInput = 0;
     while(true) {
@@ -31,7 +31,7 @@ export interface ICookie {
 }
 
 
-export function GetCookies(headers: any) {
+export function getCookies(headers: any) {
     if (!("set-cookie" in headers)) {
         return [];
     }

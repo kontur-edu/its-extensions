@@ -13,9 +13,13 @@ export class UpdateTaskResultAction extends ITSAction {
         return `Update task result for studentId: ${this.studentId} admissionId: ${this.admissionId} taskResult: ${this.taskResult}`;
     }
 
-    async execute(context: IITSContext): Promise<IActionResponse> {
-        return context.apiService.UpdateStudentTestResults(
+    getMessageSimple(): string {
+        return `Update task result for studentId: ${this.studentId} admissionId: ${this.admissionId} taskResult: ${this.taskResult}`;
+    }
+
+    async execute(context: IITSContext): Promise<IActionResponse[]> {
+        return [await context.apiService.UpdateStudentTestResults(
             this.studentId, this.admissionId, this.taskResult
-        );
+        )];
     }
 }

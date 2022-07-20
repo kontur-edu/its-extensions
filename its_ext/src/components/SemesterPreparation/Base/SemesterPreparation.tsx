@@ -3,20 +3,19 @@ import { MupEditor } from "../MupEditor";
 import { ISelectionListItem } from "../../SelectionList/types";
 import style from "./SemesterPreparation.module.css";
 import { ISemesterPreparationProps } from "./types";
-import { IMupDiff, ISubgoupDiffInfo } from "../../../common/types";
-import { REQUEST_ERROR_UNAUTHORIZED} from "../../../utils/constants";
+import { DEBOUNCE_MS, REQUEST_ERROR_UNAUTHORIZED} from "../../../utils/constants";
 
-// import { context.dataRepository } from "../../../utils/repository";
 import { GroupSelect } from "../GroupSelect/GroupSelect";
-import { UnionArrays } from "../../../utils/helpers";
-// import { AddLoadToPeriod, CheckRemovedMUPs, UpdateSelectionGroups } from "../../../utils/requests";
-// import {ApplyMupUpdates} from "../MupEditor/utils";
-import {createActions} from "../../../mupUpdater/actionCreater";
-import {createSubgroupSelectionActions} from "../../../subgroupUpdater/actionCreator";
+import { unionArrays } from "../../../utils/helpers";
 import { ITSContext } from "../../../common/Context";
-import { ITSAction, ExecuteActions } from "../../../common/actions";
-import {IActionResponse} from "../../../utils/ITSApiService";
 import { SubgroupSelection } from "../SubgroupSelection";
+import { useNavigate } from "react-router-dom";
+
+import { Button } from "@mui/material";
+import SystemUpdateAltIcon from '@mui/icons-material/SystemUpdateAlt';
+import WestIcon from '@mui/icons-material/West';
+// import { CreateDebouncedWrapper } from "../../../utils/helpers";
+
 // Получение данных:
 // Запросить все Группы выбора
 // Запросить МУПы с Лимитами для выбранных Групп выбора
@@ -50,22 +49,26 @@ import { SubgroupSelection } from "../SubgroupSelection";
 // AllMups if (limit > 0) new
 // mupsUpdate {ids: [], data: {id: {id, limit}}}
 
+
+// const debouncedWrapperForApply = CreateDebouncedWrapper(DEBOUNCE_MS);
+
+
 export function SemesterPreparation(props: ISemesterPreparationProps) {
     // TODO: вынести в отдельный компонент
     const [selectionGroupsListItems, setSelectionGroupsListItems] = useState<ISelectionListItem[]>([]); 
     const [selectionGroupsIds, setSelectionGroupsIds] = useState<number[]>([]);
-    // const [mupsUpdates, setMupUpdates] = useState<{[key: string]: IMupUpdate}>({});
-    // const [selectedMupIds, setSelectedMupIds] = useState<string[]>([]);
-    // const [mupData, setMupData] = useState<IMupData | null>(null);
-    // const [mupToPerionds, setMupToPerionds] = useState<IMupToPeriods | null>(null);
     const [editorDataPrepared, setEditorDataPrepared] = useState<boolean>(false);
     const requestSelectionGroupsInProgress = useRef(false);
-    const [mupEditorActions, setMupEditorActions] = useState<ITSAction[]>([]);
-    const [mupEditorActionResults, setMupEditorActionResults] = useState<IActionResponse[]>([]);
-    const [subgroupSelectionActions, setSubgroupSelectionActions] = useState<ITSAction[]>([]);
-    const [subgroupSelectionActionsResults, setSubgroupSelectionActionsResults] = useState<IActionResponse[]>([]);
 
+    const stepTwoRef = useRef<HTMLElement | null>(null);
+    const stepThreeRef = useRef<HTMLElement | null>(null);
     const context = useContext(ITSContext)!;
+
+    const navigate = useNavigate();
+
+    const handleBackButton = () => {
+        navigate('/');
+    }
 
     const refreshSelectionGroups = () => {
         if (props.isUnauthorized) {
@@ -105,7 +108,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
             const secondSGId = ids[1];
             if (context.dataRepository.selectionGroupToMupsData.data.hasOwnProperty(firstSGId) &&
                 context.dataRepository.selectionGroupToMupsData.data.hasOwnProperty(secondSGId)) {
-                newChosenMups = UnionArrays(
+                newChosenMups = unionArrays(
                     context.dataRepository.selectionGroupToMupsData.data[firstSGId].ids,
                     context.dataRepository.selectionGroupToMupsData.data[secondSGId].ids,
                 );
@@ -166,6 +169,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
 
     // selectionGroupMups, SubgroupGroupMetas, Subgroups 
     const handleSelectionGroupValid = (selectionGroupIds: number[]) => {
+        setEditorDataPrepared(false);
         console.log("handleSelectionGroupValid");
         // remember chosen selectionGroup ids
         setSelectionGroupsIds(selectionGroupIds);
@@ -180,87 +184,18 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
                 return;
             }
             throw err;
-        })
-    }
-
-    const handleMupEditorApply = (
-        selectedMupsIds: string[],
-        mupDiffs: {[key: string]: IMupDiff},
-        newDates: [string, string],
-        mupLimits: {[key: string]: number},
-    ) => {
-        alert(`Применение изменений`);
-        const actions = createActions(
-            selectionGroupsIds,
-            selectedMupsIds,
-            mupDiffs,
-            newDates,
-            mupLimits,
-            context
-        );
-        setMupEditorActions(actions);
-    }
-
-    const handleMupEditorApplyReal = () => {
-        // return; // TODO: Delete this;
-        setMupEditorActionResults([]);
-        ExecuteActions(mupEditorActions, context)
-                .then(results => setMupEditorActionResults(results))
-                .then(() => alert("Изменения применены"))
-                .catch(err => {
-                    if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-                        props.onUnauthorized();
-                        return;
-                    }
-                    throw err;
-                });
-
-        setMupEditorActions([]);
-        prepareDataForSelectionGroups(selectionGroupsIds)
-            .then(() => setSelectionGroupsIds([...selectionGroupsIds]))
-            .catch(err => {
-                if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-                    props.onUnauthorized();
-                    return;
-                }
-                throw err;
-            });
-    }
-
-
-    const handleSubgroupSelectionApply = (
-        competitionGroupIds: number[],
-        subgroupInfo: ISubgoupDiffInfo
-    ) => {
-        alert(`Применение изменений`);
-        const actions = createSubgroupSelectionActions(
-            competitionGroupIds,
-            subgroupInfo,
-            context.dataRepository.subgroupData
-        );
-        console.log("handleSubgroupSelectionApply");
-        console.log(actions);
-        setSubgroupSelectionActions(actions);
-    }
-
-    const handleSubgroupSelectionApplyReal = () => {
-        // return; // TODO: Delete this;
-        setMupEditorActionResults([]);
-        ExecuteActions(subgroupSelectionActions, context)
-                .then(results => setSubgroupSelectionActionsResults(results))
-                .then(() => alert("Изменения применены"));
-
-        setSubgroupSelectionActions([]);
-        prepareDataForSelectionGroups(selectionGroupsIds)
-        .then(() => setSelectionGroupsIds([...selectionGroupsIds]))
-        .catch(err => {
-            if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-                props.onUnauthorized();
-                return;
-            }
-            throw err;
         });
     }
+
+    const handleGroupSelectButton = () => {
+        stepTwoRef.current?.scrollIntoView({behavior: 'smooth'});
+    }
+
+    const handleMupEditorNextStepButton = () => {
+        stepThreeRef.current?.scrollIntoView({behavior: 'smooth'});
+    }
+
+
 
     useEffect(() => {
         refreshSelectionGroups();
@@ -268,75 +203,71 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     }, [props.isUnauthorized]);
 
     const renderStep2 = () => {
+        // console.log("mupEditorActionResults");
+        // console.log(mupEditorActionResults);
         return (
-            <React.Fragment>
-                <article className="step"><div className="step__bage">2</div><span className="step__header">Выберите МУПы и назначьте лимиты</span></article>
+            <article className="step" ref={stepTwoRef}>
+                <h3 className="step__header">2. Лимиты МУПов и даты выбора</h3>
 
                 <MupEditor
                     selectionGroupIds={selectionGroupsIds}
                     dataIsPrepared={editorDataPrepared}
-                    onApply={handleMupEditorApply}
+                    // onApply={() => {}}
+                    onNextStep={handleMupEditorNextStepButton}
                     onUnauthorized={props.onUnauthorized}
                 />
-                <ul>
-                    {mupEditorActions.map((a: ITSAction, index: number) => <li key={index}>{a.getMessage()}</li>)}
-                </ul>
-                <button className="step__button" onClick={handleMupEditorApplyReal}>Настоящее применение</button>
-                <ul>
-                    {mupEditorActionResults.map((ar: IActionResponse, index: number) =>
-                        <li key={index} className={ar.success ? "message_success" : "message_error"}>{ar.message}</li>
-                    )}
-                </ul>
-            </React.Fragment>
+            </article>
         );
     }
 
     const renderStep3 = () => {
-        console.log("renderStep3");
-        console.log("editorDataPrepared");
-        console.log(editorDataPrepared);
         return (
-            <React.Fragment>
-                <article className="step">
-                    <div className="step__bage">3</div>
-                    <span className="step__header">Определите количество подгрупп для МУПов и выберите преподавателей</span>
-                </article>
+            <article className="step" ref={stepThreeRef}>
+                <h3 className="step__header">3. Определите количество подгрупп для МУПов и выберите преподавателей</h3>
 
                 <SubgroupSelection
                     selectionGroupIds={selectionGroupsIds}
                     dataIsPrepared={editorDataPrepared}
-                    onApply={handleSubgroupSelectionApply}
+                    // onApply={handleSubgroupSelectionApply}
                     onUnauthorized={props.onUnauthorized}
                 />
-                <ul>
-                    {subgroupSelectionActions.map((a: ITSAction, index: number) => <li key={index}>{a.getMessage()}</li>)}
-                </ul>
-                <button className="step__button" onClick={handleSubgroupSelectionApplyReal}>Настоящее применение</button>
-                <ul>
-                    {subgroupSelectionActionsResults.map((ar: IActionResponse, index: number) =>
-                        <li key={index} className={ar.success ? "message_success" : "message_error"}>{ar.message}</li>
-                    )}
-                </ul>
-            </React.Fragment>
+            </article>
         );
     }
     
     return (
         <section className="page">
-            <h2 className="action_header">Подготовка семестра</h2>
-            <article className="step"><div className="step__bage">1</div><span className="step__header">Выберите группы выбора: для 3-го и 4-го курсов</span></article>
+            <h2 className="action_header">
+                <Button onClick={handleBackButton}
+                    variant="text" style={{position: 'absolute', left: 0, top: '50%', transform: 'translate(0, -50%)'}}
+                    startIcon={<WestIcon />}
+                    >Вернуться назад</Button>
+                Подготовка семестра
+            </h2>
+            <article className="step">
+                <h3 className="step__header">1. Выберите группы выбора: для третьего и четвертого курса</h3>
+                <GroupSelect
+                    selectionGroupsList={selectionGroupsListItems}
+                    onRefresh={refreshSelectionGroups}
+                    onSelectionValid={handleSelectionGroupValid}
+                />
 
-            <GroupSelect
-                selectionGroupsList={selectionGroupsListItems}
-                onRefresh={refreshSelectionGroups}
-                onSelectionValid={handleSelectionGroupValid}
-            />
+                <div className="next_step__container">
+                    <Button onClick={handleGroupSelectButton}
+                        variant="contained" style={{marginRight: '1em'}}
+                        endIcon={<SystemUpdateAltIcon />}
+                        >К следующему шагу</Button>
+                    <p className="next_step__message">
+                        {selectionGroupsIds.length !== 2 ? "Выберите две группы для перехода к следующему шагу" : null}
+                    </p>
+                </div>
+                
+            </article>
 
             {selectionGroupsIds.length === 2 ? renderStep2() : null}
 
             {selectionGroupsIds.length === 2 && editorDataPrepared ? renderStep3() : null}
-
-            {/* <MupsList isUnauthorized={props.isUnauthorized} onUnauthorized={props.onUnauthorized} /> */}
+            
         </section>
     );
 }

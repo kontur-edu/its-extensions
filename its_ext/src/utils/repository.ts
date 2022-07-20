@@ -23,11 +23,11 @@ import {
 import { ITSApiService } from "./ITSApiService";
 
 import {
-    PrepareSelectionGroupData,
-    PrepareMupData,
-    PrepareSelectionGroupMupData,
-    PrepareSelectionGroupToMupsData,
-    PrepareCompetitionGroupData,
+    prepareSelectionGroupData,
+    prepareMupData,
+    prepareSelectionGroupMupData,
+    prepareSelectionGroupToMupsData,
+    prepareCompetitionGroupData,
 } from "../utils/helpers";
 
 
@@ -54,13 +54,13 @@ export class ITSRepository {
     async UpdateMupData() {
         console.log(`ITSRepository: UpdateMupData`);
         const allMups = await this.api.GetAllMups();
-        this.mupData = PrepareMupData(allMups);
+        this.mupData = prepareMupData(allMups);
     }
 
     async UpdateSelectionGroupData() {
         console.log(`ITSRepository: UpdateSelectionGroupData`);
         const allSelectionGroups = await this.api.GetAllSelectionGroupsParallel();
-        this.selectionGroupData = PrepareSelectionGroupData(allSelectionGroups);
+        this.selectionGroupData = prepareSelectionGroupData(allSelectionGroups);
     }
 
     async UpdateSelectionGroupToMupsData(selectionGroupIds: number[]) {
@@ -72,13 +72,13 @@ export class ITSRepository {
             const resp = responses[i];
             const selectionGroupId = selectionGroupIds[i];
             if (resp.status === 'fulfilled') {
-                const selectionGroupMupData = PrepareSelectionGroupMupData(resp.value);
+                const selectionGroupMupData = prepareSelectionGroupMupData(resp.value);
                 selectionGroupIdToSelectionGroupMups[selectionGroupId] = selectionGroupMupData;
             } else {
                 console.error(`Failed to request SelectionGroupMupData for selectionGroupId: ${selectionGroupId}`);
             }
         }
-        this.selectionGroupToMupsData = PrepareSelectionGroupToMupsData(selectionGroupIdToSelectionGroupMups);
+        this.selectionGroupToMupsData = prepareSelectionGroupToMupsData(selectionGroupIdToSelectionGroupMups);
     }
 
 
@@ -147,7 +147,7 @@ export class ITSRepository {
     async UpdateCompetitionGroupData() {
         console.log(`ITSRepository: UpdateCompetitionGroupData`);
         const competitionGroups = await this.api.GetCompetitionGroups();
-        this.competitionGroupData = PrepareCompetitionGroupData(competitionGroups);
+        this.competitionGroupData = prepareCompetitionGroupData(competitionGroups);
     }
 
     async UpdateAdmissionMetas(competitionGroupIds: number[]) {

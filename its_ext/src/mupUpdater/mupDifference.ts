@@ -3,7 +3,7 @@ import {
     ISelectionGroupToMupsData, ISelectionGroupData
 } from "../common/types";
 
-import { CheckDateIsLess } from "../utils/helpers";
+import { checkDateIsLess } from "../utils/helpers";
 
 import {createResultLoads, findLoadsToAdd} from "./actionCreater";
 
@@ -43,7 +43,7 @@ function findCourseToCurrentPeriod(
     return courseToCurrentPeriod;
 }
 
-function CheckIfNeedChangeDates(
+function checkIfNeedChangeDates(
     courseToCurrentPeriod: {[key: number]: IPeriod},
     dates: [string, string]
 ): boolean {
@@ -61,16 +61,6 @@ function CheckIfNeedChangeDates(
         }
     }
     return changeDates;
-
-    // if (courseToCurrentPeriod.hasOwnProperty(3) && courseToCurrentPeriod.hasOwnProperty(4)) {
-    //     const periodFor3 = courseToCurrentPeriod[3];
-    //     const periodFor4 = courseToCurrentPeriod[4];
-    //     if (periodFor3.selectionBegin === dates[0] && periodFor3.selectionDeadline === dates[1] &&
-    //                 periodFor4.selectionBegin === dates[0] && periodFor4.selectionDeadline === dates[1]) {
-    //         return false;
-    //     }
-    // }
-    // return true;
 }
 
 function CheckIfCanBeDeleted(
@@ -84,7 +74,7 @@ function CheckIfCanBeDeleted(
             const currentPeriod = courseToCurrentPeriod[course];
 
             if (currentPeriod.selectionBegin &&
-                    CheckDateIsLess(currentPeriod.selectionBegin, Date.now())) {
+                    checkDateIsLess(currentPeriod.selectionBegin, Date.now())) {
                 canBeDeleted = false;
             }
         }
@@ -93,7 +83,7 @@ function CheckIfCanBeDeleted(
 }
 
 
-export function CreateDiffForMup(
+export function createDiffForMup(
     mupId: string,
     selectionGroupIds: number[],
     dates: [string, string],
@@ -131,7 +121,7 @@ export function CreateDiffForMup(
         }
     }
     
-    const needToChangeDates = CheckIfNeedChangeDates(courseToCurrentPeriod, dates);
+    const needToChangeDates = checkIfNeedChangeDates(courseToCurrentPeriod, dates);
 
     const canBeDeleted = CheckIfCanBeDeleted(courseToCurrentPeriod, dates);
     
@@ -150,73 +140,7 @@ export function CreateDiffForMup(
 
 
 
-// export function GetInitDiff(
-//     mupId: string, selectionGroupIds: number[], dates: [string, string],
-//     selectionGroupToMupsData: ISelectionGroupToMupsData,
-//     selectionGroupData: ISelectionGroupData,
-//     mupToPeriods: {[key: string]: IPeriod[]}
-// ): IMupDiff {
-//     const limits: (number | null)[] = [];
-//     let presentInGroups: number[] = [];
-//     selectionGroupIds.forEach(sgId => {
-//         if (selectionGroupToMupsData.data[sgId].data.hasOwnProperty(mupId)) {
-//             const limit = selectionGroupToMupsData.data[sgId].data[mupId].limit;
-//             limits.push(limit);
-//             presentInGroups.push(sgId)
-//         } else {
-//             limits.push(null);
-//         }
-//     });
-
-//     const selectionGroup = selectionGroupData.data[selectionGroupIds[0]];
-//     const currentYear = selectionGroup.year;
-//     const currentSemesterId = selectionGroup.semesterId;
-
-//     let loads: IMupLoad[] | undefined = undefined;
-//     let courseToCurrentPeriod: {[key: number]: IPeriod} = {};
-//     if (mupToPeriods.hasOwnProperty(mupId)) {
-//         for (let period of mupToPeriods[mupId]) {
-//             if (!loads && period.loads.length > 0) {
-//                 loads = period.loads;
-//             }
-//             if (period.semesterId === currentSemesterId && period.year === currentYear) {
-//                 courseToCurrentPeriod[period.course] = period;
-//             }
-//         }
-//     }
-
-//     let canBeDeleted = true;
-//     let changeDates = false;
-    
-//     for (let course of [3, 4]) {
-//         if (courseToCurrentPeriod.hasOwnProperty(course) && courseToCurrentPeriod[course]) {
-//             const currentPeriod = courseToCurrentPeriod[course];
-//             if (currentPeriod.selectionBegin &&
-//                     CheckDateIsLess(currentPeriod.selectionBegin, Date.now())) {
-//                 canBeDeleted = false;
-//             }
-
-//             if (currentPeriod.selectionBegin !== dates[0] ||
-//                 currentPeriod.selectionDeadline !== dates[1]) {
-
-//                 changeDates = true; 
-//             }
-//         }
-//     }
-
-//     const mupDiff: IMupDiff = {
-//         presentInGroups: presentInGroups,
-//         addLoadsManual: loads !== undefined,
-//         courseToCurrentPeriod: courseToCurrentPeriod,
-//         changeDates: changeDates,
-//         initLimits: limits,
-//         canBeDeleted: canBeDeleted,
-//     };
-
-//     return mupDiff;
-// }
-
-export function UpdateMupDiffDateInfo(mupDiff: IMupDiff, dates: [string, string]) {
+export function updateMupDiffDateInfo(mupDiff: IMupDiff, dates: [string, string]) {
     let needToChangeDates = false;
     for (let course of [3, 4]) {
         if (mupDiff.courseToCurrentPeriod.hasOwnProperty(course) &&
@@ -232,67 +156,4 @@ export function UpdateMupDiffDateInfo(mupDiff: IMupDiff, dates: [string, string]
     }
     console.log(needToChangeDates ? "CHANGE DATE" : "NOT CHANGE DATE");
     mupDiff.changeDates = needToChangeDates;
-}
-
-export function UpdateMupEditMessage(mupEdit: IMupEdit, mupDiff: IMupDiff) {
-    let messageParts: string[] = [];
-
-    if (mupEdit.selected && mupDiff.presentInGroups.length !== 2) {
-        messageParts.push("Добавить МУП в группы");
-    }
-
-    if (!mupEdit.selected && mupDiff.presentInGroups.length !== 0) {
-        if (!mupDiff.canBeDeleted) {
-            messageParts.push("Не может быть удален, так как период выбора начался!!!")    
-        } else {
-            messageParts.push("Удалить МУП из групп");
-        }
-        mupEdit.messages = messageParts;
-        return;
-    }
-
-    let needLimitUpdate = false;
-    for (let initLimit of mupDiff.initLimits) {
-        if (initLimit !== mupEdit.limit) {
-            needLimitUpdate = true;
-            break;
-        }
-    }
-    if (needLimitUpdate) {
-        messageParts.push("Обновить Лимит");
-    }
-
-    const havePeriodFor3 = mupDiff.courseToCurrentPeriod.hasOwnProperty(3) && mupDiff.courseToCurrentPeriod[3];
-    const havePeriodFor4 = mupDiff.courseToCurrentPeriod.hasOwnProperty(4) && mupDiff.courseToCurrentPeriod[4];
-    if (!havePeriodFor3 || !havePeriodFor4) {
-        let message = "Создать период для курсов: ";
-        if (!havePeriodFor3) message += '3 ';
-        if (!havePeriodFor4) message += '4 ';
-        messageParts.push(message);
-    }
-
-    if (mupDiff.changeDates) {
-        messageParts.push("Обновить дату");
-    }
-
-    if (mupDiff.addLoadsManual) {
-        messageParts.push("(Вручную) создать нагрузки");
-    }
-
-    const resulLoads = Object.values(createResultLoads(mupDiff));
-    for (let course of [3, 4]) {
-        if (mupDiff.courseToCurrentPeriod.hasOwnProperty(course)) {
-            const currentPeriod = mupDiff.courseToCurrentPeriod[course];
-            const loadsToAdd: IMupLoad[] = findLoadsToAdd(currentPeriod, resulLoads);
-            if (loadsToAdd.length > 0) {
-                messageParts.push("Скопировать недостающие нагрузки в периоды");
-                break;
-            }
-        }
-    }
-    // const kmerToLoad: {[key: string]: IMupLoad} = {};
-    // for (const load of currentPeriod.loads) {
-    //     kmerToLoad[load.kmer] = load;
-    // }
-    mupEdit.messages = messageParts;
 }

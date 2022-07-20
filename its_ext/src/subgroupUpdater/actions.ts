@@ -15,25 +15,33 @@ export class CreateSubgroupsAction extends ITSAction {
     }
 
     getMessage(): string {
-        return `Create Subgroups for CompetitionGroupId: ${this.competitionGroupId}`;
+        return `Создать подгруппы для Конкурсной группы с id: ${this.competitionGroupId}`;
     }
 
-    async execute(context: IITSContext): Promise<IActionResponse> {
-        return context.apiService.CreateSubgroups(this.competitionGroupId);
+    getMessageSimple(): string {
+        return `Создать подгруппы для Конкурсной группы`;
+    }
+
+    async execute(context: IITSContext): Promise<IActionResponse[]> {
+        return [await context.apiService.CreateSubgroups(this.competitionGroupId)];
     }
 }
 
 export class UpdateSubgroupMetaLoadCountAction extends ITSAction {
-    constructor(public subgroupMetaId: number, public newCount: number) {
+    constructor(public subgroupMetaId: number, public newCount: number, public mupName: string) {
         super(ActionType.UpdateSubgroupMetaLoadCount);
     }
 
     getMessage(): string {
-        return `Update Subgroups Meta Load for subgroupMetaId: ${this.subgroupMetaId} newCount: ${this.newCount}`;
+        return `Обновить количество подгрупп на ${this.newCount} для нагрузки c id: ${this.subgroupMetaId}`;
     }
 
-    async execute(context: IITSContext): Promise<IActionResponse> {
-        return context.apiService.UpdateSubgroupMetaLoadCount(this.subgroupMetaId, this.newCount);
+    getMessageSimple(): string {
+        return this.getMessage();
+    }
+
+    async execute(context: IITSContext): Promise<IActionResponse[]> {
+        return [await context.apiService.UpdateSubgroupMetaLoadCount(this.subgroupMetaId, this.newCount)];
     }
 }
 
@@ -44,12 +52,16 @@ export class RefreshSubgroupsAction extends ITSAction {
 
     getMessage(): string {
         const competitionGroupIdsStr = JSON.stringify(this.competitionGroupIds);
-        return `Refresh Subgroups for subgroups: ${competitionGroupIdsStr}`;
+        return `Запросить обновление данных для Конкурсных групп: ${competitionGroupIdsStr}`;
     }
 
-    async execute(context: IITSContext): Promise<IActionResponse> {
+    getMessageSimple(): string {
+        return this.getMessage();
+    }
+
+    async execute(context: IITSContext): Promise<IActionResponse[]> {
         await context.dataRepository.UpdateSubgroups(this.competitionGroupIds);
-        return {success: true};
+        return [{success: true}];
     }
 }
 
@@ -57,18 +69,24 @@ export class UpdateTeacherForSubgroupAction extends ITSAction {
     constructor(
         public competitionGroupId: number,
         public subgroupInfo: ISubgroupInfo,
-        public teacherId: string
+        public teacherId: string,
     ) {
         super(ActionType.UpdateTeacherForSubgroup);
     }
 
     getMessage(): string {
-        return `Update Teacher ${this.teacherId} for subgroup: mupName: ${this.subgroupInfo.mupName}
-            load: ${this.subgroupInfo.load} number: ${this.subgroupInfo.number}
-            (competitionGroupId: ${this.competitionGroupId})`;
+        return `Обновить преподавателя с id: ${this.teacherId} для МУПа: ${this.subgroupInfo.mupName}
+        нагрузки: ${this.subgroupInfo.load} с номером: ${this.subgroupInfo.number}
+        (Конкурсная группа с id:${this.competitionGroupId})`;
     }
 
-    async execute(context: IITSContext): Promise<IActionResponse> {
+    getMessageSimple(): string {
+        return `Обновить преподавателя с id: ${this.teacherId} для МУПа: ${this.subgroupInfo.mupName}
+            нагрузки: ${this.subgroupInfo.load} с номером: ${this.subgroupInfo.number}
+            (Конкурсная группа с id:${this.competitionGroupId})`;
+    }
+
+    async execute(context: IITSContext): Promise<IActionResponse[]> {
         const subgroupIds = context.dataRepository.competitionGroupToSubgroupIds[this.competitionGroupId];
         let subgroup: ISubgroup | null = null;
         for (let subgroupId of subgroupIds) {
@@ -89,6 +107,6 @@ export class UpdateTeacherForSubgroupAction extends ITSAction {
             ...subgroup,
             teacherId: this.teacherId
         };
-        return context.apiService.UpdateSubgroup(updatedSubgroup);
+        return [await context.apiService.UpdateSubgroup(updatedSubgroup)];
     }
 }

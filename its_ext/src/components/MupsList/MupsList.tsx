@@ -1,7 +1,10 @@
 import React from "react";
 import style from "./MupsList.module.css";
 import { IMupsListProps } from "./types";
-
+import Checkbox from '@mui/material/Checkbox';
+import Input from '@mui/material/Input';
+import { MUP_PERIOD_URL } from "../../utils/constants";
+import { Link } from '@mui/material';
 
 
 export function MupsList(props: IMupsListProps) {
@@ -10,7 +13,7 @@ export function MupsList(props: IMupsListProps) {
         props.onMupLimitChange(mupId, value);
     }
 
-    const handleToggle = (mupId: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleToggle = (mupId: string) => (event: React.MouseEvent<HTMLTableDataCellElement>) => {
         props.onMupToggle(mupId);
     }
 
@@ -26,18 +29,25 @@ export function MupsList(props: IMupsListProps) {
             const mupEdit = props.mupEdits[mupId];
             return (
                 <tr key={mupId}>
-                    <td>
-                        <input type="checkbox"
-                            checked={mupEdit.selected} onChange={handleToggle(mup.id)} />
+                    <td onClick={handleToggle(mup.id)}>
+                        <Checkbox readOnly checked={mupEdit.selected} />
+                        {mup.name}
                     </td>
-                    <td>{mup.name}</td>
                     <td>
-                        <input className={style.limit__input} type="number"
-                            value={mupEdit.limit} onChange={handleLimitChange(mup.id)}
+                        <Input type="number" value={mupEdit.limit} onChange={handleLimitChange(mup.id)}
+                            className={style.limit__input}
                             disabled={!mupEdit.selected} />
                         </td>
-                    {/* <td>{mupEdit.messages.map(message => <p>{message}</p>)}</td> */}
-                    <td>{mupEdit.messages.join('; ')}</td>
+                    <td>
+                        <ul className={style.message__list + " warning"}>
+                            {mupEdit.messages.map((me, index) => <li key={index}>{me}</li>)}
+                            {!mupEdit.addLoadsManual ? null : <li>
+                                Заполните нагрузку <Link href={MUP_PERIOD_URL + mupId} rel="noreferrer" target="_blank"
+                                    style={{textDecoration: 'none', display: 'flex', alignItems: 'center', fontSize: 16}}
+                                    >в ИТС</Link>
+                                </li>}
+                        </ul>
+                    </td>
                 </tr>
             );
         })
@@ -46,12 +56,17 @@ export function MupsList(props: IMupsListProps) {
     return (
         <section className="table__сontainer">
             <table className="table">
+                <colgroup>
+                    <col style={{width: "50%"}} />
+                    <col style={{width: "10%"}} />
+                    <col style={{width: "40%"}} />
+                </colgroup>  
                 <thead>
                     <tr>
-                        <th>Выбр.</th>
-                        <th>Название</th>
-                        <th>Лимит</th>
-                        <th>Что нужно сделать</th>
+                        {/* <th></th> */}
+                        <th>МУП</th>
+                        <th>Количество студентов</th>
+                        <th>Действия</th>
                     </tr>
                 </thead>
                 <tbody>

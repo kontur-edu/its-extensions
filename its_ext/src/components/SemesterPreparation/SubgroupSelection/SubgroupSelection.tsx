@@ -2,29 +2,41 @@ import React, {useState, useContext, useEffect} from "react";
 import { ITSContext } from "../../../common/Context";
 import style from "./SubgroupSelection.module.css";
 import { ISubgroupSelectionProps } from "./types";
-import { COMPETITION_GROUP_URL, COMPETITION_GROUP_SUBGROUP_META_URL } from "../../../utils/constants";
+import { COMPETITION_GROUP_URL, COMPETITION_GROUP_SUBGROUP_META_URL, DEBOUNCE_MS } from "../../../utils/constants";
 import { ISubgoupDiffInfo, IMupSubgroupDiff } from "../../../common/types";
-import { CreateSubgroupDiffInfo, CreateDiffMessages } from "../../../subgroupUpdater/subgroupDifference";
 import {REQUEST_ERROR_UNAUTHORIZED} from "../../../utils/constants";
-// import {ISubgoupMetaDiff} from "../../../common/types";
-// Для выбранных групп выбора получить ID их Конкурсных групп
+import { ITSAction } from "../../../common/actions";
+import { IActionExecutionLogItem } from "../../../common/actions";
 
-// Запросить конкурсные группы
-// https://its.urfu.ru/MUPItsSubgroupMeta/Index?competitionGroupId=24&_dc=1657456081410&page=1&start=0&limit=300&filter=%5B%7B%22property%22%3A%22title%22%2C%22value%22%3A%22%22%7D%2C%7B%22property%22%3A%22discipline%22%2C%22value%22%3A%22%22%7D%2C%7B%22property%22%3A%22count%22%2C%22value%22%3A%22%22%7D%5D
-// https://its.urfu.ru/MUPItsSubgroupMeta/Edit
-// id: 421
-// groupCount: 1
+import {createActionsByDiffs, getMupNameActions} from "../../../subgroupUpdater/actionCreator";
+import {createSubgroupDiffInfo, createSubgroupDiffs, createMupToDifferenceMessages, createTodoMessages} from '../../../subgroupUpdater/subgroupDiffs';
+
+import { createDebouncedWrapper } from "../../../utils/helpers";
+import { executeActions } from "../../../common/actions";
+
+import Button from '@mui/material/Button';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import Link from '@mui/material/Link';
+import NorthEastIcon from '@mui/icons-material/NorthEast';
+
 
 function checkArraysSame(arr1: any[], arr2: any[]) {
     return arr1.sort().join(',') === arr2.sort().join(',');
 }
+
+const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
 export function SubgroupSelection(props: ISubgroupSelectionProps) {
     const [competitionGroupIds, setCompetitionGroupIds] = useState<number[]>([]);
     const [mupIds, setMupIds] = useState<string[]>([]);
     const [mupIdsSame, setMupIdsSame] = useState<boolean>(true);
     const [subgroupDiffInfo, setSubgroupDiffInfo] = useState<ISubgoupDiffInfo | null>(null);
-    const [diffMessages, setDiffMessages] = useState<{[key: string]: IMupSubgroupDiff}>({});
+    const [mupToDiffs, setMupToDiffs] = useState<{[key: string]: IMupSubgroupDiff}>({});
+    const [mupToDifferenceTodoMessages, setMupToDifferenceTodoMessages] = useState<{[key: string]: [string[], string[]]}>({});
+    
+    const [subgroupSelectionActions, setSubgroupSelectionActions] = useState<ITSAction[]>([]);
+    const [subgroupSelectionActionsResults, setSubgroupSelectionActionsResults] = useState<IActionExecutionLogItem[]>([]);
+
     const context = useContext(ITSContext)!;
 
 
@@ -58,24 +70,69 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
                 const mup = context.dataRepository.mupData.data[mupId];
                 mupNames.push(mup.name);
             }
-            console.log("creating subgoupDiffInfo");
-            const subgoupDiffInfo: ISubgoupDiffInfo = CreateSubgroupDiffInfo(
+            // console.log("creating subgoupDiffInfo");
+            
+            const newSubgoupDiffInfo: ISubgoupDiffInfo = createSubgroupDiffInfo(
                 newCompetitionGroupIds,
                 context.dataRepository.competitionGroupToSubgroupMetas,
                 context.dataRepository.competitionGroupToSubgroupIds,
                 context.dataRepository.subgroupData,
             );
-            console.log("subgoupDiffInfo");
-            console.log(subgoupDiffInfo);
-            setSubgroupDiffInfo(subgoupDiffInfo);
+            // console.log("subgoupDiffInfo");
+            // console.log(newSubgoupDiffInfo);
+            setSubgroupDiffInfo(newSubgoupDiffInfo);
 
-            const diffMessages = CreateDiffMessages(
+            const newMupToDiffs: {[key: string]: IMupSubgroupDiff} = createSubgroupDiffs(
                 mupNames,
                 newCompetitionGroupIds,
-                subgoupDiffInfo,
+                newSubgoupDiffInfo,
                 context.dataRepository.subgroupData
             );
-            setDiffMessages(diffMessages);
+            // console.log("newMupToDiffs");
+            // console.log(newMupToDiffs);
+            setMupToDiffs(newMupToDiffs);
+            
+            const newMupToDifferenceMessages = createMupToDifferenceMessages(
+                mupNames,
+                newMupToDiffs,
+                // newCompetitionGroupIds,
+                newSubgoupDiffInfo
+            );
+            // console.log("newMupToDifferenceMessages");
+            // console.log(newMupToDifferenceMessages);
+
+            const newActions = createActionsByDiffs(
+                newCompetitionGroupIds,
+                newMupToDiffs,
+                newSubgoupDiffInfo,
+                // context.dataRepository.subgroupData
+            );
+
+            
+            setSubgroupSelectionActions(newActions);
+
+            const mupNameToActions = getMupNameActions(newActions);
+            
+            const mupToDifferenceTodoMessages: {[key: string]: [string[], string[]]} = {};
+            for (const mupName of mupNames) {
+                let mupActions: ITSAction[] = [];
+                if (mupNameToActions.hasOwnProperty(mupName)) {
+                    mupActions = mupNameToActions[mupName];
+                }
+                if (!newMupToDiffs.hasOwnProperty(mupName)) {
+                    throw new Error(`${mupName} has no corresponding newMupToDiffs`);
+                }
+                const todoMessages = createTodoMessages(
+                    // newMupToDiffs[mupName],
+                    mupActions,
+                );
+                mupToDifferenceTodoMessages[mupName] = [
+                    newMupToDifferenceMessages[mupName],
+                    todoMessages
+                ];
+            }
+
+            setMupToDifferenceTodoMessages(mupToDifferenceTodoMessages);
         } else {
             setMupIdsSame(false);
         }
@@ -83,7 +140,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
 
 
     const refreshData = () => {
-        context.dataRepository.UpdateSelectionGroupData()
+        return context.dataRepository.UpdateSelectionGroupData()
             .then(() => extractCompetitionGroupIds(props.selectionGroupIds))
             .then(newCompetitionGroupIds => {
                 return Promise.allSettled([
@@ -101,11 +158,19 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
             });
     }
 
+    const refreshDataDebounced = () => {
+        debouncedWrapperForApply(() => {
+            refreshData();
+            // .then(() => handleApply());
+        });
+    }
+
     useEffect(() => {
         if (!props.dataIsPrepared || props.selectionGroupIds.length !== 2) {
             return;
         }
         prepareData();
+        // handleApply();
     }, [props.dataIsPrepared, props.selectionGroupIds]);
 
     const renderCompetitionGroupIsMissingMessage = () => {
@@ -122,13 +187,16 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
         return (
             <div className="message_error">
                 <p>Конкурсная группа отсутствует для следующих Групп выбора:</p>
-                <ul>
+                <ul className={style.list}>
                     {selectionGroupNamesWithoutCompetitionGroups.map((name: string, index: number) =>
                         <li key={index}>{name}</li>)}
                 </ul>
                 <p>
-                    Создайте недостающие Конкрусные группы и укажите Группы выбора 
-                    <a href={COMPETITION_GROUP_URL} rel="noreferrer" target="_blank">{"тут -> its.urfu.ru"}</a>
+                    Создайте недостающие Конкрусные группы и укажите Группы
+                    выбора <Link href={COMPETITION_GROUP_URL} rel="noreferrer" target="_blank"
+                                style={{textDecoration: 'none', display: 'flex', alignItems: 'center', fontSize: 16}} >
+                                    <NorthEastIcon />в ИТС
+                            </Link>
                 </p>
                 
             </div>
@@ -140,18 +208,19 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
         return (
             <React.Fragment>
                 <h3>Заполните подгруппы для одной Конкурсной группы Групп выбора:</h3>
-                <ol>
+                <ul className={style.list}>
                     {props.selectionGroupIds.map(sgId => {
                         const selectionGroup = context.dataRepository.selectionGroupData.data[sgId];
                         const competitionGroupName = selectionGroup.competitionGroupName;
                         const link = COMPETITION_GROUP_SUBGROUP_META_URL + selectionGroup.competitionGroupId;
                         return <li key={sgId}>
-                            <a href={link}  rel="noreferrer" target="_blank">
-                                {competitionGroupName}
-                            </a>
+                            <Link href={link} rel="noreferrer" target="_blank"
+                                style={{textDecoration: 'none', display: 'flex', alignItems: 'center', fontSize: 16}} >
+                                    <NorthEastIcon />{competitionGroupName}
+                            </Link>
                         </li>
                     })}
-                </ol>
+                </ul>
             </React.Fragment>
         );
     }
@@ -169,46 +238,56 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
         if (!subgroupDiffInfo) return null;
 
         return mupIds.map(mupId => {
-            let differences: string[] = [];
-            let todos: string[] = [];
-            
             const mup = context.dataRepository.mupData.data[mupId];
-            if (diffMessages.hasOwnProperty(mup.name)) {
-                differences = diffMessages[mup.name].differences;
-                todos = diffMessages[mup.name].todos;
+            
+            if (!mupToDifferenceTodoMessages.hasOwnProperty(mup.name)) {
+                throw new Error(`${mup.name} has no corresponding mupToDifferenceTodoMessages`);
             }
+            const diffTodoMessages = mupToDifferenceTodoMessages[mup.name];
 
             return (
                 <tr key={mupId}>
                     <td>{mup.name}</td>
                     <td>
-                        {differences.map((val, index) => <li key={index}>{val}</li>)}
+                        <ul className={style.list}>
+                            {diffTodoMessages[0].map((val, index) => <li key={index}>{val}</li>)}
+                        </ul>
                     </td>
                     <td>
-                        {todos.map((val, index) => <li key={index}>{val}</li>)}
+                        <ul className={style.list}>
+                            {diffTodoMessages[1].map((val, index) => <li key={index}>{val}</li>)}
+                        </ul>
                     </td>
                 </tr>
             );
         });
     }
-    
-    const handleApply = () => {
-        if (subgroupDiffInfo) {
-            props.onApply(competitionGroupIds, subgroupDiffInfo);
-        } else {
-            alert("subgroupDiffInfo is null");
-        }
+
+    const handleApplyReal = () => {
+        executeActions(subgroupSelectionActions, context)
+            .then(results => setSubgroupSelectionActionsResults(results))
+            .then(() => alert("Изменения применены"))
+            .then(() => refreshDataDebounced())
+            .catch(err => {
+                if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+                    props.onUnauthorized();
+                    return;
+                }
+                throw err;
+            });
     }
 
     return (
         <section className="step__container">
             <article>
-                <button className="step__button" onClick={refreshData}>Обновить</button>
-                {renderCompetitionGroupIsMissingMessage()}
+                <Button onClick={refreshDataDebounced}
+                    style={{fontSize: 12}}
+                    variant='text' startIcon={<RefreshIcon />} >Обновить список</Button>
+                {competitionGroupIds.length !== 2 && renderCompetitionGroupIsMissingMessage()}
                 {renderCompetitionGroupSubgroupMetaLinks()}
                 {renderMupsAreDifferent()}
                 <section className="table__container">
-                    <table className="table">
+                    <table className="table table_vertical_borders">
                         <thead>
                             <tr>
                                 <th>МУП</th>
@@ -217,12 +296,30 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
                             </tr>
                         </thead>
                         <tbody>
-                            {renderRows()}
+                            {competitionGroupIds.length === 2 && renderRows()}
                         </tbody>
                     </table>
                 </section>
 
-                <button className="step__button" onClick={handleApply}>Применить действия</button>
+                <ul>
+                    {subgroupSelectionActions.map((a: ITSAction, index: number) => <li key={index}>{a.getMessage()}</li>)}
+                </ul>
+
+                <Button onClick={handleApplyReal}
+                    variant="contained" style={{marginRight: '1em'}}
+                    >Применение изменений</Button>
+                <ul>
+                    {subgroupSelectionActionsResults.map((logItem: IActionExecutionLogItem, index: number) =>
+                        <li key={index}>{logItem.actionMessage}
+                            <ul>{logItem.actionResults.map((ar, arIdx) => 
+                                    <li key={arIdx} className={ar.success ? "message_success" : "message_error"}>
+                                        {ar.message}
+                                    </li>
+                                )}
+                            </ul>
+                        </li>
+                    )}
+                </ul>
             </article>
         </section>
     );

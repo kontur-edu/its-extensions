@@ -17,6 +17,9 @@ export enum ActionType {
     UpdateTaskResult,
 };
 
+export interface IActionResultInfo {
+
+}
 
 export abstract class ITSAction {
     constructor(public actionType: ActionType) {
@@ -24,22 +27,38 @@ export abstract class ITSAction {
     }
 
     abstract getMessage(): string;
-    abstract execute(context: IITSContext): Promise<IActionResponse>;
+    abstract getMessageSimple(): string;
+    abstract execute(context: IITSContext): Promise<IActionResponse[]>;
 }
 
 
-export async function ExecuteActions(actions: ITSAction[], itsContext: IITSContext): Promise<IActionResponse[]> {
-    const results: IActionResponse[] = [];
+export interface IActionExecutionLogItem {
+    actionMessage: string;
+    actionResults: {success: boolean; message?: string}[];
+}
+
+
+export async function executeActions(actions: ITSAction[], itsContext: IITSContext): Promise<IActionExecutionLogItem[]> {
+    const results: IActionExecutionLogItem[] = [];
     for (let action of actions) {
-        const actionResult = await action.execute(itsContext);
-        let resulMessage = `${action.getMessage()}`;
-        if (actionResult.message) {
-            resulMessage += ` ${actionResult.message}`;
-        }
-        results.push({
-            success: actionResult.success,
-            message: resulMessage,
+        const actionResults = await action.execute(itsContext);
+        console.log("actionResults");
+        console.log(actionResults);
+        const actionExecutionLogItem: IActionExecutionLogItem = {
+            actionMessage: action.getMessage(),
+            actionResults: []
+        };
+        actionResults.forEach(ar => {
+            let message = 'выполнено';
+            if (ar.summary || ar.message) {
+                message = `${ar.summary || ''} ${ar.message || ''}`;
+            }
+            actionExecutionLogItem.actionResults.push({
+                success: ar.success,
+                message: message
+            });
         });
+        results.push(actionExecutionLogItem);
     }
     return results;
 }

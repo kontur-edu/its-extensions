@@ -1,4 +1,4 @@
-import { FindCsrfTokens } from "./parser";
+import { findCsrfTokens } from "./parser";
 import { ICredentials } from '../common/types'
 import {
     CSRF_TOKEN_INPUT_NAME,
@@ -52,11 +52,6 @@ export class RequestService {
         }
         const data = await response.text() as any;
         return {success: true, data};
-        // const jsonBody = await response.json();
-        // if (!jsonBody.hasOwnProperty('data') || !jsonBody.hasOwnProperty('status')) {
-        //     throw Error(REQUEST_ERROR_REQUEST_FAILED);
-        // }
-        // return jsonBody;
     }
 
     async Authenticate(
@@ -74,7 +69,7 @@ export class RequestService {
         const jsonBody = await this.SendRequest(urlWithProxy, optionsLoginPage);
 
         const pageString = jsonBody["data"];
-        const tokens: string[] = FindCsrfTokens(pageString);
+        const tokens: string[] = findCsrfTokens(pageString);
     
         console.log(`tokens found: ${tokens.length}`);
         if (tokens.length !== 1) {
@@ -134,6 +129,7 @@ export class RequestService {
         };
 
         let result = await this.SendRequest(urlWithProxy, options);
+        if (!result.data) return result;
         result = JSON.parse(result.data);
         if (result.hasOwnProperty("data")) {
             result = result["data"];
@@ -189,9 +185,6 @@ export class RequestService {
         };
 
         let resultRaw = await this.SendRequest(urlWithProxy, options);
-        let result = JSON.parse(resultRaw.data);
-        console.log(`Result`);
-        console.log(result);
-        return result;
+        return resultRaw;
     }
 }

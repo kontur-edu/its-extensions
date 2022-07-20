@@ -13,7 +13,7 @@ import {
 } from "../common/types";
 
 
-export function PrepareSelectionGroupData(selectionGroups: ISelectionGroup[]): ISelectionGroupData {
+export function prepareSelectionGroupData(selectionGroups: ISelectionGroup[]): ISelectionGroupData {
     const result: ISelectionGroupData = {
         ids: [],
         data: {},
@@ -26,7 +26,7 @@ export function PrepareSelectionGroupData(selectionGroups: ISelectionGroup[]): I
 }
 
 
-export function PrepareMupData(mups: IMup[]): IMupData {
+export function prepareMupData(mups: IMup[]): IMupData {
     const result: IMupData = {
         ids: [],
         data: {},
@@ -38,7 +38,7 @@ export function PrepareMupData(mups: IMup[]): IMupData {
     return result;
 }
 
-export function PrepareCompetitionGroupData(competitionGroups: ICompetitionGroup[]): ICompetitionGroupData {
+export function prepareCompetitionGroupData(competitionGroups: ICompetitionGroup[]): ICompetitionGroupData {
     const result: ICompetitionGroupData = {
         ids: [],
         data: {},
@@ -50,7 +50,7 @@ export function PrepareCompetitionGroupData(competitionGroups: ICompetitionGroup
     return result;
 }
 
-export function PrepareSelectionGroupMupData(selectionGroupMups: ISelectionGroupMup[]): ISelectionGroupMupData {
+export function prepareSelectionGroupMupData(selectionGroupMups: ISelectionGroupMup[]): ISelectionGroupMupData {
     const result: ISelectionGroupMupData = {
         ids: [],
         data: {},
@@ -63,7 +63,7 @@ export function PrepareSelectionGroupMupData(selectionGroupMups: ISelectionGroup
 }
 
 
-export function PrepareSelectionGroupToMupsData(
+export function prepareSelectionGroupToMupsData(
     selectionGroupIdToSelectionGroupMups: {[key: number]: ISelectionGroupMupData}
 ): ISelectionGroupToMupsData {
     const result: ISelectionGroupToMupsData = {
@@ -80,14 +80,14 @@ export function PrepareSelectionGroupToMupsData(
 }
 
 
-export function UnionArrays<T>(arr1: T[], arr2: T[]): T[] {
+export function unionArrays<T>(arr1: T[], arr2: T[]): T[] {
     const result: T[] = [];
     const unionSet = new Set<T>([...arr1, ...arr2]);
     unionSet.forEach(item => result.push(item));
     return result;
 }
 
-export function MupExistsInAnySelectionGroups(mupId: number, selectionGroupIds: number[], selectionGroupToMupsData: ISelectionGroupToMupsData) {
+export function mupExistsInAnySelectionGroups(mupId: number, selectionGroupIds: number[], selectionGroupToMupsData: ISelectionGroupToMupsData) {
     for (let selectionGroupId of selectionGroupIds) {
         if (selectionGroupToMupsData.data[selectionGroupId].data.hasOwnProperty(mupId)) {
             return true;
@@ -97,15 +97,6 @@ export function MupExistsInAnySelectionGroups(mupId: number, selectionGroupIds: 
 }
 
 
-
-// export function formatDate(date: Date) {
-//     let mm = date.getMonth() + 1;
-//     let dd = date.getDate();
-  
-//     return [
-//         date.getFullYear(), (mm > 9 ? '' : '0') + mm, (dd > 9 ? '' : '0') + dd
-//     ].join('-');
-// };
 
 export function formatDate(date: Date) {
     let mm = date.getMonth() + 1;
@@ -134,33 +125,26 @@ export function reformatItsDate(itsDate: string) {
 };
 
 
-// export function formatDateForITS(date: Date) {
-//     let mm = date.getMonth() + 1;
-//     let dd = date.getDate();
-  
-//     return [
-//         (dd > 9 ? '' : '0') + dd,
-//         (mm > 9 ? '' : '0') + mm,
-//         date.getFullYear(),
-//     ].join('-');
-// };
 
-// dd.mm.yyyy
-// export function parseDate(dateStr: string) {
-//     return new Date(dateStr.split('.').reverse().join(' '));
-// }
-
-export function CheckDateIsLess(dateStr: string, timeStamp: number) {
+export function checkDateIsLess(dateStr: string, timeStamp: number) {
     // return parseDate(dateStr).getTime() < timeStamp;
     if (!dateStr) return false;
     return (new Date(dateStr)).getTime() < timeStamp;
 }
 
-// export function CompareDates(dateStr1: string, dateStr2: string) {
-//     const d1 = dateStr1.split('.').reverse().join(".");
-//     const d2 = dateStr2.split('.').reverse().join(".");
-//     if (d1 < d2) return -1;
-//     if (d1 > d2) return 1;
-//     return 0;
-// }
 
+
+export function createDebouncedWrapper(ms: number) {
+    let timeoutId: number | null = null;
+
+    return (func: () => any, newMs?: number) => {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
+
+        timeoutId = window.setTimeout(() => {
+            func();
+            timeoutId = null;
+        }, newMs || ms);
+    };
+}

@@ -1,18 +1,20 @@
 import React, {useContext, useEffect, useState} from "react";
 import style from "./CompetitionGroupSelect.module.css";
 import { ICompetitionGroupSelectProps } from "./types";
-import {StepMessages} from "../../../utils/constants";
-import { ITSContext } from "../../../common/Context";
-
+// import {StepMessages} from "../../../utils/constants";
+// import { ITSContext } from "../../../common/Context";
+import Button from '@mui/material/Button';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import Checkbox from '@mui/material/Checkbox';
 
 export function CompetitionGroupSelect(props: ICompetitionGroupSelectProps) {
     const [selectedCompetitionGroupIds, setSelectedCompetitionGroupIds] = useState<number[]>([]); 
     // const [competitionGroupIdToSelected, setCompetitionGroupIdToSelected] = useState<{[key: number]: boolean}>({});
-    const context = useContext(ITSContext)!;
+    // const context = useContext(ITSContext)!;
     
-    const isSelectionValid = () => {
-        return selectedCompetitionGroupIds.length === 2;
-    }
+    // const isSelectionValid = () => {
+    //     return selectedCompetitionGroupIds.length === 2;
+    // }
     const handleRefreshCompetitionGroups = () => {
         props.onRefresh();
     };
@@ -31,9 +33,10 @@ export function CompetitionGroupSelect(props: ICompetitionGroupSelectProps) {
         }
         
         setSelectedCompetitionGroupIds(newIds);
-        if (newIds.length === 2) {
-            props.onSelectionValid(newIds);
-        }
+        props.onSelectionValid(newIds);
+        // if (newIds.length === 2) {
+        //     props.onSelectionValid(newIds);
+        // }
     };
 
     useEffect(() => {
@@ -44,12 +47,11 @@ export function CompetitionGroupSelect(props: ICompetitionGroupSelectProps) {
         return props.competitionGroupsItems.map(cgItem => {
             const selected = selectedCompetitionGroupIds.includes(cgItem.id);
             return (
-                <tr key={cgItem.id} onClick={() => handleCompetitionGroupToggle(cgItem.id)}
-                    className={"selectable " + (selected ? style.row_selected : '')}
-                >
+                <tr key={cgItem.id} className="selectable" onClick={() => handleCompetitionGroupToggle(cgItem.id)}>
                     <th>
-                        <input type="checkbox" readOnly
-                            checked={selected}/>
+                        <Checkbox readOnly checked={selected} />
+                        {/* <input type="checkbox" readOnly
+                            checked={selected}/> */}
                     </th>
                     <th>{cgItem.name}</th>
                     <th>{cgItem.course}</th>
@@ -63,10 +65,13 @@ export function CompetitionGroupSelect(props: ICompetitionGroupSelectProps) {
 
     return (
         <section className="step__container">
-            <article className={style.selectionGroup_select}>
+            <article>
                 <h3>Конкурсные группы</h3>
                 {/* <button onClick={doStuff}>DO STUFF</button> */}
-                <button className="step__button" onClick={handleRefreshCompetitionGroups}>Обновить</button>
+                <Button onClick={handleRefreshCompetitionGroups}
+                    style={{fontSize: 12, marginBottom: '1em'}}
+                    variant='text' startIcon={<RefreshIcon />} >Обновить список</Button>
+                {/* <button className="step__button" onClick={handleRefreshCompetitionGroups}>Обновить</button> */}
                 <section className="table__container">
                     <table className="table">
                         <thead>
@@ -85,13 +90,13 @@ export function CompetitionGroupSelect(props: ICompetitionGroupSelectProps) {
                     </table>
                 </section>
             </article>
-            <article className="step__message_container ">
+            {/* <article className="step__message_container ">
                 <p className={!isSelectionValid() ? "message_error" : ""}>
                     {!isSelectionValid() ?
                         StepMessages.competitionGroupsSelectError :
                         StepMessages.competitionGroupsSelected}
                 </p>
-            </article>
+            </article> */}
         </section>
     );
 }

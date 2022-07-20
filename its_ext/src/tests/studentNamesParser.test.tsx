@@ -9,6 +9,7 @@ import {
     IStudentData
 } from '../common/types';
 
+
 describe("getNameRecords", () => {
     it('extracts groups and names, ignores spaces and commas', () => {
         const text = `МЕН-490810	Слово Слово Слово 

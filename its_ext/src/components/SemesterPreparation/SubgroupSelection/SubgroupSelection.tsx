@@ -117,7 +117,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
                 context.dataRepository.subgroupData
             );
 
-            alert(`${newActions.length} actions created`);
+            // alert(`${newActions.length} actions created`);
             
             setSubgroupSelectionActions(newActions);
 
@@ -282,59 +282,6 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
             );
         });
     }
-    
-    // const setUpDiffMessagesByActions = (
-    //     actions: ITSAction[],
-    // ) => {
-    //     const mupToActions = GetMupNameActions(actions);
-
-    //     const newDiffMessages = {...diffMessages};
-    //     console.log("newDiffMessages");
-    //     console.log(newDiffMessages);
-
-    //     let needToCreateSubgroups = false;
-    //     for (const action of actions) {
-    //         if (action.actionType === ActionType.CreateSubgroups) {
-    //             needToCreateSubgroups = true;
-    //             break;
-    //         }
-    //     }
-
-        // for (const mupName in newDiffMessages) {
-        //     newDiffMessages[mupName].todos = [];
-        //     if (needToCreateSubgroups) {
-        //         newDiffMessages[mupName].todos.push(`Примените изменения для создания подгрупп`);
-        //     }
-        // }
-
-        // for (const mupName in mupToActions) {
-        //     console.log(`mupName: ${mupName}`);
-        //     if (newDiffMessages.hasOwnProperty(mupName)) {
-        //         newDiffMessages[mupName].todos.push(
-        //             ...mupToActions[mupName].map(a => a.getMessageSimple())
-        //         );
-        //     }
-        // }
-
-        // setDiffMessages(newDiffMessages);
-    // }
-
-    // const handleApply = () => {
-    //     if (subgroupDiffInfo) {
-    //         const actions = CreateActionsByDiffs(
-    //             competitionGroupIds,
-    //             subgroupDiffInfo,
-    //             context.dataRepository.subgroupData
-    //         );
-    //         // alert(actions.length);
-    //         setSubgroupSelectionActions(actions);
-
-    //         setUpDiffMessagesByActions(actions);
-    //         // props.onApply(competitionGroupIds, subgroupDiffInfo);
-    //     } else {
-    //         // alert("subgroupDiffInfo is null");
-    //     }
-    // }
 
     const handleApplyReal = () => {
         ExecuteActions(subgroupSelectionActions, context)

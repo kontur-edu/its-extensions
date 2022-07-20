@@ -3,24 +3,16 @@ import { MupEditor } from "../MupEditor";
 import { ISelectionListItem } from "../../SelectionList/types";
 import style from "./SemesterPreparation.module.css";
 import { ISemesterPreparationProps } from "./types";
-// import { IMupDiff, ISubgoupDiffInfo } from "../../../common/types";
 import { DEBOUNCE_MS, REQUEST_ERROR_UNAUTHORIZED} from "../../../utils/constants";
 
-// import { context.dataRepository } from "../../../utils/repository";
 import { GroupSelect } from "../GroupSelect/GroupSelect";
 import { UnionArrays } from "../../../utils/helpers";
-// import { AddLoadToPeriod, CheckRemovedMUPs, UpdateSelectionGroups } from "../../../utils/requests";
-// import {ApplyMupUpdates} from "../MupEditor/utils";
-// import {createActions} from "../../../mupUpdater/actionCreater";
-// import {createSubgroupSelectionActions} from "../../../subgroupUpdater/actionCreator";
 import { ITSContext } from "../../../common/Context";
-// import { ITSAction, ExecuteActions, IActionExecutionLogItem } from "../../../common/actions";
-// import {IActionResponse} from "../../../utils/ITSApiService";
 import { SubgroupSelection } from "../SubgroupSelection";
 
 import { Button } from "@mui/material";
 import SystemUpdateAltIcon from '@mui/icons-material/SystemUpdateAlt';
-import { CreateDebouncedWrapper } from "../../../utils/helpers";
+// import { CreateDebouncedWrapper } from "../../../utils/helpers";
 
 // Получение данных:
 // Запросить все Группы выбора
@@ -56,23 +48,15 @@ import { CreateDebouncedWrapper } from "../../../utils/helpers";
 // mupsUpdate {ids: [], data: {id: {id, limit}}}
 
 
-const debouncedWrapperForApply = CreateDebouncedWrapper(DEBOUNCE_MS);
+// const debouncedWrapperForApply = CreateDebouncedWrapper(DEBOUNCE_MS);
 
 
 export function SemesterPreparation(props: ISemesterPreparationProps) {
     // TODO: вынести в отдельный компонент
     const [selectionGroupsListItems, setSelectionGroupsListItems] = useState<ISelectionListItem[]>([]); 
     const [selectionGroupsIds, setSelectionGroupsIds] = useState<number[]>([]);
-    // const [mupsUpdates, setMupUpdates] = useState<{[key: string]: IMupUpdate}>({});
-    // const [selectedMupIds, setSelectedMupIds] = useState<string[]>([]);
-    // const [mupData, setMupData] = useState<IMupData | null>(null);
-    // const [mupToPerionds, setMupToPerionds] = useState<IMupToPeriods | null>(null);
     const [editorDataPrepared, setEditorDataPrepared] = useState<boolean>(false);
     const requestSelectionGroupsInProgress = useRef(false);
-    // const [mupEditorActions, setMupEditorActions] = useState<ITSAction[]>([]);
-    // const [mupEditorActionResults, setMupEditorActionResults] = useState<IActionExecutionLogItem[]>([]);
-    // const [subgroupSelectionActions, setSubgroupSelectionActions] = useState<ITSAction[]>([]);
-    // const [subgroupSelectionActionsResults, setSubgroupSelectionActionsResults] = useState<IActionExecutionLogItem[]>([]);
 
     const stepTwoRef = useRef<HTMLElement | null>(null);
     const stepThreeRef = useRef<HTMLElement | null>(null);
@@ -204,46 +188,6 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     }
 
 
-    // const handleMupEditorApply2 = (
-    //     actions: ITSAction[]
-    // ) => {
-    //     alert(`Сохранение actions`);
-    //     setMupEditorActions(actions);
-    // }
-
-    // const handleSubgroupSelectionApply = (
-    //     competitionGroupIds: number[],
-    //     subgroupInfo: ISubgoupDiffInfo
-    // ) => {
-    //     alert(`Сохраненние action`);
-    //     const actions = createSubgroupSelectionActions(
-    //         competitionGroupIds,
-    //         subgroupInfo,
-    //         context.dataRepository.subgroupData
-    //     );
-    //     console.log("handleSubgroupSelectionApply");
-    //     console.log(actions);
-    //     setSubgroupSelectionActions(actions);
-    // }
-
-    // const handleSubgroupSelectionApplyReal = () => {
-    //     // return; // TODO: Delete this;
-    //     // setMupEditorActionResults([]);
-    //     ExecuteActions(subgroupSelectionActions, context)
-    //             .then(results => setSubgroupSelectionActionsResults(results))
-    //             .then(() => alert("Изменения применены"));
-
-    //     setSubgroupSelectionActions([]);
-    //     prepareDataForSelectionGroups(selectionGroupsIds)
-    //     .then(() => setSelectionGroupsIds([...selectionGroupsIds]))
-    //     .catch(err => {
-    //         if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-    //             props.onUnauthorized();
-    //             return;
-    //         }
-    //         throw err;
-    //     });
-    // }
 
     useEffect(() => {
         refreshSelectionGroups();
@@ -279,25 +223,6 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
                     // onApply={handleSubgroupSelectionApply}
                     onUnauthorized={props.onUnauthorized}
                 />
-                {/* <ul>
-                    {subgroupSelectionActions.map((a: ITSAction, index: number) => <li key={index}>{a.getMessage()}</li>)}
-                </ul>
-                
-                <Button onClick={handleSubgroupSelectionApplyReal}
-                        variant="contained" style={{backgroundColor: 'red', alignSelf: 'flex-start'}}
-                    >Настоящее применение</Button>
-                <ul>
-                    {subgroupSelectionActionsResults.map((logItem: IActionExecutionLogItem, index: number) =>
-                        <li key={index}>{logItem.actionMessage}
-                            <ul>{logItem.actionResults.map((ar, arIdx) => 
-                                    <li key={arIdx} className={ar.success ? "message_success" : "message_error"}>
-                                        {ar.message}
-                                    </li>
-                                )}
-                            </ul>
-                        </li>
-                    )}
-                </ul> */}
             </article>
         );
     }
@@ -313,12 +238,12 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
                     onSelectionValid={handleSelectionGroupValid}
                 />
 
-                <div className={style.next_step__container}>
+                <div className="next_step__container">
                     <Button onClick={handleGroupSelectButton}
                         variant="contained" style={{marginRight: '1em'}}
                         endIcon={<SystemUpdateAltIcon />}
                         >К следующему шагу</Button>
-                    <p className={style.next_step__message}>
+                    <p className="next_step__message">
                         {selectionGroupsIds.length !== 2 ? "Выберите две группы для перехода к следующему шагу" : null}
                     </p>
                 </div>

@@ -1,16 +1,31 @@
 import React, {useContext, useEffect, useRef, useState} from "react";
-import style from "./CompetitionGroupSelect.module.css";
+import style from "./TaskResultsInput.module.css";
 import { ITaskResultsInputProps } from "./types";
-import {DEBOUNCE_MS, StepMessages} from "../../../utils/constants";
+import {DEBOUNCE_MS} from "../../../utils/constants";
 import { ITSContext } from "../../../common/Context";
-import { IAdmissionMeta, CompetitionGroupIdToMupAdmissions, AdmissionInfo, IStudentData } from "../../../common/types";
-import { isConstTypeReference } from "typescript";
+import { CompetitionGroupIdToMupAdmissions, AdmissionInfo, IStudentData } from "../../../common/types";
+
 import {
     findPersonalNumber,
     getNameRecords,
     getSurnameToKeys,
     TaskResultNameRecord
 } from "../../../taskResultUpdater/studentNamesParser";
+
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import { IActionExecutionLogItem, ITSAction, ExecuteActions } from "../../../common/actions";
+
+import Button from '@mui/material/Button';
+import { createTaskResultActions } from "../../../taskResultUpdater/actionCreator";
+
+
+import { CreateDebouncedWrapper } from "../../../utils/helpers";
+
+
+const debouncedWrapperForApply = CreateDebouncedWrapper(DEBOUNCE_MS);
 
 
 export function getAdmissionIds(
@@ -116,11 +131,10 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     const [admissionIds, setAdmissionIds] = useState<number[]>([]);
     const [mupIds, setMupIds] = useState<string[]>([]);
     const [studentItems, setStudentItems] = useState<{[key: string]: IStudentItem}>({});
-    // const [studentPersonalNumbers, setStudentPersonalNumbers] = useState<string[]>([]);
-    // const [studentFullNameToStudentNumbers, setStudentFullNameToStudentNumbers] = useState<{[key: string]: string[]}>({});
-    // const surnameToPErsonalNumbers = useRef<{[key: string]: string[]}>({});
+    const [taskResultsActions, setTaskResultsActions] = useState<ITSAction[]>([]);
+    const [taskResultsActionResults, setTaskResultsActionResults] = useState<IActionExecutionLogItem[]>([]);
     const [textAreaValue, setTextAreaValue] = useState<string>('');
-    const timeoutId = useRef<number | null>(null);
+    // const timeoutId = useRef<number | null>(null);
 
     const context = useContext(ITSContext)!;
 
@@ -165,25 +179,22 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     }, [props.competitionGroupIds]);
 
     useEffect(() => {
+        // const need
+        // if (context.dataRepository.admissionInfo.hasOwnProperty())
         context.dataRepository.UpdateStudentAdmissionsAndStudentData(admissionIds)
             .then(() => {
-                // const personalNumbers = findCurrentPersonalNumbers(
-                //     admissionIds, context.dataRepository.admissionInfo
-                // );
-                // setStudentPersonalNumbers(personalNumbers);
-                const studentItems = createStudentItems(
+                const newStudentItems = createStudentItems(
                     admissionIds, context.dataRepository.admissionInfo,
                     context.dataRepository.studentData
                 );
-                setStudentItems(studentItems);
-
-                // const newStudentFullNameToStudentNumbers = getStudentNameToStudentNumbers(studentItems);
-                // setStudentFullNameToStudentNumbers(newStudentFullNameToStudentNumbers);
-            });
+                setStudentItems(newStudentItems);
+                return newStudentItems;
+            })
+            .then(newStudentItems => handleApplyDebounced(newStudentItems));
     }, [admissionIds]);
 
-    
-    const handleMupChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+
+    const handleMupChange = (event: SelectChangeEvent) => {
         const newMupId = event.target.value;
         console.log("newMupId");
         console.log(newMupId);
@@ -203,36 +214,20 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
             studentItem.testResult = 1;
         }
         setStudentItems(newStudentItems);
+
+        handleApplyDebounced(newStudentItems);
     }
 
-    const selectStudentsByNameRecords = (nameRecords: TaskResultNameRecord[]) => {
-        // for (const personalNumber in studentItems) {
-        //     studentItems[personalNumber].testResult = 0;
-        // }
-
-        // for (const nameRecord of nameRecords) {
-        //     if (studentFullNameToStudentNumbers.hasOwnProperty(nameRecord.fullnameLower)) {
-        //         const personalNumbers = studentFullNameToStudentNumbers[nameRecord.fullnameLower];
-        //         if (personalNumbers.length === 1) {
-        //             studentItems[personalNumbers[0]].testResult = 1;
-        //         } else {
-        //             for (const personalNumber of personalNumbers) {
-        //                 if (studentItems[personalNumber].group.toLocaleLowerCase() === nameRecord.group) {
-        //                     studentItems[personalNumbers[0]].testResult = 1;
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
+    const selectStudentsByNameRecords = (
+        nameRecords: TaskResultNameRecord[]
+    ): { [x: string]: IStudentItem; } => {
         const personalNumbers = Object.keys(studentItems);
-        // console.log("studentItems");
-        // console.log(studentItems);
-        // console.log("personalNumbers");
-        // console.log(personalNumbers);
+
         const surnameToPersonalNumbers = getSurnameToKeys(
             personalNumbers,
             context.dataRepository.studentData
         );
+
         const newStudentItems = {...studentItems};
         personalNumbers.forEach(pn => newStudentItems[pn].testResult = 0);
         for (const record of nameRecords) {
@@ -248,6 +243,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
             }
         }
         setStudentItems(newStudentItems);
+        return newStudentItems;
     }
 
     const handleTextAreaChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -264,17 +260,13 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
         records: TaskResultNameRecord[]
     ) => {
         console.log("Debounce studentSelect");
-        if (timeoutId.current) {
-            clearTimeout(timeoutId.current);
-        }
-        timeoutId.current = window.setTimeout(() => {
-            
-            selectStudentsByNameRecords(records);
-        }, DEBOUNCE_MS);
+        debouncedWrapperForApply(() => {
+            const newStudentItems = selectStudentsByNameRecords(records);
+            handleApply(newStudentItems);
+        });
     };
 
     const renderRows = () => {
-    
         const studentPersonalNumbersSorted = Object.keys(studentItems).sort((lhs, rhs) => {
             return studentItems[lhs].name.localeCompare(studentItems[rhs].name);
         });
@@ -302,24 +294,55 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
         refreshAdmissionInfo();
     }
 
-    const handleApply = () => {
+    const handleApply = (newStudentItems: {[key: string]: IStudentItem}) => {
+        if (admissionIds.length !== 2) return;
         const personalNumberToTaskResult: {[key: string]: number | null} = {};
-        for (const personalNumber in studentItems) {
-            const studentItem = studentItems[personalNumber];
+        for (const personalNumber in newStudentItems) {
+            const studentItem = newStudentItems[personalNumber];
             personalNumberToTaskResult[personalNumber] = studentItem.testResult;
         }
 
-        props.onApply(admissionIds, personalNumberToTaskResult);
+        const actions = createTaskResultActions(
+            admissionIds,
+            personalNumberToTaskResult,
+            context.dataRepository.admissionInfo,
+            context.dataRepository.studentData
+        );
+
+        setTaskResultsActions(actions);
     }
+
+    const handleApplyDebounced = (newStudentItems: {[key: string]: IStudentItem}) =>
+        debouncedWrapperForApply(() => handleApply(newStudentItems));
+
+    const handleRealApply = () => {
+        alert(`Настоящее применение изменений`);
+        ExecuteActions(taskResultsActions, context)
+            .then(actionResults => {
+                setTaskResultsActionResults(actionResults);
+            });
+    }
+
+    const handleRealApplyDebounced = () => debouncedWrapperForApply(handleRealApply);
 
     return (
         <section className="step__container">
             <article>
-                <h3>Выберите МУП</h3>
-                <select value={selectedMupId} onChange={handleMupChange}>
-                    <option key={''} value={''}>{"Не выбран"}</option>
-                    {mupIds.map(mupId => <option key={mupId} value={mupId}>{getMupNameById(mupId)}</option>)}
-                </select>
+                <h3 className={style.mup_select__header}>Выберите МУП: 
+
+                <FormControl sx={{ minWidth: 120, marginLeft: '1em' }}>
+                    <InputLabel id="task-results-mup-select-label">МУП</InputLabel>
+                    <Select
+                        labelId="task-results-mup-select-label"
+                        value={selectedMupId}
+                        label="МУП"
+                        onChange={handleMupChange}
+                    >
+                        <MenuItem key={''} value={''}>Не выбран</MenuItem>
+                        {mupIds.map(mupId => <MenuItem key={mupId} value={mupId}>{getMupNameById(mupId)}</MenuItem>)}
+                    </Select>
+                </FormControl></h3>
+                
                 <h3>Вставьте список ФИО студентов, прошедших тестовое или выберите студентов в таблице</h3>
                 <textarea value={textAreaValue} onChange={handleTextAreaChange} 
                     rows={8} cols={64}
@@ -340,7 +363,27 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
                         </tbody>
                     </table>
                 </section>
-                <button className="step__button" onClick={handleApply}>Применить изменения</button>
+
+                <ul>
+                    {taskResultsActions.map((a: ITSAction, index: number) => <li key={index}>{a.getMessage()}</li>)}
+                </ul> 
+
+                <Button onClick={handleRealApplyDebounced}
+                    variant="contained" style={{marginRight: '1em'}}
+                    >Применение изменений</Button>
+                <ul>
+                    {taskResultsActionResults.map((logItem: IActionExecutionLogItem, index: number) =>
+                        <li key={index}>{logItem.actionMessage}
+                            <ul>{logItem.actionResults.map((ar, arIdx) => 
+                                    <li key={arIdx} className={ar.success ? "message_success" : "message_error"}>
+                                        {ar.message}
+                                    </li>
+                                )}
+                            </ul>
+                        </li>
+                    )}
+                </ul>
+
             </article>
         </section>
     );

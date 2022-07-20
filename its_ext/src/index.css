@@ -90,6 +90,21 @@ code {
   /* font-size: ; */
 }
 
+.next_step__container {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 1em;
+}
+
+.next_step__message {
+  color: #858585;
+  margin: 0;
+  padding: 0;
+}
+
+
 .message_error {
   color: red;
 }
@@ -117,7 +132,9 @@ code {
   margin: 0;
 }
 
-
+.table {
+  width: 100%;
+}
 
 .table, th, td {
   /* border: 1px solid #000; */

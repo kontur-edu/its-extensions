@@ -271,7 +271,7 @@ export function CreateActionsByDiffs(
     for (const mupName in sDiffs) {
         const sDiff = sDiffs[mupName];
     
-        actions.push(...CreateUpdateTeacherActionsBySubgroupDiff(
+        actions.push(...CreateUpdateTeacherActionsBySubgroupDiff( // TODO: lowercase
             mupName, sDiff, competitionGroupIds,
             // subgroupInfo,
             // subgroupData

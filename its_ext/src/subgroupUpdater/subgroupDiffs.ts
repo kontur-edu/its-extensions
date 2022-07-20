@@ -8,7 +8,17 @@ import {
     IMupSubgroupDiff,
     ISubgroupMeta,
     SubgroupAndMetaAreSameDiffs,
+    ISubgroupInfo,
 } from "../common/types"
+
+import {ITSAction} from '../common/actions';
+
+import {
+    CreateSubgroupsAction,
+    RefreshSubgroupsAction,
+    UpdateSubgroupMetaLoadCountAction,
+    UpdateTeacherForSubgroupAction,
+} from "./actions";
 
 
 function checkIfMetasAndSubgroupsAreSameForMupAndSubgroup(
@@ -74,19 +84,22 @@ function createSubgroupAndMetaAreSameDiffs(
     ]);
     const mupNamesUnion = Array.from(mupNamesUnionSet);
     for (let mupName of mupNamesUnion) {
-        res[mupName] = {};
-        for (let competitionGroupId of competitionGroupIds) {
-            const same = checkIfMetasAndSubgroupsAreSameForMupAndSubgroup(
-                mupName, competitionGroupId,
-                metaDiffs, subgroupDiffs,
-                subgroupData
-                );
-            res[mupName][competitionGroupId] = same;
-        }
+        const same1 = checkIfMetasAndSubgroupsAreSameForMupAndSubgroup(
+            mupName, competitionGroupIds[0],
+            metaDiffs, subgroupDiffs,
+            subgroupData
+        );
+        const same2 = checkIfMetasAndSubgroupsAreSameForMupAndSubgroup(
+            mupName, competitionGroupIds[1],
+            metaDiffs, subgroupDiffs,
+            subgroupData
+        );
+        res[mupName] = [same1, same2];
     }
 
     return res;
 }
+
 
 export function CreateSubgroupDiffInfo(
     competitionGroupIds: number[],
@@ -152,27 +165,7 @@ function CreateDiffMessageForMupByMeta(
     competitionGroupIds: number[],
     mupSubgroupDiff: IMupSubgroupDiff
 ) {
-    // const mupSubgroupDiff: IMupSubgroupDiff = {
-    //     differences: [],
-    //     todos: [],
-    //     addLoadsManualFor: [],
-    //     loadsToGroupsNeeded: {},
-    //     createSubgroupsFor: [],
-    //     subgroupCount: {},
-    //     absentSubgroupsForLoad_number: [[], []],
-    // }
-
     let canCompareLoads = true;
-    if (!metaDiff.hasOwnProperty(competitionGroupIds[0])) {
-        canCompareLoads = false;
-        mupSubgroupDiff.addLoadsManualFor.push(0);
-    }
-
-    if (!metaDiff.hasOwnProperty(competitionGroupIds[1])) {
-        canCompareLoads = false;
-        mupSubgroupDiff.addLoadsManualFor.push(1);
-    }
-    
     if (canCompareLoads) {
         const first = metaDiff[competitionGroupIds[0]];
         const second = metaDiff[competitionGroupIds[1]];
@@ -185,14 +178,12 @@ function CreateDiffMessageForMupByMeta(
         loadSet.forEach(load => {
             const fHas = first.hasOwnProperty(load);
             const sHas = second.hasOwnProperty(load);
-            mupSubgroupDiff.subgroupCount[load] = [
-                fHas ? first[load].count : null,
-                sHas ? second[load].count : null
+            mupSubgroupDiff.loadsToMetas[load] = [
+                fHas ? first[load] : null,
+                sHas ? second[load] : null
             ];
         });
     }
-
-    // return mupSubgroupDiff;
 }
 
 
@@ -206,27 +197,7 @@ function CreateDiffMessageForMupBySubgroups(
     subgroupData: ISubgroupData,
     mupSubgroupDiff: IMupSubgroupDiff
 ) {
-    // const mupSubgroupDiff: IMupSubgroupDiff = {
-    //     differences: [],
-    //     todos: [],
-    //     addLoadsManualFor: [],
-    //     loadsToGroupsNeeded: {},
-    //     createSubgroupsFor: [],
-    //     subgroupCount: {},
-    //     absentSubgroupsForLoad_number: [[], []],
-    //     loadToTeachers: {},
-    // }
-
     let canCompareLoads = true;
-    if (!subgroupDiff.hasOwnProperty(competitionGroupIds[0])) {
-        canCompareLoads = false;
-        mupSubgroupDiff.createSubgroupsFor.push(0);
-    }
-
-    if (!subgroupDiff.hasOwnProperty(competitionGroupIds[1])) {
-        canCompareLoads = false;
-        mupSubgroupDiff.createSubgroupsFor.push(1);
-    }
 
     if (canCompareLoads) {
         const first = subgroupDiff[competitionGroupIds[0]];
@@ -259,20 +230,9 @@ function CreateDiffMessageForMupBySubgroups(
             mupSubgroupDiff.loadToTeachers[load_number] = [
                 fTeacher, sTeacher
             ];
-
-            if (!fHas) {
-                mupSubgroupDiff.absentSubgroupsForLoad_number[0].push(
-                    load_number);
-            } else if (!sHas) {
-                mupSubgroupDiff.absentSubgroupsForLoad_number[1].push(
-                    load_number);
-            }
         });
     }
-
-    // return mupSubgroupDiff;
 }
-
 
 export function CreateDiffMessageForMup(
     mupName: string,
@@ -281,15 +241,10 @@ export function CreateDiffMessageForMup(
     subgroupData: ISubgroupData,
 ): IMupSubgroupDiff {
     const mupSubgroupDiff: IMupSubgroupDiff = {
-        differences: [],
-        todos: [],
-        addLoadsManualFor: [],
-        loadsToGroupsNeeded: {},
-        createSubgroupsFor: [],
-        subgroupCount: {},
-        absentSubgroupsForLoad_number: [[], []],
+        loadsToMetas: {},
         loadToTeachers: {},
     }
+
     if (subgroupDiffInfo.metaDiffs.hasOwnProperty(mupName)) {
         const metaDiff = subgroupDiffInfo.metaDiffs[mupName];
 
@@ -306,33 +261,11 @@ export function CreateDiffMessageForMup(
             mupSubgroupDiff);
     }
 
-    if (subgroupDiffInfo.subgroupAndMetaAreSameDiffs.hasOwnProperty(mupName)) {
-        const subgroupAndMetaDiffs = subgroupDiffInfo.subgroupAndMetaAreSameDiffs[mupName];
-        const firstGroupId = competitionGroupIds[0];
-        const secondGroupId = competitionGroupIds[1];
-        const groupsWithSubgroupAndMetaDiffs: number[] = [];
-        if (subgroupAndMetaDiffs.hasOwnProperty(firstGroupId) &&
-                !subgroupAndMetaDiffs[firstGroupId]) {
-            groupsWithSubgroupAndMetaDiffs.push(1);
-        }
-
-        if (subgroupAndMetaDiffs.hasOwnProperty(secondGroupId) &&
-                !subgroupAndMetaDiffs[secondGroupId]) {
-            groupsWithSubgroupAndMetaDiffs.push(2);
-            
-        }
-        if (groupsWithSubgroupAndMetaDiffs.length > 0) {
-            const groupsStr = groupsWithSubgroupAndMetaDiffs.join(', ');
-            mupSubgroupDiff.differences.push(`Информация о подгруппах и созданные подгруппы отличаются для Групп: ${groupsStr}`);
-        }
-    }
-
-
     return mupSubgroupDiff;
 }
 
 
-export function CreateDiffMessages(
+export function CreateSubgroupDiffs(
     mupNames: string[],
     competitionGroupIds: number[],
     subgroupDiffInfo: ISubgoupDiffInfo,
@@ -346,8 +279,135 @@ export function CreateDiffMessages(
             subgroupDiffInfo,
             subgroupData,
         );
-    })
+    });
     return res;
 }
 
+export function CreateMupToDifferenceMessages(
+    mupNames: string[],
+    sDiffs: {[key: string]: IMupSubgroupDiff},
+    competitionGroupIds: number[],
+    subgroupDiffInfo: ISubgoupDiffInfo,
+): {[key: string]: string[]} {
+    const res: {[key: string]: string[]} = {};
+    mupNames.forEach(mupName => {
+        if (!sDiffs.hasOwnProperty(mupName)) {
+            throw new Error(`${mupName} has no corresponding SubgroupDiff`);
+        }
+        res[mupName] = CreateDifferenceMessagesForMup(
+            mupName,
+            sDiffs[mupName],
+            competitionGroupIds,
+            subgroupDiffInfo,
+        );
+    });
+    return res;
+}
 
+export function CreateDifferenceMessagesForMup(
+    mupName: string,
+    sDiff: IMupSubgroupDiff,
+    competitionGroupIds: number[],
+    subgroupDiffInfo: ISubgoupDiffInfo,
+): string[] {
+    const messages: string[] = [];
+    messages.push(...CreateDifferenceMessagesForSubgroupDiff(
+        sDiff
+    ));
+    if (subgroupDiffInfo.subgroupAndMetaAreSameDiffs.hasOwnProperty(mupName)) {
+        const [same1, same2] = subgroupDiffInfo.subgroupAndMetaAreSameDiffs[mupName];
+        if (!same1) {
+            messages.push(`Группа 1 имеет количество или состав созданных подгрупп отличный от настройкам подгрупп`);
+        }
+        if (!same2) {
+            messages.push(`Группа 2 имеет количество или состав созданных подгрупп отличный от настройкам подгрупп`);
+        }
+    }
+
+    if (subgroupDiffInfo.metaDiffs.hasOwnProperty(mupName)) {
+        const metaDiff = subgroupDiffInfo.metaDiffs[mupName]; 
+        if (!metaDiff.hasOwnProperty(competitionGroupIds[0])) {
+            messages.push(`Группа 1 не содержит нагрузок`);
+        }
+        if (!metaDiff.hasOwnProperty(competitionGroupIds[1])) {
+            messages.push(`Группа 2 не содержит нагрузок`);
+        }
+    }
+
+    if (subgroupDiffInfo.subgroupDiffs.hasOwnProperty(mupName)) {
+        const subgroupDiff = subgroupDiffInfo.subgroupDiffs[mupName];
+        if (!subgroupDiff.hasOwnProperty(competitionGroupIds[0])) {
+            messages.push(`Группа 1 не содержит созданных подгрупп`);
+        }
+        if (!subgroupDiff.hasOwnProperty(competitionGroupIds[1])) {
+            messages.push(`Группа 2 не содержит созданных подгрупп`);
+        }
+    }
+
+    return messages;
+}
+
+
+export function CreateDifferenceMessagesForSubgroupDiff(
+    sDiff: IMupSubgroupDiff,
+): string[] {
+    const messages: string[] = [];
+
+    const absentLoads: [string[], string[]] = [[], []];
+    for (const load in sDiff.loadsToMetas) {
+        const [sm1, sm2] = sDiff.loadsToMetas[load];
+        if (sm1 === null) {
+            absentLoads[0].push(load);
+        }
+        if (sm2 === null) {
+            absentLoads[1].push(load);
+        }
+        if (sm1 && sm2) {
+            if (sm1.count !== sm2.count) {
+                messages.push(`Количество групп для нагрузки: ${load} отличается (${sm1.count} != ${sm2.count})`);
+            }
+        }
+    }
+    if (absentLoads[0].length > 0) {
+        const loadsStr = absentLoads[0].join(', ');
+        messages.push(`Группа 1 не содержит нагрузки: ${loadsStr}`);
+    }
+    if (absentLoads[1].length > 0) {
+        const loadsStr = absentLoads[1].join(', ');
+        messages.push(`Группа 2 не содержит нагрузки: ${loadsStr}`);
+    }
+
+    const load_numberWithAbsentTeachers: [string[], string[]] = [[], []];
+    for (const load_number in sDiff.loadToTeachers) {
+        const [t1, t2] = sDiff.loadToTeachers[load_number];
+        if (!t1) load_numberWithAbsentTeachers[0].push(load_number);
+        if (!t2) load_numberWithAbsentTeachers[1].push(load_number);
+    }
+    if (load_numberWithAbsentTeachers[0].length > 0) {
+        const loadsStr = load_numberWithAbsentTeachers[0].join(', ');
+        messages.push(`Группа 1 не имеет преподавателя для нагрузок: ${loadsStr}`);
+    }
+
+    if (load_numberWithAbsentTeachers[1].length > 0) {
+        const loadsStr = load_numberWithAbsentTeachers[1].join(', ');
+        messages.push(`Группа 2 не имеет преподавателя для нагрузок: ${loadsStr}`);
+    }
+
+    return messages;
+}
+
+
+export function CreateTodoMessages(
+    sDiff: IMupSubgroupDiff,
+    actions: ITSAction[]
+): string[] {
+    const messages = actions.map(a => a.getMessageSimple());
+    if (Object.keys(sDiff.loadToTeachers).length === 0) {
+        messages.push(`Примените изменения, чтобы создать подгруппы`);
+    }
+
+    if (Object.keys(sDiff.loadsToMetas).length === 0) {
+        messages.push(`Проверьте предыдущий шаг или Вручную заполните наргузки`);
+    }
+    return messages;
+}

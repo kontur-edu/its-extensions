@@ -204,10 +204,7 @@ export type SubgroupDiffs = {
 
 export type SubgroupAndMetaAreSameDiffs = {
     // discipline
-    [key: string]: {
-        // competitionGroupId
-        [key: number]: boolean
-    }
+    [key: string]: [boolean, boolean] // for 2 competitonGroups
 }
 
 export interface ISubgoupDiffInfo {
@@ -221,14 +218,14 @@ export interface ISubgoupDiffInfo {
 
 
 export interface IMupSubgroupDiff {
-    differences: string[];
-    todos: string[];
-    addLoadsManualFor: number[],
-    loadsToGroupsNeeded: {[key: string]: number};
-    createSubgroupsFor: number[];
-    subgroupCount: {[key: string]: [number | null, number | null]}
-    absentSubgroupsForLoad_number: [string[], string[]];
-    loadToTeachers: {[key: string]: [string | null, string | null]}; 
+    // differences: string[]; // not needed
+    // todos: string[]; // not needed
+    // addLoadsManualFor: number[], // not needed
+    // loadsToGroupsNeeded: {[key: string]: number};
+    // createSubgroupsFor: number[];
+    loadsToMetas: {[key: string]: [ISubgroupMeta | null, ISubgroupMeta | null]} // load -> [[],[]]
+    // abse/ntSubgroupsForLoad_number: [string[], string[]];
+    loadToTeachers: {[key: string]: [string | null, string | null]}; // load_number -> [t1, t2]
 }
 
 export interface ISubgroupInfo {

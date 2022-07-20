@@ -70,7 +70,6 @@ export class UpdateTeacherForSubgroupAction extends ITSAction {
         public competitionGroupId: number,
         public subgroupInfo: ISubgroupInfo,
         public teacherId: string,
-        public mupName: string,
     ) {
         super(ActionType.UpdateTeacherForSubgroup);
     }

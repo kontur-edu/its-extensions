@@ -3,7 +3,7 @@ import { MupEditor } from "../MupEditor";
 import { ISelectionListItem } from "../../SelectionList/types";
 import style from "./SemesterPreparation.module.css";
 import { ISemesterPreparationProps } from "./types";
-import { IMupDiff, ISubgoupDiffInfo } from "../../../common/types";
+// import { IMupDiff, ISubgoupDiffInfo } from "../../../common/types";
 import { DEBOUNCE_MS, REQUEST_ERROR_UNAUTHORIZED} from "../../../utils/constants";
 
 // import { context.dataRepository } from "../../../utils/repository";
@@ -11,11 +11,11 @@ import { GroupSelect } from "../GroupSelect/GroupSelect";
 import { UnionArrays } from "../../../utils/helpers";
 // import { AddLoadToPeriod, CheckRemovedMUPs, UpdateSelectionGroups } from "../../../utils/requests";
 // import {ApplyMupUpdates} from "../MupEditor/utils";
-import {createActions} from "../../../mupUpdater/actionCreater";
-import {createSubgroupSelectionActions} from "../../../subgroupUpdater/actionCreator";
+// import {createActions} from "../../../mupUpdater/actionCreater";
+// import {createSubgroupSelectionActions} from "../../../subgroupUpdater/actionCreator";
 import { ITSContext } from "../../../common/Context";
-import { ITSAction, ExecuteActions, IActionExecutionLogItem } from "../../../common/actions";
-import {IActionResponse} from "../../../utils/ITSApiService";
+// import { ITSAction, ExecuteActions, IActionExecutionLogItem } from "../../../common/actions";
+// import {IActionResponse} from "../../../utils/ITSApiService";
 import { SubgroupSelection } from "../SubgroupSelection";
 
 import { Button } from "@mui/material";

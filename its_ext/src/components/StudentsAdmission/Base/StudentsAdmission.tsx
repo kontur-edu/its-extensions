@@ -9,10 +9,10 @@ import {REQUEST_ERROR_UNAUTHORIZED} from "../../../utils/constants";
 import { TaskResultsInput } from "../TaskResultsInput";
 
 import { ITSAction } from "../../../common/actions";
-import {IActionResponse} from "../../../utils/ITSApiService";
-import { createTaskResultActions } from "../../../taskResultUpdater/actionCreator";
+import { useNavigate } from "react-router-dom";
 
 import { Button } from "@mui/material";
+import WestIcon from '@mui/icons-material/West';
 import SystemUpdateAltIcon from '@mui/icons-material/SystemUpdateAlt';
 
 
@@ -24,6 +24,12 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
     const [taskResultsActions, setTaskResultsActions] = useState<ITSAction[]>([]);
     const stepTwoRef = useRef<HTMLElement | null>(null);
     
+    const navigate = useNavigate();
+
+    const handleBackButton = () => {
+        navigate('/');
+    }
+
     const refreshCompetitionGroups = () => {
         if (props.isUnauthorized || competitionGroupRefreshInProgress.current) {
             return;
@@ -88,8 +94,14 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
 
     return (
         <section className="page">
-        
-            <h2 className="action_header">Зачисление студентов</h2>
+            
+            <h2 className="action_header">
+                <Button onClick={handleBackButton}
+                    variant="text" style={{position: 'absolute', left: 0, top: '50%', transform: 'translate(0, -50%)'}}
+                    startIcon={<WestIcon />}
+                    >Вернуться назад</Button>
+                Зачисление студентов
+            </h2>
             <article className="step">
                 <span className="step__header">1. Выберите конкурсные группы для 3-го и 4-го курсов</span>
             

@@ -9,9 +9,11 @@ import { GroupSelect } from "../GroupSelect/GroupSelect";
 import { UnionArrays } from "../../../utils/helpers";
 import { ITSContext } from "../../../common/Context";
 import { SubgroupSelection } from "../SubgroupSelection";
+import { useNavigate } from "react-router-dom";
 
 import { Button } from "@mui/material";
 import SystemUpdateAltIcon from '@mui/icons-material/SystemUpdateAlt';
+import WestIcon from '@mui/icons-material/West';
 // import { CreateDebouncedWrapper } from "../../../utils/helpers";
 
 // Получение данных:
@@ -61,6 +63,12 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     const stepTwoRef = useRef<HTMLElement | null>(null);
     const stepThreeRef = useRef<HTMLElement | null>(null);
     const context = useContext(ITSContext)!;
+
+    const navigate = useNavigate();
+
+    const handleBackButton = () => {
+        navigate('/');
+    }
 
     const refreshSelectionGroups = () => {
         if (props.isUnauthorized) {
@@ -229,7 +237,13 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     
     return (
         <section className="page">
-            <h2 className="action_header">Подготовка семестра</h2>
+            <h2 className="action_header">
+                <Button onClick={handleBackButton}
+                    variant="text" style={{position: 'absolute', left: 0, top: '50%', transform: 'translate(0, -50%)'}}
+                    startIcon={<WestIcon />}
+                    >Вернуться назад</Button>
+                Подготовка семестра
+            </h2>
             <article className="step">
                 <h3 className="step__header">1. Выберите группы выбора: для третьего и четвертого курса</h3>
                 <GroupSelect

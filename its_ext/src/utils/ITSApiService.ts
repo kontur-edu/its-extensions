@@ -359,7 +359,17 @@ export class ITSApiService {
             return {success: false, message};
         }
 
-        const result = await this.requestService.PostFormData(url, data);
+        const response = await this.requestService.PostFormData(url, data);
+        const result = {
+            success: response.success,
+            message: response.data,
+            summary: `${url} ${JSON.stringify(data)}`
+        };
+        if (response.success && response.data) {
+            const bodyJson = JSON.parse(response.data);
+            result.success = bodyJson.success;
+            result.message = bodyJson.message;
+        }
         return result;
     }
 
@@ -401,7 +411,17 @@ export class ITSApiService {
             return {success: false, message};
         }
     
-        const result = await this.requestService.PostFormData(url, data);
+        const response = await this.requestService.PostFormData(url, data);
+        const result = {
+            success: response.success,
+            message: response.data,
+            summary: `${url} ${JSON.stringify(data)}`
+        };
+        if (response.success && response.data) {
+            const bodyJson = JSON.parse(response.data);
+            result.success = bodyJson.success;
+            result.message = bodyJson.message;
+        }
         return result;
     }
 
@@ -435,8 +455,20 @@ export class ITSApiService {
             return {success: false, message};
         }
 
-        const res = await this.requestService.GetJson(url);
-        return res;
+        const response = await this.requestService.GetJson(url);
+        const result = {
+            success: response.success,
+            message: response.data,
+            summary: url
+        };
+        if (response.success && response.data) {
+            const bodyJson = JSON.parse(response.data);
+            result.success = bodyJson.success;
+            result.message = bodyJson.message;
+        }
+        // console.log("CreateSubgroups: result");
+        // console.log(result);
+        return result;
     }
 
     async GetCompetitionGroups(): Promise<ICompetitionGroup[]> {

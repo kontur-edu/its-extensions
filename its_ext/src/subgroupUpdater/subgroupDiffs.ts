@@ -165,8 +165,8 @@ function CreateDiffMessageForMupByMeta(
     competitionGroupIds: number[],
     mupSubgroupDiff: IMupSubgroupDiff
 ) {
-    let canCompareLoads = true;
-    if (canCompareLoads) {
+    if (metaDiff.hasOwnProperty(competitionGroupIds[0]) &&
+            metaDiff.hasOwnProperty(competitionGroupIds[1])) {
         const first = metaDiff[competitionGroupIds[0]];
         const second = metaDiff[competitionGroupIds[1]];
         
@@ -197,9 +197,8 @@ function CreateDiffMessageForMupBySubgroups(
     subgroupData: ISubgroupData,
     mupSubgroupDiff: IMupSubgroupDiff
 ) {
-    let canCompareLoads = true;
-
-    if (canCompareLoads) {
+    if (subgroupDiff.hasOwnProperty(competitionGroupIds[0]) &&
+            subgroupDiff.hasOwnProperty(competitionGroupIds[1])) {
         const first = subgroupDiff[competitionGroupIds[0]];
         const second = subgroupDiff[competitionGroupIds[1]];
         

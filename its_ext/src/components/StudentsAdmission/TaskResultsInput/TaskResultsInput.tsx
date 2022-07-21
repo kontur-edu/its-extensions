@@ -325,14 +325,16 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
 
   const handleRealApply = () => {
     alert(`Настоящее применение изменений`);
-    executeActions(taskResultsActions, context).then((actionResults) => {
-      setTaskResultsActionResults(actionResults);
-    }).then(() => refreshAdmissionInfo());
+    executeActions(taskResultsActions, context)
+      .then((actionResults) => {
+        setTaskResultsActionResults(actionResults);
+      })
+      .then(() => refreshAdmissionInfo());
   };
 
   const handleRealApplyDebounced = () => {
     debouncedWrapperForApply(handleRealApply);
-  }
+  };
 
   const renderInvalidStudentRows = () => {
     const rows = textAreaValue.split("\n");

@@ -411,7 +411,6 @@ export function MupEditor(props: IMupEditorProps) {
     debouncedWrapperForApply(() => handleApplyReal());
   };
 
-
   return props.selectionGroupIds.length !== 2 ? null : (
     <section className="step__container">
       <article>

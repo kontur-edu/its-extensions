@@ -337,7 +337,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
 
   const handleApplyRealDebounced = () => {
     debouncedWrapperForApply(handleApplyReal);
-  }
+  };
 
   return (
     <section className="step__container">
@@ -366,7 +366,6 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
             <tbody>{competitionGroupIds.length === 2 && renderRows()}</tbody>
           </table>
         </section>
-
 
         <ApplyButtonWithActionDisplay
           showErrorWarning={true}

@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@mui/material";
 import WestIcon from "@mui/icons-material/West";
 import SystemUpdateAltIcon from "@mui/icons-material/SystemUpdateAlt";
+import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 
 export function StudentsAdmission(props: IStudentsAdmissionProps) {
   const [competitionGroupItems, setCompetitionGroupItems] = useState<
@@ -126,14 +127,11 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
         />
 
         <div className="next_step__container">
-          <Button
-            onClick={handleCompetitionGroupSelectButton}
-            variant="contained"
-            style={{ marginRight: "1em" }}
-            endIcon={<SystemUpdateAltIcon />}
-          >
-            К следующему шагу
-          </Button>
+          <ApplyButtonWithActionDisplay
+            showErrorWarning={false}
+            showSuccessMessage={false}
+            onNextStep={handleCompetitionGroupSelectButton}
+          />
           <p className="next_step__message">
             {competitionGroupIds.length !== 2
               ? "Выберите две группы для перехода к следующему шагу"

@@ -12,8 +12,8 @@ import { useNavigate } from "react-router-dom";
 
 import { Button } from "@mui/material";
 import WestIcon from "@mui/icons-material/West";
-import SystemUpdateAltIcon from "@mui/icons-material/SystemUpdateAlt";
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
+import { StudentsDistribution } from "../StudentsDistribution";
 
 export function StudentsAdmission(props: IStudentsAdmissionProps) {
   const [competitionGroupItems, setCompetitionGroupItems] = useState<
@@ -97,6 +97,21 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
     );
   };
 
+  const renderStudentsAutoAdmission = () => {
+    return (
+      <React.Fragment>
+        <article className="step" ref={stepTwoRef}>
+          <span className="step__header">3. Зачисление студентов на курсы</span>
+
+          <StudentsDistribution
+            onUnauthorized={props.onUnauthorized}
+            competitionGroupIds={competitionGroupIds}
+          />
+        </article>
+      </React.Fragment>
+    );
+  };
+
   return (
     <section className="page">
       <h2 className="action_header">
@@ -140,7 +155,9 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
         </div>
       </article>
 
-      {competitionGroupIds.length === 2 ? renderTaskResultsInput() : null}
+      {competitionGroupIds.length === 2 && renderTaskResultsInput()}
+
+      {competitionGroupIds.length === 2 && renderStudentsAutoAdmission()}
     </section>
   );
 }

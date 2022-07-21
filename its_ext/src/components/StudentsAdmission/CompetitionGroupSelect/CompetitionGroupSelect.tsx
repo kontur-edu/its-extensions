@@ -52,7 +52,6 @@ export function CompetitionGroupSelect(props: ICompetitionGroupSelectProps) {
   return (
     <section className="step__container">
       <article>
-        <h3>Конкурсные группы</h3>
         <Button
           onClick={handleRefreshCompetitionGroups}
           style={{ fontSize: 12, marginBottom: "1em" }}

@@ -53,7 +53,7 @@ export function getAdmissionIds(
       console.log(`mupId: ${mupId} not found in mupIdToAdmissionId`);
       continue;
     }
-    admissionIds.push(mupIdToAdmissionId[mupId]);
+    admissionIds.push(mupIdToAdmissionId[mupId].admissionsId);
   }
   return admissionIds;
 }
@@ -102,8 +102,8 @@ export function createStudentItems(
         }
 
         const studentInfo = studentData.data[personalNumber];
-        console.log("studentInfo");
-        console.log(studentInfo);
+        // console.log("studentInfo");
+        // console.log(studentInfo);
         if (studentInfo.status !== "Активный") {
           continue;
         }
@@ -257,8 +257,8 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   ) => {
     const value = event.target.value;
     const records = getNameRecords(value);
-    console.log("records");
-    console.log(records);
+    // console.log("records");
+    // console.log(records);
     setTextAreaValue(value);
     selectStudentsDebounced(records);
   };
@@ -287,11 +287,11 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
           className={"selectable"}
           key={personalNumber}
         >
-          <th>{studentItem.group || personalNumber}</th>
-          <th>{studentItem.name}</th>
-          <th>
+          <td>{studentItem.group || personalNumber}</td>
+          <td>{studentItem.name}</td>
+          <td>
             <input type="checkbox" readOnly checked={selected} />
-          </th>
+          </td>
         </tr>
       );
     });

@@ -14,12 +14,12 @@ export class DeleteSubgroupsAction extends ITSAction {
   }
 
   getMessageSimple(): string {
-    const subgroupIdsString = JSON.stringify(this.subgroupIds);
+    const subgroupIdsString = JSON.stringify(this.subgroupIds, null, 2);
     return `Удалить подгруппы со следующими id: ${subgroupIdsString}`;
   }
 
   getMessage(): string {
-    const subgroupIdsString = JSON.stringify(this.subgroupIds);
+    const subgroupIdsString = JSON.stringify(this.subgroupIds, null, 2);
     return `Удалить подгруппы со следующими id: ${subgroupIdsString}`;
   }
 
@@ -61,12 +61,11 @@ export class RefreshSelectionGroupsAction extends ITSAction {
   }
 
   getMessageSimple(): string {
-    const selectionGroupIdsString = JSON.stringify(this.selectionGroupIds);
-    return `Запросить обновленные данные для Групп выбора с id: ${selectionGroupIdsString}`;
+    return this.getMessage();
   }
 
   getMessage(): string {
-    const selectionGroupIdsString = JSON.stringify(this.selectionGroupIds);
+    const selectionGroupIdsString = JSON.stringify(this.selectionGroupIds, null, 2);
     return `Запросить обновленные данные для Групп выбора с id: ${selectionGroupIdsString}`;
   }
 
@@ -84,12 +83,11 @@ export class RefreshPeriodsAction extends ITSAction {
   }
 
   getMessageSimple(): string {
-    const mupIdsString = JSON.stringify(this.mupIds);
-    return `Запросить обновленные периода для МУПов с id: ${mupIdsString}`;
+    return this.getMessage();
   }
 
   getMessage(): string {
-    const mupIdsString = JSON.stringify(this.mupIds);
+    const mupIdsString = JSON.stringify(this.mupIds, null, 2);
     return `Запросить обновленные периода для МУПов с id: ${mupIdsString}`;
   }
 
@@ -210,7 +208,7 @@ export class UpdatePeriodAction extends ITSAction {
     const periods = context.dataRepository.mupToPeriods[this.mupId];
     const period = findCurrentPeriod(this.periodTimeInfo, periods);
     if (!period) {
-      const periodTimeInfoStr = JSON.stringify(this.periodTimeInfo);
+      const periodTimeInfoStr = JSON.stringify(this.periodTimeInfo, null, 2);
       throw Error(
         `Current period ${periodTimeInfoStr} not found for Mup in MupToPeriods in repository`
       );
@@ -239,13 +237,14 @@ export class AddLoadsAction extends ITSAction {
   }
 
   getMessageSimple(): string {
-    const loadsString = JSON.stringify(this.loads.map((l) => `${l.name}`));
+    const loadsString = JSON.stringify(this.loads.map((l) => `${l.name}`), null, 2);
     return `Добавить нагрузки: ${loadsString}`;
   }
 
   getMessage(): string {
     const loadsString = JSON.stringify(
-      this.loads.map((l) => `${l.name} (${l.kmer})`)
+      this.loads.map((l) => `${l.name} (${l.kmer})`),
+      null, 2
     );
     return `Добавить нагрузки для МУПа с id: ${this.mupId}
             в период: год: ${this.periodTimeInfo.year}
@@ -263,7 +262,7 @@ export class AddLoadsAction extends ITSAction {
     const periods = context.dataRepository.mupToPeriods[this.mupId];
     const period = findCurrentPeriod(this.periodTimeInfo, periods);
     if (!period) {
-      const periodTimeInfoStr = JSON.stringify(this.periodTimeInfo);
+      const periodTimeInfoStr = JSON.stringify(this.periodTimeInfo, null, 2);
       throw Error(
         `Current period ${periodTimeInfoStr} not found for Mup in MupToPeriods in repository`
       );

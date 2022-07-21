@@ -4,11 +4,9 @@ import { ITSApiService } from "../utils/ITSApiService";
 import { ITSRepository } from "../utils/repository";
 
 export interface IITSContext {
-    requestService: RequestService;
-    apiService: ITSApiService;
-    dataRepository: ITSRepository;
-};
+  requestService: RequestService;
+  apiService: ITSApiService;
+  dataRepository: ITSRepository;
+}
 
-export const ITSContext =
-  createContext<IITSContext | null>(null);
-
+export const ITSContext = createContext<IITSContext | null>(null);

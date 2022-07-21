@@ -1,8 +1,7 @@
-import {ISelectionListItem} from "../../SelectionList/types";
-
+import { ISelectionListItem } from "../../SelectionList/types";
 
 export interface IGroupSelectProps {
-    selectionGroupsList: ISelectionListItem[];
-    onRefresh: () => void;
-    onSelectionValid: (selectedGroupIds: number[]) => void;
+  selectionGroupsList: ISelectionListItem[];
+  onRefresh: () => void;
+  onSelectionValid: (selectedGroupIds: number[]) => void;
 }

@@ -1,5 +1,3 @@
-import {SelectionList} from './SelectionList';
+import { SelectionList } from "./SelectionList";
 
-export {
-    SelectionList,
-}
+export { SelectionList };

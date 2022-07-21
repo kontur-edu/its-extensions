@@ -1,6 +1,3 @@
-import {StudentsAdmission} from './StudentsAdmission';
+import { StudentsAdmission } from "./StudentsAdmission";
 
-
-export {
-    StudentsAdmission,
-}
+export { StudentsAdmission };

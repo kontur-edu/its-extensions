@@ -1,129 +1,148 @@
-import React, {useState, useEffect, useRef, useContext} from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 
 import style from "./StudentsAdmission.module.css";
 import { IStudentsAdmissionProps } from "./types";
 import { ITSContext } from "../../../common/Context";
 import { CompetitionGroupSelect } from "../CompetitionGroupSelect";
 import { ICompetitionGroupItem } from "../CompetitionGroupSelect/types";
-import {REQUEST_ERROR_UNAUTHORIZED} from "../../../utils/constants";
+import { REQUEST_ERROR_UNAUTHORIZED } from "../../../utils/constants";
 import { TaskResultsInput } from "../TaskResultsInput";
 
-import { ITSAction } from "../../../common/actions";
 import { useNavigate } from "react-router-dom";
 
 import { Button } from "@mui/material";
-import WestIcon from '@mui/icons-material/West';
-import SystemUpdateAltIcon from '@mui/icons-material/SystemUpdateAlt';
-
+import WestIcon from "@mui/icons-material/West";
+import SystemUpdateAltIcon from "@mui/icons-material/SystemUpdateAlt";
 
 export function StudentsAdmission(props: IStudentsAdmissionProps) {
-    const [competitionGroupItems, setCompetitionGroupItems] = useState<ICompetitionGroupItem[]>([]);
-    const [competitionGroupIds, setCompetitionGroupIds] = useState<number[]>([]);
-    const competitionGroupRefreshInProgress = useRef<boolean>(false);
-    const context = useContext(ITSContext)!;
-    const [taskResultsActions, setTaskResultsActions] = useState<ITSAction[]>([]);
-    const stepTwoRef = useRef<HTMLElement | null>(null);
-    
-    const navigate = useNavigate();
+  const [competitionGroupItems, setCompetitionGroupItems] = useState<
+    ICompetitionGroupItem[]
+  >([]);
+  const [competitionGroupIds, setCompetitionGroupIds] = useState<number[]>([]);
+  const competitionGroupRefreshInProgress = useRef<boolean>(false);
+  const context = useContext(ITSContext)!;
+  const stepTwoRef = useRef<HTMLElement | null>(null);
 
-    const handleBackButton = () => {
-        navigate('/');
+  const navigate = useNavigate();
+
+  const handleBackButton = () => {
+    navigate("/");
+  };
+
+  const refreshCompetitionGroups = () => {
+    if (props.isUnauthorized || competitionGroupRefreshInProgress.current) {
+      return;
     }
+    competitionGroupRefreshInProgress.current = true;
+    context.dataRepository
+      .UpdateCompetitionGroupData()
+      .then(() => {
+        competitionGroupRefreshInProgress.current = false;
+        const newCompetitionGroupItems =
+          context.dataRepository.competitionGroupData.ids.map((cgId) => {
+            const competitionGroup =
+              context.dataRepository.competitionGroupData.data[cgId];
+            const selectionGroups =
+              competitionGroup.selectionGroupNames.join(", ");
+            const cgItem: ICompetitionGroupItem = {
+              id: competitionGroup.id,
+              name: competitionGroup.name,
+              course: competitionGroup.course,
+              year: competitionGroup.year,
+              semesterName: competitionGroup.semesterName,
+              selectionGroupName: selectionGroups,
+            };
 
-    const refreshCompetitionGroups = () => {
-        if (props.isUnauthorized || competitionGroupRefreshInProgress.current) {
-            return;
+            return cgItem;
+          });
+        setCompetitionGroupItems(newCompetitionGroupItems);
+      })
+      .catch((err) => {
+        competitionGroupRefreshInProgress.current = false;
+        if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+          props.onUnauthorized();
+          return;
         }
-        competitionGroupRefreshInProgress.current = true;
-        context.dataRepository.UpdateCompetitionGroupData()
-        .then(() => {
-            competitionGroupRefreshInProgress.current = false;
-            const newCompetitionGroupItems = context.dataRepository.competitionGroupData.ids
-                .map(cgId => {
-                    const competitionGroup = context.dataRepository.competitionGroupData.data[cgId];
-                    const selectionGroups = competitionGroup.selectionGroupNames.join(', ');
-                    const cgItem: ICompetitionGroupItem = {
-                        id: competitionGroup.id,
-                        name: competitionGroup.name,
-                        course: competitionGroup.course,
-                        year: competitionGroup.year,
-                        semesterName: competitionGroup.semesterName,
-                        selectionGroupName: selectionGroups,
-                    };
-        
-                    return cgItem;
-                })
-            setCompetitionGroupItems(newCompetitionGroupItems);
-        }).catch(err => {
-            competitionGroupRefreshInProgress.current = false;
-            if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-                props.onUnauthorized();
-                return;
-            }
-            throw err;
-        });
-    };
-    
-    useEffect(() => {
-        refreshCompetitionGroups();
-    }, []);
+        throw err;
+      });
+  };
 
-    const handleCompetitionGroupsSelect = (newCompetitionGroupIds: number[]) => {
-        setCompetitionGroupIds(newCompetitionGroupIds);
-    }
+  useEffect(() => {
+    refreshCompetitionGroups();
+  }, []);
 
-    const handleCompetitionGroupSelectButton = () => {
-        stepTwoRef.current?.scrollIntoView({behavior: 'smooth'});
-    }
+  const handleCompetitionGroupsSelect = (newCompetitionGroupIds: number[]) => {
+    setCompetitionGroupIds(newCompetitionGroupIds);
+  };
 
+  const handleCompetitionGroupSelectButton = () => {
+    stepTwoRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
-    const renderTaskResultsInput = () => {
-        return (
-            <React.Fragment>
-                <article className="step" ref={stepTwoRef}>
-                    <span className="step__header">2. Ввод результатов отборочных заданий</span>
-                
-                    <TaskResultsInput
-                        competitionGroupIds={competitionGroupIds}
-                        onUnauthorized={props.onUnauthorized}
-                    />
-                </article>
-            </React.Fragment>
-        );
-    };
-
+  const renderTaskResultsInput = () => {
     return (
-        <section className="page">
-            
-            <h2 className="action_header">
-                <Button onClick={handleBackButton}
-                    variant="text" style={{position: 'absolute', left: 0, top: '50%', transform: 'translate(0, -50%)'}}
-                    startIcon={<WestIcon />}
-                    >Вернуться назад</Button>
-                Зачисление студентов
-            </h2>
-            <article className="step">
-                <span className="step__header">1. Выберите конкурсные группы для 3-го и 4-го курсов</span>
-            
-                <CompetitionGroupSelect
-                    competitionGroupsItems={competitionGroupItems}
-                    onRefresh={refreshCompetitionGroups}
-                    onSelectionValid={handleCompetitionGroupsSelect}
-                />
+      <React.Fragment>
+        <article className="step" ref={stepTwoRef}>
+          <span className="step__header">
+            2. Ввод результатов отборочных заданий
+          </span>
 
-                <div className="next_step__container">
-                    <Button onClick={handleCompetitionGroupSelectButton}
-                        variant="contained" style={{marginRight: '1em'}}
-                        endIcon={<SystemUpdateAltIcon />}
-                        >К следующему шагу</Button>
-                    <p className="next_step__message">
-                        {competitionGroupIds.length !== 2 ? "Выберите две группы для перехода к следующему шагу" : null}
-                    </p>
-                </div>
-
-            </article>
-
-            {competitionGroupIds.length === 2 ? renderTaskResultsInput() : null}
-        </section>
+          <TaskResultsInput
+            competitionGroupIds={competitionGroupIds}
+            onUnauthorized={props.onUnauthorized}
+          />
+        </article>
+      </React.Fragment>
     );
+  };
+
+  return (
+    <section className="page">
+      <h2 className="action_header">
+        <Button
+          onClick={handleBackButton}
+          variant="text"
+          style={{
+            position: "absolute",
+            left: 0,
+            top: "50%",
+            transform: "translate(0, -50%)",
+          }}
+          startIcon={<WestIcon />}
+        >
+          Вернуться назад
+        </Button>
+        Зачисление студентов
+      </h2>
+      <article className="step">
+        <span className="step__header">
+          1. Выберите конкурсные группы для 3-го и 4-го курсов
+        </span>
+
+        <CompetitionGroupSelect
+          competitionGroupsItems={competitionGroupItems}
+          onRefresh={refreshCompetitionGroups}
+          onSelectionValid={handleCompetitionGroupsSelect}
+        />
+
+        <div className="next_step__container">
+          <Button
+            onClick={handleCompetitionGroupSelectButton}
+            variant="contained"
+            style={{ marginRight: "1em" }}
+            endIcon={<SystemUpdateAltIcon />}
+          >
+            К следующему шагу
+          </Button>
+          <p className="next_step__message">
+            {competitionGroupIds.length !== 2
+              ? "Выберите две группы для перехода к следующему шагу"
+              : null}
+          </p>
+        </div>
+      </article>
+
+      {competitionGroupIds.length === 2 ? renderTaskResultsInput() : null}
+    </section>
+  );
 }

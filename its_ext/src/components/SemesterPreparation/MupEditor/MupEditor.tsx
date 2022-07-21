@@ -1,35 +1,45 @@
-import React, {useState, useEffect, useContext, useCallback, useRef} from "react";
+import React, {
+  useState,
+  useEffect,
+  useContext,
+} from "react";
 import { MupsList } from "../../MupsList";
 import style from "./MupEditor.module.css";
 import { IMupEditorProps } from "./types";
 import { IMupEdit, IMupDiff } from "../../../common/types";
 
-import {DEBOUNCE_MS, REQUEST_ERROR_UNAUTHORIZED} from "../../../utils/constants";
+import {
+  DEBOUNCE_MS,
+  REQUEST_ERROR_UNAUTHORIZED,
+} from "../../../utils/constants";
 
 import {
-    createDiffForMup,
-    updateMupDiffDateInfo,
+  createDiffForMup,
+  updateMupDiffDateInfo,
 } from "../../../mupUpdater/mupDifference";
 
 import { ITSContext } from "../../../common/Context";
 
 import { ActionType, ITSAction, executeActions } from "../../../common/actions";
-import { createActions, getMupActions } from "../../../mupUpdater/actionCreater";
+import {
+  createActions,
+  getMupActions,
+} from "../../../mupUpdater/actionCreater";
 import { UpdateSelectionGroupAction } from "../../../mupUpdater/actions";
 import { createDebouncedWrapper } from "../../../utils/helpers";
 import { IActionExecutionLogItem } from "../../../common/actions";
 
-import Button from '@mui/material/Button';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import DoneIcon from '@mui/icons-material/Done';
-import SystemUpdateAltIcon from '@mui/icons-material/SystemUpdateAlt';
+import Button from "@mui/material/Button";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import DoneIcon from "@mui/icons-material/Done";
+import SystemUpdateAltIcon from "@mui/icons-material/SystemUpdateAlt";
 // Получение данных:
 // Запросить все Группы выбора
 // Запросить МУПы с Лимитами для выбранных Групп выбора
 // Найти объединение выбранных МУПов из Групп выбора
 // Запросить все Периоды для МУПов из объединения
 // Отобрать периоды с годом и типом семестра (весна/осень) таким же как и в первой из выбранных групп выбора (для определения дат)
-// Понадобится любой период с заполненными нагрузками, чтобы скопировать нагрузки 
+// Понадобится любой период с заполненными нагрузками, чтобы скопировать нагрузки
 // Вставить дату из первого попавшегося периода
 // Определить МУПы с пустыми нагрузками (Tmers)
 // Определить какие МУПы есть только в одной из групп
@@ -43,432 +53,497 @@ import SystemUpdateAltIcon from '@mui/icons-material/SystemUpdateAlt';
 // Нет другого периода с заполненными нагрузками -> дать ссылку на ИТС для заполнения нагрузки, созданному периоду (ссылка)
 // Даты (начала/конца выбора) не совпадают -> изменить даты в отобранных периодах ("Примените изменения")
 
-
 // По кнопке "Применить изменения":
 // 1) Добавление МУПов в группы
 // 2) Обновление Лимитов
 // 3) Создание нужных периодов
 // 4) Обновление дат в периодах
-const findInitDates = (initDiffs: {[key: string]: IMupDiff}): [string, string] => {
-    const dates: [string, string] = ['', ''];
-    for (let mupId of Object.keys(initDiffs)) {
-        for (let currentPeriod of Object.values(initDiffs[mupId].courseToCurrentPeriod)) {
-            if (currentPeriod.selectionBegin) {
-                dates[0] = currentPeriod.selectionBegin;
-            }
-            if (currentPeriod.selectionDeadline) {
-                dates[1] = currentPeriod.selectionDeadline;
-            }
-            if (dates[0] && dates[1]) {
-                return dates;
-            }
-        }
+const findInitDates = (initDiffs: {
+  [key: string]: IMupDiff;
+}): [string, string] => {
+  const dates: [string, string] = ["", ""];
+  for (let mupId of Object.keys(initDiffs)) {
+    for (let currentPeriod of Object.values(
+      initDiffs[mupId].courseToCurrentPeriod
+    )) {
+      if (currentPeriod.selectionBegin) {
+        dates[0] = currentPeriod.selectionBegin;
+      }
+      if (currentPeriod.selectionDeadline) {
+        dates[1] = currentPeriod.selectionDeadline;
+      }
+      if (dates[0] && dates[1]) {
+        return dates;
+      }
     }
-    return dates;
-}
+  }
+  return dates;
+};
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
 export function MupEditor(props: IMupEditorProps) {
-    const [mupEdits, setMupEdits] = useState<{[key: string]: IMupEdit}>({});
-    const [mupDiffs, setMupDiffs] = useState<{[key: string]: IMupDiff}>({});
-    const [startDate, setStartDate] = useState<string>('');
-    const [endDate, setEndDate] = useState<string>('');
+  const [mupEdits, setMupEdits] = useState<{ [key: string]: IMupEdit }>({});
+  const [mupDiffs, setMupDiffs] = useState<{ [key: string]: IMupDiff }>({});
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
 
-    const [mupEditorActions, setMupEditorActions] = useState<ITSAction[]>([]);
-    const [mupEditorActionResults, setMupEditorActionResults] = useState<IActionExecutionLogItem[]>([]);
+  const [mupEditorActions, setMupEditorActions] = useState<ITSAction[]>([]);
+  const [mupEditorActionResults, setMupEditorActionResults] = useState<
+    IActionExecutionLogItem[]
+  >([]);
 
-    const context = useContext(ITSContext)!;
+  const context = useContext(ITSContext)!;
 
-    const onStartDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const dateFormatted = event.target.value;
+  const onStartDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const dateFormatted = event.target.value;
 
-        const newMupDiffs = {...mupDiffs};
-        for (let mupId in newMupDiffs) {
-            updateMupDiffDateInfo(newMupDiffs[mupId], [dateFormatted, endDate]);
-        }
-        setMupDiffs(newMupDiffs);
-
-        setStartDate(dateFormatted);
-        console.log(`new start date: ${dateFormatted}`);
-        callDebouncedApply(newMupDiffs, mupEdits, [dateFormatted, endDate]);
-    };
-
-    const onEndDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const dateFormatted = event.target.value;
-
-        const newMupDiffs = {...mupDiffs};
-        for (let mupId in newMupDiffs) {
-            updateMupDiffDateInfo(newMupDiffs[mupId], [startDate, dateFormatted]);
-        }
-        setMupDiffs(newMupDiffs);
-
-        setEndDate(dateFormatted);
-        console.log(`new end date: ${dateFormatted}`);
-        callDebouncedApply(newMupDiffs, mupEdits, [startDate, dateFormatted]);
-    };
-
-    const createInitDiffsAndDates = (selectedMupIdsSet: Set<string>) => {
-        const newMupEdits: {[key: string]: IMupEdit} = {};
-        const newMupDiffs: {[key: string]: IMupDiff} = {};
-        context.dataRepository.mupData.ids.forEach(mupId => {
-            const selected = selectedMupIdsSet.has(mupId);
-            let limit = 0;
-            let mupDiff: IMupDiff | null = null;
-            if (selected) {
-                mupDiff = createDiffForMup(
-                    mupId, props.selectionGroupIds, [startDate, endDate],
-                    context.dataRepository.selectionGroupToMupsData,
-                    context.dataRepository.selectionGroupData,
-                    context.dataRepository.mupToPeriods);
-                newMupDiffs[mupId] = mupDiff;
-                for (let initLimit of mupDiff.initLimits) {
-                    if (initLimit && initLimit > 0) {
-                        limit = initLimit;
-                    }
-                }
-            }
-
-            const mupEdit: IMupEdit = {
-                selected: selected,
-                limit: limit,
-                messages: [],
-            };
-
-            
-            if (mupDiff) {
-                console.log("initMupDiff");
-                console.log(mupDiff);
-            }
-
-            newMupEdits[mupId] = mupEdit;
-        });
-
-        const initDates = findInitDates(newMupDiffs);
-        if (initDates[0] || initDates[1]) {
-            for (let mupId in newMupDiffs) {
-                updateMupDiffDateInfo(newMupDiffs[mupId], initDates);
-            }
-        }
-        // initDates[0] && setStartDate(initDates[0]);
-        // initDates[1] && setEndDate(initDates[1]);
-
-        // setMupDiffs(newMupDiffs);
-        // setMupEdits(newMupEdits);
-
-        const res: [
-            {[key: string]: IMupDiff},
-            {[key: string]: IMupEdit},
-            [string, string]
-        ] = [newMupDiffs, newMupEdits, initDates];
-        return res;
+    const newMupDiffs = { ...mupDiffs };
+    for (let mupId in newMupDiffs) {
+      updateMupDiffDateInfo(newMupDiffs[mupId], [dateFormatted, endDate]);
     }
+    setMupDiffs(newMupDiffs);
 
-    const setUpDiffsAndDates = (
-        newMupDiffs: {[key: string]: IMupDiff},
-        newMupEdits: {[key: string]: IMupEdit},
-        newDates: [string, string]
-    ) => {
-        newDates[0] && setStartDate(newDates[0]);
-        newDates[1] && setEndDate(newDates[1]);
+    setStartDate(dateFormatted);
+    console.log(`new start date: ${dateFormatted}`);
+    callDebouncedApply(newMupDiffs, mupEdits, [dateFormatted, endDate]);
+  };
 
-        setMupDiffs(newMupDiffs);
-        setMupEdits(newMupEdits);
+  const onEndDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const dateFormatted = event.target.value;
+
+    const newMupDiffs = { ...mupDiffs };
+    for (let mupId in newMupDiffs) {
+      updateMupDiffDateInfo(newMupDiffs[mupId], [startDate, dateFormatted]);
     }
+    setMupDiffs(newMupDiffs);
 
-    useEffect(() => {
-        if (!props.dataIsPrepared) return;
+    setEndDate(dateFormatted);
+    console.log(`new end date: ${dateFormatted}`);
+    callDebouncedApply(newMupDiffs, mupEdits, [startDate, dateFormatted]);
+  };
 
-        let mupIdUnionArr: string[][] = [];
-        for (let sgId of props.selectionGroupIds) {
-            mupIdUnionArr.push(context.dataRepository.selectionGroupToMupsData.data[sgId].ids);
+  const createInitDiffsAndDates = (selectedMupIdsSet: Set<string>) => {
+    const newMupEdits: { [key: string]: IMupEdit } = {};
+    const newMupDiffs: { [key: string]: IMupDiff } = {};
+    context.dataRepository.mupData.ids.forEach((mupId) => {
+      const selected = selectedMupIdsSet.has(mupId);
+      let limit = 0;
+      let mupDiff: IMupDiff | null = null;
+      if (selected) {
+        mupDiff = createDiffForMup(
+          mupId,
+          props.selectionGroupIds,
+          [startDate, endDate],
+          context.dataRepository.selectionGroupToMupsData,
+          context.dataRepository.selectionGroupData,
+          context.dataRepository.mupToPeriods
+        );
+        newMupDiffs[mupId] = mupDiff;
+        for (let initLimit of mupDiff.initLimits) {
+          if (initLimit && initLimit > 0) {
+            limit = initLimit;
+          }
         }
-        const mupIdUnion = new Set(mupIdUnionArr.flat());
-        const [newMupDiffs, newMupEdits, initDates] = createInitDiffsAndDates(mupIdUnion);
+      }
 
-        setUpDiffsAndDates(newMupDiffs, newMupEdits, initDates);
-        // initDates[0] && setStartDate(initDates[0]);
-        // initDates[1] && setEndDate(initDates[1]);
+      const mupEdit: IMupEdit = {
+        selected: selected,
+        limit: limit,
+        messages: [],
+      };
 
-        // setMupDiffs(newMupDiffs);
-        // setMupEdits(newMupEdits);
+      if (mupDiff) {
+        console.log("initMupDiff");
+        console.log(mupDiff);
+      }
 
-    }, [props.dataIsPrepared, props.selectionGroupIds]);
+      newMupEdits[mupId] = mupEdit;
+    });
 
-    const handleMupToggle = (mupId: string) => {
-        context.dataRepository.EnsurePeriodInfoFor(mupId).then(() => {
-            let mupDiffsToCompareWith = mupDiffs;
-            if (!mupDiffs.hasOwnProperty(mupId) || !mupDiffs[mupId]) {
-                const newInitDiff = createDiffForMup(
-                    mupId, props.selectionGroupIds, [startDate, endDate],
-                    context.dataRepository.selectionGroupToMupsData, context.dataRepository.selectionGroupData,
-                    context.dataRepository.mupToPeriods);
-                const newMupDiffs = {...mupDiffs, [mupId]: newInitDiff};
-                mupDiffsToCompareWith = newMupDiffs;
-                console.log("newInitDiff");
-                console.log(newInitDiff);
-                setMupDiffs(newMupDiffs);
-            }
-
-            const newMupEdits = {...mupEdits};
-            newMupEdits[mupId].selected = !newMupEdits[mupId].selected;
-            
-            
-            setMupEdits(newMupEdits);
-            const res: [{ [key: string]: IMupDiff }, { [x: string]: IMupEdit }] =
-                [mupDiffsToCompareWith, newMupEdits];
-            return res; 
-        }).then(mupDiffsAndEdits => {
-            callDebouncedApply(mupDiffsAndEdits[0], mupDiffsAndEdits[1], [startDate, endDate]);
-        });
-    };
-
-    const handleMupLimitChange = (mupId: string, newLimit: number) => {
-        const newEdits = {...mupEdits, [mupId]: {...mupEdits[mupId], limit: newLimit}};
-        setMupEdits(newEdits);
-        callDebouncedApply(mupDiffs, newEdits, [startDate, endDate]);
-    };
-
-    const handleRefresh = () => {
-        let mupIdsToRefresh: string[] = Object.keys(mupDiffs);
-        let selectedMupIds: Set<string> = new Set<string>();
-        for (let mupId of mupIdsToRefresh) {
-            if (mupEdits[mupId].selected || !mupDiffs[mupId].canBeDeleted) {
-                selectedMupIds.add(mupId);
-            }
-        }
-        const updateSelectionGroupsThenSubgroupsPromise =
-            context.dataRepository.UpdateSelectionGroupData()
-            .then(() => {
-                const competitionGroupIds: number[] = [];
-                props.selectionGroupIds.forEach(sgId => {
-                    const cgId = context.dataRepository.selectionGroupData.data[sgId].competitionGroupId;
-                    if (cgId !== null && cgId !== undefined) {
-                        competitionGroupIds.push(cgId);
-                    }
-                });
-                return context.dataRepository.UpdateSubgroups(competitionGroupIds);
-            });
-        return Promise.all([
-            updateSelectionGroupsThenSubgroupsPromise,
-            context.dataRepository.UpdateMupData(),
-            context.dataRepository.UpdateSelectionGroupToMupsData(props.selectionGroupIds),
-            context.dataRepository.UpdatePeriods(mupIdsToRefresh),
-        ])
-        .then(() => createInitDiffsAndDates(selectedMupIds))
-        .then(([newMupDiffs, newMupEdits, initDates]) => {
-            setUpDiffsAndDates(newMupDiffs, newMupEdits, initDates);
-            callDebouncedApply(newMupDiffs, newMupEdits, initDates);
-        })
-        .catch(err => {
-            if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-                props.onUnauthorized();
-                return;
-            }
-            throw err;
-        });
-    };
-
-    const handleRefreshDebounced = () => {
-        debouncedWrapperForApply(handleRefresh);
+    const initDates = findInitDates(newMupDiffs);
+    if (initDates[0] || initDates[1]) {
+      for (let mupId in newMupDiffs) {
+        updateMupDiffDateInfo(newMupDiffs[mupId], initDates);
+      }
     }
+    // initDates[0] && setStartDate(initDates[0]);
+    // initDates[1] && setEndDate(initDates[1]);
 
-    const generateActions = (
-        mupDiffs: {[key: string]: IMupDiff},
-        mupEdits: {[key: string]: IMupEdit},
-        newDates: [string, string]
-    ) => {
-        const selectedMupIds: string[] = [];
-        const mupLimits: {[key: string]: number} = {};
-        for (let mupId of Object.keys(mupEdits)) {
-            if (mupEdits[mupId].selected ||
-                    (mupDiffs.hasOwnProperty(mupId) && !mupDiffs[mupId].canBeDeleted)) {
-                mupLimits[mupId] = mupEdits[mupId].limit;
-                selectedMupIds.push(mupId);
-            }
-        }
+    // setMupDiffs(newMupDiffs);
+    // setMupEdits(newMupEdits);
 
-        const actions = createActions(
+    const res: [
+      { [key: string]: IMupDiff },
+      { [key: string]: IMupEdit },
+      [string, string]
+    ] = [newMupDiffs, newMupEdits, initDates];
+    return res;
+  };
+
+  const setUpDiffsAndDates = (
+    newMupDiffs: { [key: string]: IMupDiff },
+    newMupEdits: { [key: string]: IMupEdit },
+    newDates: [string, string]
+  ) => {
+    newDates[0] && setStartDate(newDates[0]);
+    newDates[1] && setEndDate(newDates[1]);
+
+    setMupDiffs(newMupDiffs);
+    setMupEdits(newMupEdits);
+  };
+
+  useEffect(() => {
+    if (!props.dataIsPrepared) return;
+
+    let mupIdUnionArr: string[][] = [];
+    for (let sgId of props.selectionGroupIds) {
+      mupIdUnionArr.push(
+        context.dataRepository.selectionGroupToMupsData.data[sgId].ids
+      );
+    }
+    const mupIdUnion = new Set(mupIdUnionArr.flat());
+    const [newMupDiffs, newMupEdits, initDates] =
+      createInitDiffsAndDates(mupIdUnion);
+
+    setUpDiffsAndDates(newMupDiffs, newMupEdits, initDates);
+    // initDates[0] && setStartDate(initDates[0]);
+    // initDates[1] && setEndDate(initDates[1]);
+
+    // setMupDiffs(newMupDiffs);
+    // setMupEdits(newMupEdits);
+  }, [props.dataIsPrepared, props.selectionGroupIds]);
+
+  const handleMupToggle = (mupId: string) => {
+    context.dataRepository
+      .EnsurePeriodInfoFor(mupId)
+      .then(() => {
+        let mupDiffsToCompareWith = mupDiffs;
+        if (!mupDiffs.hasOwnProperty(mupId) || !mupDiffs[mupId]) {
+          const newInitDiff = createDiffForMup(
+            mupId,
             props.selectionGroupIds,
-            selectedMupIds,
-            mupDiffs,
-            newDates,
-            mupLimits,
-            context
-        );
-        
-        return actions;
-    }
+            [startDate, endDate],
+            context.dataRepository.selectionGroupToMupsData,
+            context.dataRepository.selectionGroupData,
+            context.dataRepository.mupToPeriods
+          );
+          const newMupDiffs = { ...mupDiffs, [mupId]: newInitDiff };
+          mupDiffsToCompareWith = newMupDiffs;
+          console.log("newInitDiff");
+          console.log(newInitDiff);
+          setMupDiffs(newMupDiffs);
+        }
 
-    const setUpMupMessagesByActions = (mupDiffs: {[key: string]: IMupDiff}, mupEdits: {[key: string]: IMupEdit}, actions: ITSAction[]) => {
-        const mupToActions = getMupActions(actions);
-            
-            let selectedMups: Set<string> | null = null; 
-            for (const action of actions) {
-                if (action.actionType === ActionType.UpdateSelectionGroup) {
-                    const updateSelectionGroupAction = action as UpdateSelectionGroupAction;
-                    selectedMups = new Set<string>(updateSelectionGroupAction.mupIds);
-                    break;
-                }
-            }
-            const newMupEdits = {...mupEdits};
-            
-            for (const mupId in mupEdits) {
-                newMupEdits[mupId].messages = [];
-                
-                if (selectedMups && mupDiffs.hasOwnProperty(mupId)) {
-                    const isSelected = selectedMups.has(mupId);
-                    if (isSelected && 
-                        mupDiffs[mupId].presentInGroups.length !== 2) {
-                        newMupEdits[mupId].messages.push('Добавить МУП в группы');
-                    } else if (!isSelected &&
-                        mupDiffs[mupId].presentInGroups.length > 0) {
-                        newMupEdits[mupId].messages.push('Удалить МУП из групп');
-                    }
-                    if (isSelected && mupDiffs[mupId].addLoadsManual) {
-                        newMupEdits[mupId].addLoadsManual = true;
-                    }
-                }
-            }
+        const newMupEdits = { ...mupEdits };
+        newMupEdits[mupId].selected = !newMupEdits[mupId].selected;
 
-            for (const mupId in mupToActions) {
-                newMupEdits[mupId].messages.push(
-                    ...mupToActions[mupId].map(a => a.getMessageSimple())
-                );
-            }
+        setMupEdits(newMupEdits);
+        const res: [{ [key: string]: IMupDiff }, { [x: string]: IMupEdit }] = [
+          mupDiffsToCompareWith,
+          newMupEdits,
+        ];
+        return res;
+      })
+      .then((mupDiffsAndEdits) => {
+        callDebouncedApply(mupDiffsAndEdits[0], mupDiffsAndEdits[1], [
+          startDate,
+          endDate,
+        ]);
+      });
+  };
 
-            setMupEdits(newMupEdits);
-    }
-
-    const callDebouncedApply = (
-        mupDiffs: {[key: string]: IMupDiff},
-        mupEdits: {[key: string]: IMupEdit},
-        newDates: [string, string]
-    ) => {
-
-        console.log("Debounce handleApply");
-        debouncedWrapperForApply(() => {
-            
-            const actions = generateActions(
-                mupDiffs,
-                mupEdits,
-                newDates
-            );
-    
-            setUpMupMessagesByActions(mupDiffs, mupEdits, actions);
-            setMupEditorActions(actions);
-            // props.onApply(actions);
-        });
+  const handleMupLimitChange = (mupId: string, newLimit: number) => {
+    const newEdits = {
+      ...mupEdits,
+      [mupId]: { ...mupEdits[mupId], limit: newLimit },
     };
+    setMupEdits(newEdits);
+    callDebouncedApply(mupDiffs, newEdits, [startDate, endDate]);
+  };
 
-    const handleApplyReal = () => {
-        executeActions(mupEditorActions, context)
-            .then(results => setMupEditorActionResults(results))
-            .then(() => alert("Изменения применены"))
-            .then(() => handleRefresh()) // refresh
-            .catch(err => {
-                if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-                    props.onUnauthorized();
-                    return;
-                }
-                throw err;
-            });
+  const handleRefresh = () => {
+    let mupIdsToRefresh: string[] = Object.keys(mupDiffs);
+    let selectedMupIds: Set<string> = new Set<string>();
+    for (let mupId of mupIdsToRefresh) {
+      if (mupEdits[mupId].selected || !mupDiffs[mupId].canBeDeleted) {
+        selectedMupIds.add(mupId);
+      }
+    }
+    const updateSelectionGroupsThenSubgroupsPromise = context.dataRepository
+      .UpdateSelectionGroupData()
+      .then(() => {
+        const competitionGroupIds: number[] = [];
+        props.selectionGroupIds.forEach((sgId) => {
+          const cgId =
+            context.dataRepository.selectionGroupData.data[sgId]
+              .competitionGroupId;
+          if (cgId !== null && cgId !== undefined) {
+            competitionGroupIds.push(cgId);
+          }
+        });
+        return context.dataRepository.UpdateSubgroups(competitionGroupIds);
+      });
+    return Promise.all([
+      updateSelectionGroupsThenSubgroupsPromise,
+      context.dataRepository.UpdateMupData(),
+      context.dataRepository.UpdateSelectionGroupToMupsData(
+        props.selectionGroupIds
+      ),
+      context.dataRepository.UpdatePeriods(mupIdsToRefresh),
+    ])
+      .then(() => createInitDiffsAndDates(selectedMupIds))
+      .then(([newMupDiffs, newMupEdits, initDates]) => {
+        setUpDiffsAndDates(newMupDiffs, newMupEdits, initDates);
+        callDebouncedApply(newMupDiffs, newMupEdits, initDates);
+      })
+      .catch((err) => {
+        if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+          props.onUnauthorized();
+          return;
+        }
+        throw err;
+      });
+  };
+
+  const handleRefreshDebounced = () => {
+    debouncedWrapperForApply(handleRefresh);
+  };
+
+  const generateActions = (
+    mupDiffs: { [key: string]: IMupDiff },
+    mupEdits: { [key: string]: IMupEdit },
+    newDates: [string, string]
+  ) => {
+    const selectedMupIds: string[] = [];
+    const mupLimits: { [key: string]: number } = {};
+    for (let mupId of Object.keys(mupEdits)) {
+      if (
+        mupEdits[mupId].selected ||
+        (mupDiffs.hasOwnProperty(mupId) && !mupDiffs[mupId].canBeDeleted)
+      ) {
+        mupLimits[mupId] = mupEdits[mupId].limit;
+        selectedMupIds.push(mupId);
+      }
     }
 
-    const handleApplyRealDebounced = () => {
-        console.log("Debounce handleApplyRealDebounced");
-
-        debouncedWrapperForApply(() => handleApplyReal());
-    }
-    
-    const renderSuccessButtonWithNextStep = () => {
-        return (
-            <React.Fragment>
-                <span className="message_success__container"><DoneIcon />Сохранено, с этого шага можно безопасно уходить</span>
-                <Button onClick={props.onNextStep}
-                        variant="contained" style={{marginRight: '1em'}}
-                        endIcon={<SystemUpdateAltIcon />}
-                        >К следующему шагу</Button>
-            </React.Fragment>
-        );
-    }
-
-    const renderApplyButtonWithMessage = () => {
-        return (
-            <React.Fragment>
-                <Button onClick={handleApplyRealDebounced}
-                    variant="contained" style={{marginRight: '1em'}}
-                    >Применение изменений</Button>
-                <p className="warning">
-                    {mupEditorActionResults.every(logItem => logItem.actionResults.every(ar => ar.success)) ? null :
-                        "При сохранении изменений возникли ошибки. Чтобы перейти к следующему шагу исправьте ошибки"
-                    }
-                </p>
-            </React.Fragment>
-        );
-    }
-    const renderButtons = () => {
-        const haveOnlyRefreshActions = mupEditorActions.every(a => 
-            a.actionType === ActionType.RefreshSelectionGroups ||
-            a.actionType === ActionType.RefreshPeriods);
-
-        
-        return (
-            <div className="apply_button__container">
-                {haveOnlyRefreshActions ?
-                   renderSuccessButtonWithNextStep() :
-                   renderApplyButtonWithMessage()}
-                
-            </div>
-        );
-    }
-
-    return props.selectionGroupIds.length !== 2 ? null : (
-        <section className="step__container">
-            <article>
-                <h4>Выберите даты, в которые откроется выбор дисциплин в личном кабинете стедентов</h4>
-                <div className={style.mups__period}>
-                    <label>Старт выбора
-                        <input className={style.period__input} type="date"
-                            value={startDate} onChange={onStartDateChange}/>
-                    </label>
-                    <label>Завершение выбора
-                        <input className={style.period__input} type="date"
-                            value={endDate} onChange={onEndDateChange}/>
-                    </label>
-                </div>
-
-                <h4>Выберите МУПы и лимиты на количество зачисленных студентов</h4>
-
-                <Button onClick={handleRefreshDebounced}
-                    style={{fontSize: 12, marginBottom: '1em'}}
-                    variant='text' startIcon={<RefreshIcon />} >Обновить список</Button>
-                <MupsList 
-                    mupData={context.dataRepository.mupData}
-                    mupEdits={mupEdits}
-                    onMupToggle={handleMupToggle}
-                    onMupLimitChange={handleMupLimitChange}
-                />
-                
-                <ul>
-                    {mupEditorActions.map((a: ITSAction, index: number) => <li key={index}>{a.getMessage()}</li>)}
-                </ul>
-                {renderButtons()}
-                
-                {/* <button className="step__button" onClick={handleMupEditorApplyReal}>Настоящее применение</button> */}
-                <ul>
-                    {mupEditorActionResults.map((logItem: IActionExecutionLogItem, index: number) =>
-                        <li key={index}>{logItem.actionMessage}
-                            <ul>{logItem.actionResults.map((ar, arIdx) => 
-                                    <li key={arIdx} className={ar.success ? "message_success" : "message_error"}>
-                                        {ar.message}
-                                    </li>
-                                )}
-                            </ul>
-                        </li>
-                    )}
-                </ul>
-            </article>
-        </section>
+    const actions = createActions(
+      props.selectionGroupIds,
+      selectedMupIds,
+      mupDiffs,
+      newDates,
+      mupLimits,
+      context
     );
+
+    return actions;
+  };
+
+  const setUpMupMessagesByActions = (
+    mupDiffs: { [key: string]: IMupDiff },
+    mupEdits: { [key: string]: IMupEdit },
+    actions: ITSAction[]
+  ) => {
+    const mupToActions = getMupActions(actions);
+
+    let selectedMups: Set<string> | null = null;
+    for (const action of actions) {
+      if (action.actionType === ActionType.UpdateSelectionGroup) {
+        const updateSelectionGroupAction = action as UpdateSelectionGroupAction;
+        selectedMups = new Set<string>(updateSelectionGroupAction.mupIds);
+        break;
+      }
+    }
+    const newMupEdits = { ...mupEdits };
+
+    for (const mupId in mupEdits) {
+      newMupEdits[mupId].messages = [];
+
+      if (selectedMups && mupDiffs.hasOwnProperty(mupId)) {
+        const isSelected = selectedMups.has(mupId);
+        if (isSelected && mupDiffs[mupId].presentInGroups.length !== 2) {
+          newMupEdits[mupId].messages.push("Добавить МУП в группы");
+        } else if (!isSelected && mupDiffs[mupId].presentInGroups.length > 0) {
+          newMupEdits[mupId].messages.push("Удалить МУП из групп");
+        }
+        if (isSelected && mupDiffs[mupId].addLoadsManual) {
+          newMupEdits[mupId].addLoadsManual = true;
+        }
+      }
+    }
+
+    for (const mupId in mupToActions) {
+      newMupEdits[mupId].messages.push(
+        ...mupToActions[mupId].map((a) => a.getMessageSimple())
+      );
+    }
+
+    setMupEdits(newMupEdits);
+  };
+
+  const callDebouncedApply = (
+    mupDiffs: { [key: string]: IMupDiff },
+    mupEdits: { [key: string]: IMupEdit },
+    newDates: [string, string]
+  ) => {
+    console.log("Debounce handleApply");
+    debouncedWrapperForApply(() => {
+      const actions = generateActions(mupDiffs, mupEdits, newDates);
+
+      setUpMupMessagesByActions(mupDiffs, mupEdits, actions);
+      setMupEditorActions(actions);
+    });
+  };
+
+  const handleApplyReal = () => {
+    executeActions(mupEditorActions, context)
+      .then((results) => setMupEditorActionResults(results))
+      .then(() => alert("Изменения применены"))
+      .then(() => handleRefresh()) // refresh
+      .catch((err) => {
+        if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+          props.onUnauthorized();
+          return;
+        }
+        throw err;
+      });
+  };
+
+  const handleApplyRealDebounced = () => {
+    console.log("Debounce handleApplyRealDebounced");
+
+    debouncedWrapperForApply(() => handleApplyReal());
+  };
+
+  const renderSuccessButtonWithNextStep = () => {
+    return (
+      <React.Fragment>
+        <span className="message_success__container">
+          <DoneIcon />
+          Сохранено, с этого шага можно безопасно уходить
+        </span>
+        <Button
+          onClick={props.onNextStep}
+          variant="contained"
+          style={{ marginRight: "1em" }}
+          endIcon={<SystemUpdateAltIcon />}
+        >
+          К следующему шагу
+        </Button>
+      </React.Fragment>
+    );
+  };
+
+  const renderApplyButtonWithMessage = () => {
+    return (
+      <React.Fragment>
+        <Button
+          onClick={handleApplyRealDebounced}
+          variant="contained"
+          style={{ marginRight: "1em" }}
+        >
+          Применение изменений
+        </Button>
+        <p className="warning">
+          {mupEditorActionResults.every((logItem) =>
+            logItem.actionResults.every((ar) => ar.success)
+          )
+            ? null
+            : "При сохранении изменений возникли ошибки. Чтобы перейти к следующему шагу исправьте ошибки"}
+        </p>
+      </React.Fragment>
+    );
+  };
+  const renderButtons = () => {
+    const haveOnlyRefreshActions = mupEditorActions.every(
+      (a) =>
+        a.actionType === ActionType.RefreshSelectionGroups ||
+        a.actionType === ActionType.RefreshPeriods
+    );
+
+    return (
+      <div className="apply_button__container">
+        {haveOnlyRefreshActions
+          ? renderSuccessButtonWithNextStep()
+          : renderApplyButtonWithMessage()}
+      </div>
+    );
+  };
+
+  return props.selectionGroupIds.length !== 2 ? null : (
+    <section className="step__container">
+      <article>
+        <h4>
+          Выберите даты, в которые откроется выбор дисциплин в личном кабинете
+          стедентов
+        </h4>
+        <div className={style.mups__period}>
+          <label>
+            Старт выбора
+            <input
+              className={style.period__input}
+              type="date"
+              value={startDate}
+              onChange={onStartDateChange}
+            />
+          </label>
+          <label>
+            Завершение выбора
+            <input
+              className={style.period__input}
+              type="date"
+              value={endDate}
+              onChange={onEndDateChange}
+            />
+          </label>
+        </div>
+
+        <h4>Выберите МУПы и лимиты на количество зачисленных студентов</h4>
+
+        <Button
+          onClick={handleRefreshDebounced}
+          style={{ fontSize: 12, marginBottom: "1em" }}
+          variant="text"
+          startIcon={<RefreshIcon />}
+        >
+          Обновить список
+        </Button>
+        <MupsList
+          mupData={context.dataRepository.mupData}
+          mupEdits={mupEdits}
+          onMupToggle={handleMupToggle}
+          onMupLimitChange={handleMupLimitChange}
+        />
+
+        <ul>
+          {mupEditorActions.map((a: ITSAction, index: number) => (
+            <li key={index}>{a.getMessage()}</li>
+          ))}
+        </ul>
+        {renderButtons()}
+
+        <ul>
+          {mupEditorActionResults.map(
+            (logItem: IActionExecutionLogItem, index: number) => (
+              <li key={index}>
+                {logItem.actionMessage}
+                <ul>
+                  {logItem.actionResults.map((ar, arIdx) => (
+                    <li
+                      key={arIdx}
+                      className={
+                        ar.success ? "message_success" : "message_error"
+                      }
+                    >
+                      {ar.message}
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            )
+          )}
+        </ul>
+      </article>
+    </section>
+  );
 }

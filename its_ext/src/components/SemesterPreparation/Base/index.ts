@@ -1,6 +1,3 @@
-import {SemesterPreparation} from './SemesterPreparation';
+import { SemesterPreparation } from "./SemesterPreparation";
 
-
-export {
-    SemesterPreparation,
-}
+export { SemesterPreparation };

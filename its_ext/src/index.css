@@ -1,7 +1,7 @@
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -10,7 +10,7 @@ body {
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
 
@@ -26,9 +26,7 @@ code {
 
 .page {
   padding: 0 2em;
-  /* background-color: #eee; */
 }
-
 
 .step {
   display: flex;
@@ -39,11 +37,6 @@ code {
   padding: 2em;
 
   margin: 2em 0;
-  /* -webkit-box-shadow: 0px 0px 32px 16px rgba(0,0,0,0.16);
-  -moz-box-shadow: 0px 0px 32px 16px rgba(0,0,0,0.16);
-  box-shadow: 0px 0px 32px 16px rgba(0,0,0,0.16); */
-
-  /* border: 2px solid salmon; */
 }
 
 .step:first-of-type {
@@ -62,22 +55,16 @@ code {
 }
 
 .step__header {
-  /* margin-left: 0.5em; */
   font-size: 24px;
   font-weight: 500;
   margin: 0.4em 0;
-  /* align-self: flex-start; */
 }
 
 .step__container {
   display: flex;
   flex-direction: column;
-  /* align-items: stretch; */
-  /* margin: 0 2.5em; */
   font-size: 16px;
 }
-
-
 
 .step__button {
   background-color: #fff;
@@ -93,7 +80,6 @@ code {
 
 .step__message_container {
   color: rgb(0, 197, 0);
-  /* font-size: ; */
 }
 
 .next_step__container {
@@ -109,7 +95,6 @@ code {
   margin: 0;
   padding: 0;
 }
-
 
 .message_error {
   color: red;
@@ -129,11 +114,6 @@ code {
   margin-right: 1em;
 }
 
-
-/* .message_success {
-  color: greenyellow;
-} */
-
 .step__message_container > p {
   margin: 0;
 }
@@ -142,8 +122,9 @@ code {
   width: 100%;
 }
 
-.table, th, td {
-  /* border: 1px solid #000; */
+.table,
+th,
+td {
   border-collapse: collapse;
   text-align: left;
 }
@@ -162,9 +143,6 @@ code {
   top: 0;
   background-color: #fff;
   z-index: 1;
-
-  /* box-shadow: 0 1px 0 0 #c9c9c9;
-  box-shadow: 1px 0 0 0 #c9c9c9; */
 }
 
 .table__сontainer {
@@ -175,7 +153,6 @@ code {
 .table_vertical_borders td {
   border-right: 2px solid #c9c9c9;
 }
-
 
 .limit__input {
   height: 100%;
@@ -189,16 +166,12 @@ code {
   background-color: #eee;
 }
 
-
 .warning {
   color: #ef8b17;
 }
-
 
 .apply_button__container {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
 }
-
-

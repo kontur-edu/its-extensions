@@ -1,6 +1,3 @@
-import {GroupSelect} from './GroupSelect';
+import { GroupSelect } from "./GroupSelect";
 
-
-export {
-    GroupSelect,
-}
+export { GroupSelect };

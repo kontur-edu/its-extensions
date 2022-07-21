@@ -1,6 +1,3 @@
-import {TaskResultsInput} from './TaskResultsInput';
+import { TaskResultsInput } from "./TaskResultsInput";
 
-
-export {
-    TaskResultsInput,
-}
+export { TaskResultsInput };

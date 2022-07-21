@@ -1,5 +1,5 @@
 import { ICredentials } from "../../common/types";
 
 export interface ILoginFormProps {
-    onSubmit: (creds: ICredentials) => void;
+  onSubmit: (creds: ICredentials) => void;
 }

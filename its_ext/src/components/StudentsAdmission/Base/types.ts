@@ -1,5 +1,4 @@
-
 export interface IStudentsAdmissionProps {
-    onUnauthorized: () => void;
-    isUnauthorized: boolean;
+  onUnauthorized: () => void;
+  isUnauthorized: boolean;
 }

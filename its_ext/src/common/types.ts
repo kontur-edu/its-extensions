@@ -8,6 +8,7 @@ export interface ISelectionGroup {
   name: string;
   year: number;
   semesterId: number;
+  ze: number; // UnitsSum
 
   eduSpaceId: number;
   unitSum: number;
@@ -24,6 +25,7 @@ export interface IEduSpace {
 export interface IMup {
   id: string;
   name: string;
+  ze: number; // testUnits
 }
 
 export interface ISelectionGroupMup {
@@ -204,15 +206,17 @@ export interface ICompetitionGroupData {
 
 export interface IAdmissionMeta {
   mupId: string;
-  // count: number;
+  limit: number;
+  count: number;
   admissionsId: number;
 }
 
-export type MupIdToAdmissionId = {
-  [key: string]: number;
+export type MupIdToAdmission = {
+  // mupId => IAdmissionMeta
+  [key: string]: IAdmissionMeta;
 };
 export type CompetitionGroupIdToMupAdmissions = {
-  [key: number]: MupIdToAdmissionId;
+  [key: number]: MupIdToAdmission;
 };
 
 export interface IStudentAdmissionRaw {
@@ -224,7 +228,8 @@ export interface IStudentAdmissionRaw {
   rating: number | null;
   priority: number | null;
   testResult: number | null;
-  status: string;
+  status: number; // 0 - не зачислен, 1 - зачислен
+  studentStatus: string;
   groupName: string;
 }
 
@@ -254,9 +259,10 @@ export interface IStudentData {
 export interface IStudentAdmission {
   id: string;
   // personalNumber: string;
-  // mupId: string;
+  mupId: string;
   priority: number | null;
   testResult: number | null;
+  status: number; // 0 - нет решения, 1 - зачислен
 }
 
 export type AdmissionInfo = {

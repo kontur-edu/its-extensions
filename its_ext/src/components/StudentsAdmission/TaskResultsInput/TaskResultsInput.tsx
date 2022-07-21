@@ -32,6 +32,7 @@ import Button from "@mui/material/Button";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 
+
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
 export function getAdmissionIds(
@@ -53,7 +54,7 @@ export function getAdmissionIds(
       console.log(`mupId: ${mupId} not found in mupIdToAdmissionId`);
       continue;
     }
-    admissionIds.push(mupIdToAdmissionId[mupId]);
+    admissionIds.push(mupIdToAdmissionId[mupId].admissionsId);
   }
   return admissionIds;
 }

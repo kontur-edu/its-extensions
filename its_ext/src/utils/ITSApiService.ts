@@ -42,6 +42,7 @@ export class ITSApiService {
         name: obj["Name"],
         year: obj["Year"],
         semesterId: obj["SemesterId"],
+        ze: obj["UnitsSum"],
         eduSpaceId: obj["EduSpaceId"],
         unitSum: obj["UnitsSum"],
         byPriority: obj["ByPriority"],
@@ -515,6 +516,8 @@ export class ITSApiService {
     return res.map((obj: any) => {
       const admissionMeta: IAdmissionMeta = {
         mupId: obj["MUPId"],
+        limit: obj["Limit"],
+        count: obj["Admitted"],
         admissionsId: obj["MUPItsInSelectionGroupId"],
       };
       return admissionMeta;
@@ -536,7 +539,8 @@ export class ITSApiService {
         rating: obj["Rating"],
         priority: obj["Priority"],
         testResult: obj["TestResult"],
-        status: obj["StudentStatus"],
+        status: obj["Status"],
+        studentStatus: obj["StudentStatus"],
         groupName: obj["GroupName"],
       };
       return admissionMeta;

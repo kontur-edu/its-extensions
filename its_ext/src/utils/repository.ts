@@ -40,7 +40,7 @@ export class ITSRepository {
 
   studentData: IStudentData = { ids: [], data: {} };
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions = {};
-  admissionIdToMupId: {[key: number]: string} = {};
+  admissionIdToMupId: { [key: number]: string } = {};
   admissionInfo: AdmissionInfo = {};
 
   constructor(public api: ITSApiService) {}
@@ -173,7 +173,8 @@ export class ITSRepository {
       if (resp.status === "fulfilled") {
         for (const admissionMeta of resp.value) {
           mupIdToAdmission[admissionMeta.mupId] = admissionMeta;
-          this.admissionIdToMupId[admissionMeta.admissionsId] = admissionMeta.mupId;
+          this.admissionIdToMupId[admissionMeta.admissionsId] =
+            admissionMeta.mupId;
         }
       }
 
@@ -184,7 +185,7 @@ export class ITSRepository {
 
   fillStudentRawInfoToStudentDataAndAdmissionInfo(
     admissionId: number,
-    studentsRaw: IStudentAdmissionRaw[],
+    studentsRaw: IStudentAdmissionRaw[]
     // mupId: string
   ) {
     const studentAdmissionInfo: { [key: string]: IStudentAdmission } = {};
@@ -205,7 +206,7 @@ export class ITSRepository {
       };
 
       this.studentData.data[studentRaw.personalNumber] = student;
-      
+
       // TODO: add student meta
       const studentAdmission: IStudentAdmission = {
         // id: studentRaw.id,
@@ -247,7 +248,7 @@ export class ITSRepository {
         // console.log(resp.value);
         this.fillStudentRawInfoToStudentDataAndAdmissionInfo(
           admissionId,
-          resp.value,
+          resp.value
           // mupId
         );
       }

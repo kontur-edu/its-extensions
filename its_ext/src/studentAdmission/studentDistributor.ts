@@ -123,7 +123,7 @@ function fillDistributionByStudentRatingAndAdmissionPriority(
   zeLimit: number,
   mupData: IMupData,
   personalNumbersSortedByRating: string[],
-  admissionIdToMupId: {[key: number]: string}
+  admissionIdToMupId: { [key: number]: string }
 ) {
   for (const personalNumber of personalNumbersSortedByRating) {
     const sItem = personalNumberToStudentItem[personalNumber];
@@ -155,7 +155,7 @@ function fillDistributionByStudentRatingAndAdmissionPriority(
 export function getAllPersonalNumbers(
   competitionGroupIds: number[],
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions,
-  admissionInfo: AdmissionInfo,
+  admissionInfo: AdmissionInfo
 ): Set<string> {
   const admissionIdFromDifferentCompetitionGroups: number[] = [];
   for (const competitionGroupId of competitionGroupIds) {
@@ -186,16 +186,13 @@ export function distributeStudents(
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions,
   admissionInfo: AdmissionInfo,
   studentData: IStudentData,
-  admissionIdToMupId: {[key: number]: string}
+  admissionIdToMupId: { [key: number]: string }
 ): IDistributionResult {
-
   const allPersonalNumbers = getAllPersonalNumbers(
     competitionGroupIds,
     competitionGroupIdToMupAdmissions,
-    admissionInfo,
+    admissionInfo
   );
-
-  
 
   const personalNumberToStudentItem = createPersonalNumberToStudentItem(
     competitionGroupIds,

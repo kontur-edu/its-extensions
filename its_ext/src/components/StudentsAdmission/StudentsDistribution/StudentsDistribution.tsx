@@ -7,19 +7,18 @@ import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay
 import {
   IStudentAdmissionDistributionItem,
   IMupDistributionItem,
-  IDistributionResult,
   getAllPersonalNumbers,
   createPersonalNumberToStudentItem,
   createMupIdToMupItem,
-} from '../../../studentAdmission/studentDistributor';
+} from "../../../studentAdmission/studentDistributor";
 import { ITSContext } from "../../../common/Context";
-import {REQUEST_ERROR_UNAUTHORIZED} from '../../../utils/constants';
-
+import { REQUEST_ERROR_UNAUTHORIZED } from "../../../utils/constants";
 
 export function StudentsDistribution(props: IStudentsDistributionProps) {
-  const [personalNumberToStudentItems, setPersonalNumberToStudentItems] = useState<{
-    [key: string]: IStudentAdmissionDistributionItem;
-  }>({});
+  const [personalNumberToStudentItems, setPersonalNumberToStudentItems] =
+    useState<{
+      [key: string]: IStudentAdmissionDistributionItem;
+    }>({});
   const [mupIdToMupItems, setMupIdToMupItems] = useState<{
     [key: string]: IMupDistributionItem;
   }>({});
@@ -41,21 +40,24 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       .then(() => {
         const admissionIds: number[] = [];
         for (const competitionGroupId of props.competitionGroupIds) {
-          const mupToAdmission = context.dataRepository.competitionGroupIdToMupAdmissions[competitionGroupId];
+          const mupToAdmission =
+            context.dataRepository.competitionGroupIdToMupAdmissions[
+              competitionGroupId
+            ];
           for (const mupId in mupToAdmission) {
             admissionIds.push(mupToAdmission[mupId].admissionsId);
           }
-
         }
-        return context.dataRepository.UpdateStudentAdmissionsAndStudentData(admissionIds);
+        return context.dataRepository.UpdateStudentAdmissionsAndStudentData(
+          admissionIds
+        );
       });
-    return Promise.allSettled([
-      ensureMupDataPromise,
-      updateAdmissionsPromise
-    ]).then(() => {
-      refreshInProgress.current = false;
-    }).catch((err) => {
-      refreshInProgress.current = false;
+    return Promise.allSettled([ensureMupDataPromise, updateAdmissionsPromise])
+      .then(() => {
+        refreshInProgress.current = false;
+      })
+      .catch((err) => {
+        refreshInProgress.current = false;
         if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
           props.onUnauthorized();
           return;
@@ -85,7 +87,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
 
     const newMupIdToMupItems = createMupIdToMupItem(
       props.competitionGroupIds,
-      context.dataRepository.competitionGroupIdToMupAdmissions,
+      context.dataRepository.competitionGroupIdToMupAdmissions
     );
     setMupIdToMupItems(newMupIdToMupItems);
 
@@ -94,52 +96,57 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
 
     console.log("newMupIdToMupItems");
     console.log(newMupIdToMupItems);
-  }
+  };
 
   useEffect(() => {
-    refreshData()
-      .then(() => prepareItems())
-    
+    refreshData().then(() => prepareItems());
   }, [props.competitionGroupIds]);
 
   const renderRows = () => {
     return Object.keys(personalNumberToStudentItems)
-    .filter(personalNumber => {
-      const student = context.dataRepository.studentData.data[personalNumber];
-      // console.log("student");
-      // console.log(student);
-      return student.status === "Активный" && student.rating !== null;
-    })
-    .map(personalNumber => {
-      const studentItem = personalNumberToStudentItems[personalNumber];
-      const student = context.dataRepository.studentData.data[personalNumber];
-      const mupNames = studentItem.admittedMupIds.map(mupId =>
-        context.dataRepository.mupData.data[mupId].name);
-      const priorities = studentItem.admissions.map(admission => {
-        const mupId = context.dataRepository.admissionIdToMupId[admission.admissionId];
-        const mupName = context.dataRepository.mupData.data[mupId].name;
-        return `${admission.priority}. ${mupName}`;
+      .filter((personalNumber) => {
+        const student = context.dataRepository.studentData.data[personalNumber];
+        // console.log("student");
+        // console.log(student);
+        return student.status === "Активный" && student.rating !== null;
       })
-      return (
-        <tr key={personalNumber}>
-          <td>{student.surname} {student.firstname} {student.patronymic}</td>
-          <td>{student.groupName}</td>
-          <td>{student.rating}</td>
-          <td>{studentItem.currentZ}</td>
-          <td>
-            <ul className="list_without_decorations">
-              {mupNames.map((mupName, index) => <li key={index}>{mupName}</li>)}
-            </ul>
-          </td>
-          <td>
-            <ul className="list_without_decorations">
-              {priorities.map((priority, index) => <li key={index}>{priority}</li>)}
-            </ul>
-          </td>
-        </tr>
-      );
-
-    });
+      .map((personalNumber) => {
+        const studentItem = personalNumberToStudentItems[personalNumber];
+        const student = context.dataRepository.studentData.data[personalNumber];
+        const mupNames = studentItem.admittedMupIds.map(
+          (mupId) => context.dataRepository.mupData.data[mupId].name
+        );
+        const priorities = studentItem.admissions.map((admission) => {
+          const mupId =
+            context.dataRepository.admissionIdToMupId[admission.admissionId];
+          const mupName = context.dataRepository.mupData.data[mupId].name;
+          return `${admission.priority}. ${mupName}`;
+        });
+        return (
+          <tr key={personalNumber}>
+            <td>
+              {student.surname} {student.firstname} {student.patronymic}
+            </td>
+            <td>{student.groupName}</td>
+            <td>{student.rating}</td>
+            <td>{studentItem.currentZ}</td>
+            <td>
+              <ul className="list_without_decorations">
+                {mupNames.map((mupName, index) => (
+                  <li key={index}>{mupName}</li>
+                ))}
+              </ul>
+            </td>
+            <td>
+              <ul className="list_without_decorations">
+                {priorities.map((priority, index) => (
+                  <li key={index}>{priority}</li>
+                ))}
+              </ul>
+            </td>
+          </tr>
+        );
+      });
   };
 
   return (
@@ -154,7 +161,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           Обновить список
         </Button>
         <section className="table__container">
-          <table className="table">
+          <table className="table table_vertical_borders">
             <thead>
               <tr>
                 <th>ФИО</th>
@@ -171,10 +178,10 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       </article>
 
       <ApplyButtonWithActionDisplay
-          showErrorWarning={true}
-          showSuccessMessage={true}
-          onApply={() => {}}
-        />
+        showErrorWarning={true}
+        showSuccessMessage={true}
+        onApply={() => {}}
+      />
     </section>
   );
 }

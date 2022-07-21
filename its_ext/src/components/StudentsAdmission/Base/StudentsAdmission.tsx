@@ -101,11 +101,9 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
     return (
       <React.Fragment>
         <article className="step" ref={stepTwoRef}>
-          <span className="step__header">
-            3. Зачисление студентов на курсы
-          </span>
+          <span className="step__header">3. Зачисление студентов на курсы</span>
 
-          <StudentsDistribution 
+          <StudentsDistribution
             onUnauthorized={props.onUnauthorized}
             competitionGroupIds={competitionGroupIds}
           />

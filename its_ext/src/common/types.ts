@@ -11,7 +11,7 @@ export interface ISelectionGroup {
   // ze: number; // UnitsSum.
 
   eduSpaceId: number;
-  unitSum: number;  // zet
+  unitSum: number; // zet
   byPriority: number;
   competitionGroupId: number | null;
   competitionGroupName: string;

@@ -8,10 +8,10 @@ export interface ISelectionGroup {
   name: string;
   year: number;
   semesterId: number;
-  ze: number; // UnitsSum
+  // ze: number; // UnitsSum.
 
   eduSpaceId: number;
-  unitSum: number;
+  unitSum: number;  // zet
   byPriority: number;
   competitionGroupId: number | null;
   competitionGroupName: string;

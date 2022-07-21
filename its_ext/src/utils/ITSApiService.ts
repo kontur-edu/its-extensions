@@ -29,7 +29,10 @@ export interface IActionResponse {
 }
 
 export class ITSApiService {
-  constructor(public requestService: RequestService) {}
+  constructor(
+    public requestService: RequestService,
+    private readonly safeMode: boolean = false
+  ) {}
 
   async GetSelectionGroupsForEduSpace(
     eduSpaceId: number
@@ -42,7 +45,7 @@ export class ITSApiService {
         name: obj["Name"],
         year: obj["Year"],
         semesterId: obj["SemesterId"],
-        ze: obj["UnitsSum"],
+        // ze: obj["UnitsSum"],
         eduSpaceId: obj["EduSpaceId"],
         unitSum: obj["UnitsSum"],
         byPriority: obj["ByPriority"],
@@ -52,16 +55,6 @@ export class ITSApiService {
       return selectionGroup;
     });
   }
-
-  // async GetAllSelectionGroups(): Promise<ISelectionGroup[]> {
-  //     const eduSpaces = await this.GetAllEduSpaces();
-  //     const result: ISelectionGroup[] = [];
-  //     for (let eduSpace of eduSpaces) {
-  //         const selectionGroups = await this.GetSelectionGroupsForEduSpace(eduSpace.id);
-  //         result.push(...selectionGroups);
-  //     }
-  //     return result;
-  // }
 
   async GetAllSelectionGroupsParallel(): Promise<ISelectionGroup[]> {
     const eduSpaces = await this.GetAllEduSpaces();
@@ -90,7 +83,7 @@ export class ITSApiService {
     const url = `https://its.urfu.ru/MUP/Index?page=1&start=0&limit=${MUPS_MAX_COUNT}`;
     const res = await this.requestService.GetJson(url);
     return res.map((obj: any) => {
-      return { id: obj["id"], name: obj["title"] };
+      return { id: obj["id"], name: obj["title"], ze: obj["testUnits"] };
     });
   }
 
@@ -148,6 +141,8 @@ export class ITSApiService {
     selectionGroup: ISelectionGroup,
     mupIds: string[]
   ): Promise<IActionResponse> {
+    if (this.safeMode) throw new Error("Safe mode enabled");
+
     const url = "https://its.urfu.ru/EduSpace/UpdateSelectionGroup";
     const competitionGroupId = selectionGroup.competitionGroupId ?? "";
     const data = {
@@ -192,6 +187,8 @@ export class ITSApiService {
     periodId: number,
     load: IMupLoad
   ): Promise<IActionResponse> {
+    if (this.safeMode) throw new Error("Safe mode enabled");
+
     const url = "https://its.urfu.ru/MUP/AddTmer";
 
     const data = {
@@ -224,6 +221,8 @@ export class ITSApiService {
     periodId: number,
     load: IMupLoad
   ): Promise<IActionResponse> {
+    if (this.safeMode) throw new Error("Safe mode enabled");
+
     const url = "https://its.urfu.ru/MUP/DeleteTmer";
 
     const data = {
@@ -252,6 +251,8 @@ export class ITSApiService {
   }
 
   async CreatePeriod(mupId: string, period: IPeriod): Promise<IActionResponse> {
+    if (this.safeMode) throw new Error("Safe mode enabled");
+
     const url = "https://its.urfu.ru/MUP/CreatePeriod";
 
     const data = {
@@ -272,6 +273,8 @@ export class ITSApiService {
   }
 
   async UpdatePeriod(mupId: string, period: IPeriod): Promise<IActionResponse> {
+    if (this.safeMode) throw new Error("Safe mode enabled");
+
     const url = "https://its.urfu.ru/MUP/UpdatePeriod";
 
     const data = {
@@ -312,6 +315,8 @@ export class ITSApiService {
     connectionId: number,
     limit: number
   ): Promise<IActionResponse> {
+    if (this.safeMode) throw new Error("Safe mode enabled");
+
     const url = "https://its.urfu.ru/EduSpace/UpdateLimit";
 
     const data = {
@@ -358,6 +363,8 @@ export class ITSApiService {
     subgroupMetaId: number,
     groupCount: number
   ): Promise<IActionResponse> {
+    if (this.safeMode) throw new Error("Safe mode enabled");
+
     const url = `https://its.urfu.ru/MUPItsSubgroupMeta/Edit`;
 
     const data = {
@@ -407,6 +414,8 @@ export class ITSApiService {
   }
 
   async UpdateSubgroup(subgroup: ISubgroup): Promise<IActionResponse> {
+    if (this.safeMode) throw new Error("Safe mode enabled");
+
     const url = "https://its.urfu.ru/MUPItsSubgroup/Edit";
 
     const data = {
@@ -438,6 +447,8 @@ export class ITSApiService {
   }
 
   async DeleteSubgroup(subgroupIds: number[]): Promise<IActionResponse> {
+    if (this.safeMode) throw new Error("Safe mode enabled");
+
     const url = "https://its.urfu.ru/MUPItsSubgroup/Delete";
     const data = JSON.stringify(subgroupIds);
     for (let id of subgroupIds) {
@@ -464,6 +475,8 @@ export class ITSApiService {
   }
 
   async CreateSubgroups(competitionGroupId: number): Promise<IActionResponse> {
+    if (this.safeMode) throw new Error("Safe mode enabled");
+
     const url = `https://its.urfu.ru/MUPItsSubgroup/Create?competitionGroupId=${competitionGroupId}`;
 
     if (competitionGroupId < 24) {
@@ -552,6 +565,8 @@ export class ITSApiService {
     admissionId: number,
     testResult: number
   ) {
+    if (this.safeMode) throw new Error("Safe mode enabled");
+
     const url = "https://its.urfu.ru/MUPItsAdmission/EditTestResults";
 
     const data = {

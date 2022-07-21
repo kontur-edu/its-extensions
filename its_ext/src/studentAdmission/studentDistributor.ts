@@ -85,6 +85,7 @@ export function createPersonalNumberToStudentItem(
         if (admission.status === 1) {
           // status === 1 то есть уже зачислен на курс
           studentItem.currentZ += mupData.data[mId].ze;
+          studentItem.admittedMupIds.push(mId);
         } else if (admission.priority) {
           studentItem.admissions.push(
             personalNumberToAdmission[personalNumber]
@@ -211,7 +212,7 @@ export function distributeStudents(
   const personalNumbersSortedByRating = Array.from(allPersonalNumbers)
     .filter((pn) => {
       const student = studentData.data[pn];
-      return student.status === "Активен" && student.rating !== null;
+      return student.status === "Активный" && student.rating !== null;
     })
     .sort((lhs, rhs) => {
       return compareByRating(studentData.data[lhs], studentData.data[rhs]);

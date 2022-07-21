@@ -103,7 +103,14 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   }, [props.competitionGroupIds]);
 
   const renderRows = () => {
-    return Object.keys(personalNumberToStudentItems).map(personalNumber => {
+    return Object.keys(personalNumberToStudentItems)
+    .filter(personalNumber => {
+      const student = context.dataRepository.studentData.data[personalNumber];
+      // console.log("student");
+      // console.log(student);
+      return student.status === "Активный" && student.rating !== null;
+    })
+    .map(personalNumber => {
       const studentItem = personalNumberToStudentItems[personalNumber];
       const student = context.dataRepository.studentData.data[personalNumber];
       const mupNames = studentItem.admittedMupIds.map(mupId =>
@@ -115,20 +122,20 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       })
       return (
         <tr key={personalNumber}>
-          <th>{student.surname} {student.firstname} {student.patronymic}</th>
-          <th>{student.groupName}</th>
-          <th>{student.rating}</th>
-          <th>{studentItem.currentZ}</th>
-          <th>
+          <td>{student.surname} {student.firstname} {student.patronymic}</td>
+          <td>{student.groupName}</td>
+          <td>{student.rating}</td>
+          <td>{studentItem.currentZ}</td>
+          <td>
             <ul className="list_without_decorations">
               {mupNames.map((mupName, index) => <li key={index}>{mupName}</li>)}
             </ul>
-          </th>
-          <th>
+          </td>
+          <td>
             <ul className="list_without_decorations">
               {priorities.map((priority, index) => <li key={index}>{priority}</li>)}
             </ul>
-          </th>
+          </td>
         </tr>
       );
 

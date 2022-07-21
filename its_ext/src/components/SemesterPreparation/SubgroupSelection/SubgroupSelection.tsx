@@ -30,6 +30,7 @@ import Button from "@mui/material/Button";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import Link from "@mui/material/Link";
 import NorthEastIcon from "@mui/icons-material/NorthEast";
+import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 
 function checkArraysSame(arr1: any[], arr2: any[]) {
   return arr1.sort().join(",") === arr2.sort().join(",");
@@ -43,9 +44,9 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
   const [mupIdsSame, setMupIdsSame] = useState<boolean>(true);
   const [subgroupDiffInfo, setSubgroupDiffInfo] =
     useState<ISubgoupDiffInfo | null>(null);
-  const [mupToDiffs, setMupToDiffs] = useState<{
-    [key: string]: IMupSubgroupDiff;
-  }>({});
+  // const [mupToDiffs, setMupToDiffs] = useState<{
+  //   [key: string]: IMupSubgroupDiff;
+  // }>({});
   const [mupToDifferenceTodoMessages, setMupToDifferenceTodoMessages] =
     useState<{ [key: string]: [string[], string[]] }>({});
 
@@ -111,7 +112,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
         );
       // console.log("newMupToDiffs");
       // console.log(newMupToDiffs);
-      setMupToDiffs(newMupToDiffs);
+      // setMupToDiffs(newMupToDiffs);
 
       const newMupToDifferenceMessages = createMupToDifferenceMessages(
         mupNames,
@@ -334,6 +335,10 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
       });
   };
 
+  const handleApplyRealDebounced = () => {
+    debouncedWrapperForApply(handleApplyReal);
+  }
+
   return (
     <section className="step__container">
       <article>
@@ -362,40 +367,14 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
           </table>
         </section>
 
-        <ul>
-          {subgroupSelectionActions.map((a: ITSAction, index: number) => (
-            <li key={index}>{a.getMessage()}</li>
-          ))}
-        </ul>
 
-        <Button
-          onClick={handleApplyReal}
-          variant="contained"
-          style={{ marginRight: "1em" }}
-        >
-          Применение изменений
-        </Button>
-        <ul>
-          {subgroupSelectionActionsResults.map(
-            (logItem: IActionExecutionLogItem, index: number) => (
-              <li key={index}>
-                {logItem.actionMessage}
-                <ul>
-                  {logItem.actionResults.map((ar, arIdx) => (
-                    <li
-                      key={arIdx}
-                      className={
-                        ar.success ? "message_success" : "message_error"
-                      }
-                    >
-                      {ar.message}
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            )
-          )}
-        </ul>
+        <ApplyButtonWithActionDisplay
+          showErrorWarning={true}
+          showSuccessMessage={true}
+          actions={subgroupSelectionActions}
+          actionResults={subgroupSelectionActionsResults}
+          onApply={handleApplyRealDebounced}
+        />
       </article>
     </section>
   );

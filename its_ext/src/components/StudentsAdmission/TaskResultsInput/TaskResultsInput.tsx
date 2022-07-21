@@ -30,6 +30,7 @@ import { createDebouncedWrapper } from "../../../utils/helpers";
 
 import Button from "@mui/material/Button";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
@@ -326,11 +327,12 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     alert(`Настоящее применение изменений`);
     executeActions(taskResultsActions, context).then((actionResults) => {
       setTaskResultsActionResults(actionResults);
-    });
+    }).then(() => refreshAdmissionInfo());
   };
 
-  const handleRealApplyDebounced = () =>
+  const handleRealApplyDebounced = () => {
     debouncedWrapperForApply(handleRealApply);
+  }
 
   const renderInvalidStudentRows = () => {
     const rows = textAreaValue.split("\n");
@@ -409,40 +411,14 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
           </table>
         </section>
 
-        <ul>
-          {taskResultsActions.map((a: ITSAction, index: number) => (
-            <li key={index}>{a.getMessage()}</li>
-          ))}
-        </ul>
-
-        <Button
-          onClick={handleRealApplyDebounced}
-          variant="contained"
-          style={{ marginRight: "1em" }}
-        >
-          Применение изменений
-        </Button>
-        <ul>
-          {taskResultsActionResults.map(
-            (logItem: IActionExecutionLogItem, index: number) => (
-              <li key={index}>
-                {logItem.actionMessage}
-                <ul>
-                  {logItem.actionResults.map((ar, arIdx) => (
-                    <li
-                      key={arIdx}
-                      className={
-                        ar.success ? "message_success" : "message_error"
-                      }
-                    >
-                      {ar.message}
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            )
-          )}
-        </ul>
+        <ApplyButtonWithActionDisplay
+          showErrorWarning={true}
+          showSuccessMessage={true}
+          actions={taskResultsActions}
+          actionResults={taskResultsActionResults}
+          // onNextStep={props.onNextStep}
+          onApply={handleRealApplyDebounced}
+        />
       </article>
     </section>
   );

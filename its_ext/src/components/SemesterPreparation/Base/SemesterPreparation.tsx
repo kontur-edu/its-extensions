@@ -17,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@mui/material";
 import SystemUpdateAltIcon from "@mui/icons-material/SystemUpdateAlt";
 import WestIcon from "@mui/icons-material/West";
+import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 // import { CreateDebouncedWrapper } from "../../../utils/helpers";
 
 // Получение данных:
@@ -268,14 +269,11 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
         />
 
         <div className="next_step__container">
-          <Button
-            onClick={handleGroupSelectButton}
-            variant="contained"
-            style={{ marginRight: "1em" }}
-            endIcon={<SystemUpdateAltIcon />}
-          >
-            К следующему шагу
-          </Button>
+          <ApplyButtonWithActionDisplay
+            showErrorWarning={false}
+            showSuccessMessage={false}
+            onNextStep={handleGroupSelectButton}
+          />
           <p className="next_step__message">
             {selectionGroupsIds.length !== 2
               ? "Выберите две группы для перехода к следующему шагу"

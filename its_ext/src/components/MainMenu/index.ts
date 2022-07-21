@@ -1,6 +1,3 @@
-import {MainMenu} from './MainMenu';
+import { MainMenu } from "./MainMenu";
 
-
-export {
-    MainMenu,
-}
+export { MainMenu };

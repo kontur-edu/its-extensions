@@ -1,4 +1,3 @@
-
 export interface IMainMenuProps {
-    login: string;
+  login: string;
 }

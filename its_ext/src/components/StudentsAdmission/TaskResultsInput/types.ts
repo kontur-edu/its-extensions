@@ -1,6 +1,4 @@
-
-
 export interface ITaskResultsInputProps {
-    competitionGroupIds: number[];
-    onUnauthorized: () => void;
+  competitionGroupIds: number[];
+  onUnauthorized: () => void;
 }

@@ -1,6 +1,3 @@
-import {MupsList} from './MupsList';
+import { MupsList } from "./MupsList";
 
-
-export {
-    MupsList,
-}
+export { MupsList };

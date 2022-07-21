@@ -1,27 +1,17 @@
-
 .selectionGroup_select {
-    /* flex-grow: 2; */
-    min-width: 300px;
-    /* margin-left: 1em; */
+  min-width: 300px;
 }
 
 .selectionGroup_link {
-    /* max-width: 30%; */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    /* border: 2px solid red; */
-    
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-/* .selectionGroup_link > p {
-    align-self: start;
-} */
-
 .selectionGroup__button_container {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
 
-    margin-top: 1em;
+  margin-top: 1em;
 }

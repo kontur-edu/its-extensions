@@ -1,5 +1,1 @@
-
-
-export interface IMainProps {
-
-}
+export interface IMainProps {}

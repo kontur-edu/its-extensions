@@ -1,5 +1,4 @@
-
 export interface ISemesterPreparationProps {
-    onUnauthorized: () => void;
-    isUnauthorized: boolean;
+  onUnauthorized: () => void;
+  isUnauthorized: boolean;
 }

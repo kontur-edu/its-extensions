@@ -1,6 +1,3 @@
-import {CompetitionGroupSelect} from './CompetitionGroupSelect';
+import { CompetitionGroupSelect } from "./CompetitionGroupSelect";
 
-
-export {
-    CompetitionGroupSelect,
-}
+export { CompetitionGroupSelect };

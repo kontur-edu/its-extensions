@@ -1,6 +1,3 @@
-import {SubgroupSelection} from './SubgroupSelection';
+import { SubgroupSelection } from "./SubgroupSelection";
 
-
-export {
-    SubgroupSelection,
-}
+export { SubgroupSelection };

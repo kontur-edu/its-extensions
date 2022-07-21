@@ -1,8 +1,8 @@
 .mups__period {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 .period__input {
-    margin: 0 1em;
+  margin: 0 1em;
 }

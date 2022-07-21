@@ -1,6 +1,3 @@
-import {MupEditor} from './MupEditor';
+import { MupEditor } from "./MupEditor";
 
-
-export {
-    MupEditor,
-}
+export { MupEditor };

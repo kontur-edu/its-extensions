@@ -1,4 +1,3 @@
-
 export interface IModalProps {
-    visible: boolean;
+  visible: boolean;
 }

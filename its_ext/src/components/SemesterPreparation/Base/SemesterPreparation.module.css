@@ -1,35 +1,20 @@
-
 .selectionGroup_select {
-    min-width: 300px;
+  min-width: 300px;
 }
 
 .selectionGroup__button_container {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
 
-    margin-top: 1em;
+  margin-top: 1em;
 }
-
-/* .next_step__container {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-}
-
-.next_step__message {
-    color: #858585;
-    margin: 0;
-    padding: 0;
-} */
-
 
 .mups__period {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 .period__input {
-    margin: 0 1em;
+  margin: 0 1em;
 }
-

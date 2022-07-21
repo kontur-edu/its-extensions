@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import style from "./MainMenu.module.css";
 import { IMainMenuProps } from "./types";
 import { useNavigate } from "react-router-dom";

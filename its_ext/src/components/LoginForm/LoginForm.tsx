@@ -23,8 +23,6 @@ export function LoginForm(props: ILoginFormProps) {
 
   const handleSubmit = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    // console.log("NOTE: it is turned off,");
-    // return;
     const credentials: ICredentials = {
       username: username,
       password: password,

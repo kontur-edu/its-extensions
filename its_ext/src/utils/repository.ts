@@ -185,7 +185,7 @@ export class ITSRepository {
   fillStudentRawInfoToStudentDataAndAdmissionInfo(
     admissionId: number,
     studentsRaw: IStudentAdmissionRaw[],
-    mupId: string
+    // mupId: string
   ) {
     const studentAdmissionInfo: { [key: string]: IStudentAdmission } = {};
     for (const studentRaw of studentsRaw) {
@@ -208,9 +208,10 @@ export class ITSRepository {
       
       // TODO: add student meta
       const studentAdmission: IStudentAdmission = {
-        id: studentRaw.id,
+        // id: studentRaw.id,
         // personalNumber: studentRaw.personalNumber,
-        mupId: mupId,
+        // mupId: mupId,
+        admissionId: admissionId,
         priority: studentRaw.priority,
         testResult: studentRaw.testResult,
         status: studentRaw.status,
@@ -240,14 +241,14 @@ export class ITSRepository {
     for (let i = 0; i < admissionIds.length; i++) {
       const resp = responses[i];
       const admissionId = admissionIds[i];
-      const mupId = this.admissionIdToMupId[admissionId];
+      // const mupId = this.admissionIdToMupId[admissionId];
       if (resp.status === "fulfilled") {
         // console.log("StudentAdmissions");
         // console.log(resp.value);
         this.fillStudentRawInfoToStudentDataAndAdmissionInfo(
           admissionId,
           resp.value,
-          mupId
+          // mupId
         );
       }
     }

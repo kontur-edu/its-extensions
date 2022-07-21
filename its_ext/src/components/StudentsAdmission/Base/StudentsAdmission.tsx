@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@mui/material";
 import WestIcon from "@mui/icons-material/West";
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
-import { AutoAdmission } from "../AutoAdmission";
+import { StudentsDistribution } from "../StudentsDistribution";
 
 export function StudentsAdmission(props: IStudentsAdmissionProps) {
   const [competitionGroupItems, setCompetitionGroupItems] = useState<
@@ -105,7 +105,9 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
             3. Зачисление студентов на курсы
           </span>
 
-          <AutoAdmission
+          <StudentsDistribution 
+            onUnauthorized={props.onUnauthorized}
+            competitionGroupIds={competitionGroupIds}
           />
         </article>
       </React.Fragment>

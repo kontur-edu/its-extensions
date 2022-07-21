@@ -257,9 +257,10 @@ export interface IStudentData {
 //  - studentId
 //  - priority
 export interface IStudentAdmission {
-  id: string;
+  // id: string;
   // personalNumber: string;
-  mupId: string;
+  // mupId: string;
+  admissionId: number;
   priority: number | null;
   testResult: number | null;
   status: number; // 0 - нет решения, 1 - зачислен

@@ -175,3 +175,8 @@ td {
   align-items: center;
   flex-wrap: wrap;
 }
+
+.list_without_decorations {
+  list-style: none;
+  padding: 0;
+}

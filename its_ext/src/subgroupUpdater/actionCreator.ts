@@ -1,7 +1,6 @@
 import { ITSAction, ActionType } from "../common/actions";
 import {
   ISubgoupDiffInfo,
-  ISubgroupData,
   ISubgroupInfo,
   SubgroupAndMetaAreSameDiffs,
 } from "../common/types";

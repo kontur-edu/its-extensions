@@ -145,6 +145,11 @@ export function createResultLoads(mupDiff: IMupDiff): {
       }
     }
   }
+  if (Object.keys(kmerToLoad).length === 0) {
+    for (let load of mupDiff.someLoads) {
+      kmerToLoad[load.kmer] = load;
+    }
+  }
   return kmerToLoad;
 }
 
@@ -169,17 +174,17 @@ function generateAddLoadsActions(
   selectedMupsIds: string[],
   mupDiffs: { [key: string]: IMupDiff },
   courseToPeriodTimeInfo: { [key: number]: IPeriodTimeInfo },
-  mupToPeriods: IMupToPeriods
+  // mupToPeriods: IMupToPeriods
 ) {
   const actions: ITSAction[] = [];
   for (let mupId of selectedMupsIds) {
-    let loads: IMupLoad[] = [];
-    for (let period of mupToPeriods[mupId]) {
-      if (period.loads.length > 0) {
-        loads = period.loads;
-        break;
-      }
-    }
+    // let loads: IMupLoad[] = [];
+    // for (let period of mupToPeriods[mupId]) {
+    //   if (period.loads.length > 0) {
+    //     loads = period.loads;
+    //     break;
+    //   }
+    // }
 
     const mupDiff = mupDiffs[mupId];
 
@@ -189,17 +194,19 @@ function generateAddLoadsActions(
 
     for (let course of [3, 4]) {
       const periodTimeInfo = courseToPeriodTimeInfo[course];
+      let loadsToAdd: IMupLoad[] = resulLoads;
       if (mupDiff.courseToCurrentPeriod.hasOwnProperty(course)) {
         const currentPeriod = mupDiff.courseToCurrentPeriod[course];
-        const loadsToAdd: IMupLoad[] = findLoadsToAdd(
+        loadsToAdd = findLoadsToAdd(
           currentPeriod,
           resulLoads
         );
-
         if (loadsToAdd.length > 0) {
           actions.push(new AddLoadsAction(mupId, periodTimeInfo, loadsToAdd));
-        } else if (currentPeriod.loads.length === 0 && loads.length > 0) {
-          actions.push(new AddLoadsAction(mupId, periodTimeInfo, loads));
+        }
+      } else {
+        if (resulLoads.length > 0) {
+          actions.push(new AddLoadsAction(mupId, periodTimeInfo, resulLoads));
         }
       }
     }
@@ -281,6 +288,14 @@ export function createActions(
     )
   );
 
+  actions.push(
+    ...generateCreatePeriodActions(
+      selectedMupsIds,
+      mupDiffs,
+      courseToPeriodTimeInfo
+    )
+  );
+
   actions.push(...generateRefreshActions(selectionGroupsIds, selectedMupsIds));
 
   actions.push(
@@ -292,20 +307,14 @@ export function createActions(
     )
   );
 
-  actions.push(
-    ...generateCreatePeriodActions(
-      selectedMupsIds,
-      mupDiffs,
-      courseToPeriodTimeInfo
-    )
-  );
+  
 
   actions.push(
     ...generateAddLoadsActions(
       selectedMupsIds,
       mupDiffs,
       courseToPeriodTimeInfo,
-      itsContext.dataRepository.mupToPeriods
+      // itsContext.dataRepository.mupToPeriods
     )
   );
 

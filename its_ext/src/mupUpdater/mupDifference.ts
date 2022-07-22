@@ -132,7 +132,8 @@ export function createDiffForMup(
   }
 
   let loads: IMupLoad[] = [];
-  for (let period of periods) {
+  const periodsSortedByYear = periods.sort((p1, p2) => p2.year - p1.year);
+  for (let period of periodsSortedByYear) {
     if (period.loads.length > 0) {
       loads = period.loads;
       break;
@@ -148,7 +149,8 @@ export function createDiffForMup(
 
   const mupDiff: IMupDiff = {
     presentInGroups: presentInGroups,
-    addLoadsManual: loads.length === 0,
+    // addLoadsManual: loads.length === 0,
+    someLoads: loads,
     courseToCurrentPeriod: courseToCurrentPeriod,
     changeDates: needToChangeDates,
     initLimits: limits,

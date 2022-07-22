@@ -84,7 +84,8 @@ export interface IMupDiff {
   presentInGroups: number[];
   initLimits: (number | null)[];
   courseToCurrentPeriod: { [key: number]: IPeriod };
-  addLoadsManual: boolean;
+  // addLoadsManual: boolean;
+  someLoads: IMupLoad[];
   changeDates: boolean;
   canBeDeleted: boolean;
 }

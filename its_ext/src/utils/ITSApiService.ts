@@ -202,7 +202,7 @@ export class ITSApiService {
       kmer: load.kmer,
     };
 
-    if (periodId !== 102 && periodId !== 103) {
+    if (periodId < 102) {
       const message = `Not test Period periodId: ${periodId}`;
       alert(message);
       return { success: false, message };
@@ -228,7 +228,7 @@ export class ITSApiService {
       kmer: load.kmer,
     };
 
-    if (periodId !== 102 && periodId !== 103) {
+    if (periodId < 102) {
       const message = `Not test Period periodId: ${periodId}`;
       alert(message);
       return { success: false, message };
@@ -254,12 +254,15 @@ export class ITSApiService {
       SelectionBegin: period.selectionBegin,
       SelectionDeadline: period.selectionDeadline,
     };
-    const message = `Tried to create period: ${JSON.stringify(data)}`;
-    alert(message);
-    return { success: false, message };
+  
+    // const message = `Tried to create period: ${JSON.stringify(data)}`;
+    // alert(message);
+    // return { success: false, message };
 
-    // const result = await PostFormData(url, data);
-    // return result.success;
+    const response = await this.requestService.PostFormData(url, data);
+    const result = addSummary(response, url, data);
+
+    return result;
   }
 
   async UpdatePeriod(mupId: string, period: IPeriod): Promise<IActionResponse> {
@@ -277,7 +280,7 @@ export class ITSApiService {
       SelectionDeadline: period.selectionDeadline,
     };
 
-    if (period.id !== 102 && period.id !== 103) {
+    if (period.id < 102) {
       const message = `Tried to update not test period: ${JSON.stringify(
         data
       )}`;

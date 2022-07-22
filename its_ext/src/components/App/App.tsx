@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter } from "react-router-dom";
+import { HashRouter } from "react-router-dom";
 import { Main } from "../Main";
 
 import { ITSContext } from "../../common/Context";
@@ -15,13 +15,13 @@ const dataRepository = new ITSRepository(apiService);
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <ITSContext.Provider
         value={{ requestService, apiService, dataRepository }}
       >
         <Main />
       </ITSContext.Provider>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 

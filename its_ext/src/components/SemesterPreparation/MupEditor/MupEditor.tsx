@@ -208,6 +208,7 @@ export function MupEditor(props: IMupEditorProps) {
 
     // setMupDiffs(newMupDiffs);
     // setMupEdits(newMupEdits);
+    callDebouncedApply(newMupDiffs, newMupEdits, initDates);
   }, [props.dataIsPrepared, props.selectionGroupIds]);
 
   const handleMupToggle = (mupId: string) => {
@@ -362,7 +363,7 @@ export function MupEditor(props: IMupEditorProps) {
         } else if (!isSelected && mupDiffs[mupId].presentInGroups.length > 0) {
           newMupEdits[mupId].messages.push("Удалить МУП из групп");
         }
-        if (isSelected && mupDiffs[mupId].addLoadsManual) {
+        if (isSelected && mupDiffs[mupId].someLoads.length === 0) {
           newMupEdits[mupId].addLoadsManual = true;
         }
       }

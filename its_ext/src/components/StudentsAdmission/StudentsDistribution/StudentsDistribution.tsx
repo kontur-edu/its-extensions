@@ -10,14 +10,15 @@ import {
   getAllPersonalNumbers,
   createPersonalNumberToStudentItem,
   createMupIdToMupItem,
+  filterActiveStudentsAndSortByRating,
 } from "../../../studentAdmission/studentDistributor";
 import { ITSContext } from "../../../common/Context";
 import { REQUEST_ERROR_UNAUTHORIZED } from "../../../utils/constants";
 import { downloadFileFromText } from "../../../utils/helpers";
 
 interface StudentMupsData {
-  studentPersonalNumberToMupIds: { [key: string]: string[] }; // personalNumber -> mupIds
-  mupIdToMupName: { [key: string]: string }; // mupId -> mupName
+  studentPersonalNumberToMupIds: { [key: string]: number[] }; // personalNumber -> mupIds
+  mupIdToMupName: { [key: number]: string }; // mupId -> mupName
 }
 
 export function StudentsDistribution(props: IStudentsDistributionProps) {
@@ -30,7 +31,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   }>({});
   const [studentAdmissionsText, setStudentAdmissionsText] =
     useState<string>("");
-  const allPersonalNumbers = useRef<Set<string>>(new Set<string>());
+  const personalNumbersOfActiveStudentsSortedByRating = useRef<string[]>([]);
   const refreshInProgress = useRef<boolean>(false);
 
   const context = useContext(ITSContext)!;
@@ -79,11 +80,16 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     console.log(context.dataRepository.competitionGroupIdToMupAdmissions);
     console.log("context.dataRepository.admissionInfo");
     console.log(context.dataRepository.admissionInfo);
-    allPersonalNumbers.current = getAllPersonalNumbers(
+
+    const allPersonalNumbers = getAllPersonalNumbers(
       props.competitionGroupIds,
       context.dataRepository.competitionGroupIdToMupAdmissions,
       context.dataRepository.admissionInfo
     );
+    personalNumbersOfActiveStudentsSortedByRating.current = filterActiveStudentsAndSortByRating(
+      Array.from(allPersonalNumbers),
+      context.dataRepository.studentData
+    )
 
     const newPersonalNumberToStudentItems = createPersonalNumberToStudentItem(
       props.competitionGroupIds,
@@ -101,7 +107,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
 
     const studentMupsData = createStudentMupsData(
       newPersonalNumberToStudentItems,
-      newMupIdToMupItems
+      // newMupIdToMupItems
     );
     setStudentAdmissionsText(JSON.stringify(studentMupsData, null, 2));
 
@@ -116,21 +122,28 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     newPersonalNumberToStudentItems: {
       [key: string]: IStudentAdmissionDistributionItem;
     },
-    newMupIdToMupItems: { [key: string]: IMupDistributionItem }
+    // newMupIdToMupItems: { [key: string]: IMupDistributionItem }
   ): StudentMupsData => {
     const result: StudentMupsData = {
       studentPersonalNumberToMupIds: {},
       mupIdToMupName: {},
     };
+    const admissionIds = new Set<number>();
     for (const personalNumber in newPersonalNumberToStudentItems) {
       const student = context.dataRepository.studentData.data[personalNumber];
       if (student.status === "Активный" && student.rating !== null) {
         result.studentPersonalNumberToMupIds[personalNumber] =
-          newPersonalNumberToStudentItems[personalNumber].admittedMupIds;
+          newPersonalNumberToStudentItems[personalNumber].admittedIndices.map(aIdx => {
+            const admissionId = newPersonalNumberToStudentItems[personalNumber]
+              .admissions[aIdx].admissionId;
+            admissionIds.add(admissionId)
+            return admissionId;
+          });
       }
     }
-    for (const mupId in newMupIdToMupItems) {
-      result.mupIdToMupName[mupId] =
+    for (const admissionId of Array.from(admissionIds)) {
+      const mupId = context.dataRepository.admissionIdToMupId[admissionId];
+      result.mupIdToMupName[admissionId] =
         context.dataRepository.mupData.data[mupId].name;
     }
     return result;
@@ -145,20 +158,26 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   };
 
   const renderRows = () => {
-    return Object.keys(personalNumberToStudentItems)
-      .filter((personalNumber) => {
-        const student = context.dataRepository.studentData.data[personalNumber];
-        // console.log("student");
-        // console.log(student);
-        return student.status === "Активный" && student.rating !== null;
-      })
+    // return Object.keys(personalNumberToStudentItems)
+    //   .filter((personalNumber) => {
+    //     const student = context.dataRepository.studentData.data[personalNumber];
+    //     // console.log("student");
+    //     // console.log(student);
+    //     return student.status === "Активный" && student.rating !== null;
+    //   })
+    return personalNumbersOfActiveStudentsSortedByRating.current
       .map((personalNumber) => {
         const studentItem = personalNumberToStudentItems[personalNumber];
         const student = context.dataRepository.studentData.data[personalNumber];
-        const mupNames = studentItem.admittedMupIds.map(
-          (mupId) => context.dataRepository.mupData.data[mupId].name
-        );
-        const priorities = studentItem.admissions.map((admission) => {
+        const mupNames = studentItem.admittedIndices.map((idx) => {
+          const admission = studentItem.admissions[idx];
+          const mupId = context.dataRepository.admissionIdToMupId[admission.admissionId];
+          const mupName = context.dataRepository.mupData.data[mupId].name;
+          return `${admission.priority}. ${mupName}`;
+        });
+        const priorities = studentItem.admissions
+          .filter((a, idx) => !studentItem.admittedIndices.includes(idx))
+          .map((admission) => {
           const mupId =
             context.dataRepository.admissionIdToMupId[admission.admissionId];
           const mupName = context.dataRepository.mupData.data[mupId].name;

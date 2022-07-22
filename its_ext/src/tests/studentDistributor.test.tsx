@@ -30,7 +30,7 @@ describe("fillDistributionByStudentRatingAndAdmissionPriority", () => {
         's1': {
             admissions: [],
             currentZ: 0,
-            admittedMupIds: [],
+            admittedIndices: [],
         }
     };
     const mupIdToMupItem: IMupIdToMupItem = {

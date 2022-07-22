@@ -40,7 +40,7 @@ function compareByRating(lhs: IStudent, rhs: IStudent) {
 export interface IStudentAdmissionDistributionItem {
   admissions: IStudentAdmission[];
   currentZ: number;
-  admittedMupIds: string[];
+  admittedIndices: number[];
 }
 
 export interface IMupDistributionItem {
@@ -78,22 +78,35 @@ export function createPersonalNumberToStudentItem(
           personalNumberToStudentItem[personalNumber] = {
             admissions: [],
             currentZ: 0,
-            admittedMupIds: [],
+            admittedIndices: [],
           };
         }
         const studentItem = personalNumberToStudentItem[personalNumber];
 
         const admission = personalNumberToAdmission[personalNumber];
         
-        if (admission.status === 1) {
-          // status === 1 то есть уже зачислен на курс
+        if (admission.status === 1) { // status === 1 то есть уже зачислен на курс
           studentItem.currentZ += mupData.data[mId].ze;
-          studentItem.admittedMupIds.push(mId);
-        } else if (admission.priority) {
+          // studentItem.admittedIndices.push(mId);
+        }
+        if (admission.priority) {
           studentItem.admissions.push(
             personalNumberToAdmission[personalNumber]
           );
         }
+      }
+    }
+  }
+
+  for (const pn in personalNumberToStudentItem) {
+    const studentItem = personalNumberToStudentItem[pn];
+    studentItem.admissions = studentItem.admissions.sort((lhs, rhs) => {
+      return lhs.priority! - rhs.priority!;
+    });
+    for (let i = 0; i < studentItem.admissions.length; i++) {
+      const admission = studentItem.admissions[i];
+      if (admission.status === 1) {
+        studentItem.admittedIndices.push(i);
       }
     }
   }
@@ -142,7 +155,6 @@ function getMupIdsWithRequiredTaskResult(
     }
   }
   return result;
-
 }
 
 export function fillDistributionByStudentRatingAndAdmissionPriority(
@@ -158,11 +170,15 @@ export function fillDistributionByStudentRatingAndAdmissionPriority(
 ) {
   for (const personalNumber of personalNumbersSortedByRating) {
     const sItem = personalNumberToStudentItem[personalNumber];
-    const admissionsSortedByPriority = sItem.admissions.sort((lhs, rhs) => {
-      return lhs.priority! - rhs.priority!;
-    });
+    // const admissionsSortedByPriority = sItem.admissions
+    // .filter(a => a.status !== 1) // Не зачислен
+    // .sort((lhs, rhs) => {
+    //   return lhs.priority! - rhs.priority!;
+    // });
 
-    for (const admission of admissionsSortedByPriority) {
+    for (let i = 0; i < sItem.admissions.length; i++) {
+      const admission = sItem.admissions[i];
+      if (admission.status === 1) continue; // already admitted
       if (admission.priority! > 1 && sItem.currentZ > zeLimit) {
         // Заканчиваем если набрали лимит и кончились курсы с первым приоритетом
         break;
@@ -178,7 +194,7 @@ export function fillDistributionByStudentRatingAndAdmissionPriority(
           continue; // Если приоритет > 1 не превышать лимит
         }
 
-        sItem.admittedMupIds.push(mupId);
+        sItem.admittedIndices.push(i);
         sItem.currentZ += mupZe;
         mupItem.count++;
       }
@@ -213,7 +229,7 @@ export function getAllPersonalNumbers(
   return allPersonalNumbers;
 }
 
-function filterActiveStudentsAndSortByRating(
+export function filterActiveStudentsAndSortByRating(
   allPersonalNumbers: string[],
   studentData: IStudentData
 ) {

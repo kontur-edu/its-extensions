@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import style from "./Modal.module.css";
 import { IApplyButtonWithActionDisplayProps } from "./types";
 import {
@@ -20,6 +20,7 @@ export function ApplyButtonWithActionDisplay(
   const [actionListOpen, setActionListOpen] = useState<boolean>(false);
   const [actionResultsListOpen, setActionResultsListOpen] =
     useState<boolean>(false);
+  const wasApply = useRef<boolean>(false);
 
   const handleActionListOpen = () => {
     setActionListOpen(!actionListOpen);
@@ -92,7 +93,7 @@ export function ApplyButtonWithActionDisplay(
         К следующему шагу
       </Button>
     );
-    const successMessage = props.showSuccessMessage && (
+    const successMessage = wasApply.current && props.showSuccessMessage && (
       <span className="message_success__container">
         <DoneIcon />
         Сохранено, с этого шага можно безопасно уходить
@@ -106,10 +107,15 @@ export function ApplyButtonWithActionDisplay(
     );
   };
 
+  const handleApply = () => {
+    wasApply.current = true;
+    props.onApply?.();
+  }
+
   const renderApplyButtonWithMessage = () => {
     const applyButton = props.onApply && (
       <Button
-        onClick={props.onApply}
+        onClick={handleApply}
         variant="contained"
         style={{ marginRight: "1em" }}
       >

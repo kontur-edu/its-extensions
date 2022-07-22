@@ -23,6 +23,7 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
   const competitionGroupRefreshInProgress = useRef<boolean>(false);
   const context = useContext(ITSContext)!;
   const stepTwoRef = useRef<HTMLElement | null>(null);
+  const stepThreeRef = useRef<HTMLElement | null>(null);
 
   const navigate = useNavigate();
 
@@ -100,7 +101,7 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
   const renderStudentsAutoAdmission = () => {
     return (
       <React.Fragment>
-        <article className="step" ref={stepTwoRef}>
+        <article className="step" ref={stepThreeRef}>
           <span className="step__header">3. Зачисление студентов на курсы</span>
 
           <StudentsDistribution

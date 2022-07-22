@@ -202,7 +202,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         >
           Обновить список
         </Button>
-        <section className="table__container">
+        <section className="table__сontainer">
           <table className="table table_vertical_borders">
             <thead>
               <tr>

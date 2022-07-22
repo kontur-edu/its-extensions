@@ -146,12 +146,16 @@ td {
 }
 
 .table__сontainer {
-  max-height: 300px;
+  max-height: 600px;
   overflow: auto;
 }
 
 .table_vertical_borders td {
   border-right: 2px solid #c9c9c9;
+}
+
+.table_vertical_borders td:first-of-type {
+  border-left: 2px solid #c9c9c9;
 }
 
 .limit__input {

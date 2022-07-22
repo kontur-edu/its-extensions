@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import style from "./TaskResultsInput.module.css";
 import { ITaskResultsInputProps } from "./types";
 import { DEBOUNCE_MS } from "../../../utils/constants";
@@ -324,6 +324,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   }) => debouncedWrapperForApply(() => handleApply(newStudentItems));
 
   const handleRealApply = () => {
+    
     alert(`Настоящее применение изменений`);
     executeActions(taskResultsActions, context)
       .then((actionResults) => {

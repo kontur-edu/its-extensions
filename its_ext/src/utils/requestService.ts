@@ -111,7 +111,7 @@ export class RequestService {
 
     const urlWithProxy = `${this.proxyUrl}/${url}`;
     const headers = {
-      "X-KL-Ajax-Reqyest": "Ajax_Request",
+      "X-KL-Ajax-Request": "Ajax_Request",
       "X-Requested-With": "XMLHttpRequest",
       "x-redirect": "manual",
       "x-url": url,

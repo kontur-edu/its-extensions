@@ -120,17 +120,26 @@ export function createMupIdToMupItem(
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions
 ): { [key: string]: IMupDistributionItem } {
   const mupIdToMupItem: { [key: string]: IMupDistributionItem } = {};
-  const firstMupIdToAdmission =
-    competitionGroupIdToMupAdmissions[competitionGroupIds[0]];
-  for (const mupId in firstMupIdToAdmission) {
-    const admission = firstMupIdToAdmission[mupId];
-
-    mupIdToMupItem[mupId] = {
-      limit: admission.limit,
-      count: admission.count,
-      // testResultRequired: false,
-    };
+  for (const competitionId of competitionGroupIds) {
+    const mupIdToAdmission =
+      competitionGroupIdToMupAdmissions[competitionId];
+    for (const mupId in mupIdToAdmission) {
+      const admission = mupIdToAdmission[mupId];
+  
+      if (mupIdToMupItem.hasOwnProperty(mupId)) {
+        if (mupIdToMupItem[mupId].limit !== admission.limit) {
+          throw new Error(`Mup limit not equal (${mupIdToMupItem[mupId].limit} ${admission.limit})`);
+        }
+        mupIdToMupItem[mupId].count += admission.count;   
+      } else {
+        mupIdToMupItem[mupId] = {
+          limit: admission.limit,
+          count: admission.count,
+        };
+      }      
+    }
   }
+  
   return mupIdToMupItem;
 }
 
@@ -171,16 +180,11 @@ export function fillDistributionByStudentRatingAndAdmissionPriority(
 ) {
   for (const personalNumber of personalNumbersSortedByRating) {
     const sItem = personalNumberToStudentItem[personalNumber];
-    // const admissionsSortedByPriority = sItem.admissions
-    // .filter(a => a.status !== 1) // Не зачислен
-    // .sort((lhs, rhs) => {
-    //   return lhs.priority! - rhs.priority!;
-    // });
 
     for (let i = 0; i < sItem.admissions.length; i++) {
       const admission = sItem.admissions[i];
       if (admission.status === 1) continue; // already admitted
-      if (admission.priority! > 1 && sItem.currentZ > zeLimit) {
+      if (sItem.currentZ > zeLimit) {
         // Заканчиваем если набрали лимит и кончились курсы с первым приоритетом
         break;
       }
@@ -191,7 +195,7 @@ export function fillDistributionByStudentRatingAndAdmissionPriority(
         if (mupIdsWithTestResultRequired.has(mupId) && !admission.testResult) {
           continue; // testResult required but not present, skip mup
         }
-        if (admission.priority! > 1 && sItem.currentZ + mupZe > zeLimit) {
+        if (sItem.currentZ + mupZe > zeLimit) {
           continue; // Если приоритет > 1 не превышать лимит
         }
 
@@ -244,44 +248,6 @@ export function filterActiveStudentsAndSortByRating(
     });
 }
 
-// export function distributeStudents(
-//   allPersonalNumbers: string[],
-//   personalNumberToStudentItem: {
-//     [key: string]: IStudentAdmissionDistributionItem;
-//   },
-//   mupIdToMupItem: { [key: string]: IMupDistributionItem },
-//   zeLimit: number,
-//   mupData: IMupData,
-//   studentData: IStudentData,
-//   admissionIdToMupId: { [key: number]: string }
-// ): IDistributionResult {
-
-//   const personalNumbersSortedByRating = filterActiveStudentsAndSortByRating(
-//     allPersonalNumbers,
-//     studentData
-//   );
-
-//   const mupIdsWithTestResultRequired = getMupIdsWithRequiredTaskResult(
-//     competitionGroupIds,
-//     competitionGroupIdToMupAdmissions,
-//     admissionInfo,
-//   );
-
-//   fillDistributionByStudentRatingAndAdmissionPriority(
-//     personalNumberToStudentItem,
-//     mupIdToMupItem,
-//     mupIdsWithTestResultRequired,
-//     zeLimit,
-//     mupData,
-//     personalNumbersSortedByRating,
-//     admissionIdToMupId
-//   );
-
-//   return {
-//     personalNumberToStudentItem,
-//     mupIdToMupItem,
-//   };
-// }
 
 export interface IStudentMupsData {
   studentPersonalNumberToAdmissionIds: { [key: string]: number[] }; // personalNumber -> mupIds

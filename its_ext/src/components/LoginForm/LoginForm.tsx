@@ -33,7 +33,7 @@ export function LoginForm(props: ILoginFormProps) {
   return (
     <div className={style.litebox}>
       <h2 className={style.litebox__header}>Вход в аккаунт its.urfu.ru</h2>
-      <Box className={style.formGroup} component="form" noValidate>
+      <form className={style.formGroup}>
         <div className={style.formGroup__Item}>
           <TextField
             className={style.login__input}
@@ -53,10 +53,10 @@ export function LoginForm(props: ILoginFormProps) {
             variant="outlined"
           />
         </div>
-        <Button onClick={handleSubmit} variant="contained">
+        <Button type="submit" onClick={handleSubmit} variant="contained">
           Войти
         </Button>
-      </Box>
+      </form>
     </div>
   );
 }

@@ -77,4 +77,24 @@ export const PROXY_URL = "https://<domain>.apigw.yandexcloud.net/proxy";
 
 ### Настройте [AWS CLI](https://cloud.yandex.ru/docs/storage/tools/aws-cli) 
 
-### Выполните `npm run deploy` или `deploy.bat`
+### Выполните:
+  - ```cd its_ext```
+  - ```npm run build```
+  - ```npm run deploy``` или ```deploy.bat```
+
+<br />
+
+## Локальный запуск
+
+1. Проверить адрес прокси в .npmrc (если не нужен удалить файл .npmrc)
+2. Установить зависимости для проектов proxy, proxy-function, its_ext
+  - ```cd proxy && npm install```
+  - ```cd proxy-function && npm install```
+  - ```cd its_ext && npm install```
+
+Ожидается, что приложение будет запущено на http://localhost:3001, если это не так, изменить url в файле proxy/server.js в настройках cors
+
+3. Запустить proxy
+  - ```cd proxy && npm run start```
+4. Запустить приложение (проверить)
+  - ```cd its_ext && npm run start```

@@ -321,6 +321,23 @@ export class ITSApiService {
     return result;
   }
 
+  async EmulateCheckSubgroupMetas(competitionGroupId: number): Promise<{success: boolean, data: any}> {
+    const url = `https://its.urfu.ru/MUPItsSubgroupMeta/Index?competitionGroupId=${competitionGroupId}`;
+    const urlWithProxy = `${this.requestService.proxyUrl}/${url}`;
+    const headers = {
+      "x-url": url,
+    };
+
+    const options: any = {
+      method: "GET",
+      credentials: "include",
+      headers: headers,
+    };
+    const res = await this.requestService.SendRequest(urlWithProxy, options);
+
+    return res
+  }
+
   async GetSubgroupMetas(competitionGroupId: number): Promise<ISubgroupMeta[]> {
     const url = `https://its.urfu.ru/MUPItsSubgroupMeta/Index?competitionGroupId=${competitionGroupId}`;
     const res = await this.requestService.GetJson(url);

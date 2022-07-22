@@ -4,6 +4,7 @@
 import {
   AdmissionInfo,
   CompetitionGroupIdToMupAdmissions,
+  IAdmissionMeta,
   IMupData,
   IStudent,
   IStudentAdmission,
@@ -45,6 +46,7 @@ export interface IStudentAdmissionDistributionItem {
 export interface IMupDistributionItem {
   limit: number;
   count: number;
+  // testResultRequired: boolean;
 }
 
 export interface IDistributionResult {
@@ -82,6 +84,7 @@ export function createPersonalNumberToStudentItem(
         const studentItem = personalNumberToStudentItem[personalNumber];
 
         const admission = personalNumberToAdmission[personalNumber];
+        
         if (admission.status === 1) {
           // status === 1 то есть уже зачислен на курс
           studentItem.currentZ += mupData.data[mId].ze;
@@ -100,26 +103,54 @@ export function createPersonalNumberToStudentItem(
 
 export function createMupIdToMupItem(
   competitionGroupIds: number[],
-  competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions
+  competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions,
 ): { [key: string]: IMupDistributionItem } {
   const mupIdToMupItem: { [key: string]: IMupDistributionItem } = {};
   const firstMupIdToAdmission =
     competitionGroupIdToMupAdmissions[competitionGroupIds[0]];
   for (const mupId in firstMupIdToAdmission) {
     const admission = firstMupIdToAdmission[mupId];
+    
     mupIdToMupItem[mupId] = {
       limit: admission.limit,
       count: admission.count,
+      // testResultRequired: false,
     };
   }
   return mupIdToMupItem;
 }
 
-function fillDistributionByStudentRatingAndAdmissionPriority(
+function getMupIdsWithRequiredTaskResult(
+  competitionGroupIds: number[],
+  competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions,
+  admissionInfo: AdmissionInfo,
+): Set<string> {
+  const result = new Set<string>();
+  for (const competitionGroupId of competitionGroupIds) {
+    const mIdToAdmission =
+      competitionGroupIdToMupAdmissions[competitionGroupId];
+    for (const mId in mIdToAdmission) {
+      const admission = mIdToAdmission[mId];
+      const personalNumberToAdmission = admissionInfo[admission.admissionsId];
+      for (const personalNumber in personalNumberToAdmission) {
+        const studentAdmission = personalNumberToAdmission[personalNumber];
+        if (studentAdmission.testResult) {
+          result.add(admission.mupId);
+          break;
+        }
+      }
+    }
+  }
+  return result;
+
+}
+
+export function fillDistributionByStudentRatingAndAdmissionPriority(
   personalNumberToStudentItem: {
     [key: string]: IStudentAdmissionDistributionItem;
   },
   mupIdToMupItem: { [key: string]: IMupDistributionItem },
+  mupIdsWithTestResultRequired: Set<string>,
   zeLimit: number,
   mupData: IMupData,
   personalNumbersSortedByRating: string[],
@@ -140,6 +171,9 @@ function fillDistributionByStudentRatingAndAdmissionPriority(
       const mupItem = mupIdToMupItem[mupId];
       const mupZe = mupData.data[mupId].ze;
       if (mupItem.count < mupItem.limit) {
+        if (mupIdsWithTestResultRequired.has(mupId) && !admission.testResult) {
+          continue; // testResult required but not present, skip mup
+        }
         if (admission.priority! > 1 && sItem.currentZ + mupZe > zeLimit) {
           continue; // Если приоритет > 1 не превышать лимит
         }
@@ -179,53 +213,56 @@ export function getAllPersonalNumbers(
   return allPersonalNumbers;
 }
 
-export function distributeStudents(
-  zeLimit: number,
-  competitionGroupIds: number[],
-  mupData: IMupData,
-  competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions,
-  admissionInfo: AdmissionInfo,
-  studentData: IStudentData,
-  admissionIdToMupId: { [key: number]: string }
-): IDistributionResult {
-  const allPersonalNumbers = getAllPersonalNumbers(
-    competitionGroupIds,
-    competitionGroupIdToMupAdmissions,
-    admissionInfo
-  );
-
-  const personalNumberToStudentItem = createPersonalNumberToStudentItem(
-    competitionGroupIds,
-    mupData,
-    competitionGroupIdToMupAdmissions,
-    admissionInfo
-  );
-
-  const mupIdToMupItem = createMupIdToMupItem(
-    competitionGroupIds,
-    competitionGroupIdToMupAdmissions
-  );
-
-  const personalNumbersSortedByRating = Array.from(allPersonalNumbers)
-    .filter((pn) => {
-      const student = studentData.data[pn];
-      return student.status === "Активный" && student.rating !== null;
-    })
-    .sort((lhs, rhs) => {
-      return compareByRating(studentData.data[lhs], studentData.data[rhs]);
-    });
-
-  fillDistributionByStudentRatingAndAdmissionPriority(
-    personalNumberToStudentItem,
-    mupIdToMupItem,
-    zeLimit,
-    mupData,
-    personalNumbersSortedByRating,
-    admissionIdToMupId
-  );
-
-  return {
-    personalNumberToStudentItem,
-    mupIdToMupItem,
-  };
+function filterActiveStudentsAndSortByRating(
+  allPersonalNumbers: string[],
+  studentData: IStudentData
+) {
+  return Array.from(allPersonalNumbers)
+  .filter((pn) => {
+    const student = studentData.data[pn];
+    return student.status === "Активный" && student.rating !== null;
+  })
+  .sort((lhs, rhs) => {
+    return compareByRating(studentData.data[lhs], studentData.data[rhs]);
+  });
 }
+
+
+// export function distributeStudents(
+//   allPersonalNumbers: string[],
+//   personalNumberToStudentItem: {
+//     [key: string]: IStudentAdmissionDistributionItem;
+//   },
+//   mupIdToMupItem: { [key: string]: IMupDistributionItem },
+//   zeLimit: number,
+//   mupData: IMupData,
+//   studentData: IStudentData,
+//   admissionIdToMupId: { [key: number]: string }
+// ): IDistributionResult {
+
+//   const personalNumbersSortedByRating = filterActiveStudentsAndSortByRating(
+//     allPersonalNumbers,
+//     studentData
+//   );
+
+//   const mupIdsWithTestResultRequired = getMupIdsWithRequiredTaskResult(
+//     competitionGroupIds,
+//     competitionGroupIdToMupAdmissions,
+//     admissionInfo,
+//   );
+
+//   fillDistributionByStudentRatingAndAdmissionPriority(
+//     personalNumberToStudentItem,
+//     mupIdToMupItem,
+//     mupIdsWithTestResultRequired,
+//     zeLimit,
+//     mupData,
+//     personalNumbersSortedByRating,
+//     admissionIdToMupId
+//   );
+
+//   return {
+//     personalNumberToStudentItem,
+//     mupIdToMupItem,
+//   };
+// }

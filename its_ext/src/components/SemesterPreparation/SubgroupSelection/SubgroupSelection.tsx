@@ -171,9 +171,18 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
   const refreshData = () => {
     return Promise.allSettled([
       context.dataRepository.UpdateSelectionGroupData(),
-      context.dataRepository.UpdateSelectionGroupToMupsData(props.selectionGroupIds)
+      context.dataRepository.UpdateSelectionGroupToMupsData(
+        props.selectionGroupIds
+      ),
     ])
       .then(() => extractCompetitionGroupIds(props.selectionGroupIds))
+      .then((newCompetitionGroupIds) => {
+        return Promise.allSettled(
+          newCompetitionGroupIds.map((cId) =>
+            context.apiService.EmulateCheckSubgroupMetas(cId)
+          )
+        ).then(() => newCompetitionGroupIds);
+      })
       .then((newCompetitionGroupIds) => {
         return Promise.allSettled([
           context.dataRepository.UpdateSubgroupMetas(newCompetitionGroupIds),
@@ -253,7 +262,6 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
     return (
       <React.Fragment>
         <h3>Заполните подгруппы для одной Конкурсной группы Групп выбора:</h3>
-        <p>Если были созданы новые периоды, пожалуйста, перейдите по обеим ссылкам (для генерации нагрузок в ИТС) и обновите список</p>
         <ul className={style.list}>
           {props.selectionGroupIds.map((sgId) => {
             const selectionGroup =

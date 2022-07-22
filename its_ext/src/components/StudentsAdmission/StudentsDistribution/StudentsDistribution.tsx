@@ -11,15 +11,18 @@ import {
   createPersonalNumberToStudentItem,
   createMupIdToMupItem,
   filterActiveStudentsAndSortByRating,
+  IStudentMupsData,
+  parseStudentAdmissionsFromText,
+  validateStudentAdmissions,
 } from "../../../studentAdmission/studentDistributor";
 import { ITSContext } from "../../../common/Context";
 import { REQUEST_ERROR_UNAUTHORIZED } from "../../../utils/constants";
 import { downloadFileFromText } from "../../../utils/helpers";
 
-interface StudentMupsData {
-  studentPersonalNumberToMupIds: { [key: string]: number[] }; // personalNumber -> mupIds
-  mupIdToMupName: { [key: number]: string }; // mupId -> mupName
-}
+// interface IStudentMupsData {
+//   studentPersonalNumberToAdmissionIds: { [key: string]: number[] }; // personalNumber -> mupIds
+//   admissionIdToMupName: { [key: number]: string }; // mupId -> mupName
+// }
 
 export function StudentsDistribution(props: IStudentsDistributionProps) {
   const [personalNumberToStudentItems, setPersonalNumberToStudentItems] =
@@ -31,6 +34,12 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   }>({});
   const [studentAdmissionsText, setStudentAdmissionsText] =
     useState<string>("");
+  const [studentAdmissionsTextInput, setStudentAdmissionsTextInput] =
+    useState<string>("");
+  const [
+    studentAdmissionsTextInputMessages,
+    setStudentAdmissionsTextInputMessages,
+  ] = useState<string[]>([]);
   const personalNumbersOfActiveStudentsSortedByRating = useRef<string[]>([]);
   const refreshInProgress = useRef<boolean>(false);
 
@@ -86,10 +95,11 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       context.dataRepository.competitionGroupIdToMupAdmissions,
       context.dataRepository.admissionInfo
     );
-    personalNumbersOfActiveStudentsSortedByRating.current = filterActiveStudentsAndSortByRating(
-      Array.from(allPersonalNumbers),
-      context.dataRepository.studentData
-    )
+    personalNumbersOfActiveStudentsSortedByRating.current =
+      filterActiveStudentsAndSortByRating(
+        Array.from(allPersonalNumbers),
+        context.dataRepository.studentData
+      );
 
     const newPersonalNumberToStudentItems = createPersonalNumberToStudentItem(
       props.competitionGroupIds,
@@ -105,11 +115,11 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     );
     setMupIdToMupItems(newMupIdToMupItems);
 
-    const studentMupsData = createStudentMupsData(
-      newPersonalNumberToStudentItems,
+    const IstudentMupsData = createIStudentMupsData(
+      newPersonalNumberToStudentItems
       // newMupIdToMupItems
     );
-    setStudentAdmissionsText(JSON.stringify(studentMupsData, null, 2));
+    setStudentAdmissionsText(JSON.stringify(IstudentMupsData, null, 2));
 
     console.log("newPersonalNumberToStudentItems");
     console.log(newPersonalNumberToStudentItems);
@@ -118,32 +128,35 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     console.log(newMupIdToMupItems);
   };
 
-  const createStudentMupsData = (
+  const createIStudentMupsData = (
     newPersonalNumberToStudentItems: {
       [key: string]: IStudentAdmissionDistributionItem;
-    },
+    }
     // newMupIdToMupItems: { [key: string]: IMupDistributionItem }
-  ): StudentMupsData => {
-    const result: StudentMupsData = {
-      studentPersonalNumberToMupIds: {},
-      mupIdToMupName: {},
+  ): IStudentMupsData => {
+    const result: IStudentMupsData = {
+      studentPersonalNumberToAdmissionIds: {},
+      admissionIdToMupName: {},
     };
     const admissionIds = new Set<number>();
     for (const personalNumber in newPersonalNumberToStudentItems) {
       const student = context.dataRepository.studentData.data[personalNumber];
       if (student.status === "Активный" && student.rating !== null) {
-        result.studentPersonalNumberToMupIds[personalNumber] =
-          newPersonalNumberToStudentItems[personalNumber].admittedIndices.map(aIdx => {
-            const admissionId = newPersonalNumberToStudentItems[personalNumber]
-              .admissions[aIdx].admissionId;
-            admissionIds.add(admissionId)
-            return admissionId;
-          });
+        result.studentPersonalNumberToAdmissionIds[personalNumber] =
+          newPersonalNumberToStudentItems[personalNumber].admittedIndices.map(
+            (aIdx) => {
+              const admissionId =
+                newPersonalNumberToStudentItems[personalNumber].admissions[aIdx]
+                  .admissionId;
+              admissionIds.add(admissionId);
+              return admissionId;
+            }
+          );
       }
     }
     for (const admissionId of Array.from(admissionIds)) {
       const mupId = context.dataRepository.admissionIdToMupId[admissionId];
-      result.mupIdToMupName[admissionId] =
+      result.admissionIdToMupName[admissionId] =
         context.dataRepository.mupData.data[mupId].name;
     }
     return result;
@@ -157,6 +170,43 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     downloadFileFromText(`studentAdmissions.json`, studentAdmissionsText);
   };
 
+  const handleStudentAdmissionsTextInputChange = (
+    event: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    const value = event.target.value;
+    setStudentAdmissionsTextInput(value);
+  };
+
+  const handleParseStudentAdmissionsFromTextArea = () => {
+    const parsed = parseStudentAdmissionsFromText(studentAdmissionsTextInput);
+    if (parsed === null) {
+      setStudentAdmissionsTextInputMessages([
+        "Неверный формат, пример формата можно получить под таблицей",
+      ]);
+      return;
+    }
+    const { success, messages } = validateStudentAdmissions(
+      parsed,
+      context.dataRepository.studentData,
+      context.dataRepository.admissionIdToMupId
+    );
+    setStudentAdmissionsTextInputMessages(messages);
+
+    if (success) {
+      //
+    }
+  };
+
+  const renderStudentAdmissionsTextInputMessages = () => {
+    return (
+      <ul className="list_without_decorations warning">
+        {studentAdmissionsTextInputMessages.map((message, index) => (
+          <li key={index}>{message}</li>
+        ))}
+      </ul>
+    );
+  };
+
   const renderRows = () => {
     // return Object.keys(personalNumberToStudentItems)
     //   .filter((personalNumber) => {
@@ -165,24 +215,27 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     //     // console.log(student);
     //     return student.status === "Активный" && student.rating !== null;
     //   })
-    return personalNumbersOfActiveStudentsSortedByRating.current
-      .map((personalNumber) => {
+    return personalNumbersOfActiveStudentsSortedByRating.current.map(
+      (personalNumber) => {
         const studentItem = personalNumberToStudentItems[personalNumber];
         const student = context.dataRepository.studentData.data[personalNumber];
         const mupNames = studentItem.admittedIndices.map((idx) => {
           const admission = studentItem.admissions[idx];
-          const mupId = context.dataRepository.admissionIdToMupId[admission.admissionId];
+          const mupId =
+            context.dataRepository.admissionIdToMupId[admission.admissionId];
           const mupName = context.dataRepository.mupData.data[mupId].name;
-          return `${admission.priority}. ${mupName}`;
+          const message = admission.status !== 1 ? "(новое)" : "";
+          return `${admission.priority}. ${mupName} ${message}`;
         });
         const priorities = studentItem.admissions
           .filter((a, idx) => !studentItem.admittedIndices.includes(idx))
           .map((admission) => {
-          const mupId =
-            context.dataRepository.admissionIdToMupId[admission.admissionId];
-          const mupName = context.dataRepository.mupData.data[mupId].name;
-          return `${admission.priority}. ${mupName}`;
-        });
+            const mupId =
+              context.dataRepository.admissionIdToMupId[admission.admissionId];
+            const mupName = context.dataRepository.mupData.data[mupId].name;
+            const message = admission.status === 1 ? "(новое)" : "";
+            return `${admission.priority}. ${mupName} ${message}`;
+          });
         return (
           <tr key={personalNumber}>
             <td>
@@ -207,11 +260,22 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
             </td>
           </tr>
         );
-      });
+      }
+    );
   };
 
   return (
     <section className="step__container">
+      <textarea
+        value={studentAdmissionsTextInput}
+        onChange={handleStudentAdmissionsTextInputChange}
+        rows={10}
+      />
+      <Button onClick={handleParseStudentAdmissionsFromTextArea}>
+        Распарсить
+      </Button>
+      {studentAdmissionsTextInputMessages.length > 0 &&
+        renderStudentAdmissionsTextInputMessages()}
       <article>
         <Button
           onClick={refreshData}

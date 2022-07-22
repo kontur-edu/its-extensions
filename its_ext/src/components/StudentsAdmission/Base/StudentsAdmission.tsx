@@ -31,6 +31,10 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
     navigate("/");
   };
 
+  const isGroupSelectionValid = () => {
+    return competitionGroupIds.length > 0 && competitionGroupIds.length <= 2;
+  };
+
   const refreshCompetitionGroups = () => {
     if (props.isUnauthorized || competitionGroupRefreshInProgress.current) {
       return;
@@ -149,16 +153,15 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
             onNextStep={handleCompetitionGroupSelectButton}
           />
           <p className="next_step__message">
-            {competitionGroupIds.length !== 2
-              ? "Выберите две группы для перехода к следующему шагу"
-              : null}
+            {!isGroupSelectionValid() &&
+              "Выберите одну или две группы для перехода к следующему шагу"}
           </p>
         </div>
       </article>
 
-      {competitionGroupIds.length === 2 && renderTaskResultsInput()}
+      {isGroupSelectionValid() && renderTaskResultsInput()}
 
-      {competitionGroupIds.length === 2 && renderStudentsAutoAdmission()}
+      {isGroupSelectionValid() && renderStudentsAutoAdmission()}
     </section>
   );
 }

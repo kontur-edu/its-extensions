@@ -62,16 +62,18 @@ function getMupIdsToChoseFrom(
   competitionGroupIds: number[],
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions
 ) {
-  if (competitionGroupIds.length === 0) return [];
-  const firstCGId = competitionGroupIds[0];
-  if (!competitionGroupIdToMupAdmissions.hasOwnProperty(firstCGId)) {
-    return [];
+  const allMupIds = new Set<string>();
+  for (const competitionGroupId of competitionGroupIds) {
+    if (competitionGroupIdToMupAdmissions.hasOwnProperty(competitionGroupId)) {
+      const mupIdToAdmissionId =
+        competitionGroupIdToMupAdmissions[competitionGroupId];
+      for (const mupId in mupIdToAdmissionId) {
+        allMupIds.add(mupId);
+      }
+    }
   }
 
-  const mupIdToAdmissionId = competitionGroupIdToMupAdmissions[firstCGId];
-
-  const mupIds: string[] = Object.keys(mupIdToAdmissionId);
-  return mupIds;
+  return Array.from(allMupIds);
 }
 
 export interface IStudentItem {
@@ -131,7 +133,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     IActionExecutionLogItem[]
   >([]);
   const [textAreaValue, setTextAreaValue] = useState<string>("");
-  const [invalidStudentRows, setInvalidStudentRows] = useState<number[]>([]);
+  const [invalidStudentRows, setInvalidStudentRows] = useState<string[]>([]);
 
   const context = useContext(ITSContext)!;
 
@@ -143,7 +145,10 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   };
 
   const setCurrentAdmissionIds = (mupId: string) => {
-    if (!mupId) return;
+    if (!mupId) {
+      setAdmissionIds([]);
+      return;
+    }
     const admissionIds = getAdmissionIds(
       props.competitionGroupIds,
       mupId,
@@ -175,7 +180,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   };
 
   useEffect(() => {
-    if (props.competitionGroupIds.length !== 2) return;
+    // if (props.competitionGroupIds.length !== 2) return;
     refreshAdmissionInfo();
   }, [props.competitionGroupIds]);
 
@@ -230,7 +235,8 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
 
     const newStudentItems = { ...studentItems };
     personalNumbers.forEach((pn) => (newStudentItems[pn].testResult = 0));
-    const newInvalidStudentRows: number[] = [];
+    const newInvalidStudentRows: string[] = [];
+    const textAreaRows = textAreaValue.split("\n");
     for (let i = 0; i < nameRecords.length; i++) {
       const record = nameRecords[i];
       if (record.nameParts.length === 0) continue;
@@ -243,7 +249,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
       if (personalNumber) {
         newStudentItems[personalNumber].testResult = 1;
       } else {
-        newInvalidStudentRows.push(i);
+        newInvalidStudentRows.push(textAreaRows[i]);
       }
     }
 
@@ -256,10 +262,11 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     event: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
     const value = event.target.value;
-    const records = getNameRecords(value);
-    // console.log("records");
-    // console.log(records);
     setTextAreaValue(value);
+  };
+
+  const handleSelectStudentsFromTextArea = () => {
+    const records = getNameRecords(textAreaValue);
     selectStudentsDebounced(records);
   };
 
@@ -302,7 +309,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   };
 
   const handleApply = (newStudentItems: { [key: string]: IStudentItem }) => {
-    if (admissionIds.length !== 2) return;
+    if (admissionIds.length === 0 || admissionIds.length > 2) return;
     const personalNumberToTaskResult: { [key: string]: number | null } = {};
     for (const personalNumber in newStudentItems) {
       const studentItem = newStudentItems[personalNumber];
@@ -324,7 +331,6 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   }) => debouncedWrapperForApply(() => handleApply(newStudentItems));
 
   const handleRealApply = () => {
-    
     alert(`Настоящее применение изменений`);
     executeActions(taskResultsActions, context)
       .then((actionResults) => {
@@ -338,19 +344,16 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   };
 
   const renderInvalidStudentRows = () => {
-    const rows = textAreaValue.split("\n");
-    const res: JSX.Element[] = [];
-    for (const rowIdx of invalidStudentRows) {
-      if (rowIdx < rows.length) {
-        res.push(<li key={rowIdx}>{rows[rowIdx]}</li>);
-      }
-    }
     return (
       <article className="warning">
         <h4 className={style.not_parsed_rows__header}>
           Не получилось однозначно найти студентов по строкам:
         </h4>
-        <ul className={style.list}>{res}</ul>
+        <ul className={style.list}>
+          {invalidStudentRows.map((row, index) => (
+            <li key={index}>{row}</li>
+          ))}
+        </ul>
       </article>
     );
   };
@@ -391,6 +394,9 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
           cols={64}
         />
         {invalidStudentRows.length > 0 && renderInvalidStudentRows()}
+        <Button onClick={handleSelectStudentsFromTextArea}>
+          Распрасить студентов
+        </Button>
         <h3>Студенты (активные), прошедшие Тестовое</h3>
 
         <Button

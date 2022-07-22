@@ -110,7 +110,7 @@ export function ApplyButtonWithActionDisplay(
   const handleApply = () => {
     wasApply.current = true;
     props.onApply?.();
-  }
+  };
 
   const renderApplyButtonWithMessage = () => {
     const applyButton = props.onApply && (

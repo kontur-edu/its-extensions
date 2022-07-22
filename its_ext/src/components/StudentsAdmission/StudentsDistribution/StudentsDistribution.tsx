@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import style from "./CompetitionGroupSelect.module.css";
+import style from "./StudentsDistribution.module.css";
 import Button from "@mui/material/Button";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { IStudentsDistributionProps } from "./types";
@@ -13,6 +13,12 @@ import {
 } from "../../../studentAdmission/studentDistributor";
 import { ITSContext } from "../../../common/Context";
 import { REQUEST_ERROR_UNAUTHORIZED } from "../../../utils/constants";
+import { downloadFileFromText } from "../../../utils/helpers";
+
+interface StudentMupsData {
+  studentPersonalNumberToMupIds: { [key: string]: string[] }; // personalNumber -> mupIds
+  mupIdToMupName: { [key: string]: string }; // mupId -> mupName
+}
 
 export function StudentsDistribution(props: IStudentsDistributionProps) {
   const [personalNumberToStudentItems, setPersonalNumberToStudentItems] =
@@ -22,6 +28,8 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   const [mupIdToMupItems, setMupIdToMupItems] = useState<{
     [key: string]: IMupDistributionItem;
   }>({});
+  const [studentAdmissionsText, setStudentAdmissionsText] =
+    useState<string>("");
   const allPersonalNumbers = useRef<Set<string>>(new Set<string>());
   const refreshInProgress = useRef<boolean>(false);
 
@@ -66,7 +74,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       });
   };
 
-  const prepareItems = () => {
+  const prepareItemsAndStudentMupDataText = () => {
     console.log("context.dataRepository.competitionGroupIdToMupAdmissions");
     console.log(context.dataRepository.competitionGroupIdToMupAdmissions);
     console.log("context.dataRepository.admissionInfo");
@@ -91,6 +99,12 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     );
     setMupIdToMupItems(newMupIdToMupItems);
 
+    const studentMupsData = createStudentMupsData(
+      newPersonalNumberToStudentItems,
+      newMupIdToMupItems
+    );
+    setStudentAdmissionsText(JSON.stringify(studentMupsData, null, 2));
+
     console.log("newPersonalNumberToStudentItems");
     console.log(newPersonalNumberToStudentItems);
 
@@ -98,9 +112,37 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     console.log(newMupIdToMupItems);
   };
 
+  const createStudentMupsData = (
+    newPersonalNumberToStudentItems: {
+      [key: string]: IStudentAdmissionDistributionItem;
+    },
+    newMupIdToMupItems: { [key: string]: IMupDistributionItem }
+  ): StudentMupsData => {
+    const result: StudentMupsData = {
+      studentPersonalNumberToMupIds: {},
+      mupIdToMupName: {},
+    };
+    for (const personalNumber in newPersonalNumberToStudentItems) {
+      const student = context.dataRepository.studentData.data[personalNumber];
+      if (student.status === "Активный" && student.rating !== null) {
+        result.studentPersonalNumberToMupIds[personalNumber] =
+          newPersonalNumberToStudentItems[personalNumber].admittedMupIds;
+      }
+    }
+    for (const mupId in newMupIdToMupItems) {
+      result.mupIdToMupName[mupId] =
+        context.dataRepository.mupData.data[mupId].name;
+    }
+    return result;
+  };
+
   useEffect(() => {
-    refreshData().then(() => prepareItems());
+    refreshData().then(() => prepareItemsAndStudentMupDataText());
   }, [props.competitionGroupIds]);
+
+  const handleDownlad = () => {
+    downloadFileFromText(`studentAdmissions.json`, studentAdmissionsText);
+  };
 
   const renderRows = () => {
     return Object.keys(personalNumberToStudentItems)
@@ -169,7 +211,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
                 <th>Рейтинг</th>
                 <th>З.Е.</th>
                 <th>Зачислен на курсы</th>
-                <th>Приоритеты</th>
+                <th>Приоритеты оставшихся курсов</th>
               </tr>
             </thead>
             <tbody>{renderRows()}</tbody>
@@ -182,6 +224,11 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         showSuccessMessage={true}
         onApply={() => {}}
       />
+
+      <textarea value={studentAdmissionsText} rows={10} readOnly />
+      <Button onClick={handleDownlad} style={{ alignSelf: "flex-start" }}>
+        Скачать файл
+      </Button>
     </section>
   );
 }

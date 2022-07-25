@@ -62,6 +62,10 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       // update mupData
       ensureMupDataPromise = context.dataRepository.UpdateMupData();
     }
+    let ensureSelectionGroupDataPromise = Promise.resolve();
+    if (context.dataRepository.selectionGroupData.ids.length === 0) {
+      ensureSelectionGroupDataPromise = context.dataRepository.UpdateSelectionGroupData();
+    }
     const updateAdmissionsPromise = context.dataRepository
       .UpdateAdmissionMetas(props.competitionGroupIds)
       .then(() => {
@@ -79,7 +83,11 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           admissionIds
         );
       });
-    return Promise.allSettled([ensureMupDataPromise, updateAdmissionsPromise])
+    return Promise.allSettled([
+      ensureMupDataPromise,
+      ensureSelectionGroupDataPromise,
+      updateAdmissionsPromise
+    ])
       .then(() => {
         refreshInProgress.current = false;
       })
@@ -265,11 +273,11 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     addRandomMupsForStudentIfNeeded(
       newPersonalNumberToStudentItems,
       newMupIdToMupItems,
-      props.competitionGroupIds,
+      // props.competitionGroupIds,
       competitionGroupIdToZELimit.current,
       context.dataRepository.admissionIdToMupId,
       context.dataRepository.mupData,
-      context.dataRepository.admissionInfo,
+      // context.dataRepository.admissionInfo,
       context.dataRepository.competitionGroupIdToMupAdmissions
     );
     
@@ -300,7 +308,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         return (
           <tr key={personalNumber}>
             <td>
-              {student.surname} {student.firstname} {student.patronymic}
+              {student.surname} {student.firstname} {student.patronymic} {personalNumber}
             </td>
             <td>{student.groupName}</td>
             <td>{student.rating}</td>

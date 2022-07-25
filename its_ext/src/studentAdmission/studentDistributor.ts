@@ -212,7 +212,8 @@ export function tryDistributeMupsByStudentRatingAndAdmissionPriority(
     for (const admissionId of sItem.admissionIds) {
       if (sItem.selectedAdmissionIds.includes(admissionId)) continue; // already admitted
       const admission = admissionInfo[admissionId][personalNumber];
-      if (sItem.currentZ > zeLimit) {
+      console.log(`${sItem.currentZ} <> ${zeLimit}`);
+      if (sItem.currentZ >= zeLimit) {
         // Заканчиваем если набрали лимит и кончились курсы с первым приоритетом
         break;
       }
@@ -240,11 +241,9 @@ export function addRandomMupsForStudentIfNeeded(
     [key: string]: IStudentAdmissionDistributionItem;
   },
   mupIdToMupItem: { [key: string]: IMupDistributionItem },
-  competitionGroupIds: number[],
   competitionGroupIdToZELimit: {[key: number]: number},
   admissionIdToMupId: { [key: number]: string },
   mupData: IMupData,
-  admissionInfo: AdmissionInfo,
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions
 ) {
   for (const personalNumber in personalNumberToStudentItem) {
@@ -268,130 +267,26 @@ export function addRandomMupsForStudentIfNeeded(
           }
         }
         if (mupIsSelected) {
+          console.log(`MupID is selected: ${mupId}`);
           continue;
         }
 
         
-        const admissionIds: number[] = [];
-        for (const competitionGroupId of competitionGroupIds) {
-          const mIdToAdmission =
-            competitionGroupIdToMupAdmissions[competitionGroupId];
-          if (mIdToAdmission.hasOwnProperty(mupId)) {
-            admissionIds.push(mIdToAdmission[mupId].admissionsId);
-          }
+        const mupIdToAdmission = competitionGroupIdToMupAdmissions[sItem.competitionGroupId];
+        if (!mupIdToAdmission.hasOwnProperty(mupId)) {
+          continue;
         }
 
-        let admissionIdForMup: number | null = null; 
-        for (const admissionId of admissionIds) {
-          if (admissionInfo[admissionId].hasOwnProperty(personalNumber)) {
-            admissionIdForMup = admissionId;
-            break;
-          }
-        }
+        const admissionId = mupIdToAdmission[mupId].admissionsId;
 
-        if (admissionIdForMup !== null) {
-          mupItem.count++;
-          sItem.currentZ += mupZe;
-          sItem.selectedAdmissionIds.push(admissionIdForMup);
-        }
-      }
-    }
-  }
-}
-
-/*
-export function fillDistributionByStudentRatingAndAdmissionPriority(
-  personalNumberToStudentItem: {
-    [key: string]: IStudentAdmissionDistributionItem;
-  },
-  mupIdToMupItem: { [key: string]: IMupDistributionItem },
-  mupIdsWithTestResultRequired: Set<string>,
-  zeLimit: number,
-  mupData: IMupData,
-  personalNumbersSortedByRating: string[],
-  admissionIdToMupId: { [key: number]: string },
-  admissionInfo: AdmissionInfo,
-  competitionGroupIds: number[],
-  competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions
-) {
-  for (const personalNumber of personalNumbersSortedByRating) {
-    const sItem = personalNumberToStudentItem[personalNumber];
-
-    for (const admissionId of sItem.admissionIds) {
-      if (sItem.selectedAdmissionIds.includes(admissionId)) continue; // already admitted
-      const admission = admissionInfo[admissionId][personalNumber];
-      if (sItem.currentZ > zeLimit) {
-        // Заканчиваем если набрали лимит и кончились курсы с первым приоритетом
-        break;
-      }
-      const mupId = admissionIdToMupId[admission.admissionId];
-      const mupItem = mupIdToMupItem[mupId];
-      const mupZe = mupData.data[mupId].ze;
-      if (mupItem.count < mupItem.limit) {
-        if (mupIdsWithTestResultRequired.has(mupId) && !admission.testResult) {
-          continue; // testResult required but not present, skip mup
-        }
-        if (sItem.currentZ + mupZe > zeLimit) {
-          continue; // Если приоритет > 1 не превышать лимит
-        }
-
-        sItem.selectedAdmissionIds.push(admissionId);
-        sItem.currentZ += mupZe;
         mupItem.count++;
+        sItem.currentZ += mupZe;
+        sItem.selectedAdmissionIds.push(admissionId);
       }
     }
   }
-
-
-  for (const personalNumber of personalNumbersSortedByRating) {
-    const sItem = personalNumberToStudentItem[personalNumber];
-    if (sItem.currentZ < zeLimit) {
-      // Добавить любой МУП чтобы не превысить ZE
-      for (const mupId in mupIdToMupItem) {
-        const mupZe = mupData.data[mupId].ze;
-        const mupItem = mupIdToMupItem[mupId];
-        if (mupItem.count < mupItem.limit && sItem.currentZ + mupZe <= zeLimit) {
-          // find admission
-          let mupIsSelected = false;
-          for (const aId of sItem.selectedAdmissionIds) {
-            if (admissionIdToMupId[aId] === mupId) {
-              mupIsSelected = true;
-            }
-          }
-          if (mupIsSelected) {
-            continue;
-          }
-
-          
-          const admissionIds: number[] = [];
-          for (const competitionGroupId of competitionGroupIds) {
-            const mIdToAdmission =
-              competitionGroupIdToMupAdmissions[competitionGroupId];
-            if (mIdToAdmission.hasOwnProperty(mupId)) {
-              admissionIds.push(mIdToAdmission[mupId].admissionsId);
-            }
-          }
-
-          let admissionIdForMup: number | null = null; 
-          for (const admissionId of admissionIds) {
-            if (admissionInfo[admissionId].hasOwnProperty(personalNumber)) {
-              admissionIdForMup = admissionId;
-              break;
-            }
-          }
-
-          if (admissionIdForMup !== null) {
-            mupItem.count++;
-            sItem.currentZ += mupZe;
-            sItem.selectedAdmissionIds.push(admissionIdForMup);
-          }
-        }
-      }
-    }
-  }
-
 }
-*/
+
 
 
 export function getAllPersonalNumbers(

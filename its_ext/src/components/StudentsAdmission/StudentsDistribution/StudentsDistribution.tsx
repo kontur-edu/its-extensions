@@ -16,6 +16,7 @@ import {
   filterActiveStudentsAndSortByRating,
   parseStudentAdmissionsFromText,
   validateStudentAdmissions,
+  createAdmissionRecord,
 } from "../../../studentAdmission/studentDistributor";
 import { ITSContext } from "../../../common/Context";
 import { REQUEST_ERROR_UNAUTHORIZED } from "../../../utils/constants";
@@ -221,24 +222,21 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       (personalNumber) => {
         const studentItem = personalNumberToStudentItems[personalNumber];
         const student = context.dataRepository.studentData.data[personalNumber];
-        const selectedMupRecords = studentItem.selectedAdmissionIds.map((aId) => {
-          const admission = context.dataRepository.admissionInfo[aId][personalNumber];
-          const mupId =
-            context.dataRepository.admissionIdToMupId[admission.admissionId];
-          const mupName = context.dataRepository.mupData.data[mupId].name;
-          // const message = admission.status !== 1 ? "(новое)" : "";
-          return `${admission.priority}. ${mupName}`;
-        });
+        const selectedMupRecords = studentItem.selectedAdmissionIds
+        .map((aId) => createAdmissionRecord(
+          aId, personalNumber,
+          context.dataRepository.admissionInfo,
+          context.dataRepository.mupData,
+          context.dataRepository.admissionIdToMupId
+        ));
         const remainingMupRecords = studentItem.admissionIds
           .filter((aId, idx) => !studentItem.selectedAdmissionIds.includes(aId))
-          .map((aId) => {
-            const admission = context.dataRepository.admissionInfo[aId][personalNumber];
-            const mupId =
-              context.dataRepository.admissionIdToMupId[aId];
-            const mupName = context.dataRepository.mupData.data[mupId].name;
-            // const message = admission.status === 1 ? "(новое)" : "";
-            return `${admission.priority}. ${mupName}`;
-          });
+          .map((aId) => createAdmissionRecord(
+            aId, personalNumber,
+            context.dataRepository.admissionInfo,
+            context.dataRepository.mupData,
+            context.dataRepository.admissionIdToMupId
+          ));
         return (
           <tr key={personalNumber}>
             <td>
@@ -250,14 +248,18 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
             <td>
               <ul className="list_without_decorations">
                 {selectedMupRecords.map((record, index) => (
-                  <li key={index}>{record}</li>
+                  <li key={index} className={record.initStatus !== 1 ? "warning" : ''}>
+                    {`${record.priority ?? '*'}. ${record.name}`}
+                  </li>
                 ))}
               </ul>
             </td>
             <td>
               <ul className="list_without_decorations">
                 {remainingMupRecords.map((record, index) => (
-                  <li key={index}>{record}</li>
+                  <li key={index} className={record.initStatus === 1 ? "warning" : ''}>
+                    {`${record.priority ?? '*'}. ${record.name}`}
+                  </li>
                 ))}
               </ul>
             </td>

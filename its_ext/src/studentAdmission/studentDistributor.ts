@@ -59,9 +59,22 @@ export interface IDistributionResult {
   mupIdToMupItem: { [key: string]: IMupDistributionItem };
 }
 
+function calcZE(
+  admissionIds: number[],
+  mupData: IMupData,
+  admissionIdToMupId: {[key: number]: string}
+): number {
+  let res = 0;
+  for (const admissionId of admissionIds) {
+    const mupId = admissionIdToMupId[admissionId];
+    const mup = mupData.data[mupId];
+    res += mup.ze;
+  }
+  return res;
+}
+
 export function createPersonalNumberToStudentItem(
   competitionGroupIds: number[],
-  mupData: IMupData,
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions,
   admissionInfo: AdmissionInfo,
 ): { [key: string]: IStudentAdmissionDistributionItem } {
@@ -87,12 +100,12 @@ export function createPersonalNumberToStudentItem(
         const studentItem = personalNumberToStudentItem[personalNumber];
         const admission = personalNumberToAdmission[personalNumber];
 
-        if (admission.priority) {
+        if (admission.priority || admission.status === 1) {
           studentItem.admissionIds.push(admissionId);
         }
         if (admission.status === 1) {
           // status === 1 то есть уже зачислен на курс
-          studentItem.currentZ += mupData.data[mId].ze;
+          // studentItem.currentZ += mupData.data[mId].ze;
           studentItem.selectedAdmissionIds.push(admissionId);
         }
       }
@@ -108,38 +121,11 @@ export function createPersonalNumberToStudentItem(
     });
   }
 
+  
+
   return personalNumberToStudentItem;
 }
 
-
-
-// export function createMupIdToMupItem(
-//   competitionGroupIds: number[],
-//   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions
-// ): { [key: string]: IMupDistributionItem } {
-//   const mupIdToMupItem: { [key: string]: IMupDistributionItem } = {};
-//   for (const competitionId of competitionGroupIds) {
-//     const mupIdToAdmission =
-//       competitionGroupIdToMupAdmissions[competitionId];
-//     for (const mupId in mupIdToAdmission) {
-//       const admission = mupIdToAdmission[mupId];
-  
-//       if (mupIdToMupItem.hasOwnProperty(mupId)) {
-//         if (mupIdToMupItem[mupId].limit !== admission.limit) {
-//           throw new Error(`Mup limit not equal (${mupIdToMupItem[mupId].limit} ${admission.limit})`);
-//         }
-//         mupIdToMupItem[mupId].count += admission.count;  
-//       } else {
-//         mupIdToMupItem[mupId] = {
-//           limit: admission.limit,
-//           count: admission.count,
-//         };
-//       }      
-//     }
-//   }
-  
-//   return mupIdToMupItem;
-// }
 
 
 export function createMupIdToMupItemByStudentItems(
@@ -170,7 +156,7 @@ export function createMupIdToMupItemByStudentItems(
 
   for (const pn in pnToStudentItem) {
     const sItem = pnToStudentItem[pn];
-    for (const aId of sItem.admissionIds) {
+    for (const aId of sItem.selectedAdmissionIds) {
       const mupId = admissionIdToMupId[aId];
       if (mupIdToMupItem.hasOwnProperty(mupId)) {
         mupIdToMupItem[mupId].count++;
@@ -312,7 +298,7 @@ export function createIStudentMupsData(
     const student = studentData.data[personalNumber];
     if (student.status === "Активный" && student.rating !== null) {
       result.studentPersonalNumberToSelectedAdmissionIds[personalNumber] =
-        newPersonalNumberToStudentItems[personalNumber].admissionIds;
+        newPersonalNumberToStudentItems[personalNumber].selectedAdmissionIds;
     }
   }
 
@@ -344,10 +330,23 @@ export function prepareStudentAndMupItems(
   console.log(studentPersonalNumberToAdmissionIds);
   const personalNumberToStudentItems = createPersonalNumberToStudentItem(
     competitionGroupIds,
-    mupData,
     competitionGroupIdToMupAdmissions,
     admissionInfo,
   );
+  if (studentPersonalNumberToAdmissionIds) {
+    for (const pn in personalNumberToStudentItems) {
+      if (studentPersonalNumberToAdmissionIds.hasOwnProperty(pn)) {
+        personalNumberToStudentItems[pn].selectedAdmissionIds = studentPersonalNumberToAdmissionIds[pn];
+      }
+    }
+  }
+  for (const pn in personalNumberToStudentItems) {
+    personalNumberToStudentItems[pn].currentZ = calcZE(
+      personalNumberToStudentItems[pn].selectedAdmissionIds,
+      mupData,
+      admissionIdToMupId,
+    );
+  }
   const mupIdToMupItems = createMupIdToMupItemByStudentItems(
     personalNumberToStudentItems,
     competitionGroupIds,
@@ -361,6 +360,39 @@ export function prepareStudentAndMupItems(
   };
 }
 
+
+export interface IAdmissionRecord {
+  initStatus: number,
+  priority: number | null;
+  name: string;
+}
+
+export function createAdmissionRecord(
+  admissionId: number,
+  personalNumber: string,
+  admissionInfo: AdmissionInfo,
+  mupData: IMupData,
+  admissionIdToMupId: {[key: number]: string}
+) {
+  const res: IAdmissionRecord = {
+    initStatus: 0,
+    priority: null,
+    name: '',
+  };
+  
+  if (admissionInfo[admissionId].hasOwnProperty(personalNumber)) {
+    const admission = admissionInfo[admissionId][personalNumber];
+    res.initStatus = admission.status;
+    res.priority = admission.priority;
+  }
+
+  const mupId = admissionIdToMupId[admissionId];
+  res.name = mupData.data[mupId].name;
+
+  
+  return res;
+}
+
 export function parseStudentAdmissionsFromText(
   text: string
 ): IStudentMupsData | null {
@@ -372,7 +404,7 @@ export function parseStudentAdmissionsFromText(
   }
 
   if (
-    !obj.hasOwnProperty("studentPersonalNumberToAdmissionIds") ||
+    !obj.hasOwnProperty("studentPersonalNumberToSelectedAdmissionIds") ||
     !obj.hasOwnProperty("admissionIdToMupName")
   ) {
     return null;

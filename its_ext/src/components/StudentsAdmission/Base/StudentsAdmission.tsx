@@ -85,6 +85,10 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
     stepTwoRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const handleGoToStudentAdmissions = () => {
+    stepThreeRef.current?.scrollIntoView({ behavior: "smooth" });
+  }
+
   const renderTaskResultsInput = () => {
     return (
       <React.Fragment>
@@ -96,6 +100,7 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
           <TaskResultsInput
             competitionGroupIds={competitionGroupIds}
             onUnauthorized={props.onUnauthorized}
+            onNextStep={handleGoToStudentAdmissions}
           />
         </article>
       </React.Fragment>

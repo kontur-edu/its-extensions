@@ -426,7 +426,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
           showSuccessMessage={true}
           actions={taskResultsActions}
           actionResults={taskResultsActionResults}
-          // onNextStep={props.onNextStep}
+          onNextStep={props.onNextStep}
           onApply={handleRealApplyDebounced}
         />
       </article>

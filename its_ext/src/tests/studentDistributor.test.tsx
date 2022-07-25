@@ -27,11 +27,11 @@ describe("fillDistributionByStudentRatingAndAdmissionPriority", () => {
         },
     ];
     const personalNumberToStudentItem: IPnToStudentItem  = {
-        's1': {
-            currentZ: 0,
-            admissionIds: [],
-            selectedAdmissionIds: [],
-        }
+        // 's1': {
+        //     currentZ: 0,
+        //     admissionIds: [],
+        //     selectedAdmissionIds: [],
+        // }
     };
     const mupIdToMupItem: IMupIdToMupItem = {
         'm1': {

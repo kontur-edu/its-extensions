@@ -551,4 +551,29 @@ export class ITSApiService {
     const result = await this.requestService.PostFormData(url, data);
     return result;
   }
+
+  async UpdateStudentAdmissionStatus(
+    studentId: string,
+    admissionId: number,
+    status: number
+  ) {
+    if (this.safeMode) throw new Error("Safe mode enabled");
+
+    const url = "https://its.urfu.ru/MUPItsAdmission/SetCompetitionGroupAdmissionStatus";
+
+    const data = {
+      studentId: studentId,
+      id: admissionId,
+      status: status,
+    };
+
+    if (admissionId < 146) {
+      const message = `Tried to update not test Admission id: ${admissionId}`;
+      alert(message);
+      return { success: false, message };
+    }
+
+    const result = await this.requestService.PostFormData(url, data);
+    return result;
+  }
 }

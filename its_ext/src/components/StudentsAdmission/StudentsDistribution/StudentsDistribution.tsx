@@ -17,6 +17,9 @@ import {
   parseStudentAdmissionsFromText,
   validateStudentAdmissions,
   createAdmissionRecord,
+  findMupIdsWithTestResultRequired,
+  tryDistributeMupsByStudentRatingAndAdmissionPriority,
+  addRandomMupsForStudentIfNeeded,
 } from "../../../studentAdmission/studentDistributor";
 import { ITSContext } from "../../../common/Context";
 import { REQUEST_ERROR_UNAUTHORIZED } from "../../../utils/constants";
@@ -35,6 +38,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   const [mupIdToMupItems, setMupIdToMupItems] = useState<{
     [key: string]: IMupDistributionItem;
   }>({});
+  
   const [studentAdmissionsText, setStudentAdmissionsText] =
     useState<string>("");
   const [studentAdmissionsTextInput, setStudentAdmissionsTextInput] =
@@ -43,6 +47,8 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     studentAdmissionsTextInputMessages,
     setStudentAdmissionsTextInputMessages,
   ] = useState<string[]>([]);
+  const mupIdsWithTestResultRequired = useRef<Set<string>>(new Set<string>());
+  const competitionGroupIdToZELimit = useRef<{[key: number]: number}>({});
   const personalNumbersOfActiveStudentsSortedByRating = useRef<string[]>([]);
   const refreshInProgress = useRef<boolean>(false);
 
@@ -114,6 +120,24 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
 
     setPersonalNumberToStudentItems(studentAndMupItems.personalNumberToStudentItems);
     setMupIdToMupItems(studentAndMupItems.mupIdToMupItems);
+
+    mupIdsWithTestResultRequired.current = findMupIdsWithTestResultRequired(
+      props.competitionGroupIds,
+      context.dataRepository.competitionGroupIdToMupAdmissions,
+      context.dataRepository.admissionInfo
+    );
+
+    const newZeLimits: {[key: number]: number} = {};
+    for (const competitionGroupId of props.competitionGroupIds) {
+      for (const selectionGroupId of context.dataRepository.selectionGroupData.ids) {
+        const selectionGroup = context.dataRepository.selectionGroupData.data[selectionGroupId];
+        if (selectionGroup.competitionGroupId === competitionGroupId) {
+          newZeLimits[competitionGroupId] = selectionGroup.unitSum;
+          break;
+        }
+      }
+    }
+    competitionGroupIdToZELimit.current = newZeLimits; 
 
     // const newPersonalNumberToStudentItems = createPersonalNumberToStudentItem(
     //   props.competitionGroupIds,
@@ -214,7 +238,43 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   };
 
   const distributeRemainingStudents = () => {
+    const newPersonalNumberToStudentItems: {
+      [key: string]: IStudentAdmissionDistributionItem;
+    } = {};
+    const newMupIdToMupItems: {
+      [key: string]: IMupDistributionItem;
+    } = {};
+    for (const pn in personalNumberToStudentItems) {
+      newPersonalNumberToStudentItems[pn] = {...personalNumberToStudentItems[pn]};
+    }
+    for (const mupId in mupIdToMupItems) {
+      newMupIdToMupItems[mupId] = {...mupIdToMupItems[mupId]};
+    }
 
+    tryDistributeMupsByStudentRatingAndAdmissionPriority(
+      newPersonalNumberToStudentItems,
+      newMupIdToMupItems,
+      mupIdsWithTestResultRequired.current,
+      competitionGroupIdToZELimit.current,
+      personalNumbersOfActiveStudentsSortedByRating.current,
+      context.dataRepository.mupData,
+      context.dataRepository.admissionIdToMupId,
+      context.dataRepository.admissionInfo
+    );
+
+    addRandomMupsForStudentIfNeeded(
+      newPersonalNumberToStudentItems,
+      newMupIdToMupItems,
+      props.competitionGroupIds,
+      competitionGroupIdToZELimit.current,
+      context.dataRepository.admissionIdToMupId,
+      context.dataRepository.mupData,
+      context.dataRepository.admissionInfo,
+      context.dataRepository.competitionGroupIdToMupAdmissions
+    );
+    
+    setPersonalNumberToStudentItems(newPersonalNumberToStudentItems);
+    setMupIdToMupItems(newMupIdToMupItems);
   }
 
   const renderRows = () => {
@@ -323,6 +383,9 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       <Button onClick={distributeRemainingStudents} style={{ alignSelf: "flex-start" }}>
         Распределить оставшихся студентов по курсам
       </Button>
+      {/* <Button onClick={handleApply} style={{ alignSelf: "flex-start" }}>
+        Применить изменения
+      </Button> */}
     </section>
   );
 }

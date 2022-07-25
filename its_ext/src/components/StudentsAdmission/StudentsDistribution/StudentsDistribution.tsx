@@ -47,10 +47,12 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     studentAdmissionsTextInputMessages,
     setStudentAdmissionsTextInputMessages,
   ] = useState<string[]>([]);
+  const [mupIdsWithIncorrectLimits, setMupIdsWithIncorrectLimits] = useState<string[]>([]);
   const mupIdsWithTestResultRequired = useRef<Set<string>>(new Set<string>());
   const competitionGroupIdToZELimit = useRef<{[key: number]: number}>({});
   const personalNumbersOfActiveStudentsSortedByRating = useRef<string[]>([]);
   const refreshInProgress = useRef<boolean>(false);
+  
 
   const context = useContext(ITSContext)!;
 
@@ -126,6 +128,14 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       context.dataRepository.admissionIdToMupId
     )
 
+    const newMupIdsWithIncorrectLimits: string[] = [];
+    for (const mupId in studentAndMupItems.mupIdToMupItems) {
+      if (!studentAndMupItems.mupIdToMupItems[mupId].valid) {
+        newMupIdsWithIncorrectLimits.push(mupId);
+      }
+    } 
+    setMupIdsWithIncorrectLimits(newMupIdsWithIncorrectLimits);
+
     setPersonalNumberToStudentItems(studentAndMupItems.personalNumberToStudentItems);
     setMupIdToMupItems(studentAndMupItems.mupIdToMupItems);
 
@@ -146,22 +156,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       }
     }
     competitionGroupIdToZELimit.current = newZeLimits; 
-
-    // const newPersonalNumberToStudentItems = createPersonalNumberToStudentItem(
-    //   props.competitionGroupIds,
-    //   context.dataRepository.mupData,
-    //   context.dataRepository.competitionGroupIdToMupAdmissions,
-    //   context.dataRepository.admissionInfo
-    // );
-    // setPersonalNumberToStudentItems(newPersonalNumberToStudentItems);
-
-    // const newMupIdToMupItems = createMupIdToMupItemByStudentItems(
-    //   newPersonalNumberToStudentItems,
-    //   props.competitionGroupIds,
-    //   context.dataRepository.competitionGroupIdToMupAdmissions,
-    //   context.dataRepository.admissionIdToMupId
-    // );
-    // setMupIdToMupItems(newMupIdToMupItems);
 
     const studentMupsData = createIStudentMupsData(
       studentAndMupItems.personalNumberToStudentItems,
@@ -273,16 +267,28 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     addRandomMupsForStudentIfNeeded(
       newPersonalNumberToStudentItems,
       newMupIdToMupItems,
-      // props.competitionGroupIds,
       competitionGroupIdToZELimit.current,
       context.dataRepository.admissionIdToMupId,
       context.dataRepository.mupData,
-      // context.dataRepository.admissionInfo,
       context.dataRepository.competitionGroupIdToMupAdmissions
     );
     
     setPersonalNumberToStudentItems(newPersonalNumberToStudentItems);
     setMupIdToMupItems(newMupIdToMupItems);
+  }
+  
+  const renderErrorMessage = () => {
+    const mupNames = mupIdsWithIncorrectLimits.map(mupId =>
+      context.dataRepository.mupData.data[mupId].name)
+      .sort();
+    return mupIdsWithIncorrectLimits.length === 0 ? null : (
+      <div className="warning">
+        Выбранные Конкурсные группы имеют разные Лимиты для следующий МУПов:
+        <ul className="list_without_decorations">
+          {mupNames.map((mupName, i) => <li key={i}>{mupName}</li>)}
+        </ul>
+      </div>
+    );
   }
 
   const renderRows = () => {
@@ -337,19 +343,26 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     );
   };
 
-  return (
-    <section className="step__container">
-      <textarea
-        value={studentAdmissionsTextInput}
-        onChange={handleStudentAdmissionsTextInputChange}
-        rows={10}
-        placeholder="Вставьте содержимое файла с распределением студентов по группам"
-      />
-      <Button onClick={handleParseStudentAdmissionsFromTextArea}>
-        Распарсить
-      </Button>
-      {studentAdmissionsTextInputMessages.length > 0 &&
-        renderStudentAdmissionsTextInputMessages()}
+  const renderAdmissionsInput = () => {
+    return (
+      <React.Fragment>
+        <textarea
+          value={studentAdmissionsTextInput}
+          onChange={handleStudentAdmissionsTextInputChange}
+          rows={10}
+          placeholder="Вставьте содержимое файла с распределением студентов по группам"
+        />
+        <Button onClick={handleParseStudentAdmissionsFromTextArea}>
+          Распарсить
+        </Button>
+        {studentAdmissionsTextInputMessages.length > 0 &&
+          renderStudentAdmissionsTextInputMessages()}
+      </React.Fragment>
+    );
+  }
+
+  const renderTable = () => {
+    return (
       <article>
         <Button
           onClick={handleRefresh}
@@ -374,26 +387,43 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
             <tbody>{renderRows()}</tbody>
           </table>
         </section>
+        
       </article>
+    );
+  }
 
-      <ApplyButtonWithActionDisplay
-        showErrorWarning={true}
-        showSuccessMessage={true}
-        onApply={() => {}}
-      />
+  const renderContent = () => {
+    return (
+      <React.Fragment>
+        {renderAdmissionsInput()}
+        
+        {renderTable()}
 
-      <h4>Текущее распределение</h4>
-      <textarea value={studentAdmissionsText} rows={10} readOnly />
-      <Button onClick={handleDownlad} style={{ alignSelf: "flex-start" }}>
-        Скачать файл
-      </Button>
 
-      <Button onClick={distributeRemainingStudents} style={{ alignSelf: "flex-start" }}>
-        Распределить оставшихся студентов по курсам
-      </Button>
-      {/* <Button onClick={handleApply} style={{ alignSelf: "flex-start" }}>
-        Применить изменения
-      </Button> */}
+        <h4>Текущее сохраненное распределение</h4>
+        <textarea value={studentAdmissionsText} rows={10} readOnly />
+        <Button onClick={handleDownlad} style={{ alignSelf: "flex-start" }}>
+          Скачать файл
+        </Button>
+    
+        <Button onClick={distributeRemainingStudents} style={{ alignSelf: "flex-start" }}>
+          Распределить оставшихся студентов по курсам
+        </Button>
+
+        <ApplyButtonWithActionDisplay
+          showErrorWarning={true}
+          showSuccessMessage={true}
+          onApply={() => {}}
+        />
+      </React.Fragment>
+    );
+  }
+
+  return (
+    <section className="step__container">
+      {renderErrorMessage()}
+      
+      {mupIdsWithIncorrectLimits.length === 0 && renderContent()}
     </section>
   );
 }

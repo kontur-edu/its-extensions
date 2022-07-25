@@ -50,6 +50,7 @@ export interface IStudentAdmissionDistributionItem {
 export interface IMupDistributionItem {
   limit: number;
   count: number;
+  valid?: boolean;
   // testResultRequired: boolean;
 }
 
@@ -147,10 +148,12 @@ export function createMupIdToMupItemByStudentItems(
         mupIdToMupItem[mupId] = {
           limit: admission.limit, // expect limits are checked in
           count: 0,
+          valid: true,
         };
       } else {
         if (mupIdToMupItem[mupId].limit !== admission.limit) {
-          throw new Error(`Mup limit not equal (${mupIdToMupItem[mupId].limit} ${admission.limit})`);
+          mupIdToMupItem[mupId].valid = false;
+          // throw new Error(`Mup limit not equal (${mupIdToMupItem[mupId].limit} ${admission.limit})`);
         }
       }
     }

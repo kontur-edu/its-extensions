@@ -390,8 +390,9 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
         <textarea
           value={textAreaValue}
           onChange={handleTextAreaChange}
-          rows={8}
-          cols={64}
+          rows={10}
+          className="textarea"
+          placeholder="Вставьте <группa> <Ф> <И> <О> разделяя переносом строки"
         />
         {invalidStudentRows.length > 0 && renderInvalidStudentRows()}
         <Button onClick={handleSelectStudentsFromTextArea}>

@@ -8,10 +8,12 @@ import {
   IStudentAdmissionDistributionItem,
   IMupDistributionItem,
   getAllPersonalNumbers,
-  createPersonalNumberToStudentItem,
-  createMupIdToMupItem,
+  // createPersonalNumberToStudentItem,
+  // createMupIdToMupItem,
+  // createMupIdToMupItemByStudentItems,
+  prepareStudentAndMupItems,
+  createIStudentMupsData,
   filterActiveStudentsAndSortByRating,
-  IStudentMupsData,
   parseStudentAdmissionsFromText,
   validateStudentAdmissions,
 } from "../../../studentAdmission/studentDistributor";
@@ -101,70 +103,55 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         context.dataRepository.studentData
       );
 
-    const newPersonalNumberToStudentItems = createPersonalNumberToStudentItem(
+    const studentAndMupItems = prepareStudentAndMupItems(
       props.competitionGroupIds,
       context.dataRepository.mupData,
       context.dataRepository.competitionGroupIdToMupAdmissions,
-      context.dataRepository.admissionInfo
-    );
-    setPersonalNumberToStudentItems(newPersonalNumberToStudentItems);
+      context.dataRepository.admissionInfo,
+      context.dataRepository.admissionIdToMupId
+    )
 
-    const newMupIdToMupItems = createMupIdToMupItem(
-      props.competitionGroupIds,
-      context.dataRepository.competitionGroupIdToMupAdmissions
-    );
-    setMupIdToMupItems(newMupIdToMupItems);
+    setPersonalNumberToStudentItems(studentAndMupItems.personalNumberToStudentItems);
+    setMupIdToMupItems(studentAndMupItems.mupIdToMupItems);
 
-    const IstudentMupsData = createIStudentMupsData(
-      newPersonalNumberToStudentItems
-      // newMupIdToMupItems
+    // const newPersonalNumberToStudentItems = createPersonalNumberToStudentItem(
+    //   props.competitionGroupIds,
+    //   context.dataRepository.mupData,
+    //   context.dataRepository.competitionGroupIdToMupAdmissions,
+    //   context.dataRepository.admissionInfo
+    // );
+    // setPersonalNumberToStudentItems(newPersonalNumberToStudentItems);
+
+    // const newMupIdToMupItems = createMupIdToMupItemByStudentItems(
+    //   newPersonalNumberToStudentItems,
+    //   props.competitionGroupIds,
+    //   context.dataRepository.competitionGroupIdToMupAdmissions,
+    //   context.dataRepository.admissionIdToMupId
+    // );
+    // setMupIdToMupItems(newMupIdToMupItems);
+
+    const studentMupsData = createIStudentMupsData(
+      studentAndMupItems.personalNumberToStudentItems,
+      context.dataRepository.studentData,
+      context.dataRepository.mupData,
+      context.dataRepository.admissionIdToMupId,
     );
-    setStudentAdmissionsText(JSON.stringify(IstudentMupsData, null, 2));
+    setStudentAdmissionsText(JSON.stringify(studentMupsData, null, 2));
 
     console.log("newPersonalNumberToStudentItems");
-    console.log(newPersonalNumberToStudentItems);
+    console.log(studentAndMupItems.personalNumberToStudentItems);
 
     console.log("newMupIdToMupItems");
-    console.log(newMupIdToMupItems);
-  };
-
-  const createIStudentMupsData = (
-    newPersonalNumberToStudentItems: {
-      [key: string]: IStudentAdmissionDistributionItem;
-    }
-    // newMupIdToMupItems: { [key: string]: IMupDistributionItem }
-  ): IStudentMupsData => {
-    const result: IStudentMupsData = {
-      studentPersonalNumberToAdmissionIds: {},
-      admissionIdToMupName: {},
-    };
-    const admissionIds = new Set<number>();
-    for (const personalNumber in newPersonalNumberToStudentItems) {
-      const student = context.dataRepository.studentData.data[personalNumber];
-      if (student.status === "Активный" && student.rating !== null) {
-        result.studentPersonalNumberToAdmissionIds[personalNumber] =
-          newPersonalNumberToStudentItems[personalNumber].admittedIndices.map(
-            (aIdx) => {
-              const admissionId =
-                newPersonalNumberToStudentItems[personalNumber].admissions[aIdx]
-                  .admissionId;
-              admissionIds.add(admissionId);
-              return admissionId;
-            }
-          );
-      }
-    }
-    for (const admissionId of Array.from(admissionIds)) {
-      const mupId = context.dataRepository.admissionIdToMupId[admissionId];
-      result.admissionIdToMupName[admissionId] =
-        context.dataRepository.mupData.data[mupId].name;
-    }
-    return result;
+    console.log(studentAndMupItems.mupIdToMupItems);
   };
 
   useEffect(() => {
     refreshData().then(() => prepareItemsAndStudentMupDataText());
   }, [props.competitionGroupIds]);
+
+  const handleRefresh = () => {
+    refreshData().then(() => prepareItemsAndStudentMupDataText());
+  }
 
   const handleDownlad = () => {
     downloadFileFromText(`studentAdmissions.json`, studentAdmissionsText);
@@ -178,22 +165,40 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   };
 
   const handleParseStudentAdmissionsFromTextArea = () => {
-    const parsed = parseStudentAdmissionsFromText(studentAdmissionsTextInput);
-    if (parsed === null) {
+    const newStudentMupsData = parseStudentAdmissionsFromText(studentAdmissionsTextInput);
+    if (newStudentMupsData === null) {
       setStudentAdmissionsTextInputMessages([
         "Неверный формат, пример формата можно получить под таблицей",
       ]);
       return;
     }
     const { success, messages } = validateStudentAdmissions(
-      parsed,
+      newStudentMupsData,
       context.dataRepository.studentData,
       context.dataRepository.admissionIdToMupId
     );
     setStudentAdmissionsTextInputMessages(messages);
+    console.log("validateStudentAdmissions");
+    console.log({ success, messages });
 
     if (success) {
-      //
+      // Отобразить распределение в таблице
+      const studentAndMupItems = prepareStudentAndMupItems(
+        props.competitionGroupIds,
+        context.dataRepository.mupData,
+        context.dataRepository.competitionGroupIdToMupAdmissions,
+        context.dataRepository.admissionInfo,
+        context.dataRepository.admissionIdToMupId,
+        newStudentMupsData.studentPersonalNumberToAdmissionIds,
+      );
+
+      console.log("studentAndMupItems");
+      console.log(studentAndMupItems);
+      
+      setPersonalNumberToStudentItems(studentAndMupItems.personalNumberToStudentItems);
+      setMupIdToMupItems(studentAndMupItems.mupIdToMupItems);
+    } else {
+
     }
   };
 
@@ -207,14 +212,11 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     );
   };
 
+  const distributeRemainingStudents = () => {
+
+  }
+
   const renderRows = () => {
-    // return Object.keys(personalNumberToStudentItems)
-    //   .filter((personalNumber) => {
-    //     const student = context.dataRepository.studentData.data[personalNumber];
-    //     // console.log("student");
-    //     // console.log(student);
-    //     return student.status === "Активный" && student.rating !== null;
-    //   })
     return personalNumbersOfActiveStudentsSortedByRating.current.map(
       (personalNumber) => {
         const studentItem = personalNumberToStudentItems[personalNumber];
@@ -270,6 +272,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         value={studentAdmissionsTextInput}
         onChange={handleStudentAdmissionsTextInputChange}
         rows={10}
+        placeholder="Вставьте содержимое файла с распределением студентов по группам"
       />
       <Button onClick={handleParseStudentAdmissionsFromTextArea}>
         Распарсить
@@ -278,7 +281,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         renderStudentAdmissionsTextInputMessages()}
       <article>
         <Button
-          onClick={refreshData}
+          onClick={handleRefresh}
           style={{ fontSize: 12, marginBottom: "1em" }}
           variant="text"
           startIcon={<RefreshIcon />}
@@ -308,9 +311,14 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         onApply={() => {}}
       />
 
+      <h4>Текущее распределение</h4>
       <textarea value={studentAdmissionsText} rows={10} readOnly />
       <Button onClick={handleDownlad} style={{ alignSelf: "flex-start" }}>
         Скачать файл
+      </Button>
+
+      <Button onClick={distributeRemainingStudents} style={{ alignSelf: "flex-start" }}>
+        Распределить оставшихся студентов по курсам
       </Button>
     </section>
   );

@@ -184,3 +184,8 @@ td {
   list-style: none;
   padding: 0;
 }
+
+
+.textarea {
+  width: 100%;
+}

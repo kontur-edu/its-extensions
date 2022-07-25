@@ -37,6 +37,8 @@ function compareByRating(lhs: IStudent, rhs: IStudent) {
   return r2 - r1;
 }
 
+
+
 export interface IStudentAdmissionDistributionItem {
   admissions: IStudentAdmission[];
   currentZ: number;
@@ -60,7 +62,8 @@ export function createPersonalNumberToStudentItem(
   competitionGroupIds: number[],
   mupData: IMupData,
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions,
-  admissionInfo: AdmissionInfo
+  admissionInfo: AdmissionInfo,
+  studentPersonalNumberToAdmissionIds?: { [key: string]: number[] }
 ): { [key: string]: IStudentAdmissionDistributionItem } {
   const personalNumberToStudentItem: {
     [key: string]: IStudentAdmissionDistributionItem;
@@ -106,18 +109,64 @@ export function createPersonalNumberToStudentItem(
     });
     for (let i = 0; i < studentItem.admissions.length; i++) {
       const admission = studentItem.admissions[i];
-      if (admission.status === 1) {
-        studentItem.admittedIndices.push(i);
+
+      if (studentPersonalNumberToAdmissionIds) {
+        console.log(`found studentPersonalNumberToAdmissionIds`);
+        if (!studentPersonalNumberToAdmissionIds.hasOwnProperty(pn)) {
+          throw new Error(`personalNumber ${pn} not exist in studentPersonalNumberToAdmissionIds`);
+        }
+        console.log("using studentPersonalNumberToAdmissionIds");
+        console.log(studentPersonalNumberToAdmissionIds[pn]);
+        console.log(admission.admissionId);
+        if (studentPersonalNumberToAdmissionIds[pn].includes(admission.admissionId)) {
+          studentItem.admittedIndices.push(i);
+        }
+      } else {
+        console.log(`not found studentPersonalNumberToAdmissionIds`);
+        if (admission.status === 1) {
+          studentItem.admittedIndices.push(i);
+        }
       }
     }
   }
-
+  
   return personalNumberToStudentItem;
 }
 
-export function createMupIdToMupItem(
+// export function createMupIdToMupItem(
+//   competitionGroupIds: number[],
+//   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions
+// ): { [key: string]: IMupDistributionItem } {
+//   const mupIdToMupItem: { [key: string]: IMupDistributionItem } = {};
+//   for (const competitionId of competitionGroupIds) {
+//     const mupIdToAdmission =
+//       competitionGroupIdToMupAdmissions[competitionId];
+//     for (const mupId in mupIdToAdmission) {
+//       const admission = mupIdToAdmission[mupId];
+  
+//       if (mupIdToMupItem.hasOwnProperty(mupId)) {
+//         if (mupIdToMupItem[mupId].limit !== admission.limit) {
+//           throw new Error(`Mup limit not equal (${mupIdToMupItem[mupId].limit} ${admission.limit})`);
+//         }
+//         mupIdToMupItem[mupId].count += admission.count;  
+//       } else {
+//         mupIdToMupItem[mupId] = {
+//           limit: admission.limit,
+//           count: admission.count,
+//         };
+//       }      
+//     }
+//   }
+  
+//   return mupIdToMupItem;
+// }
+
+
+export function createMupIdToMupItemByStudentItems(
+  pnToStudentItem: { [key: string]: IStudentAdmissionDistributionItem },
   competitionGroupIds: number[],
-  competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions
+  competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions,
+  admissionIdToMupId: { [key: number]: string }
 ): { [key: string]: IMupDistributionItem } {
   const mupIdToMupItem: { [key: string]: IMupDistributionItem } = {};
   for (const competitionId of competitionGroupIds) {
@@ -126,22 +175,33 @@ export function createMupIdToMupItem(
     for (const mupId in mupIdToAdmission) {
       const admission = mupIdToAdmission[mupId];
   
-      if (mupIdToMupItem.hasOwnProperty(mupId)) {
+      if (!mupIdToMupItem.hasOwnProperty(mupId)) {
+        mupIdToMupItem[mupId] = {
+          limit: admission.limit, // expect limits are checked in
+          count: 0,
+        };
+      } else {
         if (mupIdToMupItem[mupId].limit !== admission.limit) {
           throw new Error(`Mup limit not equal (${mupIdToMupItem[mupId].limit} ${admission.limit})`);
         }
-        mupIdToMupItem[mupId].count += admission.count;   
-      } else {
-        mupIdToMupItem[mupId] = {
-          limit: admission.limit,
-          count: admission.count,
-        };
-      }      
+      }
+    }
+  }
+
+  for (const pn in pnToStudentItem) {
+    const sItem = pnToStudentItem[pn];
+    for (const aIdx of sItem.admittedIndices) {
+      const admission = sItem.admissions[aIdx];
+      const mupId =  admissionIdToMupId[admission.admissionId];
+      if (mupIdToMupItem.hasOwnProperty(mupId)) {
+        mupIdToMupItem[mupId].count++;
+      }
     }
   }
   
   return mupIdToMupItem;
 }
+
 
 function getMupIdsWithRequiredTaskResult(
   competitionGroupIds: number[],
@@ -250,8 +310,83 @@ export function filterActiveStudentsAndSortByRating(
 
 
 export interface IStudentMupsData {
-  studentPersonalNumberToAdmissionIds: { [key: string]: number[] }; // personalNumber -> mupIds
-  admissionIdToMupName: { [key: number]: string }; // mupId -> mupName
+  studentPersonalNumberToAdmissionIds: { [key: string]: number[] }; // personalNumber -> admissionIds
+  admissionIdToMupName: { [key: number]: string }; // admissionId -> mupName
+}
+
+export function createIStudentMupsData(
+  newPersonalNumberToStudentItems: {
+    [key: string]: IStudentAdmissionDistributionItem;
+  },
+  studentData: IStudentData,
+  mupData: IMupData,
+  admissionIdToMupId: { [key: number]: string },
+): IStudentMupsData {
+  const result: IStudentMupsData = {
+    studentPersonalNumberToAdmissionIds: {},
+    admissionIdToMupName: {},
+  };
+  const admissionIds = new Set<number>();
+  for (const personalNumber in newPersonalNumberToStudentItems) {
+    const student = studentData.data[personalNumber];
+    if (student.status === "Активный" && student.rating !== null) {
+      result.studentPersonalNumberToAdmissionIds[personalNumber] =
+        newPersonalNumberToStudentItems[personalNumber].admittedIndices.map(
+          (aIdx) => {
+            const admissionId =
+              newPersonalNumberToStudentItems[personalNumber].admissions[aIdx]
+                .admissionId;
+            admissionIds.add(admissionId);
+            return admissionId;
+          }
+        );
+    }
+  }
+
+  for (const admissionId of Array.from(admissionIds)) {
+    const mupId = admissionIdToMupId[admissionId];
+    result.admissionIdToMupName[admissionId] =
+      mupData.data[mupId].name;
+  }
+  return result;
+};
+
+// 
+export function prepareStudentAndMupItems(
+  competitionGroupIds: number[],
+  mupData: IMupData,
+  competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions,
+  admissionInfo: AdmissionInfo,
+  admissionIdToMupId: { [key: number]: string },
+  studentPersonalNumberToAdmissionIds?: { [key: string]: number[] },
+): {
+  personalNumberToStudentItems: {
+      [key: string]: IStudentAdmissionDistributionItem;
+    },
+  mupIdToMupItems: {
+    [key: string]: IMupDistributionItem;
+  }
+} {
+  console.log("prepareStudentAndMupItems");
+  console.log(studentPersonalNumberToAdmissionIds);
+  const personalNumberToStudentItems = createPersonalNumberToStudentItem(
+    competitionGroupIds,
+    mupData,
+    competitionGroupIdToMupAdmissions,
+    admissionInfo,
+    studentPersonalNumberToAdmissionIds,
+  );
+  const mupIdToMupItems = createMupIdToMupItemByStudentItems(
+    personalNumberToStudentItems,
+    competitionGroupIds,
+    competitionGroupIdToMupAdmissions,
+    admissionIdToMupId
+  )
+
+  return {
+    personalNumberToStudentItems,
+    mupIdToMupItems
+  };
 }
 
 export function parseStudentAdmissionsFromText(

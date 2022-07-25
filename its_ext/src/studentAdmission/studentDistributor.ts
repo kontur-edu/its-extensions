@@ -240,6 +240,7 @@ export function tryDistributeMupsByStudentRatingAndAdmissionPriority(
 }
 
 export function addRandomMupsForStudentIfNeeded(
+  personalNumbersOfActiveStudentsSortedByRating: string[],
   personalNumberToStudentItem: {
     [key: string]: IStudentAdmissionDistributionItem;
   },
@@ -249,7 +250,10 @@ export function addRandomMupsForStudentIfNeeded(
   mupData: IMupData,
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions
 ) {
-  for (const personalNumber in personalNumberToStudentItem) {
+  console.log('addRandomMupsForStudentIfNeeded');
+  console.log('mupIdToMupItem');
+  console.log(mupIdToMupItem);
+  for (const personalNumber of personalNumbersOfActiveStudentsSortedByRating) {
     const sItem = personalNumberToStudentItem[personalNumber];
     const zeLimit = competitionGroupIdToZELimit[sItem.competitionGroupId];
 

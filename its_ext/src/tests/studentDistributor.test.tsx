@@ -255,6 +255,7 @@ describe("addRandomMupsForStudentIfNeeded", () => {
     };
 
     addRandomMupsForStudentIfNeeded(
+      ['s1'],
       personalNumberToStudentItem,
       mupIdToMupItem,
       {0: 6},

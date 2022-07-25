@@ -15,6 +15,7 @@ export enum ActionType {
   UpdateSubgroupMetaLoadCount,
   UpdateTeacherForSubgroup,
   UpdateTaskResult,
+  UpdateStudentAdmission,
 }
 
 export interface IActionResultInfo {}

@@ -22,13 +22,19 @@ import {
   addRandomMupsForStudentIfNeeded,
 } from "../../../studentAdmission/studentDistributor";
 import { ITSContext } from "../../../common/Context";
-import { REQUEST_ERROR_UNAUTHORIZED } from "../../../utils/constants";
-import { downloadFileFromText } from "../../../utils/helpers";
+import { REQUEST_ERROR_UNAUTHORIZED, DEBOUNCE_MS } from "../../../utils/constants";
+import { createDebouncedWrapper, downloadFileFromText } from "../../../utils/helpers";
+import {createStudentAdmissionActions} from "../../../studentAdmission/actionCreator";
+import { executeActions, IActionExecutionLogItem, ITSAction } from "../../../common/actions";
 
 // interface IStudentMupsData {
 //   studentPersonalNumberToAdmissionIds: { [key: string]: number[] }; // personalNumber -> mupIds
 //   admissionIdToMupName: { [key: number]: string }; // mupId -> mupName
 // }
+
+
+const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
+
 
 export function StudentsDistribution(props: IStudentsDistributionProps) {
   const [personalNumberToStudentItems, setPersonalNumberToStudentItems] =
@@ -52,6 +58,9 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   const competitionGroupIdToZELimit = useRef<{[key: number]: number}>({});
   const personalNumbersOfActiveStudentsSortedByRating = useRef<string[]>([]);
   const refreshInProgress = useRef<boolean>(false);
+  const [studentAdmissionActions, setStudentAdmissionActions] = useState<ITSAction[]>([]);
+  const [studentAdmissionActionResults, setStudentAdmissionActionResults] = 
+    useState<IActionExecutionLogItem[]>([]);
   
 
   const context = useContext(ITSContext)!;
@@ -180,6 +189,10 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     refreshData().then(() => prepareItemsAndStudentMupDataText());
   }
 
+  const handleRefreshDebounced = () => {
+    debouncedWrapperForApply(handleRefresh);
+  }
+
   const handleDownlad = () => {
     downloadFileFromText(`studentAdmissions.json`, studentAdmissionsText);
   };
@@ -224,6 +237,8 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       
       setPersonalNumberToStudentItems(studentAndMupItems.personalNumberToStudentItems);
       setMupIdToMupItems(studentAndMupItems.mupIdToMupItems);
+
+      generateActions(studentAndMupItems.personalNumberToStudentItems);
     } else {
 
     }
@@ -265,6 +280,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     );
 
     addRandomMupsForStudentIfNeeded(
+      personalNumbersOfActiveStudentsSortedByRating.current,
       newPersonalNumberToStudentItems,
       newMupIdToMupItems,
       competitionGroupIdToZELimit.current,
@@ -275,6 +291,39 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     
     setPersonalNumberToStudentItems(newPersonalNumberToStudentItems);
     setMupIdToMupItems(newMupIdToMupItems);
+
+    return newPersonalNumberToStudentItems;
+  }
+
+  const generateActions = (
+    newPersonalNumberToStudentItems: {
+      [key: string]: IStudentAdmissionDistributionItem;
+    }
+  ) => {
+    const actions = createStudentAdmissionActions(
+      newPersonalNumberToStudentItems,
+      context.dataRepository.admissionInfo,
+      context.dataRepository.studentData
+    );
+
+    setStudentAdmissionActions(actions);
+    return actions;
+  }
+
+  const handleDistributeRemainingStudents = () => {
+    const newPersonalNumberToStudentItems = distributeRemainingStudents();
+    generateActions(newPersonalNumberToStudentItems);
+  }
+
+  const handleRealApplyDebounced = () => {
+    debouncedWrapperForApply(() => {
+      alert("Real apply declined");
+      return;
+      executeActions(studentAdmissionActions, context)
+      .then(actionResults => {
+        setStudentAdmissionActionResults(actionResults);
+      });
+    });
   }
   
   const renderErrorMessage = () => {
@@ -365,7 +414,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     return (
       <article>
         <Button
-          onClick={handleRefresh}
+          onClick={handleRefreshDebounced}
           style={{ fontSize: 12, marginBottom: "1em" }}
           variant="text"
           startIcon={<RefreshIcon />}
@@ -406,14 +455,18 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           Скачать файл
         </Button>
     
-        <Button onClick={distributeRemainingStudents} style={{ alignSelf: "flex-start" }}>
+        <Button onClick={handleDistributeRemainingStudents} variant="contained" style={{
+            alignSelf: "flex-start"
+          }}>
           Распределить оставшихся студентов по курсам
         </Button>
 
         <ApplyButtonWithActionDisplay
           showErrorWarning={true}
           showSuccessMessage={true}
-          onApply={() => {}}
+          actions={studentAdmissionActions}
+          actionResults={studentAdmissionActionResults}
+          onApply={handleRealApplyDebounced}
         />
       </React.Fragment>
     );

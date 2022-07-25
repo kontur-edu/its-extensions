@@ -31,8 +31,8 @@ export function LoginForm(props: ILoginFormProps) {
   };
 
   return (
-    <div className={style.litebox}>
-      <h2 className={style.litebox__header}>Вход в аккаунт its.urfu.ru</h2>
+    <div className="litebox">
+      <h2 className="litebox__header">Вход в аккаунт its.urfu.ru</h2>
       <form className={style.formGroup}>
         <div className={style.formGroup__Item}>
           <TextField

@@ -101,7 +101,7 @@ export function MupEditor(props: IMupEditorProps) {
     setMupDiffs(newMupDiffs);
 
     setStartDate(dateFormatted);
-    console.log(`new start date: ${dateFormatted}`);
+    // console.log(`new start date: ${dateFormatted}`);
     callDebouncedApply(newMupDiffs, mupEdits, [dateFormatted, endDate]);
   };
 
@@ -115,7 +115,7 @@ export function MupEditor(props: IMupEditorProps) {
     setMupDiffs(newMupDiffs);
 
     setEndDate(dateFormatted);
-    console.log(`new end date: ${dateFormatted}`);
+    // console.log(`new end date: ${dateFormatted}`);
     callDebouncedApply(newMupDiffs, mupEdits, [startDate, dateFormatted]);
   };
 

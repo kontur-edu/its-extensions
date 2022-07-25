@@ -315,7 +315,7 @@ export class ITSApiService {
       return { success: false, message };
     }
 
-    const response = await this.requestService.PostFormData(url, data, "text");
+    const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
 
     return result;
@@ -439,8 +439,7 @@ export class ITSApiService {
     const response = await this.requestService.SendJson(
       url,
       data,
-      "DELETE",
-      "text"
+      "DELETE"
     );
     const result = { success: response.success, message: response.data };
     if (response.success && response.data) {

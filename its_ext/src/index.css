@@ -14,6 +14,25 @@ code {
     monospace;
 }
 
+.litebox {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  width: 600px;
+
+  font-size: 24px;
+
+  background-color: #fff;
+  padding: 2em;
+}
+
+.litebox__header {
+  font-weight: 400;
+  margin: 0;
+  padding: 0.3em 0;
+}
+
 .action_header {
   position: relative;
 
@@ -184,7 +203,6 @@ td {
   list-style: none;
   padding: 0;
 }
-
 
 .textarea {
   width: 100%;

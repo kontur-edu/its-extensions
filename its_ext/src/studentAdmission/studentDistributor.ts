@@ -37,8 +37,6 @@ function compareByRating(lhs: IStudent, rhs: IStudent) {
   return r2 - r1;
 }
 
-
-
 export interface IStudentAdmissionDistributionItem {
   // admissions: IStudentAdmission[];
   currentZ: number;
@@ -64,7 +62,7 @@ export interface IDistributionResult {
 function calcZE(
   admissionIds: number[],
   mupData: IMupData,
-  admissionIdToMupId: {[key: number]: string}
+  admissionIdToMupId: { [key: number]: string }
 ): number {
   let res = 0;
   for (const admissionId of admissionIds) {
@@ -78,7 +76,7 @@ function calcZE(
 export function createPersonalNumberToStudentItem(
   competitionGroupIds: number[],
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions,
-  admissionInfo: AdmissionInfo,
+  admissionInfo: AdmissionInfo
 ): { [key: string]: IStudentAdmissionDistributionItem } {
   const personalNumberToStudentItem: {
     [key: string]: IStudentAdmissionDistributionItem;
@@ -124,12 +122,8 @@ export function createPersonalNumberToStudentItem(
     });
   }
 
-  
-
   return personalNumberToStudentItem;
 }
-
-
 
 export function createMupIdToMupItemByStudentItems(
   pnToStudentItem: { [key: string]: IStudentAdmissionDistributionItem },
@@ -139,11 +133,10 @@ export function createMupIdToMupItemByStudentItems(
 ): { [key: string]: IMupDistributionItem } {
   const mupIdToMupItem: { [key: string]: IMupDistributionItem } = {};
   for (const competitionId of competitionGroupIds) {
-    const mupIdToAdmission =
-      competitionGroupIdToMupAdmissions[competitionId];
+    const mupIdToAdmission = competitionGroupIdToMupAdmissions[competitionId];
     for (const mupId in mupIdToAdmission) {
       const admission = mupIdToAdmission[mupId];
-  
+
       if (!mupIdToMupItem.hasOwnProperty(mupId)) {
         mupIdToMupItem[mupId] = {
           limit: admission.limit, // expect limits are checked in
@@ -168,10 +161,9 @@ export function createMupIdToMupItemByStudentItems(
       }
     }
   }
-  
+
   return mupIdToMupItem;
 }
-
 
 export function findMupIdsWithTestResultRequired(
   competitionGroupIds: number[],
@@ -203,11 +195,11 @@ export function tryDistributeMupsByStudentRatingAndAdmissionPriority(
   },
   mupIdToMupItem: { [key: string]: IMupDistributionItem },
   mupIdsWithTestResultRequired: Set<string>,
-  competitionGroupIdToZELimit: {[key: number]: number},
+  competitionGroupIdToZELimit: { [key: number]: number },
   personalNumbersSortedByRating: string[],
   mupData: IMupData,
   admissionIdToMupId: { [key: number]: string },
-  admissionInfo: AdmissionInfo,
+  admissionInfo: AdmissionInfo
 ) {
   for (const personalNumber of personalNumbersSortedByRating) {
     const sItem = personalNumberToStudentItem[personalNumber];
@@ -245,13 +237,13 @@ export function addRandomMupsForStudentIfNeeded(
     [key: string]: IStudentAdmissionDistributionItem;
   },
   mupIdToMupItem: { [key: string]: IMupDistributionItem },
-  competitionGroupIdToZELimit: {[key: number]: number},
+  competitionGroupIdToZELimit: { [key: number]: number },
   admissionIdToMupId: { [key: number]: string },
   mupData: IMupData,
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions
 ) {
-  console.log('addRandomMupsForStudentIfNeeded');
-  console.log('mupIdToMupItem');
+  console.log("addRandomMupsForStudentIfNeeded");
+  console.log("mupIdToMupItem");
   console.log(mupIdToMupItem);
   for (const personalNumber of personalNumbersOfActiveStudentsSortedByRating) {
     const sItem = personalNumberToStudentItem[personalNumber];
@@ -278,8 +270,8 @@ export function addRandomMupsForStudentIfNeeded(
           continue;
         }
 
-        
-        const mupIdToAdmission = competitionGroupIdToMupAdmissions[sItem.competitionGroupId];
+        const mupIdToAdmission =
+          competitionGroupIdToMupAdmissions[sItem.competitionGroupId];
         if (!mupIdToAdmission.hasOwnProperty(mupId)) {
           continue;
         }
@@ -293,8 +285,6 @@ export function addRandomMupsForStudentIfNeeded(
     }
   }
 }
-
-
 
 export function getAllPersonalNumbers(
   competitionGroupIds: number[],
@@ -337,7 +327,6 @@ export function filterActiveStudentsAndSortByRating(
     });
 }
 
-
 export interface IStudentMupsData {
   studentPersonalNumberToSelectedAdmissionIds: { [key: string]: number[] }; // personalNumber -> admissionIds
   admissionIdToMupName: { [key: number]: string }; // admissionId -> mupName
@@ -349,7 +338,7 @@ export function createIStudentMupsData(
   },
   studentData: IStudentData,
   mupData: IMupData,
-  admissionIdToMupId: { [key: number]: string },
+  admissionIdToMupId: { [key: number]: string }
 ): IStudentMupsData {
   const result: IStudentMupsData = {
     studentPersonalNumberToSelectedAdmissionIds: {},
@@ -366,39 +355,39 @@ export function createIStudentMupsData(
 
   for (const admissionId of Array.from(admissionIds)) {
     const mupId = admissionIdToMupId[admissionId];
-    result.admissionIdToMupName[admissionId] =
-      mupData.data[mupId].name;
+    result.admissionIdToMupName[admissionId] = mupData.data[mupId].name;
   }
   return result;
-};
+}
 
-// 
+//
 export function prepareStudentAndMupItems(
   competitionGroupIds: number[],
   mupData: IMupData,
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions,
   admissionInfo: AdmissionInfo,
   admissionIdToMupId: { [key: number]: string },
-  studentPersonalNumberToAdmissionIds?: { [key: string]: number[] },
+  studentPersonalNumberToAdmissionIds?: { [key: string]: number[] }
 ): {
   personalNumberToStudentItems: {
-      [key: string]: IStudentAdmissionDistributionItem;
-    },
+    [key: string]: IStudentAdmissionDistributionItem;
+  };
   mupIdToMupItems: {
     [key: string]: IMupDistributionItem;
-  }
+  };
 } {
   console.log("prepareStudentAndMupItems");
   console.log(studentPersonalNumberToAdmissionIds);
   const personalNumberToStudentItems = createPersonalNumberToStudentItem(
     competitionGroupIds,
     competitionGroupIdToMupAdmissions,
-    admissionInfo,
+    admissionInfo
   );
   if (studentPersonalNumberToAdmissionIds) {
     for (const pn in personalNumberToStudentItems) {
       if (studentPersonalNumberToAdmissionIds.hasOwnProperty(pn)) {
-        personalNumberToStudentItems[pn].selectedAdmissionIds = studentPersonalNumberToAdmissionIds[pn];
+        personalNumberToStudentItems[pn].selectedAdmissionIds =
+          studentPersonalNumberToAdmissionIds[pn];
       }
     }
   }
@@ -406,7 +395,7 @@ export function prepareStudentAndMupItems(
     personalNumberToStudentItems[pn].currentZ = calcZE(
       personalNumberToStudentItems[pn].selectedAdmissionIds,
       mupData,
-      admissionIdToMupId,
+      admissionIdToMupId
     );
   }
   const mupIdToMupItems = createMupIdToMupItemByStudentItems(
@@ -414,17 +403,16 @@ export function prepareStudentAndMupItems(
     competitionGroupIds,
     competitionGroupIdToMupAdmissions,
     admissionIdToMupId
-  )
+  );
 
   return {
     personalNumberToStudentItems,
-    mupIdToMupItems
+    mupIdToMupItems,
   };
 }
 
-
 export interface IAdmissionRecord {
-  initStatus: number,
+  initStatus: number;
   priority: number | null;
   name: string;
 }
@@ -434,14 +422,14 @@ export function createAdmissionRecord(
   personalNumber: string,
   admissionInfo: AdmissionInfo,
   mupData: IMupData,
-  admissionIdToMupId: {[key: number]: string}
+  admissionIdToMupId: { [key: number]: string }
 ) {
   const res: IAdmissionRecord = {
     initStatus: 0,
     priority: null,
-    name: '',
+    name: "",
   };
-  
+
   if (admissionInfo[admissionId].hasOwnProperty(personalNumber)) {
     const admission = admissionInfo[admissionId][personalNumber];
     res.initStatus = admission.status;
@@ -451,7 +439,6 @@ export function createAdmissionRecord(
   const mupId = admissionIdToMupId[admissionId];
   res.name = mupData.data[mupId].name;
 
-  
   return res;
 }
 
@@ -498,12 +485,17 @@ export function validateStudentAdmissions(
 ): { success: boolean; messages: string[] } {
   const notDeterminedPersonalNumbers: string[] = [];
   const notDeterminedAdmissionIds = new Set<number>();
+  const personalNumbersWithDuplicateAdmissionIds: string[] = [];
   for (const pn in studentMupsData.studentPersonalNumberToSelectedAdmissionIds) {
     if (!studentData.data.hasOwnProperty(pn)) {
       notDeterminedPersonalNumbers.push(pn);
     }
     const admissionIds =
       studentMupsData.studentPersonalNumberToSelectedAdmissionIds[pn];
+    const admissionIdsSet = new Set<number>(admissionIds);
+    if (admissionIdsSet.size !== admissionIds.length) {
+      personalNumbersWithDuplicateAdmissionIds.push(pn);
+    }
     for (const admissionId of admissionIds) {
       if (!admissionIdToMupId.hasOwnProperty(admissionId)) {
         notDeterminedAdmissionIds.add(admissionId);
@@ -513,11 +505,17 @@ export function validateStudentAdmissions(
   const messages: string[] = [];
   if (notDeterminedPersonalNumbers.length > 0) {
     const pnStr = notDeterminedPersonalNumbers.join(", ");
-    messages.push(`Personal Numbers not determined: ${pnStr}`);
+    messages.push(`Следующие личные номера студентов не распознаны: ${pnStr}`);
   }
   if (notDeterminedAdmissionIds.size > 0) {
     const aStr = Array.from(notDeterminedAdmissionIds).join(", ");
-    messages.push(`Admission Ids not determined: ${aStr}`);
+    messages.push(`Следующие идентификаторы зачислений не распознаны: ${aStr}`);
+  }
+  if (personalNumbersWithDuplicateAdmissionIds.length > 0) {
+    const pnStr = personalNumbersWithDuplicateAdmissionIds.join(", ");
+    messages.push(
+      `Следующие личные номера студентов имеют повторяющиеся идентификаторы зачислений: ${pnStr}`
+    );
   }
 
   return { success: messages.length === 0, messages: messages };

@@ -207,6 +207,7 @@ export class ITSRepository {
 
       this.studentData.data[studentRaw.personalNumber] = student;
 
+      // if (studentRaw.priority)
       // TODO: add student meta
       const studentAdmission: IStudentAdmission = {
         // id: studentRaw.id,
@@ -227,14 +228,6 @@ export class ITSRepository {
   // NOTE: need admissionIdToMupId (call UpdateAdmissionMetas first)
   async UpdateStudentAdmissionsAndStudentData(admissionIds: number[]) {
     console.log(`ITSRepository: UpdateStudentAdmissionsAndStudentData`);
-    // const admissionIdToMupId: {[key: number]: string} = {};
-    // for (const competitionGroup in this.competitionGroupIdToMupAdmissions) {
-    //   const mupIdToAdmissionMeta = this.competitionGroupIdToMupAdmissions[competitionGroup];
-    //   for (const mupId in mupIdToAdmissionMeta) {
-    //     const aId = mupIdToAdmissionMeta[mupId].admissionsId;
-    //     admissionIdToMupId[aId] = mupId;
-    //   }
-    // }
     const requests = admissionIds.map((aId) =>
       this.api.GetStudentsForAdmission(aId)
     );
@@ -242,14 +235,10 @@ export class ITSRepository {
     for (let i = 0; i < admissionIds.length; i++) {
       const resp = responses[i];
       const admissionId = admissionIds[i];
-      // const mupId = this.admissionIdToMupId[admissionId];
       if (resp.status === "fulfilled") {
-        // console.log("StudentAdmissions");
-        // console.log(resp.value);
         this.fillStudentRawInfoToStudentDataAndAdmissionInfo(
           admissionId,
           resp.value
-          // mupId
         );
       }
     }

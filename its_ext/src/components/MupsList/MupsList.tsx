@@ -18,8 +18,8 @@ export function MupsList(props: IMupsListProps) {
       props.onMupToggle(mupId);
     };
 
-  console.log("MupsList props.mupUpdates");
-  console.log(props.mupEdits);
+  // console.log("MupsList props.mupUpdates");
+  // console.log(props.mupEdits);
 
   const renderRows = () => {
     return Object.keys(props.mupEdits).map((mupId: string) => {

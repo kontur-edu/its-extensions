@@ -30,7 +30,8 @@ export function ApplyButtonWithActionDisplay(
     setActionResultsListOpen(!actionResultsListOpen);
   };
 
-  const renderActionList = () => { // style={{alignSelf: 'flex-start'}}
+  const renderActionList = () => {
+    // style={{alignSelf: 'flex-start'}}
     return (
       <React.Fragment>
         <Button onClick={handleActionListOpen}>
@@ -92,11 +93,16 @@ export function ApplyButtonWithActionDisplay(
         К следующему шагу
       </Button>
     );
-    
+
     let successMessage: JSX.Element | null = null;
     if (wasApply.current && props.showSuccessMessage) {
       let allSuccess = true;
-      if (props.actionResults && !props.actionResults.every(li => li.actionResults.every(ar => ar.success))) {
+      if (
+        props.actionResults &&
+        !props.actionResults.every((li) =>
+          li.actionResults.every((ar) => ar.success)
+        )
+      ) {
         allSuccess = false;
       }
       if (allSuccess) {
@@ -132,6 +138,7 @@ export function ApplyButtonWithActionDisplay(
         Примененить изменения
       </Button>
     );
+
     return (
       <React.Fragment>
         {applyButton}
@@ -171,7 +178,9 @@ export function ApplyButtonWithActionDisplay(
       <div className={style.container}>
         {props.actions && props.actions.length > 0 && renderActionList()}
         {renderButtons()}
-        {props.actionResults && props.actionResults.length > 0 && renderActionResultsList()}
+        {props.actionResults &&
+          props.actionResults.length > 0 &&
+          renderActionResultsList()}
       </div>
     </React.Fragment>
   );

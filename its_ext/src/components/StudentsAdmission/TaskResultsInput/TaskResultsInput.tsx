@@ -139,7 +139,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   >([]);
   const [textAreaValue, setTextAreaValue] = useState<string>("");
   const [invalidStudentRows, setInvalidStudentRows] = useState<string[]>([]);
-
+  const allowSuccessMessage = useRef<boolean>(false);
   const context = useContext(ITSContext)!;
 
   const getMupNameById = (mupId: string) => {
@@ -149,19 +149,20 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     return context.dataRepository.mupData.data[mupId].name;
   };
 
-  const setCurrentAdmissionIds = (mupId: string) => {
+  const getCurrentAdmissionIds = (mupId: string) => {
     if (!mupId) {
-      setAdmissionIds([]);
-      return;
+      // setAdmissionIds([]);
+      return [];
     }
-    const admissionIds = getAdmissionIds(
+    const newAdmissionIds = getAdmissionIds(
       props.competitionGroupIds,
       mupId,
       context.dataRepository.competitionGroupIdToMupAdmissions
     );
-    console.log("admissionIds");
-    console.log(admissionIds);
-    setAdmissionIds(admissionIds);
+    console.log("newAdmissionIds");
+    console.log(newAdmissionIds);
+    // setAdmissionIds(admissionIds);
+    return newAdmissionIds;
   };
 
   const refreshAdmissionInfo = async () => {
@@ -181,17 +182,33 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     );
     setMupIds(newMupIds);
 
-    setCurrentAdmissionIds(selectedMupId);
+    const newAdmissionIds = getCurrentAdmissionIds(selectedMupId);
+
+    context.dataRepository
+      .UpdateStudentAdmissionsAndStudentData(newAdmissionIds)
+      .then(() => setAdmissionIds(newAdmissionIds));
   };
 
   useEffect(() => {
-    // if (props.competitionGroupIds.length !== 2) return;
     refreshAdmissionInfo();
   }, [props.competitionGroupIds]);
 
   useEffect(() => {
-    context.dataRepository
-      .UpdateStudentAdmissionsAndStudentData(admissionIds)
+    let ensureStudentAdmissionDataIsPresentPromise = Promise.resolve();
+    let admissionDataIsPresent = true;
+    for (const admissionId of admissionIds) {
+      if (!context.dataRepository.admissionInfo.hasOwnProperty(admissionId)) {
+        admissionDataIsPresent = false;
+        break;
+      }
+    }
+    if (!admissionDataIsPresent) {
+      ensureStudentAdmissionDataIsPresentPromise =
+        context.dataRepository.UpdateStudentAdmissionsAndStudentData(
+          admissionIds
+        );
+    }
+    ensureStudentAdmissionDataIsPresentPromise
       .then(() => {
         const newStudentItems = createStudentItems(
           admissionIds,
@@ -201,15 +218,21 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
         setStudentItems(newStudentItems);
         return newStudentItems;
       })
-      .then((newStudentItems) => handleApplyDebounced(newStudentItems));
+      .then((newStudentItems) =>
+        handleGenerateActionsDebounced(newStudentItems)
+      );
   }, [admissionIds]);
 
   const handleMupChange = (event: SelectChangeEvent) => {
+    allowSuccessMessage.current = false;
+
     const newMupId = event.target.value;
     console.log("newMupId");
     console.log(newMupId);
-    setCurrentAdmissionIds(newMupId);
     setSelectedMupId(newMupId);
+
+    const admissionIds = getCurrentAdmissionIds(newMupId);
+    setAdmissionIds(admissionIds);
     // ensure AdmissionInfo for admission Id for each group
     // sho each student from groups
   };
@@ -225,7 +248,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     }
     setStudentItems(newStudentItems);
 
-    handleApplyDebounced(newStudentItems);
+    handleGenerateActionsDebounced(newStudentItems);
   };
 
   const selectStudentsByNameRecords = (
@@ -279,7 +302,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     console.log("Debounce studentSelect");
     debouncedWrapperForApply(() => {
       const newStudentItems = selectStudentsByNameRecords(records);
-      handleApply(newStudentItems);
+      generateActions(newStudentItems);
     });
   };
 
@@ -313,7 +336,9 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     refreshAdmissionInfo();
   };
 
-  const handleApply = (newStudentItems: { [key: string]: IStudentItem }) => {
+  const generateActions = (newStudentItems: {
+    [key: string]: IStudentItem;
+  }) => {
     if (admissionIds.length === 0 || admissionIds.length > 2) return;
     const personalNumberToTaskResult: { [key: string]: number | null } = {};
     for (const personalNumber in newStudentItems) {
@@ -331,9 +356,9 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     setTaskResultsActions(actions);
   };
 
-  const handleApplyDebounced = (newStudentItems: {
+  const handleGenerateActionsDebounced = (newStudentItems: {
     [key: string]: IStudentItem;
-  }) => debouncedWrapperForApply(() => handleApply(newStudentItems));
+  }) => debouncedWrapperForApply(() => generateActions(newStudentItems));
 
   const handleRealApply = () => {
     alert(`Настоящее применение изменений`);
@@ -345,6 +370,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   };
 
   const handleRealApplyDebounced = () => {
+    allowSuccessMessage.current = true;
     debouncedWrapperForApply(handleRealApply);
   };
 
@@ -428,7 +454,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
 
         <ApplyButtonWithActionDisplay
           showErrorWarning={true}
-          showSuccessMessage={true}
+          showSuccessMessage={allowSuccessMessage.current}
           actions={taskResultsActions}
           actionResults={taskResultsActionResults}
           onNextStep={props.onNextStep}

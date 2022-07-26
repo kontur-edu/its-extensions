@@ -26,7 +26,9 @@ import { REQUEST_ERROR_UNAUTHORIZED, DEBOUNCE_MS } from "../../../utils/constant
 import { createDebouncedWrapper, downloadFileFromText } from "../../../utils/helpers";
 import {createStudentAdmissionActions} from "../../../studentAdmission/actionCreator";
 import { executeActions, IActionExecutionLogItem, ITSAction } from "../../../common/actions";
-
+import Collapse from "@mui/material/Collapse";
+import ExpandLess from "@mui/icons-material/ExpandLess";
+import ExpandMore from "@mui/icons-material/ExpandMore";
 // interface IStudentMupsData {
 //   studentPersonalNumberToAdmissionIds: { [key: string]: number[] }; // personalNumber -> mupIds
 //   admissionIdToMupName: { [key: number]: string }; // mupId -> mupName
@@ -54,6 +56,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     setStudentAdmissionsTextInputMessages,
   ] = useState<string[]>([]);
   const [mupIdsWithIncorrectLimits, setMupIdsWithIncorrectLimits] = useState<string[]>([]);
+  const [manualEditOpen, setManualEditOpen] = useState<boolean>(false);
   const mupIdsWithTestResultRequired = useRef<Set<string>>(new Set<string>());
   const competitionGroupIdToZELimit = useRef<{[key: number]: number}>({});
   const personalNumbersOfActiveStudentsSortedByRating = useRef<string[]>([]);
@@ -325,6 +328,10 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       });
     });
   }
+
+  const toggleManualEditSection = () => {
+    setManualEditOpen(!manualEditOpen);
+  }
   
   const renderErrorMessage = () => {
     const mupNames = mupIdsWithIncorrectLimits.map(mupId =>
@@ -395,6 +402,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   const renderAdmissionsInput = () => {
     return (
       <React.Fragment>
+        <h4>Вставивьте распределение студентов по МУПам (формат данных как в поле сверху)</h4>
         <textarea
           value={studentAdmissionsTextInput}
           onChange={handleStudentAdmissionsTextInputChange}
@@ -444,21 +452,30 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   const renderContent = () => {
     return (
       <React.Fragment>
-        {renderAdmissionsInput()}
+        
         
         {renderTable()}
 
 
-        <h4>Текущее сохраненное распределение</h4>
-        <textarea value={studentAdmissionsText} rows={10} readOnly />
-        <Button onClick={handleDownlad} style={{ alignSelf: "flex-start" }}>
-          Скачать файл
-        </Button>
+        <Button onClick={toggleManualEditSection} style={{
+            alignSelf: "flex-start"
+          }}>Редактирование вручную {manualEditOpen ? <ExpandLess /> : <ExpandMore />}</Button>
+        <Collapse in={manualEditOpen} timeout="auto" unmountOnExit>
+          <div className={style.manualEdit__container}>
+            <h4>Распределение по курсам в ИТС</h4>
+            <textarea value={studentAdmissionsText} rows={10} readOnly />
+            <Button onClick={handleDownlad} style={{ alignSelf: "flex-start" }}>
+              Скачать файл
+            </Button>
+
+            {renderAdmissionsInput()}
+          </div>
+        </Collapse>
     
         <Button onClick={handleDistributeRemainingStudents} variant="contained" style={{
             alignSelf: "flex-start"
           }}>
-          Распределить оставшихся студентов по курсам
+          Дораспределить студентов по курсам
         </Button>
 
         <ApplyButtonWithActionDisplay

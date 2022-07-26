@@ -89,10 +89,14 @@ export function createStudentItems(
   admissionInfo: AdmissionInfo,
   studentData: IStudentData
 ): { [key: string]: IStudentItem } {
+  
   const personalNumberToStudentItems: { [key: string]: IStudentItem } = {};
   for (const admissionId of admissionIds) {
+    
     if (admissionInfo.hasOwnProperty(admissionId)) {
       const personalNumberToStudentAdmission = admissionInfo[admissionId];
+      // console.log("personalNumberToStudentAdmission");
+      // console.log(personalNumberToStudentAdmission);
       for (const personalNumber in personalNumberToStudentAdmission) {
         
         if (!studentData.data.hasOwnProperty(personalNumber)) {
@@ -120,6 +124,8 @@ export function createStudentItems(
       }
     }
   }
+  // console.log("personalNumberToStudentItems");
+  // console.log(personalNumberToStudentItems);
   return personalNumberToStudentItems;
 }
 

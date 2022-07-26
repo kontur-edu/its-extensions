@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import style from "./Modal.module.css";
+import style from "./ApplyButtonWithActionDisplay.module.css";
 import { IApplyButtonWithActionDisplayProps } from "./types";
 import {
   IActionExecutionLogItem,
@@ -30,7 +30,7 @@ export function ApplyButtonWithActionDisplay(
     setActionResultsListOpen(!actionResultsListOpen);
   };
 
-  const renderActionList = () => {
+  const renderActionList = () => { // style={{alignSelf: 'flex-start'}}
     return (
       <React.Fragment>
         <Button onClick={handleActionListOpen}>
@@ -157,9 +157,11 @@ export function ApplyButtonWithActionDisplay(
 
   return (
     <React.Fragment>
-      {props.actions && renderActionList()}
-      {renderButtons()}
-      {props.actionResults && renderActionResultsList()}
+      <div className={style.container}>
+        {props.actions && props.actions.length > 0 && renderActionList()}
+        {renderButtons()}
+        {props.actionResults && props.actionResults.length > 0 && renderActionResultsList()}
+      </div>
     </React.Fragment>
   );
 }

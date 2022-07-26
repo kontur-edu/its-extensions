@@ -12,7 +12,7 @@ import {
   // createMupIdToMupItem,
   // createMupIdToMupItemByStudentItems,
   prepareStudentAndMupItems,
-  createIStudentMupsData,
+  createStudentsDistributionData,
   filterActiveStudentsAndSortByRating,
   parseStudentAdmissionsFromText,
   validateStudentAdmissions,
@@ -39,10 +39,8 @@ import {
 import Collapse from "@mui/material/Collapse";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
-// interface IStudentMupsData {
-//   studentPersonalNumberToAdmissionIds: { [key: string]: number[] }; // personalNumber -> mupIds
-//   admissionIdToMupName: { [key: number]: string }; // mupId -> mupName
-// }
+import EditIcon from "@mui/icons-material/Edit";
+import AutoFixNormalIcon from "@mui/icons-material/AutoFixNormal";
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
@@ -185,11 +183,22 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     }
     competitionGroupIdToZELimit.current = newZeLimits;
 
-    const studentMupsData = createIStudentMupsData(
+    const availableAdmissionIds = new Set<number>();
+    for (const competitionGroupId of props.competitionGroupIds) {
+      const mupToAdmissionMeta =
+        context.dataRepository.competitionGroupIdToMupAdmissions[
+          competitionGroupId
+        ];
+      for (const mupId in mupToAdmissionMeta) {
+        availableAdmissionIds.add(mupToAdmissionMeta[mupId].admissionsId);
+      }
+    }
+    const studentMupsData = createStudentsDistributionData(
       studentAndMupItems.personalNumberToStudentItems,
       context.dataRepository.studentData,
       context.dataRepository.mupData,
-      context.dataRepository.admissionIdToMupId
+      context.dataRepository.admissionIdToMupId,
+      Array.from(availableAdmissionIds)
     );
     setStudentAdmissionsText(JSON.stringify(studentMupsData, null, 2));
 
@@ -224,17 +233,17 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   };
 
   const handleParseStudentAdmissionsFromTextArea = () => {
-    const newStudentMupsData = parseStudentAdmissionsFromText(
+    const newStudentsDistributionData = parseStudentAdmissionsFromText(
       studentAdmissionsTextInput
     );
-    if (newStudentMupsData === null) {
+    if (newStudentsDistributionData === null) {
       setStudentAdmissionsTextInputMessages([
         "Неверный формат, пример формата можно получить под таблицей",
       ]);
       return;
     }
     const { success, messages } = validateStudentAdmissions(
-      newStudentMupsData,
+      newStudentsDistributionData,
       context.dataRepository.studentData,
       context.dataRepository.admissionIdToMupId
     );
@@ -243,6 +252,12 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     console.log({ success, messages });
 
     if (success) {
+      const personalNumberToSelectedAdmissionIds: { [key: string]: number[] } =
+        {};
+      for (const studentInfo of newStudentsDistributionData.students) {
+        personalNumberToSelectedAdmissionIds[studentInfo.personalNumber] =
+          studentInfo.admissions;
+      }
       // Отобразить распределение в таблице
       const studentAndMupItems = prepareStudentAndMupItems(
         props.competitionGroupIds,
@@ -250,7 +265,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         context.dataRepository.competitionGroupIdToMupAdmissions,
         context.dataRepository.admissionInfo,
         context.dataRepository.admissionIdToMupId,
-        newStudentMupsData.studentPersonalNumberToSelectedAdmissionIds
+        personalNumberToSelectedAdmissionIds
       );
 
       console.log("studentAndMupItems");
@@ -396,7 +411,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           <tr key={personalNumber}>
             <td>
               {student.surname} {student.firstname} {student.patronymic}{" "}
-              {personalNumber}
+              {/* {personalNumber} */}
             </td>
             <td>{student.groupName}</td>
             <td>{student.rating}</td>
@@ -493,6 +508,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           style={{
             alignSelf: "flex-start",
           }}
+          startIcon={<EditIcon />}
         >
           Редактирование вручную{" "}
           {manualEditOpen ? <ExpandLess /> : <ExpandMore />}
@@ -514,8 +530,11 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           variant="contained"
           style={{
             alignSelf: "flex-start",
+            margin: "1em 0",
           }}
+          startIcon={<AutoFixNormalIcon />}
         >
+          {" "}
           Дораспределить студентов по курсам
         </Button>
 

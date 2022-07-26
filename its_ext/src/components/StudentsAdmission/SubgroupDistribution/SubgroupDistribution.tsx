@@ -47,6 +47,13 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
 
         <h3>Зачисление студентов на МУПы с несколькими подгруппами</h3>
 
+        <p>
+          Запустите алгоритм распределения студентов на подгруппы.<br/>
+          Входные данные можно получить из предыдущего шага во вкладке Ручного редактирования<br/>
+          Вставьте вывод алгоритма в поле ниже<br/>
+          Распарсите данные и примените изменения, чтобы распределить студентов
+        </p>
+
         <textarea
           value={subgroupDistributionTextInput}
           onChange={handleSubgroupDistributionTextInputChange}

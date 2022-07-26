@@ -65,8 +65,8 @@ export function getSurnameToKeys(
 ): { [key: string]: string[] } {
   const res: { [key: string]: string[] } = {};
   for (const personalNumber of personalNumbers) {
-    console.log("personalNumber");
-    console.log(personalNumber);
+    // console.log("personalNumber");
+    // console.log(personalNumber);
     const student = studentData.data[personalNumber];
     const surnameLower = student.surname.toLowerCase();
     if (!res.hasOwnProperty(surnameLower)) {
@@ -102,9 +102,9 @@ function tryFindByNameParts(
       nameRecord.group &&
       nameRecord.group.toLowerCase() !== testStudent.groupName.toLowerCase()
     ) {
-      console.log(
-        `${nameRecord.group.toLowerCase()} !== ${testStudent.groupName.toLowerCase()}`
-      );
+      // console.log(
+      //   `${nameRecord.group.toLowerCase()} !== ${testStudent.groupName.toLowerCase()}`
+      // );
       continue;
     }
     const fname = testStudent.firstname.toLowerCase().replace("ё", "e");
@@ -126,25 +126,25 @@ export function findPersonalNumber(
   personalNumbers: string[],
   studentData: IStudentData
 ): string | null {
-  console.log("findPersonalNumber");
-  console.log("nameRecord");
-  console.log(nameRecord);
+  // console.log("findPersonalNumber");
+  // console.log("nameRecord");
+  // console.log(nameRecord);
   const surnameIdx = getSurnameIdx(
     nameRecord.nameParts,
     surnameToPersonalNumbers
   );
   if (surnameIdx >= 0) {
-    console.log(`surname = ${nameRecord.nameParts[surnameIdx]}`);
+    // console.log(`surname = ${nameRecord.nameParts[surnameIdx]}`);
     const surname = nameRecord.nameParts[surnameIdx];
     const personalNumbers = surnameToPersonalNumbers[surname];
-    console.log(`surname -> personalNumbers`);
-    console.log(personalNumbers);
+    // console.log(`surname -> personalNumbers`);
+    // console.log(personalNumbers);
     if (personalNumbers.length === 1) {
       return personalNumbers[0];
     }
     const res = tryFindByNameParts(nameRecord, personalNumbers, studentData);
-    console.log(`tryFindByNameParts`);
-    console.log(res);
+    // console.log(`tryFindByNameParts`);
+    // console.log(res);
     if (res.length === 1) {
       return res[0];
     } else {
@@ -153,8 +153,8 @@ export function findPersonalNumber(
   }
 
   const res = tryFindByNameParts(nameRecord, personalNumbers, studentData);
-  console.log(`tryFindByNameParts all personalNumbers`);
-  console.log(res);
+  // console.log(`tryFindByNameParts all personalNumbers`);
+  // console.log(res);
   if (res.length === 1) {
     return res[0];
   }

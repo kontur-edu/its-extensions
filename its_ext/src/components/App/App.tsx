@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter } from "react-router-dom";
+import { HashRouter } from "react-router-dom";
 import { Main } from "../Main";
 
 import { ITSContext } from "../../common/Context";
@@ -10,18 +10,18 @@ import { ITSApiService } from "../../utils/ITSApiService";
 import { ITSRepository } from "../../utils/repository";
 
 const requestService = new RequestService(PROXY_URL, LOGIN_URL);
-const apiService = new ITSApiService(requestService, false);
+const apiService = new ITSApiService(requestService, true);
 const dataRepository = new ITSRepository(apiService);
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <ITSContext.Provider
         value={{ requestService, apiService, dataRepository }}
       >
         <Main />
       </ITSContext.Provider>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 

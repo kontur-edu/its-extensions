@@ -1,10 +1,11 @@
-import React, { useState } from "react";
-import style from "./Modal.module.css";
+import React, { useRef, useState } from "react";
+import style from "./ApplyButtonWithActionDisplay.module.css";
 import { IApplyButtonWithActionDisplayProps } from "./types";
 import {
   IActionExecutionLogItem,
   ITSAction,
   ActionType,
+  checkAllRefreshAction,
 } from "../../common/actions";
 
 import Collapse from "@mui/material/Collapse";
@@ -20,6 +21,7 @@ export function ApplyButtonWithActionDisplay(
   const [actionListOpen, setActionListOpen] = useState<boolean>(false);
   const [actionResultsListOpen, setActionResultsListOpen] =
     useState<boolean>(false);
+  const wasApply = useRef<boolean>(false);
 
   const handleActionListOpen = () => {
     setActionListOpen(!actionListOpen);
@@ -30,11 +32,11 @@ export function ApplyButtonWithActionDisplay(
   };
 
   const renderActionList = () => {
+    // style={{alignSelf: 'flex-start'}}
     return (
       <React.Fragment>
         <Button onClick={handleActionListOpen}>
-          Показать созданные действия{" "}
-          {actionListOpen ? <ExpandLess /> : <ExpandMore />}
+          Созданные действия {actionListOpen ? <ExpandLess /> : <ExpandMore />}
         </Button>
         <Collapse in={actionListOpen} timeout="auto" unmountOnExit>
           <ul>
@@ -51,7 +53,7 @@ export function ApplyButtonWithActionDisplay(
     return (
       <React.Fragment>
         <Button onClick={handleActionResultsListOpen}>
-          Показать рещультаты выполнения действий{" "}
+          Результаты выполнения действий{" "}
           {actionResultsListOpen ? <ExpandLess /> : <ExpandMore />}
         </Button>
         <Collapse in={actionResultsListOpen} timeout="auto" unmountOnExit>
@@ -92,12 +94,28 @@ export function ApplyButtonWithActionDisplay(
         К следующему шагу
       </Button>
     );
-    const successMessage = props.showSuccessMessage && (
-      <span className="message_success__container">
-        <DoneIcon />
-        Сохранено, с этого шага можно безопасно уходить
-      </span>
-    );
+
+    let successMessage: JSX.Element | null = null;
+    if (wasApply.current && props.showSuccessMessage) {
+      let allSuccess = true;
+      if (
+        props.actionResults &&
+        !props.actionResults.every((li) =>
+          li.actionResults.every((ar) => ar.success)
+        )
+      ) {
+        allSuccess = false;
+      }
+      if (allSuccess) {
+        successMessage = (
+          <span className="message_success__container">
+            <DoneIcon />
+            Сохранено, с этого шага можно безопасно уходить
+          </span>
+        );
+      }
+    }
+
     return (
       <React.Fragment>
         {successMessage}
@@ -106,55 +124,52 @@ export function ApplyButtonWithActionDisplay(
     );
   };
 
-  const renderApplyButtonWithMessage = () => {
-    const applyButton = props.onApply && (
-      <Button
-        onClick={props.onApply}
-        variant="contained"
-        style={{ marginRight: "1em" }}
-      >
-        Применение изменений
-      </Button>
-    );
+  const handleApply = () => {
+    wasApply.current = true;
+    props.onApply?.();
+  };
+
+  const renderApplyButton = () => {
+
     return (
       <React.Fragment>
-        {applyButton}
-        <p className="warning">
-          {props.showErrorWarning &&
-          props.actionResults?.every((logItem) =>
-            logItem.actionResults.every((ar) => ar.success)
-          )
-            ? null
-            : "При сохранении изменений возникли ошибки. Чтобы перейти к следующему шагу исправьте ошибки"}
-        </p>
+        <Button
+          onClick={handleApply}
+          variant="contained"
+          style={{ marginRight: "1em" }}
+        >
+          Примененить изменения
+        </Button>
       </React.Fragment>
     );
   };
 
   const renderButtons = () => {
     const haveOnlyRefreshActions =
-      !props.actions ||
-      props.actions.every(
-        (a) =>
-          a.actionType === ActionType.RefreshSelectionGroups ||
-          a.actionType === ActionType.RefreshPeriods ||
-          a.actionType === ActionType.RefreshSubgroups
-      );
-
+      !props.actions || checkAllRefreshAction(props.actions);
+    const actionsСompletedSuccessfully = !props.actionResults?.length || props.actionResults?.every((logItem) =>
+            logItem.actionResults.every((ar) => ar.success));
     return (
       <div className="apply_button__container">
-        {haveOnlyRefreshActions
-          ? renderSuccessButtonWithNextStep()
-          : renderApplyButtonWithMessage()}
+        {!haveOnlyRefreshActions && props.onApply && renderApplyButton()}
+        {haveOnlyRefreshActions && renderSuccessButtonWithNextStep()}
+        <p className="warning">
+          {props.showErrorWarning && !actionsСompletedSuccessfully &&
+            "При сохранении изменений возникли ошибки"}
+        </p>
       </div>
     );
   };
 
   return (
     <React.Fragment>
-      {props.actions && renderActionList()}
-      {renderButtons()}
-      {props.actionResults && renderActionResultsList()}
+      <div className={style.container}>
+        {props.actions && props.actions.length > 0 && renderActionList()}
+        {renderButtons()}
+        {props.actionResults &&
+          props.actionResults.length > 0 &&
+          renderActionResultsList()}
+      </div>
     </React.Fragment>
   );
 }

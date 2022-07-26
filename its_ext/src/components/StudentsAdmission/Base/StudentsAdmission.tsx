@@ -14,6 +14,7 @@ import { Button } from "@mui/material";
 import WestIcon from "@mui/icons-material/West";
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 import { StudentsDistribution } from "../StudentsDistribution";
+import { SubgroupDistribution } from "../SubgroupDistribution";
 
 export function StudentsAdmission(props: IStudentsAdmissionProps) {
   const [competitionGroupItems, setCompetitionGroupItems] = useState<
@@ -23,11 +24,17 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
   const competitionGroupRefreshInProgress = useRef<boolean>(false);
   const context = useContext(ITSContext)!;
   const stepTwoRef = useRef<HTMLElement | null>(null);
+  const stepThreeRef = useRef<HTMLElement | null>(null);
+  const stepFourRef = useRef<HTMLElement | null>(null);
 
   const navigate = useNavigate();
 
   const handleBackButton = () => {
     navigate("/");
+  };
+
+  const isGroupSelectionValid = () => {
+    return competitionGroupIds.length > 0 && competitionGroupIds.length <= 2;
   };
 
   const refreshCompetitionGroups = () => {
@@ -80,6 +87,14 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
     stepTwoRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const handleGoToStudentAdmissions = () => {
+    stepThreeRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleGoToSubgroupDistribution = () => {
+    stepFourRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   const renderTaskResultsInput = () => {
     return (
       <React.Fragment>
@@ -91,6 +106,7 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
           <TaskResultsInput
             competitionGroupIds={competitionGroupIds}
             onUnauthorized={props.onUnauthorized}
+            onNextStep={handleGoToStudentAdmissions}
           />
         </article>
       </React.Fragment>
@@ -100,10 +116,28 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
   const renderStudentsAutoAdmission = () => {
     return (
       <React.Fragment>
-        <article className="step" ref={stepTwoRef}>
+        <article className="step" ref={stepThreeRef}>
           <span className="step__header">3. Зачисление студентов на курсы</span>
 
           <StudentsDistribution
+            onUnauthorized={props.onUnauthorized}
+            competitionGroupIds={competitionGroupIds}
+            onNextStep={handleGoToSubgroupDistribution}
+          />
+        </article>
+      </React.Fragment>
+    );
+  };
+
+  const renderSubgroupDistribution = () => {
+    return (
+      <React.Fragment>
+        <article className="step" ref={stepFourRef}>
+          <span className="step__header">
+            4. Распределение студентов по группам
+          </span>
+
+          <SubgroupDistribution
             onUnauthorized={props.onUnauthorized}
             competitionGroupIds={competitionGroupIds}
           />
@@ -148,16 +182,17 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
             onNextStep={handleCompetitionGroupSelectButton}
           />
           <p className="next_step__message">
-            {competitionGroupIds.length !== 2
-              ? "Выберите две группы для перехода к следующему шагу"
-              : null}
+            {!isGroupSelectionValid() &&
+              "Выберите одну или две группы для перехода к следующему шагу"}
           </p>
         </div>
       </article>
 
-      {competitionGroupIds.length === 2 && renderTaskResultsInput()}
+      {isGroupSelectionValid() && renderTaskResultsInput()}
 
-      {competitionGroupIds.length === 2 && renderStudentsAutoAdmission()}
+      {isGroupSelectionValid() && renderStudentsAutoAdmission()}
+
+      {isGroupSelectionValid() && renderSubgroupDistribution()}
     </section>
   );
 }

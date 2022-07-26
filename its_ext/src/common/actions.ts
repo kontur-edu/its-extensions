@@ -15,6 +15,15 @@ export enum ActionType {
   UpdateSubgroupMetaLoadCount,
   UpdateTeacherForSubgroup,
   UpdateTaskResult,
+  UpdateStudentAdmission,
+}
+
+export function checkAllRefreshAction(actions: ITSAction[]) {
+  return actions.every(a =>
+    a.actionType === ActionType.RefreshSelectionGroups ||
+    a.actionType === ActionType.RefreshPeriods ||
+    a.actionType === ActionType.RefreshSubgroups
+  );
 }
 
 export interface IActionResultInfo {}
@@ -38,9 +47,14 @@ export async function executeActions(
 ): Promise<IActionExecutionLogItem[]> {
   const results: IActionExecutionLogItem[] = [];
   for (let action of actions) {
-    const actionResults = await action.execute(itsContext);
-    console.log("actionResults");
-    console.log(actionResults);
+    let actionResults: IActionResponse[] = [];
+    try {
+      actionResults = await action.execute(itsContext);
+    } catch(err) {
+      actionResults.push({success: false, message: err as string})
+    }
+    // console.log("actionResults");
+    // console.log(actionResults);
     const actionExecutionLogItem: IActionExecutionLogItem = {
       actionMessage: action.getMessage(),
       actionResults: [],

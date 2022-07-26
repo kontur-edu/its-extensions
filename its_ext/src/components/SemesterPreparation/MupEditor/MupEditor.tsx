@@ -16,7 +16,7 @@ import {
 
 import { ITSContext } from "../../../common/Context";
 
-import { ActionType, ITSAction, executeActions } from "../../../common/actions";
+import { ActionType, ITSAction, executeActions, checkAllRefreshAction } from "../../../common/actions";
 import {
   createActions,
   getMupActions,
@@ -101,7 +101,7 @@ export function MupEditor(props: IMupEditorProps) {
     setMupDiffs(newMupDiffs);
 
     setStartDate(dateFormatted);
-    console.log(`new start date: ${dateFormatted}`);
+    // console.log(`new start date: ${dateFormatted}`);
     callDebouncedApply(newMupDiffs, mupEdits, [dateFormatted, endDate]);
   };
 
@@ -115,7 +115,7 @@ export function MupEditor(props: IMupEditorProps) {
     setMupDiffs(newMupDiffs);
 
     setEndDate(dateFormatted);
-    console.log(`new end date: ${dateFormatted}`);
+    // console.log(`new end date: ${dateFormatted}`);
     callDebouncedApply(newMupDiffs, mupEdits, [startDate, dateFormatted]);
   };
 
@@ -208,6 +208,7 @@ export function MupEditor(props: IMupEditorProps) {
 
     // setMupDiffs(newMupDiffs);
     // setMupEdits(newMupEdits);
+    callDebouncedApply(newMupDiffs, newMupEdits, initDates);
   }, [props.dataIsPrepared, props.selectionGroupIds]);
 
   const handleMupToggle = (mupId: string) => {
@@ -332,6 +333,10 @@ export function MupEditor(props: IMupEditorProps) {
       context
     );
 
+    if (checkAllRefreshAction(actions)) {
+      return [];
+    }
+
     return actions;
   };
 
@@ -362,7 +367,7 @@ export function MupEditor(props: IMupEditorProps) {
         } else if (!isSelected && mupDiffs[mupId].presentInGroups.length > 0) {
           newMupEdits[mupId].messages.push("Удалить МУП из групп");
         }
-        if (isSelected && mupDiffs[mupId].addLoadsManual) {
+        if (isSelected && mupDiffs[mupId].someLoads.length === 0) {
           newMupEdits[mupId].addLoadsManual = true;
         }
       }
@@ -394,7 +399,7 @@ export function MupEditor(props: IMupEditorProps) {
   const handleApplyReal = () => {
     executeActions(mupEditorActions, context)
       .then((results) => setMupEditorActionResults(results))
-      .then(() => alert("Изменения применены"))
+      .then(() => alert("Применение изменений завершено"))
       .then(() => handleRefresh()) // refresh
       .catch((err) => {
         if (err.message === REQUEST_ERROR_UNAUTHORIZED) {

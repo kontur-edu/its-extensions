@@ -32,11 +32,11 @@ function generateUpdateTaskResultActions(
 
     const studentAdmission = admissionInfo[studentAdmissionId][personalNumber];
 
-    if (!studentAdmission.testResult && !newTaskResult) {
+    if ((!studentAdmission || !studentAdmission.testResult) && !newTaskResult) {
       continue; // null <-> 0
     }
 
-    if (studentAdmission.testResult === newTaskResult) {
+    if (studentAdmission?.testResult === newTaskResult) {
       continue;
     }
 
@@ -56,9 +56,9 @@ export function createTaskResultActions(
 ): ITSAction[] {
   const actions: ITSAction[] = [];
 
-  if (admissionIds.length !== 2) {
+  if (admissionIds.length === 0 || admissionIds.length > 2) {
     throw Error(
-      `admissionIds must have length 2, but got ${admissionIds.length}`
+      `admissionIds must have length 1 or 2, but got ${admissionIds.length}`
     );
   }
 

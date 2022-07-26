@@ -28,6 +28,8 @@ app.use(function (req, res, next) {
 });
 app.use(cookieParser());
 
+app.set('etag', false);
+
 app.get(/proxy\/.+$/, handleRequest("GET", handler));
 app.post(/proxy\/.+$/, handleRequest("POST", handler));
 app.delete(/proxy\/.+$/, handleRequest("DELETE", handler));

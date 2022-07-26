@@ -19,6 +19,7 @@ import {
   PERIOD_MAX_COUNT,
   COMPETITION_GROUP_MAX_COUNT,
   STUDENT_ADMISSIONS_MAX_COUNT,
+  SAFE_MODE_ENABLED_MESSAGE,
 } from "./constants";
 import { reformatItsDate } from "./helpers";
 
@@ -155,7 +156,7 @@ export class ITSApiService {
     selectionGroup: ISelectionGroup,
     mupIds: string[]
   ): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error("Safe mode enabled");
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/EduSpace/UpdateSelectionGroup";
     const competitionGroupId = selectionGroup.competitionGroupId ?? "";
@@ -193,7 +194,7 @@ export class ITSApiService {
     periodId: number,
     load: IMupLoad
   ): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error("Safe mode enabled");
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/MUP/AddTmer";
 
@@ -202,7 +203,7 @@ export class ITSApiService {
       kmer: load.kmer,
     };
 
-    if (periodId !== 102 && periodId !== 103) {
+    if (periodId < 102) {
       const message = `Not test Period periodId: ${periodId}`;
       alert(message);
       return { success: false, message };
@@ -219,7 +220,7 @@ export class ITSApiService {
     periodId: number,
     load: IMupLoad
   ): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error("Safe mode enabled");
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/MUP/DeleteTmer";
 
@@ -228,7 +229,7 @@ export class ITSApiService {
       kmer: load.kmer,
     };
 
-    if (periodId !== 102 && periodId !== 103) {
+    if (periodId < 102) {
       const message = `Not test Period periodId: ${periodId}`;
       alert(message);
       return { success: false, message };
@@ -241,7 +242,7 @@ export class ITSApiService {
   }
 
   async CreatePeriod(mupId: string, period: IPeriod): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error("Safe mode enabled");
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/MUP/CreatePeriod";
 
@@ -254,16 +255,19 @@ export class ITSApiService {
       SelectionBegin: period.selectionBegin,
       SelectionDeadline: period.selectionDeadline,
     };
-    const message = `Tried to create period: ${JSON.stringify(data)}`;
-    alert(message);
-    return { success: false, message };
 
-    // const result = await PostFormData(url, data);
-    // return result.success;
+    // const message = `Tried to create period: ${JSON.stringify(data)}`;
+    // alert(message);
+    // return { success: false, message };
+
+    const response = await this.requestService.PostFormData(url, data);
+    const result = addSummary(response, url, data);
+
+    return result;
   }
 
   async UpdatePeriod(mupId: string, period: IPeriod): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error("Safe mode enabled");
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/MUP/UpdatePeriod";
 
@@ -277,7 +281,7 @@ export class ITSApiService {
       SelectionDeadline: period.selectionDeadline,
     };
 
-    if (period.id !== 102 && period.id !== 103) {
+    if (period.id < 102) {
       const message = `Tried to update not test period: ${JSON.stringify(
         data
       )}`;
@@ -297,7 +301,7 @@ export class ITSApiService {
     connectionId: number,
     limit: number
   ): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error("Safe mode enabled");
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/EduSpace/UpdateLimit";
 
@@ -312,10 +316,29 @@ export class ITSApiService {
       return { success: false, message };
     }
 
-    const response = await this.requestService.PostFormData(url, data, "text");
+    const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
 
     return result;
+  }
+
+  async EmulateCheckSubgroupMetas(
+    competitionGroupId: number
+  ): Promise<{ success: boolean; data: any }> {
+    const url = `https://its.urfu.ru/MUPItsSubgroupMeta/Index?competitionGroupId=${competitionGroupId}`;
+    const urlWithProxy = `${this.requestService.proxyUrl}/${url}`;
+    const headers = {
+      "x-url": url,
+    };
+
+    const options: any = {
+      method: "GET",
+      credentials: "include",
+      headers: headers,
+    };
+    const res = await this.requestService.SendRequest(urlWithProxy, options);
+
+    return res;
   }
 
   async GetSubgroupMetas(competitionGroupId: number): Promise<ISubgroupMeta[]> {
@@ -337,7 +360,7 @@ export class ITSApiService {
     subgroupMetaId: number,
     groupCount: number
   ): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error("Safe mode enabled");
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = `https://its.urfu.ru/MUPItsSubgroupMeta/Edit`;
 
@@ -380,7 +403,7 @@ export class ITSApiService {
   }
 
   async UpdateSubgroup(subgroup: ISubgroup): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error("Safe mode enabled");
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/MUPItsSubgroup/Edit";
 
@@ -404,7 +427,7 @@ export class ITSApiService {
   }
 
   async DeleteSubgroup(subgroupIds: number[]): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error("Safe mode enabled");
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/MUPItsSubgroup/Delete";
     const data = JSON.stringify(subgroupIds);
@@ -416,12 +439,7 @@ export class ITSApiService {
       }
     }
 
-    const response = await this.requestService.SendJson(
-      url,
-      data,
-      "DELETE",
-      "text"
-    );
+    const response = await this.requestService.SendJson(url, data, "DELETE");
     const result = { success: response.success, message: response.data };
     if (response.success && response.data) {
       const bodyJson = JSON.parse(response.data);
@@ -432,7 +450,7 @@ export class ITSApiService {
   }
 
   async CreateSubgroups(competitionGroupId: number): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error("Safe mode enabled");
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = `https://its.urfu.ru/MUPItsSubgroup/Create?competitionGroupId=${competitionGroupId}`;
 
@@ -512,7 +530,7 @@ export class ITSApiService {
     admissionId: number,
     testResult: number
   ) {
-    if (this.safeMode) throw new Error("Safe mode enabled");
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/MUPItsAdmission/EditTestResults";
 
@@ -520,6 +538,32 @@ export class ITSApiService {
       studentId: studentId,
       id: admissionId,
       resultValue: testResult,
+    };
+
+    if (admissionId < 146) {
+      const message = `Tried to update not test Admission id: ${admissionId}`;
+      alert(message);
+      return { success: false, message };
+    }
+
+    const result = await this.requestService.PostFormData(url, data);
+    return result;
+  }
+
+  async UpdateStudentAdmissionStatus(
+    studentId: string,
+    admissionId: number,
+    status: number
+  ) {
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
+
+    const url =
+      "https://its.urfu.ru/MUPItsAdmission/SetCompetitionGroupAdmissionStatus";
+
+    const data = {
+      studentId: studentId,
+      id: admissionId,
+      status: status,
     };
 
     if (admissionId < 146) {

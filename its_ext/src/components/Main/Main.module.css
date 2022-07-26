@@ -4,3 +4,8 @@
   text-align: center;
   cursor: pointer;
 }
+
+
+.connectionRefused__header {
+  font-size: 0.9em;
+}

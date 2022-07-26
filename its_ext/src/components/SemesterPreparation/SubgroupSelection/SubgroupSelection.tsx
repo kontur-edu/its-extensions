@@ -82,89 +82,107 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
         context.dataRepository.selectionGroupToMupsData.data[sgId].ids
       );
     }
-    if (checkArraysSame(sgMupIds[0], sgMupIds[1])) {
-      setMupIdsSame(true);
-      setMupIds(sgMupIds[0]);
-      const mupNames: string[] = [];
+    if (!checkArraysSame(sgMupIds[0], sgMupIds[1])) {
+      setMupIdsSame(false);
+      alert(`not setMupIdsSame`);
+      return;
+    }
 
-      for (let mupId of sgMupIds[0]) {
-        const mup = context.dataRepository.mupData.data[mupId];
-        mupNames.push(mup.name);
-      }
-      // console.log("creating subgoupDiffInfo");
+    setMupIdsSame(true);
+    setMupIds(sgMupIds[0]);
+    const mupNames: string[] = [];
 
-      const newSubgoupDiffInfo: ISubgoupDiffInfo = createSubgroupDiffInfo(
+    for (let mupId of sgMupIds[0]) {
+      const mup = context.dataRepository.mupData.data[mupId];
+      mupNames.push(mup.name);
+    }
+    // console.log("creating subgoupDiffInfo");
+    // console.log("context.dataRepository.competitionGroupToSubgroupMetas");
+    //     console.log(context.dataRepository.competitionGroupToSubgroupMetas);
+    // console.log("context.dataRepository.competitionGroupToSubgroupIds");
+    //     console.log(context.dataRepository.competitionGroupToSubgroupIds);
+    // console.log("context.dataRepository.subgroupData");
+    //     console.log(context.dataRepository.subgroupData);
+    const newSubgoupDiffInfo: ISubgoupDiffInfo = createSubgroupDiffInfo(
+      newCompetitionGroupIds,
+      context.dataRepository.competitionGroupToSubgroupMetas,
+      context.dataRepository.competitionGroupToSubgroupIds,
+      context.dataRepository.subgroupData
+    );
+    console.log("subgoupDiffInfo");
+    console.log(newSubgoupDiffInfo);
+    setSubgroupDiffInfo(newSubgoupDiffInfo);
+
+    const newMupToDiffs: { [key: string]: IMupSubgroupDiff } =
+      createSubgroupDiffs(
+        mupNames,
         newCompetitionGroupIds,
-        context.dataRepository.competitionGroupToSubgroupMetas,
-        context.dataRepository.competitionGroupToSubgroupIds,
+        newSubgoupDiffInfo,
         context.dataRepository.subgroupData
       );
-      // console.log("subgoupDiffInfo");
-      // console.log(newSubgoupDiffInfo);
-      setSubgroupDiffInfo(newSubgoupDiffInfo);
+    // console.log("newMupToDiffs");
+    // console.log(newMupToDiffs);
+    // setMupToDiffs(newMupToDiffs);
 
-      const newMupToDiffs: { [key: string]: IMupSubgroupDiff } =
-        createSubgroupDiffs(
-          mupNames,
-          newCompetitionGroupIds,
-          newSubgoupDiffInfo,
-          context.dataRepository.subgroupData
-        );
-      // console.log("newMupToDiffs");
-      // console.log(newMupToDiffs);
-      // setMupToDiffs(newMupToDiffs);
+    const newMupToDifferenceMessages = createMupToDifferenceMessages(
+      mupNames,
+      newMupToDiffs,
+      // newCompetitionGroupIds,
+      newSubgoupDiffInfo
+    );
+    // console.log("newMupToDifferenceMessages");
+    // console.log(newMupToDifferenceMessages);
 
-      const newMupToDifferenceMessages = createMupToDifferenceMessages(
-        mupNames,
-        newMupToDiffs,
-        // newCompetitionGroupIds,
-        newSubgoupDiffInfo
-      );
-      // console.log("newMupToDifferenceMessages");
-      // console.log(newMupToDifferenceMessages);
+    const newActions = createActionsByDiffs(
+      newCompetitionGroupIds,
+      newMupToDiffs,
+      newSubgoupDiffInfo
+      // context.dataRepository.subgroupData
+    );
 
-      const newActions = createActionsByDiffs(
-        newCompetitionGroupIds,
-        newMupToDiffs,
-        newSubgoupDiffInfo
-        // context.dataRepository.subgroupData
-      );
+    setSubgroupSelectionActions(newActions);
 
-      setSubgroupSelectionActions(newActions);
+    const mupNameToActions = getMupNameActions(newActions);
 
-      const mupNameToActions = getMupNameActions(newActions);
-
-      const mupToDifferenceTodoMessages: {
-        [key: string]: [string[], string[]];
-      } = {};
-      for (const mupName of mupNames) {
-        let mupActions: ITSAction[] = [];
-        if (mupNameToActions.hasOwnProperty(mupName)) {
-          mupActions = mupNameToActions[mupName];
-        }
-        if (!newMupToDiffs.hasOwnProperty(mupName)) {
-          throw new Error(`${mupName} has no corresponding newMupToDiffs`);
-        }
-        const todoMessages = createTodoMessages(
-          // newMupToDiffs[mupName],
-          mupActions
-        );
-        mupToDifferenceTodoMessages[mupName] = [
-          newMupToDifferenceMessages[mupName],
-          todoMessages,
-        ];
+    const mupToDifferenceTodoMessages: {
+      [key: string]: [string[], string[]];
+    } = {};
+    for (const mupName of mupNames) {
+      let mupActions: ITSAction[] = [];
+      if (mupNameToActions.hasOwnProperty(mupName)) {
+        mupActions = mupNameToActions[mupName];
       }
-
-      setMupToDifferenceTodoMessages(mupToDifferenceTodoMessages);
-    } else {
-      setMupIdsSame(false);
+      if (!newMupToDiffs.hasOwnProperty(mupName)) {
+        throw new Error(`${mupName} has no corresponding newMupToDiffs`);
+      }
+      const todoMessages = createTodoMessages(
+        // newMupToDiffs[mupName],
+        mupActions
+      );
+      mupToDifferenceTodoMessages[mupName] = [
+        newMupToDifferenceMessages[mupName],
+        todoMessages,
+      ];
     }
+
+    setMupToDifferenceTodoMessages(mupToDifferenceTodoMessages);
   };
 
   const refreshData = () => {
-    return context.dataRepository
-      .UpdateSelectionGroupData()
+    return Promise.allSettled([
+      context.dataRepository.UpdateSelectionGroupData(),
+      context.dataRepository.UpdateSelectionGroupToMupsData(
+        props.selectionGroupIds
+      ),
+    ])
       .then(() => extractCompetitionGroupIds(props.selectionGroupIds))
+      .then((newCompetitionGroupIds) => {
+        return Promise.allSettled(
+          newCompetitionGroupIds.map((cId) =>
+            context.apiService.EmulateCheckSubgroupMetas(cId)
+          )
+        ).then(() => newCompetitionGroupIds);
+      })
       .then((newCompetitionGroupIds) => {
         return Promise.allSettled([
           context.dataRepository.UpdateSubgroupMetas(newCompetitionGroupIds),
@@ -324,7 +342,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
   const handleApplyReal = () => {
     executeActions(subgroupSelectionActions, context)
       .then((results) => setSubgroupSelectionActionsResults(results))
-      .then(() => alert("Изменения применены"))
+      .then(() => alert("Применение изменений завершено"))
       .then(() => refreshDataDebounced())
       .catch((err) => {
         if (err.message === REQUEST_ERROR_UNAUTHORIZED) {

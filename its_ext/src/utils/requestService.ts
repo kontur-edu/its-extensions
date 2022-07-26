@@ -4,12 +4,21 @@ import {
   CSRF_TOKEN_INPUT_NAME,
   REQUEST_ERROR_UNAUTHORIZED,
   REQUEST_ERROR_REQUEST_FAILED,
+  REQUEST_ERROR_CONNECTION_REFUSED,
 } from "./constants";
 
 export type FormBodyObj = { [key: string]: string | number | string[] };
 
 export class RequestService {
-  constructor(public proxyUrl: string, public loginUrl: string) {}
+  constructor(
+    public proxyUrl: string,
+    public loginUrl: string,
+    private onConnectionRefused?: () => any
+  ) {}
+
+  setOnConnectionRefused(func: () => any) {
+    this.onConnectionRefused = func;
+  }
 
   static formatFormData(obj: FormBodyObj): string {
     const encodedPairs: string[] = [];
@@ -35,7 +44,14 @@ export class RequestService {
   }
 
   async SendRequest(url: string, options: any) {
-    const response = await fetch(url, options);
+    let response: any = null;
+    try {
+      response = await fetch(url, options);
+    } catch (err) {
+      this.onConnectionRefused?.();
+      // throw new Error(REQUEST_ERROR_CONNECTION_REFUSED);
+    }
+
     if (response.status === 401) {
       throw Error(REQUEST_ERROR_UNAUTHORIZED);
     }
@@ -97,8 +113,13 @@ export class RequestService {
     };
 
     // submit form
-    const responseAuth = await fetch(urlWithProxy, options);
-
+    let responseAuth: any = null;
+    try {
+      responseAuth = await fetch(urlWithProxy, options);
+    } catch (err) {
+      this.onConnectionRefused?.();
+      // throw new Error(REQUEST_ERROR_CONNECTION_REFUSED);
+    }
     if (responseAuth.status === 200 || responseAuth.status === 204) {
       return true;
     }
@@ -111,7 +132,7 @@ export class RequestService {
 
     const urlWithProxy = `${this.proxyUrl}/${url}`;
     const headers = {
-      "X-KL-Ajax-Reqyest": "Ajax_Request",
+      "X-KL-Ajax-Request": "Ajax_Request",
       "X-Requested-With": "XMLHttpRequest",
       "x-redirect": "manual",
       "x-url": url,
@@ -136,11 +157,7 @@ export class RequestService {
     return result;
   }
 
-  async PostFormData(
-    url: string,
-    data: FormBodyObj,
-    bodyFormat: string = "json"
-  ) {
+  async PostFormData(url: string, data: FormBodyObj) {
     console.log(`PostFormData: ${url}`);
 
     const urlWithProxy = `${this.proxyUrl}/${url}`;
@@ -165,12 +182,7 @@ export class RequestService {
     return result;
   }
 
-  async SendJson(
-    url: string,
-    data: any,
-    method: string = "POST",
-    bodyFormat: string = "json"
-  ) {
+  async SendJson(url: string, data: any, method: string = "POST") {
     console.log(`SendJson: ${url}`);
 
     const urlWithProxy = `${this.proxyUrl}/${url}`;

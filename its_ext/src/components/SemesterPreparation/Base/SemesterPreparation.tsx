@@ -101,8 +101,8 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
   };
 
   const refreshSelectionGroupMups = async (ids: number[]) => {
-    console.log(`refreshSelectionGroupMups`);
-    console.log(ids);
+    // console.log(`refreshSelectionGroupMups`);
+    // console.log(ids);
     await context.dataRepository.UpdateSelectionGroupToMupsData(ids);
     let newChosenMups: string[] = [];
     if (ids.length === 2) {
@@ -128,20 +128,20 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
   };
 
   const refreshMupData = async () => {
-    console.log(`refreshMupData`);
+    // console.log(`refreshMupData`);
     await context.dataRepository.UpdateMupData();
   };
 
   const refreshPeriods = async (mupIds: string[]) => {
-    console.log(`refreshPeriods`);
-    console.log(mupIds);
+    // console.log(`refreshPeriods`);
+    // console.log(mupIds);
     await context.dataRepository.UpdatePeriods(mupIds);
   };
 
   const refreshSubgroupMetasAndSubgroups = async (
     selectionGroupIds: number[]
   ) => {
-    console.log(`refreshSubgroupMetasAndSubgroups`);
+    // console.log(`refreshSubgroupMetasAndSubgroups`);
     const competitionGroupIds: number[] = [];
     for (let selectionGroupId of selectionGroupIds) {
       const selectionGroup =
@@ -177,7 +177,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
   // selectionGroupMups, SubgroupGroupMetas, Subgroups
   const handleSelectionGroupValid = (selectionGroupIds: number[]) => {
     setEditorDataPrepared(false);
-    console.log("handleSelectionGroupValid");
+    // console.log("handleSelectionGroupValid");
     // remember chosen selectionGroup ids
     setSelectionGroupsIds(selectionGroupIds);
     // request mups for chosen selectionGroups

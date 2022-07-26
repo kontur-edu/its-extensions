@@ -84,7 +84,8 @@ export interface IMupDiff {
   presentInGroups: number[];
   initLimits: (number | null)[];
   courseToCurrentPeriod: { [key: number]: IPeriod };
-  addLoadsManual: boolean;
+  // addLoadsManual: boolean;
+  someLoads: IMupLoad[];
   changeDates: boolean;
   canBeDeleted: boolean;
 }
@@ -270,6 +271,11 @@ export type AdmissionInfo = {
   // admissionId
   [key: number]: {
     // personalNumber
-    [key: string]: IStudentAdmission;
+    [key: string]: IStudentAdmission | null;
   };
 };
+
+// export interface IAdmissionInfo {
+//   admissionIdToStudentAdmission: AdmissionInfo;
+//   admissionIdToPersonalNumbers: {[key: number]: string[]};
+// }

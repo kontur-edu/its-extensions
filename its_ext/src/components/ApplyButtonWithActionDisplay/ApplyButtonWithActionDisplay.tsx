@@ -5,6 +5,7 @@ import {
   IActionExecutionLogItem,
   ITSAction,
   ActionType,
+  checkAllRefreshAction,
 } from "../../common/actions";
 
 import Collapse from "@mui/material/Collapse";
@@ -128,47 +129,34 @@ export function ApplyButtonWithActionDisplay(
     props.onApply?.();
   };
 
-  const renderApplyButtonWithMessage = () => {
-    const applyButton = props.onApply && (
-      <Button
-        onClick={handleApply}
-        variant="contained"
-        style={{ marginRight: "1em" }}
-      >
-        Примененить изменения
-      </Button>
-    );
+  const renderApplyButton = () => {
 
     return (
       <React.Fragment>
-        {applyButton}
-        <p className="warning">
-          {props.showErrorWarning &&
-          props.actionResults?.every((logItem) =>
-            logItem.actionResults.every((ar) => ar.success)
-          )
-            ? null
-            : "При сохранении изменений возникли ошибки. Чтобы перейти к следующему шагу исправьте ошибки"}
-        </p>
+        <Button
+          onClick={handleApply}
+          variant="contained"
+          style={{ marginRight: "1em" }}
+        >
+          Примененить изменения
+        </Button>
       </React.Fragment>
     );
   };
 
   const renderButtons = () => {
     const haveOnlyRefreshActions =
-      !props.actions ||
-      props.actions.every(
-        (a) =>
-          a.actionType === ActionType.RefreshSelectionGroups ||
-          a.actionType === ActionType.RefreshPeriods ||
-          a.actionType === ActionType.RefreshSubgroups
-      );
-
+      !props.actions || checkAllRefreshAction(props.actions);
+    const actionsСompletedSuccessfully = !props.actionResults?.length || props.actionResults?.every((logItem) =>
+            logItem.actionResults.every((ar) => ar.success));
     return (
       <div className="apply_button__container">
-        {haveOnlyRefreshActions
-          ? renderSuccessButtonWithNextStep()
-          : renderApplyButtonWithMessage()}
+        {!haveOnlyRefreshActions && props.onApply && renderApplyButton()}
+        {haveOnlyRefreshActions && renderSuccessButtonWithNextStep()}
+        <p className="warning">
+          {props.showErrorWarning && !actionsСompletedSuccessfully &&
+            "При сохранении изменений возникли ошибки"}
+        </p>
       </div>
     );
   };

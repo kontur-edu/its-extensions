@@ -16,7 +16,7 @@ import {
 
 import { ITSContext } from "../../../common/Context";
 
-import { ActionType, ITSAction, executeActions } from "../../../common/actions";
+import { ActionType, ITSAction, executeActions, checkAllRefreshAction } from "../../../common/actions";
 import {
   createActions,
   getMupActions,
@@ -332,6 +332,10 @@ export function MupEditor(props: IMupEditorProps) {
       mupLimits,
       context
     );
+
+    if (checkAllRefreshAction(actions)) {
+      return [];
+    }
 
     return actions;
   };

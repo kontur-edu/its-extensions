@@ -19,6 +19,7 @@ import {
   PERIOD_MAX_COUNT,
   COMPETITION_GROUP_MAX_COUNT,
   STUDENT_ADMISSIONS_MAX_COUNT,
+  SAFE_MODE_ENABLED_MESSAGE,
 } from "./constants";
 import { reformatItsDate } from "./helpers";
 
@@ -155,7 +156,7 @@ export class ITSApiService {
     selectionGroup: ISelectionGroup,
     mupIds: string[]
   ): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error("Safe mode enabled");
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/EduSpace/UpdateSelectionGroup";
     const competitionGroupId = selectionGroup.competitionGroupId ?? "";
@@ -193,7 +194,7 @@ export class ITSApiService {
     periodId: number,
     load: IMupLoad
   ): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error("Safe mode enabled");
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/MUP/AddTmer";
 
@@ -219,7 +220,7 @@ export class ITSApiService {
     periodId: number,
     load: IMupLoad
   ): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error("Safe mode enabled");
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/MUP/DeleteTmer";
 
@@ -241,7 +242,7 @@ export class ITSApiService {
   }
 
   async CreatePeriod(mupId: string, period: IPeriod): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error("Safe mode enabled");
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/MUP/CreatePeriod";
 
@@ -266,7 +267,7 @@ export class ITSApiService {
   }
 
   async UpdatePeriod(mupId: string, period: IPeriod): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error("Safe mode enabled");
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/MUP/UpdatePeriod";
 
@@ -300,7 +301,7 @@ export class ITSApiService {
     connectionId: number,
     limit: number
   ): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error("Safe mode enabled");
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/EduSpace/UpdateLimit";
 
@@ -359,7 +360,7 @@ export class ITSApiService {
     subgroupMetaId: number,
     groupCount: number
   ): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error("Safe mode enabled");
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = `https://its.urfu.ru/MUPItsSubgroupMeta/Edit`;
 
@@ -402,7 +403,7 @@ export class ITSApiService {
   }
 
   async UpdateSubgroup(subgroup: ISubgroup): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error("Safe mode enabled");
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/MUPItsSubgroup/Edit";
 
@@ -426,7 +427,7 @@ export class ITSApiService {
   }
 
   async DeleteSubgroup(subgroupIds: number[]): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error("Safe mode enabled");
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/MUPItsSubgroup/Delete";
     const data = JSON.stringify(subgroupIds);
@@ -449,7 +450,7 @@ export class ITSApiService {
   }
 
   async CreateSubgroups(competitionGroupId: number): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error("Safe mode enabled");
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = `https://its.urfu.ru/MUPItsSubgroup/Create?competitionGroupId=${competitionGroupId}`;
 
@@ -529,7 +530,7 @@ export class ITSApiService {
     admissionId: number,
     testResult: number
   ) {
-    if (this.safeMode) throw new Error("Safe mode enabled");
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/MUPItsAdmission/EditTestResults";
 
@@ -554,7 +555,7 @@ export class ITSApiService {
     admissionId: number,
     status: number
   ) {
-    if (this.safeMode) throw new Error("Safe mode enabled");
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url =
       "https://its.urfu.ru/MUPItsAdmission/SetCompetitionGroupAdmissionStatus";

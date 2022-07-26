@@ -18,6 +18,14 @@ export enum ActionType {
   UpdateStudentAdmission,
 }
 
+export function checkAllRefreshAction(actions: ITSAction[]) {
+  return actions.every(a =>
+    a.actionType === ActionType.RefreshSelectionGroups ||
+    a.actionType === ActionType.RefreshPeriods ||
+    a.actionType === ActionType.RefreshSubgroups
+  );
+}
+
 export interface IActionResultInfo {}
 
 export abstract class ITSAction {

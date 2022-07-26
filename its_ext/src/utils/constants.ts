@@ -18,6 +18,8 @@ export const REQUEST_ERROR_REQUEST_HANDLING_ERROR =
 export const REQUEST_ERROR_CONNECTION_REFUSED =
   "REQUEST_ERROR_CONNECTION_REFUSED";
 
+export const SAFE_MODE_ENABLED_MESSAGE = "Включен защищенный режим";
+
 export const MUPS_MAX_COUNT = 300;
 
 export const EDU_SPACES_MAX_COUNT = 300;

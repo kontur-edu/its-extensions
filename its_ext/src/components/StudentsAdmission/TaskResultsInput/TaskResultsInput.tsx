@@ -110,7 +110,7 @@ export function createStudentItems(
         }
 
         const testResult =
-          personalNumberToStudentAdmission[personalNumber].testResult;
+          personalNumberToStudentAdmission[personalNumber]?.testResult || 0;
         const studentItem: IStudentItem = {
           group: studentInfo.groupName,
           name: `${studentInfo.surname} ${studentInfo.firstname} ${studentInfo.patronymic}`,

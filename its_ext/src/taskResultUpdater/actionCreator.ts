@@ -32,11 +32,11 @@ function generateUpdateTaskResultActions(
 
     const studentAdmission = admissionInfo[studentAdmissionId][personalNumber];
 
-    if (!studentAdmission.testResult && !newTaskResult) {
+    if ((!studentAdmission || !studentAdmission.testResult) && !newTaskResult) {
       continue; // null <-> 0
     }
 
-    if (studentAdmission.testResult === newTaskResult) {
+    if (studentAdmission?.testResult === newTaskResult) {
       continue;
     }
 

@@ -28,11 +28,11 @@ function generateUpdateStudentAdmissionActions(
       if (admissionInfo[admissionId].hasOwnProperty(personalNumber)) {
         const admission = admissionInfo[admissionId][personalNumber];
         // status = 1 admitted, 2 - not  
-        if (isSelected && admission.status !== 1) { // add new
+        if (isSelected && (!admission || admission.status !== 1)) { // add new
           actions.push(
             new UpdateStudentAdmissionAction(student.id, admissionId, 1)
           );
-        } else if (!isSelected && admission.status === 1) { // remove from selection
+        } else if (!isSelected && admission?.status === 1) { // remove from selection
           actions.push(
             new UpdateStudentAdmissionAction(student.id, admissionId, 2)
           );

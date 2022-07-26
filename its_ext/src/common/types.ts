@@ -271,7 +271,7 @@ export type AdmissionInfo = {
   // admissionId
   [key: number]: {
     // personalNumber
-    [key: string]: IStudentAdmission;
+    [key: string]: IStudentAdmission | null;
   };
 };
 

@@ -79,10 +79,10 @@ export function createPersonalNumberToStudentItem(
         const studentItem = personalNumberToStudentItem[personalNumber];
         const admission = personalNumberToAdmission[personalNumber];
 
-        if (admission.priority || admission.status === 1) {
+        if (admission?.priority || admission?.status === 1) {
           studentItem.admissionIds.push(admissionId);
         }
-        if (admission.status === 1) {
+        if (admission?.status === 1) {
           // status === 1 то есть уже зачислен на курс
           // studentItem.currentZ += mupData.data[mId].ze;
           studentItem.selectedAdmissionIds.push(admissionId);
@@ -159,6 +159,7 @@ export function findMupIdsWithTestResultRequired(
       let potentialStudents = 0;
       for (const personalNumber in personalNumberToAdmission) {
         const studentAdmission = personalNumberToAdmission[personalNumber];
+        if (!studentAdmission) continue;
         if (studentAdmission.testResult) {
           studentsWithTestResultsCount++;
           potentialStudents++;
@@ -208,11 +209,11 @@ export function tryDistributeMupsByStudentRatingAndAdmissionPriority(
         // personalNumber == '56904331' && console.log(`sItem.currentZ ${sItem.currentZ} >= zeLimit ${zeLimit}`);
         break;
       }
-      const mupId = admissionIdToMupId[admission.admissionId];
+      const mupId = admissionIdToMupId[admissionId];
       const mupItem = mupIdToMupItem[mupId];
       const mupZe = mupData.data[mupId].ze;
       if (mupItem.count < mupItem.limit) {
-        if (mupIdsWithTestResultRequired.has(mupId) && !admission.testResult) {
+        if (mupIdsWithTestResultRequired.has(mupId) && !admission?.testResult) {
           continue; // testResult required but not present, skip mup
         }
         if (sItem.currentZ + mupZe > zeLimit) {
@@ -429,8 +430,8 @@ export function createAdmissionRecord(
 
   if (admissionInfo[admissionId].hasOwnProperty(personalNumber)) {
     const admission = admissionInfo[admissionId][personalNumber];
-    res.initStatus = admission.status;
-    res.priority = admission.priority;
+    res.initStatus = admission?.status || 0;
+    res.priority = admission?.priority ?? null;
   }
 
   const mupId = admissionIdToMupId[admissionId];

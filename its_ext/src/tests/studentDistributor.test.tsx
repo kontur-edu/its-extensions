@@ -57,7 +57,7 @@ describe("fillDistributionByStudentRatingAndAdmissionPriority", () => {
     const mupIdsWithTestResultRequired: Set<string> = new Set<string>();
     for (const aId in admissionInfo) {
       for (const pn in admissionInfo[aId]) {
-        if (admissionInfo[aId][pn].testResult) {
+        if (admissionInfo[aId][pn]?.testResult) {
           mupIdsWithTestResultRequired.add(admissionIdToMupId[aId]);
         }
       }

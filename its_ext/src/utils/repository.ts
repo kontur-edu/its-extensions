@@ -188,7 +188,7 @@ export class ITSRepository {
     studentsRaw: IStudentAdmissionRaw[]
     // mupId: string
   ) {
-    const studentAdmissionInfo: { [key: string]: IStudentAdmission } = {};
+    const studentAdmissionInfo: { [key: string]: IStudentAdmission | null } = {};
     for (const studentRaw of studentsRaw) {
       if (!this.studentData.data.hasOwnProperty(studentRaw.personalNumber)) {
         this.studentData.ids.push(studentRaw.personalNumber);
@@ -207,10 +207,10 @@ export class ITSRepository {
 
       this.studentData.data[studentRaw.personalNumber] = student;
 
-      // if (!studentRaw.priority && studentRaw.status !== 1) {
-      //   studentAdmissionInfo[studentRaw.personalNumber] = null;
-      //   continue;
-      // }
+      if (!studentRaw.priority && studentRaw.status !== 1 && !studentRaw.testResult) {
+        studentAdmissionInfo[studentRaw.personalNumber] = null;
+        continue;
+      }
       // if (studentRaw.priority)
       // TODO: add student meta
       const studentAdmission: IStudentAdmission = {

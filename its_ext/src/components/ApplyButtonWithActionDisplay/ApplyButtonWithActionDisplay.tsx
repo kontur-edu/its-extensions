@@ -34,7 +34,7 @@ export function ApplyButtonWithActionDisplay(
     return (
       <React.Fragment>
         <Button onClick={handleActionListOpen}>
-          Показать созданные действия{" "}
+          Созданные действия{" "}
           {actionListOpen ? <ExpandLess /> : <ExpandMore />}
         </Button>
         <Collapse in={actionListOpen} timeout="auto" unmountOnExit>
@@ -52,7 +52,7 @@ export function ApplyButtonWithActionDisplay(
     return (
       <React.Fragment>
         <Button onClick={handleActionResultsListOpen}>
-          Показать рещультаты выполнения действий{" "}
+          Результаты выполнения действий{" "}
           {actionResultsListOpen ? <ExpandLess /> : <ExpandMore />}
         </Button>
         <Collapse in={actionResultsListOpen} timeout="auto" unmountOnExit>
@@ -119,7 +119,7 @@ export function ApplyButtonWithActionDisplay(
         variant="contained"
         style={{ marginRight: "1em" }}
       >
-        Применение изменений
+        Примененить изменения
       </Button>
     );
     return (

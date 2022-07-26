@@ -207,6 +207,10 @@ export class ITSRepository {
 
       this.studentData.data[studentRaw.personalNumber] = student;
 
+      // if (!studentRaw.priority && studentRaw.status !== 1) {
+      //   studentAdmissionInfo[studentRaw.personalNumber] = null;
+      //   continue;
+      // }
       // if (studentRaw.priority)
       // TODO: add student meta
       const studentAdmission: IStudentAdmission = {

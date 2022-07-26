@@ -274,3 +274,9 @@ export type AdmissionInfo = {
     [key: string]: IStudentAdmission;
   };
 };
+
+
+// export interface IAdmissionInfo {
+//   admissionIdToStudentAdmission: AdmissionInfo;
+//   admissionIdToPersonalNumbers: {[key: number]: string[]};
+// }

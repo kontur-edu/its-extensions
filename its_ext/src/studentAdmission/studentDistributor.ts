@@ -4,32 +4,10 @@
 import {
   AdmissionInfo,
   CompetitionGroupIdToMupAdmissions,
-  IAdmissionMeta,
   IMupData,
   IStudent,
-  IStudentAdmission,
   IStudentData,
 } from "../common/types";
-
-// admissionId -> personalNumber[]
-// make set of personalNumbers ()
-
-// sort by Rating
-
-// find Zneeded
-// create sToStudentAdmissions = student -> studentAdmission[]
-// create studentToZ = student -> Znumber = 0;
-// create mupToAdmissionInfo =  mupId => (limit, studentIds);
-// for student in sorted:
-// 	studentAdmission = sToStudentAdmissions[student]
-// 	studentAdmissionSorted = sortByPriority(studentAdmission) // 1 1 1 1 2 3 4...
-// 	for sa in studentAdmissionSorted:
-// 		mupAdmissionInfo = mupToAdmissionInfo[sa.mupId]
-// 		if (mupAdmissionInfo.studentsIds.count < mupAdmissionInfo.limit)
-// 			mupToAdmissionInfo.studentIds.push(student.personalNumber)
-// 			studentToZ[student] += mup.z
-// 		if (studentToZ >= Zneeded && sa.priority > 1)
-// 			break
 
 function compareByRating(lhs: IStudent, rhs: IStudent) {
   const r1 = lhs.rating ?? -1;
@@ -116,8 +94,8 @@ export function createPersonalNumberToStudentItem(
   for (const pn in personalNumberToStudentItem) {
     const studentItem = personalNumberToStudentItem[pn];
     studentItem.admissionIds = studentItem.admissionIds.sort((lhs, rhs) => {
-      const lhsStudentAdmission = admissionInfo[lhs][pn];
-      const rhsStudentAdmission = admissionInfo[rhs][pn];
+      const lhsStudentAdmission = admissionInfo[lhs][pn]!;
+      const rhsStudentAdmission = admissionInfo[rhs][pn]!;
       return lhsStudentAdmission.priority! - rhsStudentAdmission.priority!; //NOTE: should be filtered to not contain priority = null
     });
   }
@@ -177,12 +155,21 @@ export function findMupIdsWithTestResultRequired(
     for (const mId in mIdToAdmission) {
       const admission = mIdToAdmission[mId];
       const personalNumberToAdmission = admissionInfo[admission.admissionsId];
+      let studentsWithTestResultsCount = 0;
+      let potentialStudents = 0;
       for (const personalNumber in personalNumberToAdmission) {
         const studentAdmission = personalNumberToAdmission[personalNumber];
         if (studentAdmission.testResult) {
-          result.add(admission.mupId);
-          break;
+          studentsWithTestResultsCount++;
+          potentialStudents++;
+        } else if (studentAdmission.priority || studentAdmission.status === 1) {
+          potentialStudents++;
         }
+      }
+
+      if (studentsWithTestResultsCount > potentialStudents / 2) {
+        result.add(admission.mupId);
+        break;
       }
     }
   }
@@ -201,15 +188,24 @@ export function tryDistributeMupsByStudentRatingAndAdmissionPriority(
   admissionIdToMupId: { [key: number]: string },
   admissionInfo: AdmissionInfo
 ) {
+  console.log(`tryDistributeMupsByStudentRatingAndAdmissionPriority: personalNumberToStudentItem`);
+  console.log(personalNumberToStudentItem);
   for (const personalNumber of personalNumbersSortedByRating) {
     const sItem = personalNumberToStudentItem[personalNumber];
     const zeLimit = competitionGroupIdToZELimit[sItem.competitionGroupId];
+    if (sItem.currentZ >= zeLimit) continue;
     for (const admissionId of sItem.admissionIds) {
-      if (sItem.selectedAdmissionIds.includes(admissionId)) continue; // already admitted
+      if (sItem.selectedAdmissionIds.includes(admissionId)) {
+        continue; // already admitted
+      }
       const admission = admissionInfo[admissionId][personalNumber];
-      console.log(`${sItem.currentZ} <> ${zeLimit}`);
+      // if (!admission) {
+      //   throw new Error(`tryDistributeMupsByStudentRatingAndAdmissionPriority:
+      //     admission is null for admissionId: ${admissionId} personalNumber: ${personalNumber}`);
+      // }
       if (sItem.currentZ >= zeLimit) {
         // Заканчиваем если набрали лимит и кончились курсы с первым приоритетом
+        // personalNumber == '56904331' && console.log(`sItem.currentZ ${sItem.currentZ} >= zeLimit ${zeLimit}`);
         break;
       }
       const mupId = admissionIdToMupId[admission.admissionId];
@@ -226,6 +222,7 @@ export function tryDistributeMupsByStudentRatingAndAdmissionPriority(
         sItem.selectedAdmissionIds.push(admissionId);
         sItem.currentZ += mupZe;
         mupItem.count++;
+      } else {
       }
     }
   }

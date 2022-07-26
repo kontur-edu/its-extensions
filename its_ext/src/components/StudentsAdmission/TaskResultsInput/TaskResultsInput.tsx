@@ -94,8 +94,7 @@ export function createStudentItems(
     if (admissionInfo.hasOwnProperty(admissionId)) {
       const personalNumberToStudentAdmission = admissionInfo[admissionId];
       for (const personalNumber in personalNumberToStudentAdmission) {
-        const testResult =
-          personalNumberToStudentAdmission[personalNumber].testResult;
+        
         if (!studentData.data.hasOwnProperty(personalNumber)) {
           console.log(
             `personalNumber: ${personalNumber} not found in studentData`
@@ -109,6 +108,9 @@ export function createStudentItems(
         if (studentInfo.status !== "Активный") {
           continue;
         }
+
+        const testResult =
+          personalNumberToStudentAdmission[personalNumber].testResult;
         const studentItem: IStudentItem = {
           group: studentInfo.groupName,
           name: `${studentInfo.surname} ${studentInfo.firstname} ${studentInfo.patronymic}`,

@@ -357,7 +357,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   const handleRealApplyDebounced = () => {
     debouncedWrapperForApply(() => {
       alert("Real apply declined");
-      return;
+      // return;
       executeActions(studentAdmissionActions, context).then((actionResults) => {
         setStudentAdmissionActionResults(actionResults);
       });

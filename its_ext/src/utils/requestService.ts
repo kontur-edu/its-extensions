@@ -164,6 +164,7 @@ export class RequestService {
     const headers = {
       "Content-Type": "application/x-www-form-urlencoded",
       "x-redirect": "manual",
+      // "X-KL-Ajax-Request": "Ajax_Request",
       Accept: "*/*",
     };
     const formData = RequestService.formatFormData(data);

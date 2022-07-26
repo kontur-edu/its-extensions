@@ -561,7 +561,7 @@ export class ITSApiService {
       "https://its.urfu.ru/MUPItsAdmission/SetCompetitionGroupAdmissionStatus";
 
     const data = {
-      studentId: studentId,
+      studentIds: studentId,
       id: admissionId,
       status: status,
     };

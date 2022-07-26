@@ -35,7 +35,7 @@ function generateUpdateStudentAdmissionActions(
         } else if (!isSelected && admission?.status === 1) {
           // remove from selection
           actions.push(
-            new UpdateStudentAdmissionAction(student.id, admissionId, 2)
+            new UpdateStudentAdmissionAction(student.id, admissionId, 0)
           );
         }
       }

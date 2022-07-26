@@ -89,16 +89,13 @@ export function createStudentItems(
   admissionInfo: AdmissionInfo,
   studentData: IStudentData
 ): { [key: string]: IStudentItem } {
-  
   const personalNumberToStudentItems: { [key: string]: IStudentItem } = {};
   for (const admissionId of admissionIds) {
-    
     if (admissionInfo.hasOwnProperty(admissionId)) {
       const personalNumberToStudentAdmission = admissionInfo[admissionId];
       // console.log("personalNumberToStudentAdmission");
       // console.log(personalNumberToStudentAdmission);
       for (const personalNumber in personalNumberToStudentAdmission) {
-        
         if (!studentData.data.hasOwnProperty(personalNumber)) {
           console.log(
             `personalNumber: ${personalNumber} not found in studentData`
@@ -400,7 +397,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
           onChange={handleTextAreaChange}
           rows={10}
           className="textarea"
-          placeholder="Вставьте <группa> <Ф> <И> <О> разделяя переносом строки"
+          placeholder="Вставьте <Группa> <Фамилия> <Имя> <Отчество> разделяя переносом строки"
         />
         {invalidStudentRows.length > 0 && renderInvalidStudentRows()}
         <Button onClick={handleSelectStudentsFromTextArea}>

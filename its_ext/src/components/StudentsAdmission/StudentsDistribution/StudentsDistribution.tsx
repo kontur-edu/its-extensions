@@ -22,10 +22,20 @@ import {
   addRandomMupsForStudentIfNeeded,
 } from "../../../studentAdmission/studentDistributor";
 import { ITSContext } from "../../../common/Context";
-import { REQUEST_ERROR_UNAUTHORIZED, DEBOUNCE_MS } from "../../../utils/constants";
-import { createDebouncedWrapper, downloadFileFromText } from "../../../utils/helpers";
-import {createStudentAdmissionActions} from "../../../studentAdmission/actionCreator";
-import { executeActions, IActionExecutionLogItem, ITSAction } from "../../../common/actions";
+import {
+  REQUEST_ERROR_UNAUTHORIZED,
+  DEBOUNCE_MS,
+} from "../../../utils/constants";
+import {
+  createDebouncedWrapper,
+  downloadFileFromText,
+} from "../../../utils/helpers";
+import { createStudentAdmissionActions } from "../../../studentAdmission/actionCreator";
+import {
+  executeActions,
+  IActionExecutionLogItem,
+  ITSAction,
+} from "../../../common/actions";
 import Collapse from "@mui/material/Collapse";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
@@ -34,9 +44,7 @@ import ExpandMore from "@mui/icons-material/ExpandMore";
 //   admissionIdToMupName: { [key: number]: string }; // mupId -> mupName
 // }
 
-
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
-
 
 export function StudentsDistribution(props: IStudentsDistributionProps) {
   const [personalNumberToStudentItems, setPersonalNumberToStudentItems] =
@@ -46,7 +54,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   const [mupIdToMupItems, setMupIdToMupItems] = useState<{
     [key: string]: IMupDistributionItem;
   }>({});
-  
+
   const [studentAdmissionsText, setStudentAdmissionsText] =
     useState<string>("");
   const [studentAdmissionsTextInput, setStudentAdmissionsTextInput] =
@@ -55,16 +63,19 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     studentAdmissionsTextInputMessages,
     setStudentAdmissionsTextInputMessages,
   ] = useState<string[]>([]);
-  const [mupIdsWithIncorrectLimits, setMupIdsWithIncorrectLimits] = useState<string[]>([]);
+  const [mupIdsWithIncorrectLimits, setMupIdsWithIncorrectLimits] = useState<
+    string[]
+  >([]);
   const [manualEditOpen, setManualEditOpen] = useState<boolean>(false);
   const mupIdsWithTestResultRequired = useRef<Set<string>>(new Set<string>());
-  const competitionGroupIdToZELimit = useRef<{[key: number]: number}>({});
+  const competitionGroupIdToZELimit = useRef<{ [key: number]: number }>({});
   const personalNumbersOfActiveStudentsSortedByRating = useRef<string[]>([]);
   const refreshInProgress = useRef<boolean>(false);
-  const [studentAdmissionActions, setStudentAdmissionActions] = useState<ITSAction[]>([]);
-  const [studentAdmissionActionResults, setStudentAdmissionActionResults] = 
+  const [studentAdmissionActions, setStudentAdmissionActions] = useState<
+    ITSAction[]
+  >([]);
+  const [studentAdmissionActionResults, setStudentAdmissionActionResults] =
     useState<IActionExecutionLogItem[]>([]);
-  
 
   const context = useContext(ITSContext)!;
 
@@ -78,7 +89,8 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     }
     let ensureSelectionGroupDataPromise = Promise.resolve();
     if (context.dataRepository.selectionGroupData.ids.length === 0) {
-      ensureSelectionGroupDataPromise = context.dataRepository.UpdateSelectionGroupData();
+      ensureSelectionGroupDataPromise =
+        context.dataRepository.UpdateSelectionGroupData();
     }
     const updateAdmissionsPromise = context.dataRepository
       .UpdateAdmissionMetas(props.competitionGroupIds)
@@ -100,7 +112,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     return Promise.allSettled([
       ensureMupDataPromise,
       ensureSelectionGroupDataPromise,
-      updateAdmissionsPromise
+      updateAdmissionsPromise,
     ])
       .then(() => {
         refreshInProgress.current = false;
@@ -138,17 +150,19 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       context.dataRepository.competitionGroupIdToMupAdmissions,
       context.dataRepository.admissionInfo,
       context.dataRepository.admissionIdToMupId
-    )
+    );
 
     const newMupIdsWithIncorrectLimits: string[] = [];
     for (const mupId in studentAndMupItems.mupIdToMupItems) {
       if (!studentAndMupItems.mupIdToMupItems[mupId].valid) {
         newMupIdsWithIncorrectLimits.push(mupId);
       }
-    } 
+    }
     setMupIdsWithIncorrectLimits(newMupIdsWithIncorrectLimits);
 
-    setPersonalNumberToStudentItems(studentAndMupItems.personalNumberToStudentItems);
+    setPersonalNumberToStudentItems(
+      studentAndMupItems.personalNumberToStudentItems
+    );
     setMupIdToMupItems(studentAndMupItems.mupIdToMupItems);
 
     mupIdsWithTestResultRequired.current = findMupIdsWithTestResultRequired(
@@ -157,23 +171,25 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       context.dataRepository.admissionInfo
     );
 
-    const newZeLimits: {[key: number]: number} = {};
+    const newZeLimits: { [key: number]: number } = {};
     for (const competitionGroupId of props.competitionGroupIds) {
-      for (const selectionGroupId of context.dataRepository.selectionGroupData.ids) {
-        const selectionGroup = context.dataRepository.selectionGroupData.data[selectionGroupId];
+      for (const selectionGroupId of context.dataRepository.selectionGroupData
+        .ids) {
+        const selectionGroup =
+          context.dataRepository.selectionGroupData.data[selectionGroupId];
         if (selectionGroup.competitionGroupId === competitionGroupId) {
           newZeLimits[competitionGroupId] = selectionGroup.unitSum;
           break;
         }
       }
     }
-    competitionGroupIdToZELimit.current = newZeLimits; 
+    competitionGroupIdToZELimit.current = newZeLimits;
 
     const studentMupsData = createIStudentMupsData(
       studentAndMupItems.personalNumberToStudentItems,
       context.dataRepository.studentData,
       context.dataRepository.mupData,
-      context.dataRepository.admissionIdToMupId,
+      context.dataRepository.admissionIdToMupId
     );
     setStudentAdmissionsText(JSON.stringify(studentMupsData, null, 2));
 
@@ -190,11 +206,11 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
 
   const handleRefresh = () => {
     refreshData().then(() => prepareItemsAndStudentMupDataText());
-  }
+  };
 
   const handleRefreshDebounced = () => {
     debouncedWrapperForApply(handleRefresh);
-  }
+  };
 
   const handleDownlad = () => {
     downloadFileFromText(`studentAdmissions.json`, studentAdmissionsText);
@@ -208,7 +224,9 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   };
 
   const handleParseStudentAdmissionsFromTextArea = () => {
-    const newStudentMupsData = parseStudentAdmissionsFromText(studentAdmissionsTextInput);
+    const newStudentMupsData = parseStudentAdmissionsFromText(
+      studentAdmissionsTextInput
+    );
     if (newStudentMupsData === null) {
       setStudentAdmissionsTextInputMessages([
         "Неверный формат, пример формата можно получить под таблицей",
@@ -232,18 +250,19 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         context.dataRepository.competitionGroupIdToMupAdmissions,
         context.dataRepository.admissionInfo,
         context.dataRepository.admissionIdToMupId,
-        newStudentMupsData.studentPersonalNumberToSelectedAdmissionIds,
+        newStudentMupsData.studentPersonalNumberToSelectedAdmissionIds
       );
 
       console.log("studentAndMupItems");
       console.log(studentAndMupItems);
-      
-      setPersonalNumberToStudentItems(studentAndMupItems.personalNumberToStudentItems);
+
+      setPersonalNumberToStudentItems(
+        studentAndMupItems.personalNumberToStudentItems
+      );
       setMupIdToMupItems(studentAndMupItems.mupIdToMupItems);
 
       generateActions(studentAndMupItems.personalNumberToStudentItems);
     } else {
-
     }
   };
 
@@ -265,10 +284,12 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       [key: string]: IMupDistributionItem;
     } = {};
     for (const pn in personalNumberToStudentItems) {
-      newPersonalNumberToStudentItems[pn] = {...personalNumberToStudentItems[pn]};
+      newPersonalNumberToStudentItems[pn] = {
+        ...personalNumberToStudentItems[pn],
+      };
     }
     for (const mupId in mupIdToMupItems) {
-      newMupIdToMupItems[mupId] = {...mupIdToMupItems[mupId]};
+      newMupIdToMupItems[mupId] = { ...mupIdToMupItems[mupId] };
     }
 
     tryDistributeMupsByStudentRatingAndAdmissionPriority(
@@ -291,18 +312,16 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       context.dataRepository.mupData,
       context.dataRepository.competitionGroupIdToMupAdmissions
     );
-    
+
     setPersonalNumberToStudentItems(newPersonalNumberToStudentItems);
     setMupIdToMupItems(newMupIdToMupItems);
 
     return newPersonalNumberToStudentItems;
-  }
+  };
 
-  const generateActions = (
-    newPersonalNumberToStudentItems: {
-      [key: string]: IStudentAdmissionDistributionItem;
-    }
-  ) => {
+  const generateActions = (newPersonalNumberToStudentItems: {
+    [key: string]: IStudentAdmissionDistributionItem;
+  }) => {
     const actions = createStudentAdmissionActions(
       newPersonalNumberToStudentItems,
       context.dataRepository.admissionInfo,
@@ -311,66 +330,73 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
 
     setStudentAdmissionActions(actions);
     return actions;
-  }
+  };
 
   const handleDistributeRemainingStudents = () => {
     const newPersonalNumberToStudentItems = distributeRemainingStudents();
     generateActions(newPersonalNumberToStudentItems);
-  }
+  };
 
   const handleRealApplyDebounced = () => {
     debouncedWrapperForApply(() => {
       alert("Real apply declined");
       return;
-      executeActions(studentAdmissionActions, context)
-      .then(actionResults => {
+      executeActions(studentAdmissionActions, context).then((actionResults) => {
         setStudentAdmissionActionResults(actionResults);
       });
     });
-  }
+  };
 
   const toggleManualEditSection = () => {
     setManualEditOpen(!manualEditOpen);
-  }
-  
+  };
+
   const renderErrorMessage = () => {
-    const mupNames = mupIdsWithIncorrectLimits.map(mupId =>
-      context.dataRepository.mupData.data[mupId].name)
+    const mupNames = mupIdsWithIncorrectLimits
+      .map((mupId) => context.dataRepository.mupData.data[mupId].name)
       .sort();
     return mupIdsWithIncorrectLimits.length === 0 ? null : (
       <div className="warning">
         Выбранные Конкурсные группы имеют разные Лимиты для следующий МУПов:
         <ul className="list_without_decorations">
-          {mupNames.map((mupName, i) => <li key={i}>{mupName}</li>)}
+          {mupNames.map((mupName, i) => (
+            <li key={i}>{mupName}</li>
+          ))}
         </ul>
       </div>
     );
-  }
+  };
 
   const renderRows = () => {
     return personalNumbersOfActiveStudentsSortedByRating.current.map(
       (personalNumber) => {
         const studentItem = personalNumberToStudentItems[personalNumber];
         const student = context.dataRepository.studentData.data[personalNumber];
-        const selectedMupRecords = studentItem.selectedAdmissionIds
-        .map((aId) => createAdmissionRecord(
-          aId, personalNumber,
-          context.dataRepository.admissionInfo,
-          context.dataRepository.mupData,
-          context.dataRepository.admissionIdToMupId
-        ));
-        const remainingMupRecords = studentItem.admissionIds
-          .filter((aId, idx) => !studentItem.selectedAdmissionIds.includes(aId))
-          .map((aId) => createAdmissionRecord(
-            aId, personalNumber,
+        const selectedMupRecords = studentItem.selectedAdmissionIds.map((aId) =>
+          createAdmissionRecord(
+            aId,
+            personalNumber,
             context.dataRepository.admissionInfo,
             context.dataRepository.mupData,
             context.dataRepository.admissionIdToMupId
-          ));
+          )
+        );
+        const remainingMupRecords = studentItem.admissionIds
+          .filter((aId, idx) => !studentItem.selectedAdmissionIds.includes(aId))
+          .map((aId) =>
+            createAdmissionRecord(
+              aId,
+              personalNumber,
+              context.dataRepository.admissionInfo,
+              context.dataRepository.mupData,
+              context.dataRepository.admissionIdToMupId
+            )
+          );
         return (
           <tr key={personalNumber}>
             <td>
-              {student.surname} {student.firstname} {student.patronymic} {personalNumber}
+              {student.surname} {student.firstname} {student.patronymic}{" "}
+              {personalNumber}
             </td>
             <td>{student.groupName}</td>
             <td>{student.rating}</td>
@@ -378,8 +404,11 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
             <td>
               <ul className="list_without_decorations">
                 {selectedMupRecords.map((record, index) => (
-                  <li key={index} className={record.initStatus !== 1 ? "warning" : ''}>
-                    {`${record.priority ?? '*'}. ${record.name}`}
+                  <li
+                    key={index}
+                    className={record.initStatus !== 1 ? "warning" : ""}
+                  >
+                    {`${record.priority ?? "*"}. ${record.name}`}
                   </li>
                 ))}
               </ul>
@@ -387,8 +416,11 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
             <td>
               <ul className="list_without_decorations">
                 {remainingMupRecords.map((record, index) => (
-                  <li key={index} className={record.initStatus === 1 ? "warning" : ''}>
-                    {`${record.priority ?? '*'}. ${record.name}`}
+                  <li
+                    key={index}
+                    className={record.initStatus === 1 ? "warning" : ""}
+                  >
+                    {`${record.priority ?? "*"}. ${record.name}`}
                   </li>
                 ))}
               </ul>
@@ -402,7 +434,10 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   const renderAdmissionsInput = () => {
     return (
       <React.Fragment>
-        <h4>Вставивьте распределение студентов по МУПам (формат данных как в поле сверху)</h4>
+        <h4>
+          Вставивьте распределение студентов по МУПам (формат данных как в поле
+          сверху)
+        </h4>
         <textarea
           value={studentAdmissionsTextInput}
           onChange={handleStudentAdmissionsTextInputChange}
@@ -416,7 +451,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           renderStudentAdmissionsTextInputMessages()}
       </React.Fragment>
     );
-  }
+  };
 
   const renderTable = () => {
     return (
@@ -444,22 +479,24 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
             <tbody>{renderRows()}</tbody>
           </table>
         </section>
-        
       </article>
     );
-  }
+  };
 
   const renderContent = () => {
     return (
       <React.Fragment>
-        
-        
         {renderTable()}
 
-
-        <Button onClick={toggleManualEditSection} style={{
-            alignSelf: "flex-start"
-          }}>Редактирование вручную {manualEditOpen ? <ExpandLess /> : <ExpandMore />}</Button>
+        <Button
+          onClick={toggleManualEditSection}
+          style={{
+            alignSelf: "flex-start",
+          }}
+        >
+          Редактирование вручную{" "}
+          {manualEditOpen ? <ExpandLess /> : <ExpandMore />}
+        </Button>
         <Collapse in={manualEditOpen} timeout="auto" unmountOnExit>
           <div className={style.manualEdit__container}>
             <h4>Распределение по курсам в ИТС</h4>
@@ -471,10 +508,14 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
             {renderAdmissionsInput()}
           </div>
         </Collapse>
-    
-        <Button onClick={handleDistributeRemainingStudents} variant="contained" style={{
-            alignSelf: "flex-start"
-          }}>
+
+        <Button
+          onClick={handleDistributeRemainingStudents}
+          variant="contained"
+          style={{
+            alignSelf: "flex-start",
+          }}
+        >
           Дораспределить студентов по курсам
         </Button>
 
@@ -484,15 +525,16 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           actions={studentAdmissionActions}
           actionResults={studentAdmissionActionResults}
           onApply={handleRealApplyDebounced}
+          onNextStep={props.onNextStep}
         />
       </React.Fragment>
     );
-  }
+  };
 
   return (
     <section className="step__container">
       {renderErrorMessage()}
-      
+
       {mupIdsWithIncorrectLimits.length === 0 && renderContent()}
     </section>
   );

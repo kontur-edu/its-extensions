@@ -34,8 +34,7 @@ export function ApplyButtonWithActionDisplay(
     return (
       <React.Fragment>
         <Button onClick={handleActionListOpen}>
-          Созданные действия{" "}
-          {actionListOpen ? <ExpandLess /> : <ExpandMore />}
+          Созданные действия {actionListOpen ? <ExpandLess /> : <ExpandMore />}
         </Button>
         <Collapse in={actionListOpen} timeout="auto" unmountOnExit>
           <ul>

@@ -10,7 +10,11 @@ import {
 export type FormBodyObj = { [key: string]: string | number | string[] };
 
 export class RequestService {
-  constructor(public proxyUrl: string, public loginUrl: string, private onConnectionRefused?: () => any) {}
+  constructor(
+    public proxyUrl: string,
+    public loginUrl: string,
+    private onConnectionRefused?: () => any
+  ) {}
 
   setOnConnectionRefused(func: () => any) {
     this.onConnectionRefused = func;
@@ -43,7 +47,7 @@ export class RequestService {
     let response: any = null;
     try {
       response = await fetch(url, options);
-    } catch(err) {
+    } catch (err) {
       this.onConnectionRefused?.();
       // throw new Error(REQUEST_ERROR_CONNECTION_REFUSED);
     }
@@ -112,7 +116,7 @@ export class RequestService {
     let responseAuth: any = null;
     try {
       responseAuth = await fetch(urlWithProxy, options);
-    } catch(err) {
+    } catch (err) {
       this.onConnectionRefused?.();
       // throw new Error(REQUEST_ERROR_CONNECTION_REFUSED);
     }
@@ -153,10 +157,7 @@ export class RequestService {
     return result;
   }
 
-  async PostFormData(
-    url: string,
-    data: FormBodyObj,
-  ) {
+  async PostFormData(url: string, data: FormBodyObj) {
     console.log(`PostFormData: ${url}`);
 
     const urlWithProxy = `${this.proxyUrl}/${url}`;
@@ -181,11 +182,7 @@ export class RequestService {
     return result;
   }
 
-  async SendJson(
-    url: string,
-    data: any,
-    method: string = "POST",
-  ) {
+  async SendJson(url: string, data: any, method: string = "POST") {
     console.log(`SendJson: ${url}`);
 
     const urlWithProxy = `${this.proxyUrl}/${url}`;

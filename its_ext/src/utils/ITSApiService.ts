@@ -254,7 +254,7 @@ export class ITSApiService {
       SelectionBegin: period.selectionBegin,
       SelectionDeadline: period.selectionDeadline,
     };
-  
+
     // const message = `Tried to create period: ${JSON.stringify(data)}`;
     // alert(message);
     // return { success: false, message };
@@ -321,7 +321,9 @@ export class ITSApiService {
     return result;
   }
 
-  async EmulateCheckSubgroupMetas(competitionGroupId: number): Promise<{success: boolean, data: any}> {
+  async EmulateCheckSubgroupMetas(
+    competitionGroupId: number
+  ): Promise<{ success: boolean; data: any }> {
     const url = `https://its.urfu.ru/MUPItsSubgroupMeta/Index?competitionGroupId=${competitionGroupId}`;
     const urlWithProxy = `${this.requestService.proxyUrl}/${url}`;
     const headers = {
@@ -335,7 +337,7 @@ export class ITSApiService {
     };
     const res = await this.requestService.SendRequest(urlWithProxy, options);
 
-    return res
+    return res;
   }
 
   async GetSubgroupMetas(competitionGroupId: number): Promise<ISubgroupMeta[]> {
@@ -436,11 +438,7 @@ export class ITSApiService {
       }
     }
 
-    const response = await this.requestService.SendJson(
-      url,
-      data,
-      "DELETE"
-    );
+    const response = await this.requestService.SendJson(url, data, "DELETE");
     const result = { success: response.success, message: response.data };
     if (response.success && response.data) {
       const bodyJson = JSON.parse(response.data);
@@ -558,7 +556,8 @@ export class ITSApiService {
   ) {
     if (this.safeMode) throw new Error("Safe mode enabled");
 
-    const url = "https://its.urfu.ru/MUPItsAdmission/SetCompetitionGroupAdmissionStatus";
+    const url =
+      "https://its.urfu.ru/MUPItsAdmission/SetCompetitionGroupAdmissionStatus";
 
     const data = {
       studentId: studentId,

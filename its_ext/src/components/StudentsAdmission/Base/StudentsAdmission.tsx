@@ -14,6 +14,7 @@ import { Button } from "@mui/material";
 import WestIcon from "@mui/icons-material/West";
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 import { StudentsDistribution } from "../StudentsDistribution";
+import { SubgroupDistribution } from "../SubgroupDistribution";
 
 export function StudentsAdmission(props: IStudentsAdmissionProps) {
   const [competitionGroupItems, setCompetitionGroupItems] = useState<
@@ -24,6 +25,7 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
   const context = useContext(ITSContext)!;
   const stepTwoRef = useRef<HTMLElement | null>(null);
   const stepThreeRef = useRef<HTMLElement | null>(null);
+  const stepFourRef = useRef<HTMLElement | null>(null);
 
   const navigate = useNavigate();
 
@@ -87,7 +89,11 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
 
   const handleGoToStudentAdmissions = () => {
     stepThreeRef.current?.scrollIntoView({ behavior: "smooth" });
-  }
+  };
+
+  const handleGoToSubgroupDistribution = () => {
+    stepFourRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   const renderTaskResultsInput = () => {
     return (
@@ -114,6 +120,24 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
           <span className="step__header">3. Зачисление студентов на курсы</span>
 
           <StudentsDistribution
+            onUnauthorized={props.onUnauthorized}
+            competitionGroupIds={competitionGroupIds}
+            onNextStep={handleGoToSubgroupDistribution}
+          />
+        </article>
+      </React.Fragment>
+    );
+  };
+
+  const renderSubgroupDistribution = () => {
+    return (
+      <React.Fragment>
+        <article className="step" ref={stepFourRef}>
+          <span className="step__header">
+            4. Распределение студентов по группам
+          </span>
+
+          <SubgroupDistribution
             onUnauthorized={props.onUnauthorized}
             competitionGroupIds={competitionGroupIds}
           />
@@ -167,6 +191,8 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
       {isGroupSelectionValid() && renderTaskResultsInput()}
 
       {isGroupSelectionValid() && renderStudentsAutoAdmission()}
+
+      {isGroupSelectionValid() && renderSubgroupDistribution()}
     </section>
   );
 }

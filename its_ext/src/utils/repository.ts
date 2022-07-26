@@ -39,9 +39,13 @@ export class ITSRepository {
   competitionGroupData: ICompetitionGroupData = { ids: [], data: {} };
 
   studentData: IStudentData = { ids: [], data: {} };
+  studentIdToPersonalNumber: { [key: string]: string } = {};
+
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions = {};
   admissionIdToMupId: { [key: number]: string } = {};
   admissionInfo: AdmissionInfo = {};
+
+  subgroupIdToIncludedStudentIds: { [key: string]: string[] } = {};
 
   constructor(public api: ITSApiService) {}
 
@@ -207,6 +211,7 @@ export class ITSRepository {
       };
 
       this.studentData.data[studentRaw.personalNumber] = student;
+      this.studentIdToPersonalNumber[student.id] = student.personalNumber; // TODO: beter store only studentId everywhere
 
       if (
         !studentRaw.priority &&
@@ -249,6 +254,28 @@ export class ITSRepository {
           admissionId,
           resp.value
         );
+      }
+    }
+  }
+
+  async UpdateSubgroupMembership(subgroupIds: number[]) {
+    console.log(`ITSRepository: UpdateSubgroupMembership`);
+    const requests = subgroupIds.map((sId) =>
+      this.api.GetSubgroupMembershipInfo(sId)
+    );
+    const responses = await Promise.allSettled(requests);
+    for (let i = 0; i < subgroupIds.length; i++) {
+      const resp = responses[i];
+      const subgroupId = subgroupIds[i];
+      if (resp.status === "fulfilled") {
+        const includedStudentIds: string[] = [];
+        for (const membership of resp.value) {
+          if (membership.included) {
+            includedStudentIds.push(membership.studentId);
+          }
+        }
+
+        this.subgroupIdToIncludedStudentIds[subgroupId] = includedStudentIds;
       }
     }
   }

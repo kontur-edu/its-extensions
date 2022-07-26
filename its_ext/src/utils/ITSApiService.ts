@@ -11,6 +11,7 @@ import {
   ICompetitionGroup,
   IAdmissionMeta,
   IStudentAdmissionRaw,
+  IStudentSubgroupMembership,
 } from "../common/types";
 
 import {
@@ -568,6 +569,46 @@ export class ITSApiService {
 
     if (admissionId < 146) {
       const message = `Tried to update not test Admission id: ${admissionId}`;
+      alert(message);
+      return { success: false, message };
+    }
+
+    const result = await this.requestService.PostFormData(url, data);
+    return result;
+  }
+
+  async GetSubgroupMembershipInfo(
+    subgroupId: number
+  ): Promise<IStudentSubgroupMembership[]> {
+    const url = `https://its.urfu.ru/MUPItsSubgroup/Students?id=${subgroupId}`;
+    const res = await this.requestService.GetJson(url);
+
+    return res.map((obj: any) => {
+      const admissionMeta: IStudentSubgroupMembership = {
+        studentId: obj["Id"],
+        included: obj["Included"],
+      };
+      return admissionMeta;
+    });
+  }
+
+  async UpdateStudentSubgroupMembership(
+    subgroupId: number,
+    studentId: string,
+    included: boolean
+  ) {
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
+
+    const url = "https://its.urfu.ru/MUPItsSubgroup/StudentMembership";
+
+    const data = {
+      subgroupId: subgroupId,
+      studentId: studentId,
+      include: included ? "true" : "false",
+    };
+
+    if (subgroupId < 594) {
+      const message = `Tried to update not test Subgroup id: ${subgroupId}`;
       alert(message);
       return { success: false, message };
     }

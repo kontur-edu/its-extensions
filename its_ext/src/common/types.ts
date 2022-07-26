@@ -275,7 +275,7 @@ export type AdmissionInfo = {
   };
 };
 
-// export interface IAdmissionInfo {
-//   admissionIdToStudentAdmission: AdmissionInfo;
-//   admissionIdToPersonalNumbers: {[key: number]: string[]};
-// }
+export interface IStudentSubgroupMembership {
+  studentId: string;
+  included: boolean;
+}

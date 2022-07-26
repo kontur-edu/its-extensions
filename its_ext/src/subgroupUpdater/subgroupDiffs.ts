@@ -337,7 +337,7 @@ export function createDifferenceMessagesForMup(
 
   if (haveLoadMetas && !haveCreatedSubgroups) {
     messages.push(
-      `Не найдено созданных групп, примените изменения, чтобы создать подгруппы`
+      `Не найдено созданных групп. Убедитесь, что количество подгрупп задано и примените изменения, чтобы создать подгруппы`
     );
   }
 

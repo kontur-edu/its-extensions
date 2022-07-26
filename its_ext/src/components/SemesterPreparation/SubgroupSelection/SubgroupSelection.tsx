@@ -342,7 +342,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
   const handleApplyReal = () => {
     executeActions(subgroupSelectionActions, context)
       .then((results) => setSubgroupSelectionActionsResults(results))
-      .then(() => alert("Изменения применены"))
+      .then(() => alert("Применение изменений завершено"))
       .then(() => refreshDataDebounced())
       .catch((err) => {
         if (err.message === REQUEST_ERROR_UNAUTHORIZED) {

@@ -39,7 +39,12 @@ export async function executeActions(
 ): Promise<IActionExecutionLogItem[]> {
   const results: IActionExecutionLogItem[] = [];
   for (let action of actions) {
-    const actionResults = await action.execute(itsContext);
+    let actionResults: IActionResponse[] = [];
+    try {
+      actionResults = await action.execute(itsContext);
+    } catch(err) {
+      actionResults.push({success: false, message: err as string})
+    }
     // console.log("actionResults");
     // console.log(actionResults);
     const actionExecutionLogItem: IActionExecutionLogItem = {

@@ -395,7 +395,7 @@ export function MupEditor(props: IMupEditorProps) {
   const handleApplyReal = () => {
     executeActions(mupEditorActions, context)
       .then((results) => setMupEditorActionResults(results))
-      .then(() => alert("Изменения применены"))
+      .then(() => alert("Применение изменений завершено"))
       .then(() => handleRefresh()) // refresh
       .catch((err) => {
         if (err.message === REQUEST_ERROR_UNAUTHORIZED) {

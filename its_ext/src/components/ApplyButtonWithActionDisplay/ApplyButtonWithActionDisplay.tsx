@@ -92,12 +92,23 @@ export function ApplyButtonWithActionDisplay(
         К следующему шагу
       </Button>
     );
-    const successMessage = wasApply.current && props.showSuccessMessage && (
-      <span className="message_success__container">
-        <DoneIcon />
-        Сохранено, с этого шага можно безопасно уходить
-      </span>
-    );
+    
+    let successMessage: JSX.Element | null = null;
+    if (wasApply.current && props.showSuccessMessage) {
+      let allSuccess = true;
+      if (props.actionResults && !props.actionResults.every(li => li.actionResults.every(ar => ar.success))) {
+        allSuccess = false;
+      }
+      if (allSuccess) {
+        successMessage = (
+          <span className="message_success__container">
+            <DoneIcon />
+            Сохранено, с этого шага можно безопасно уходить
+          </span>
+        );
+      }
+    }
+
     return (
       <React.Fragment>
         {successMessage}

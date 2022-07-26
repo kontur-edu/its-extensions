@@ -41,6 +41,8 @@ import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import EditIcon from "@mui/icons-material/Edit";
 import AutoFixNormalIcon from "@mui/icons-material/AutoFixNormal";
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import DownloadIcon from '@mui/icons-material/Download';
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
@@ -450,8 +452,8 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     return (
       <React.Fragment>
         <h4>
-          Вставивьте распределение студентов по МУПам (формат данных как в поле
-          сверху)
+          Вставивьте распределение студентов по МУПам
+            (формат данных как в файле сверху)
         </h4>
         <textarea
           value={studentAdmissionsTextInput}
@@ -460,7 +462,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           placeholder="Вставьте содержимое файла с распределением студентов по группам"
         />
         <Button onClick={handleParseStudentAdmissionsFromTextArea}>
-          Распарсить
+          Распарсить и отобразить в таблице
         </Button>
         {studentAdmissionsTextInputMessages.length > 0 &&
           renderStudentAdmissionsTextInputMessages()}
@@ -516,8 +518,15 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         <Collapse in={manualEditOpen} timeout="auto" unmountOnExit>
           <div className={style.manualEdit__container}>
             <h4>Распределение по курсам в ИТС</h4>
-            <textarea value={studentAdmissionsText} rows={10} readOnly />
-            <Button onClick={handleDownlad} style={{ alignSelf: "flex-start" }}>
+            {/* <textarea value={studentAdmissionsText} rows={10} readOnly /> */}
+            <Button 
+              onClick={() => navigator.clipboard.writeText(studentAdmissionsText)}
+              style={{ alignSelf: "flex-start" }}
+              startIcon={<ContentCopyIcon/>}>
+               Скопировать распределение
+            </Button>
+            <Button onClick={handleDownlad} style={{ alignSelf: "flex-start" }}
+              startIcon={<DownloadIcon/>}>
               Скачать файл
             </Button>
 

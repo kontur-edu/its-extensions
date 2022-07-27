@@ -24,6 +24,10 @@ import { createSubgroupDiffInfo } from "../../../subgroupUpdater/subgroupDiffs";
 
 import Button from "@mui/material/Button";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import {
+  parseSubgroupMembershipFromText,
+  validateSubgroupMembership,
+} from "../../../subgroupMembership/subgroupMembershipParser";
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
@@ -49,6 +53,10 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
 
   const [subgroupDistributionTextInput, setSubgroupDistributionTextInput] =
     useState<string>("");
+  const [
+    subgroupDistributionTextInputMessages,
+    setSubgroupDistributionTextInputMessages,
+  ] = useState<string[]>([]);
 
   const [mupToLoadToSubgroupMembership, setMupToLoadToSubgroupMembership] =
     useState<MupToLoadToSubgroupMembership>({});
@@ -63,14 +71,47 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
   };
 
   const handleParseSubgroupDistributionFromTextArea = () => {
-    const newMupToLoadToSubgroupMembership = JSON.parse(
+    if (!subgroupDiffInfo) return;
+    const newMupToLoadToSubgroupMembership = parseSubgroupMembershipFromText(
       subgroupDistributionTextInput
     );
-    // TODO: add validation
-    setMupToLoadToSubgroupMembership(newMupToLoadToSubgroupMembership);
 
-    generateActionsForSubgroupDistributionDebounced(
-      newMupToLoadToSubgroupMembership
+    if (newMupToLoadToSubgroupMembership === null) {
+      setSubgroupDistributionTextInputMessages([
+        "Неверный формат, можно использовать placeholder как пример",
+      ]);
+      return;
+    }
+
+    const { success, messages } = validateSubgroupMembership(
+      newMupToLoadToSubgroupMembership,
+      subgroupDiffInfo,
+      context.dataRepository.studentData
+    );
+
+    setSubgroupDistributionTextInputMessages(messages);
+    console.log("validateStudentAdmissions");
+    console.log({ success, messages });
+
+    if (success) {
+      setMupToLoadToSubgroupMembership(newMupToLoadToSubgroupMembership);
+      generateActionsForSubgroupDistributionDebounced(
+        newMupToLoadToSubgroupMembership
+      );
+    }
+  };
+
+  const handleParseSubgroupDistributionFromTextAreaDebounced = () => {
+    debouncedWrapperForApply(handleParseSubgroupDistributionFromTextArea);
+  };
+
+  const renderSubgroupDistributionTextInputMessages = () => {
+    return (
+      <ul className="list_without_decorations warning">
+        {subgroupDistributionTextInputMessages.map((message, index) => (
+          <li key={index}>{message}</li>
+        ))}
+      </ul>
     );
   };
 
@@ -315,12 +356,27 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
           value={subgroupDistributionTextInput}
           onChange={handleSubgroupDistributionTextInputChange}
           rows={10}
-          placeholder="C++, [['personalNumber1', 'personalNumber2', ...], ...]"
+          placeholder={`{
+// МУП
+  "C++": {
+    // Нагрузка
+    "лекции": [
+      // Список личных номеров студентов первой группы
+      ["123456", ...], 
+      // Список личных номеров студентов второй группы
+      [...],			 
+      ...
+    ]
+  }
+}`}
         />
 
-        <Button onClick={handleParseSubgroupDistributionFromTextArea}>
+        <Button onClick={handleParseSubgroupDistributionFromTextAreaDebounced}>
           Распарсить
         </Button>
+
+        {subgroupDistributionTextInputMessages.length > 0 &&
+          renderSubgroupDistributionTextInputMessages()}
 
         <ApplyButtonWithActionDisplay
           showErrorWarning={true}

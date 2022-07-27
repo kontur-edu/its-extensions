@@ -15,6 +15,7 @@ import {
   IStudent,
   IStudentAdmission,
   IStudentAdmissionRaw,
+  IStudentSubgroupMembership,
 } from "../common/types";
 
 import { ITSApiService } from "./ITSApiService";
@@ -45,7 +46,9 @@ export class ITSRepository {
   admissionIdToMupId: { [key: number]: string } = {};
   admissionInfo: AdmissionInfo = {};
 
-  subgroupIdToIncludedStudentIds: { [key: number]: string[] } = {}; // subgroupId -> studentId[]
+  subgroupIdToStudentSubgroupMembership: {
+    [key: number]: IStudentSubgroupMembership[];
+  } = {}; // subgroupId -> studentId[]
 
   constructor(public api: ITSApiService) {}
 
@@ -241,7 +244,9 @@ export class ITSRepository {
   }
 
   // NOTE: need admissionIdToMupId (call UpdateAdmissionMetas first)
-  async UpdateStudentAdmissionsAndStudentData(competitionGroupIdToAdmissionIds: {[key: number]: number[]}) {
+  async UpdateStudentAdmissionsAndStudentData(competitionGroupIdToAdmissionIds: {
+    [key: number]: number[];
+  }) {
     console.log(`ITSRepository: UpdateStudentAdmissionsAndStudentData`);
     for (let competitionGroupIdStr in competitionGroupIdToAdmissionIds) {
       const competitionGroupId = Number(competitionGroupIdStr);
@@ -262,7 +267,6 @@ export class ITSRepository {
         }
       }
     }
-    
   }
 
   async UpdateSubgroupMembership(subgroupIds: number[]) {
@@ -275,16 +279,15 @@ export class ITSRepository {
       const resp = responses[i];
       const subgroupId = subgroupIds[i];
       if (resp.status === "fulfilled") {
-        const includedStudentIds: string[] = [];
-        for (const membership of resp.value) {
-          if (membership.included) {
-            includedStudentIds.push(membership.studentId);
-          }
-        }
+        // const includedStudentIds: string[] = [];
+        // for (const membership of resp.value) {
+        //   if (membership.included) {
+        //     includedStudentIds.push(membership.studentId);
+        //   }
+        // }
 
-        this.subgroupIdToIncludedStudentIds[subgroupId] = includedStudentIds;
+        this.subgroupIdToStudentSubgroupMembership[subgroupId] = resp.value;
       }
     }
   }
-
 }

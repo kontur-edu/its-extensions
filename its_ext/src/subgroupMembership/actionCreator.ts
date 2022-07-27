@@ -3,14 +3,18 @@ import {
   IStudentData,
   ISubgoupDiffInfo,
   MupToLoadToSubgroupMembership,
+  IStudentSubgroupMembership,
+  ICompetitionGroupToSubgroupMetas,
 } from "../common/types";
 import { UpdateMembershipAction } from "./actions";
 
 // createSubgroupDiffInfo
-export function generateUpdateMembershipActions(
-  mupToLoadToSubgroupMembership: MupToLoadToSubgroupMembership,
+function generateUpdateMembershipActions(
   subgoupDiffInfo: ISubgoupDiffInfo,
-  subgroupIdToIncludedStudentIds: { [key: number]: string[] }, // subgroupId -> studentId[]
+  mupToLoadToSubgroupMembership: MupToLoadToSubgroupMembership,
+  subgroupIdToStudentSubgroupMembership: {
+    [key: number]: IStudentSubgroupMembership[];
+  },
   studentData: IStudentData
 ): ITSAction[] {
   const actions: ITSAction[] = [];
@@ -42,12 +46,16 @@ export function generateUpdateMembershipActions(
     }
   }
 
-  for (const subgroupIdStr in subgroupIdToIncludedStudentIds) {
+  for (const subgroupIdStr in subgroupIdToStudentSubgroupMembership) {
     const subgroupId = Number(subgroupIdStr);
     if (!newCompetitionGroupToIncludedStudentIds.hasOwnProperty(subgroupId)) {
       continue;
     }
-    const initStudentIds = subgroupIdToIncludedStudentIds[subgroupId];
+    const membership = subgroupIdToStudentSubgroupMembership[subgroupId];
+    const initStudentIds: string[] = membership
+      .filter((m) => m.included)
+      .map((m) => m.studentId);
+
     const newStudentIds = newCompetitionGroupToIncludedStudentIds[subgroupId];
     const initStudentIdSet = new Set<string>(initStudentIds);
     const newStudentIdSet = new Set<string>(newStudentIds);
@@ -69,20 +77,89 @@ export function generateUpdateMembershipActions(
   return actions;
 }
 
-export function createTaskResultActions(
-  mupToLoadToSubgroupMembership: MupToLoadToSubgroupMembership,
+export function createSubgroupMembershipActions(
   subgoupDiffInfo: ISubgoupDiffInfo,
-  subgroupIdToIncludedStudentIds: { [key: number]: string[] },
+  mupToLoadToSubgroupMembership: MupToLoadToSubgroupMembership,
+  subgroupIdToStudentSubgroupMembership: {
+    [key: number]: IStudentSubgroupMembership[];
+  },
   studentData: IStudentData
 ): ITSAction[] {
   const actions: ITSAction[] = [];
 
   actions.push(
     ...generateUpdateMembershipActions(
-      mupToLoadToSubgroupMembership,
       subgoupDiffInfo,
-      subgroupIdToIncludedStudentIds,
+      mupToLoadToSubgroupMembership,
+      subgroupIdToStudentSubgroupMembership,
       studentData
+    )
+  );
+
+  return actions;
+}
+
+function generateUpdateMembershipActionsForOneGroupPerLoadDistribution(
+  competitionGroupIds: number[],
+  subgroupDiffInfo: ISubgoupDiffInfo,
+  competitionGroupToSubgroupMetas: ICompetitionGroupToSubgroupMetas,
+  subgroupIdToStudentSubgroupMembership: {
+    [key: number]: IStudentSubgroupMembership[];
+  }
+): ITSAction[] {
+  const actions: ITSAction[] = [];
+  const subgroupIdsToAutoAddAllStudents: number[] = [];
+  for (const competitionGroupId of competitionGroupIds) {
+    for (const meta of competitionGroupToSubgroupMetas[competitionGroupId]) {
+      if (meta.count === 1) {
+        for (const load_number in subgroupDiffInfo.subgroupDiffs[
+          meta.discipline
+        ][competitionGroupId]) {
+          const parts = load_number.split("_");
+          if (parts[0] === meta.load) {
+            const subgroupId =
+              subgroupDiffInfo.subgroupDiffs[meta.discipline][
+                competitionGroupId
+              ][load_number];
+            subgroupIdsToAutoAddAllStudents.push(subgroupId);
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  for (const subgroupId of subgroupIdsToAutoAddAllStudents) {
+    for (const membership of subgroupIdToStudentSubgroupMembership[
+      subgroupId
+    ]) {
+      if (!membership.included) {
+        actions.push(
+          new UpdateMembershipAction(membership.studentId, subgroupId, true)
+        );
+      }
+    }
+  }
+
+  return actions;
+}
+
+export function createSubgroupMembershipActionsForOneGroupPerLoadDistribution(
+  competitionGroupIds: number[],
+  subgroupDiffInfo: ISubgoupDiffInfo,
+  competitionGroupToSubgroupMetas: ICompetitionGroupToSubgroupMetas,
+  subgroupIdToStudentSubgroupMembership: {
+    [key: number]: IStudentSubgroupMembership[];
+  }
+): ITSAction[] {
+  const actions: ITSAction[] = [];
+
+  actions.push(
+    ...generateUpdateMembershipActionsForOneGroupPerLoadDistribution(
+      competitionGroupIds,
+      subgroupDiffInfo,
+      competitionGroupToSubgroupMetas,
+      subgroupIdToStudentSubgroupMembership
     )
   );
 

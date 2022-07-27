@@ -160,7 +160,7 @@ export type SubgroupDiffs = {
   [key: string]: {
     // competitionGroupId
     [key: number]: {
-      // <load> + <number>
+      // <load>_<number>
       [key: string]: number; // subgroupId
     };
   };

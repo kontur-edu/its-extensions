@@ -101,9 +101,6 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     }
   };
 
-  const handleParseSubgroupDistributionFromTextAreaDebounced = () => {
-    debouncedWrapperForApply(handleParseSubgroupDistributionFromTextArea);
-  };
 
   const renderSubgroupDistributionTextInputMessages = () => {
     return (
@@ -245,14 +242,18 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     setSubgroupDistributionForOneGroupPerLoadActions(actions);
   };
 
-  // const generateActionsForOneGroupPerLoadDistributionDebounced = () => {
-  //   debouncedWrapperForApply(generateActionsForOneGroupPerLoadDistribution);
-  // }
+  const generateActionsForOneGroupPerLoadDistributionDebounced = () => {
+    debouncedWrapperForApply(generateActionsForOneGroupPerLoadDistribution);
+  }
 
   const generateActionsForSubgroupDistribution = (
     newMupToLoadToSubgroupMembership: MupToLoadToSubgroupMembership
   ) => {
-    if (!subgroupDiffInfo) return;
+    console.log('generateActionsForSubgroupDistribution');
+    if (!subgroupDiffInfo) {
+      console.log(`subgroupDiffInfo is null`);
+      return;
+    }
 
     const actions = createSubgroupMembershipActions(
       subgroupDiffInfo,
@@ -275,8 +276,8 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
   const handleSubgroupDistributionRealApplyDebounced = () => {
     debouncedWrapperForApply(() => {
       alert(`Настоящее применение изменений`);
-      alert(`Safe mode`);
-      return;
+      // alert(`Safe mode`);
+      // return;
       executeActions(subgroupDistributionActions, context)
         .then((actionResults) => {
           setSubgroupDistributionActionResults(actionResults);
@@ -290,7 +291,11 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
           );
           return context.dataRepository.UpdateSubgroupMembership(
             allSubgroupIds
-          );
+          )
+          .then(() => {
+            prepareData();
+            generateActionsForSubgroupDistributionDebounced(mupToLoadToSubgroupMembership);
+          });
         });
     });
   };
@@ -298,8 +303,8 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
   const handleSubgroupDistributionForOneGroupPerLoadApplyDebounced = () => {
     debouncedWrapperForApply(() => {
       alert(`Настоящее применение изменений`);
-      alert(`Safe mode`);
-      return;
+      // alert(`Safe mode`);
+      // return;
       executeActions(subgroupDistributionForOneGroupPerLoadActions, context)
         .then((actionResults) => {
           setSubgroupDistributionActionForOneGroupPerLoadResults(actionResults);
@@ -314,6 +319,10 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
           return context.dataRepository.UpdateSubgroupMembership(
             allSubgroupIds
           );
+        })
+        .then(() => {
+          prepareData();
+          generateActionsForOneGroupPerLoadDistributionDebounced();
         });
     });
   };
@@ -371,7 +380,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
 }`}
         />
 
-        <Button onClick={handleParseSubgroupDistributionFromTextAreaDebounced}>
+        <Button onClick={handleParseSubgroupDistributionFromTextArea}>
           Распарсить
         </Button>
 

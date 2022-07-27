@@ -19,7 +19,7 @@ function generateUpdateMembershipActions(
 ): ITSAction[] {
   const actions: ITSAction[] = [];
 
-  const newCompetitionGroupToIncludedStudentIds: { [key: number]: string[] } =
+  const newSubroupIdToIncludedStudentIds: { [key: number]: string[] } =
     {};
   for (const mupName in mupToLoadToSubgroupMembership) {
     const loadToMemberships = mupToLoadToSubgroupMembership[mupName];
@@ -27,7 +27,7 @@ function generateUpdateMembershipActions(
       const membershipPerSubgroup = loadToMemberships[load];
       for (let i = 0; i < membershipPerSubgroup.length; i++) {
         const personalNumbers = membershipPerSubgroup[i];
-        const load_number = `${load}_${i}`;
+        const load_number = `${load}_${i + 1}`;
 
         for (const pn of personalNumbers) {
           const student = studentData.data[pn];
@@ -35,28 +35,33 @@ function generateUpdateMembershipActions(
           const cgId = student.competitionGroupId;
           const subgroupId =
             subgoupDiffInfo.subgroupDiffs[mupName][cgId][load_number];
+          
           if (
-            !newCompetitionGroupToIncludedStudentIds.hasOwnProperty(subgroupId)
+            !newSubroupIdToIncludedStudentIds.hasOwnProperty(subgroupId)
           ) {
-            newCompetitionGroupToIncludedStudentIds[subgroupId] = [];
+            newSubroupIdToIncludedStudentIds[subgroupId] = [];
           }
-          newCompetitionGroupToIncludedStudentIds[subgroupId].push(student.id);
+          newSubroupIdToIncludedStudentIds[subgroupId].push(student.id);
         }
       }
     }
   }
 
+  console.log("newSubroupIdToIncludedStudentIds");
+  console.log(newSubroupIdToIncludedStudentIds);
+
   for (const subgroupIdStr in subgroupIdToStudentSubgroupMembership) {
     const subgroupId = Number(subgroupIdStr);
-    if (!newCompetitionGroupToIncludedStudentIds.hasOwnProperty(subgroupId)) {
-      continue;
+    let newStudentIds: string[] = [];
+    if (newSubroupIdToIncludedStudentIds.hasOwnProperty(subgroupId)) {
+      newStudentIds = newSubroupIdToIncludedStudentIds[subgroupId];
     }
+
     const membership = subgroupIdToStudentSubgroupMembership[subgroupId];
     const initStudentIds: string[] = membership
       .filter((m) => m.included)
       .map((m) => m.studentId);
 
-    const newStudentIds = newCompetitionGroupToIncludedStudentIds[subgroupId];
     const initStudentIdSet = new Set<string>(initStudentIds);
     const newStudentIdSet = new Set<string>(newStudentIds);
     let toExclude = new Set(
@@ -66,6 +71,7 @@ function generateUpdateMembershipActions(
       newStudentIds.filter((sId) => !initStudentIdSet.has(sId))
     );
 
+    console.log(`subgroupId: ${subgroupId}`);
     for (const sId of Array.from(toExclude)) {
       actions.push(new UpdateMembershipAction(sId, subgroupId, false));
     }
@@ -85,6 +91,13 @@ export function createSubgroupMembershipActions(
   },
   studentData: IStudentData
 ): ITSAction[] {
+  // console.log("createSubgroupMembershipActions");
+  // console.log("subgoupDiffInfo");
+  // console.log(subgoupDiffInfo);
+  // console.log("mupToLoadToSubgroupMembership");
+  // console.log(mupToLoadToSubgroupMembership);
+  // console.log("subgroupIdToStudentSubgroupMembership");
+  // console.log(subgroupIdToStudentSubgroupMembership);
   const actions: ITSAction[] = [];
 
   actions.push(

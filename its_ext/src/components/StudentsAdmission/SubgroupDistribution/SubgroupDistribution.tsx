@@ -203,12 +203,13 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     );
 
     setSubgroupDiffInfo(newSubgroupDiffInfo);
+    return newSubgroupDiffInfo;
   };
 
   const handleRefreshData = () => {
     ensureData(true).then(() => {
-      prepareData();
-      generateActionsForOneGroupPerLoadDistribution();
+      const newSubgroupDiffInfo = prepareData();
+      generateActionsForOneGroupPerLoadDistribution(newSubgroupDiffInfo);
     });
   };
 
@@ -219,22 +220,21 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
   useEffect(() => {
     ensureData()
       .then(() => {
-        if (!subgroupDiffInfo) {
-          prepareData();
+        if (subgroupDiffInfo) {
+          return subgroupDiffInfo;
         }
+        return prepareData();
       })
-      .then(() => {
-        generateActionsForOneGroupPerLoadDistribution();
+      .then(newSubgroupDiffInfo => {
+        generateActionsForOneGroupPerLoadDistribution(newSubgroupDiffInfo);
       });
   }, [props.competitionGroupIds]);
 
-  const generateActionsForOneGroupPerLoadDistribution = () => {
-    if (!subgroupDiffInfo) return;
-
+  const generateActionsForOneGroupPerLoadDistribution = (newSubgroupDiffInfo: ISubgoupDiffInfo) => {
     const actions =
       createSubgroupMembershipActionsForOneGroupPerLoadDistribution(
         props.competitionGroupIds,
-        subgroupDiffInfo,
+        newSubgroupDiffInfo,
         context.dataRepository.competitionGroupToSubgroupMetas,
         context.dataRepository.subgroupIdToStudentSubgroupMembership
       );
@@ -242,8 +242,8 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     setSubgroupDistributionForOneGroupPerLoadActions(actions);
   };
 
-  const generateActionsForOneGroupPerLoadDistributionDebounced = () => {
-    debouncedWrapperForApply(generateActionsForOneGroupPerLoadDistribution);
+  const generateActionsForOneGroupPerLoadDistributionDebounced = (newSubgroupDiffInfo: ISubgoupDiffInfo) => {
+    debouncedWrapperForApply(() => generateActionsForOneGroupPerLoadDistribution(newSubgroupDiffInfo));
   }
 
   const generateActionsForSubgroupDistribution = (
@@ -321,8 +321,8 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
           );
         })
         .then(() => {
-          prepareData();
-          generateActionsForOneGroupPerLoadDistributionDebounced();
+          const newSubgroupDiffInfo = prepareData();
+          generateActionsForOneGroupPerLoadDistributionDebounced(newSubgroupDiffInfo);
         });
     });
   };

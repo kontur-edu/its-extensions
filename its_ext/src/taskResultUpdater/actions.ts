@@ -13,11 +13,12 @@ export class UpdateTaskResultAction extends ITSAction {
   }
 
   getMessage(): string {
-    return `Update task result for studentId: ${this.studentId} admissionId: ${this.admissionId} taskResult: ${this.taskResult}`;
+    return `Изменить результат тестового на ${this.taskResult} для студента studentId: ${this.studentId} admissionId: ${this.admissionId}`;
   }
 
   getMessageSimple(): string {
-    return `Update task result for studentId: ${this.studentId} admissionId: ${this.admissionId} taskResult: ${this.taskResult}`;
+    const passed = this.taskResult ? "Прошел" : "Не прошел";
+    return `Студент studentId: ${this.studentId} для зачисления admissionId: ${this.admissionId} ${passed}`;
   }
 
   async execute(context: IITSContext): Promise<IActionResponse[]> {

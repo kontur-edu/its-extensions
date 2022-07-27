@@ -45,6 +45,7 @@ describe("findPersonalNumber", () => {
         patronymic: "Оа",
         rating: 1,
         status: "Активен",
+        competitionGroupId: 0,
       },
       [personalNumbers[1]]: {
         id: "s1",
@@ -55,6 +56,7 @@ describe("findPersonalNumber", () => {
         patronymic: "Об",
         rating: 1,
         status: "Активен",
+        competitionGroupId: 0,
       },
       [personalNumbers[2]]: {
         id: "s2",
@@ -65,6 +67,7 @@ describe("findPersonalNumber", () => {
         patronymic: "Оа",
         rating: 1,
         status: "Активен",
+        competitionGroupId: 0,
       },
     },
   };

@@ -45,7 +45,7 @@ export class ITSRepository {
   admissionIdToMupId: { [key: number]: string } = {};
   admissionInfo: AdmissionInfo = {};
 
-  subgroupIdToIncludedStudentIds: { [key: string]: string[] } = {};
+  subgroupIdToIncludedStudentIds: { [key: number]: string[] } = {}; // subgroupId -> studentId[]
 
   constructor(public api: ITSApiService) {}
 
@@ -189,8 +189,8 @@ export class ITSRepository {
 
   fillStudentRawInfoToStudentDataAndAdmissionInfo(
     admissionId: number,
-    studentsRaw: IStudentAdmissionRaw[]
-    // mupId: string
+    studentsRaw: IStudentAdmissionRaw[],
+    competitionGroupId: number
   ) {
     const studentAdmissionInfo: { [key: string]: IStudentAdmission | null } =
       {};
@@ -208,6 +208,7 @@ export class ITSRepository {
         rating: studentRaw.rating,
         status: studentRaw.studentStatus,
         groupName: studentRaw.groupName,
+        competitionGroupId: competitionGroupId,
       };
 
       this.studentData.data[studentRaw.personalNumber] = student;
@@ -240,22 +241,28 @@ export class ITSRepository {
   }
 
   // NOTE: need admissionIdToMupId (call UpdateAdmissionMetas first)
-  async UpdateStudentAdmissionsAndStudentData(admissionIds: number[]) {
+  async UpdateStudentAdmissionsAndStudentData(competitionGroupIdToAdmissionIds: {[key: number]: number[]}) {
     console.log(`ITSRepository: UpdateStudentAdmissionsAndStudentData`);
-    const requests = admissionIds.map((aId) =>
-      this.api.GetStudentsForAdmission(aId)
-    );
-    const responses = await Promise.allSettled(requests);
-    for (let i = 0; i < admissionIds.length; i++) {
-      const resp = responses[i];
-      const admissionId = admissionIds[i];
-      if (resp.status === "fulfilled") {
-        this.fillStudentRawInfoToStudentDataAndAdmissionInfo(
-          admissionId,
-          resp.value
-        );
+    for (let competitionGroupIdStr in competitionGroupIdToAdmissionIds) {
+      const competitionGroupId = Number(competitionGroupIdStr);
+      const admissionIds = competitionGroupIdToAdmissionIds[competitionGroupId];
+      const requests = admissionIds.map((aId) =>
+        this.api.GetStudentsForAdmission(aId)
+      );
+      const responses = await Promise.allSettled(requests);
+      for (let i = 0; i < admissionIds.length; i++) {
+        const resp = responses[i];
+        const admissionId = admissionIds[i];
+        if (resp.status === "fulfilled") {
+          this.fillStudentRawInfoToStudentDataAndAdmissionInfo(
+            admissionId,
+            resp.value,
+            competitionGroupId
+          );
+        }
       }
     }
+    
   }
 
   async UpdateSubgroupMembership(subgroupIds: number[]) {
@@ -279,4 +286,5 @@ export class ITSRepository {
       }
     }
   }
+
 }

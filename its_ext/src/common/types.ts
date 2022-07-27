@@ -245,6 +245,8 @@ export interface IStudent {
 
   rating: number | null;
   status: string;
+
+  competitionGroupId: number;
 }
 
 export interface IStudentData {
@@ -278,4 +280,11 @@ export type AdmissionInfo = {
 export interface IStudentSubgroupMembership {
   studentId: string;
   included: boolean;
+}
+
+
+export type MupToLoadToSubgroupMembership = {
+  [key: string]: { // mupName
+    [key: string]: string[][] // loadName => [['personalNumber', 'personalNumber'], ...]
+  }
 }

@@ -11,7 +11,7 @@ import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay
 import { ITSContext } from "../../../common/Context";
 import { DEBOUNCE_MS } from "../../../utils/constants";
 import { createDebouncedWrapper } from "../../../utils/helpers";
-import Button from "@mui/material/Button";
+
 import {
   MupToLoadToSubgroupMembership,
   ISubgoupDiffInfo,
@@ -21,6 +21,9 @@ import {
   createSubgroupMembershipActionsForOneGroupPerLoadDistribution,
 } from "../../../subgroupMembership/actionCreator";
 import { createSubgroupDiffInfo } from "../../../subgroupUpdater/subgroupDiffs";
+
+import Button from "@mui/material/Button";
+import RefreshIcon from "@mui/icons-material/Refresh";
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
@@ -65,6 +68,10 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     );
     // TODO: add validation
     setMupToLoadToSubgroupMembership(newMupToLoadToSubgroupMembership);
+
+    generateActionsForSubgroupDistributionDebounced(
+      newMupToLoadToSubgroupMembership
+    );
   };
 
   const ensureData = (refresh: boolean = false) => {
@@ -149,36 +156,38 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     });
   };
 
-  const refreshData = () => {
-    ensureData(true).then(() => {
-      const newSubgroupDiffInfo = createSubgroupDiffInfo(
-        props.competitionGroupIds,
-        context.dataRepository.competitionGroupToSubgroupMetas,
-        context.dataRepository.competitionGroupToSubgroupIds,
-        context.dataRepository.subgroupData
-      );
+  const prepareData = () => {
+    const newSubgroupDiffInfo = createSubgroupDiffInfo(
+      props.competitionGroupIds,
+      context.dataRepository.competitionGroupToSubgroupMetas,
+      context.dataRepository.competitionGroupToSubgroupIds,
+      context.dataRepository.subgroupData
+    );
 
-      setSubgroupDiffInfo(newSubgroupDiffInfo);
+    setSubgroupDiffInfo(newSubgroupDiffInfo);
+  };
+
+  const handleRefreshData = () => {
+    ensureData(true).then(() => {
+      prepareData();
+      generateActionsForOneGroupPerLoadDistribution();
     });
   };
 
-  const refreshDataDebounced = () => {
-    debouncedWrapperForApply(refreshData);
+  const handleRefreshDataDebounced = () => {
+    debouncedWrapperForApply(handleRefreshData);
   };
 
   useEffect(() => {
-    ensureData().then(() => {
-      if (!subgroupDiffInfo) {
-        const newSubgroupDiffInfo = createSubgroupDiffInfo(
-          props.competitionGroupIds,
-          context.dataRepository.competitionGroupToSubgroupMetas,
-          context.dataRepository.competitionGroupToSubgroupIds,
-          context.dataRepository.subgroupData
-        );
-
-        setSubgroupDiffInfo(newSubgroupDiffInfo);
-      }
-    });
+    ensureData()
+      .then(() => {
+        if (!subgroupDiffInfo) {
+          prepareData();
+        }
+      })
+      .then(() => {
+        generateActionsForOneGroupPerLoadDistribution();
+      });
   }, [props.competitionGroupIds]);
 
   const generateActionsForOneGroupPerLoadDistribution = () => {
@@ -195,17 +204,31 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     setSubgroupDistributionForOneGroupPerLoadActions(actions);
   };
 
-  const generateActions = () => {
+  // const generateActionsForOneGroupPerLoadDistributionDebounced = () => {
+  //   debouncedWrapperForApply(generateActionsForOneGroupPerLoadDistribution);
+  // }
+
+  const generateActionsForSubgroupDistribution = (
+    newMupToLoadToSubgroupMembership: MupToLoadToSubgroupMembership
+  ) => {
     if (!subgroupDiffInfo) return;
 
     const actions = createSubgroupMembershipActions(
       subgroupDiffInfo,
-      mupToLoadToSubgroupMembership,
+      newMupToLoadToSubgroupMembership,
       context.dataRepository.subgroupIdToStudentSubgroupMembership,
       context.dataRepository.studentData
     );
 
     setSubgroupDistributionActions(actions);
+  };
+
+  const generateActionsForSubgroupDistributionDebounced = (
+    newMupToLoadToSubgroupMembership: MupToLoadToSubgroupMembership
+  ) => {
+    debouncedWrapperForApply(() =>
+      generateActionsForSubgroupDistribution(newMupToLoadToSubgroupMembership)
+    );
   };
 
   const handleSubgroupDistributionRealApplyDebounced = () => {
@@ -257,6 +280,15 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
   const renderContent = () => {
     return (
       <React.Fragment>
+        <Button
+          onClick={handleRefreshDataDebounced}
+          style={{ fontSize: 12, marginBottom: "1em" }}
+          variant="text"
+          startIcon={<RefreshIcon />}
+        >
+          Обновить
+        </Button>
+
         <h3>Зачисление студентов на МУПы с одной подгруппой</h3>
         <ApplyButtonWithActionDisplay
           showErrorWarning={true}

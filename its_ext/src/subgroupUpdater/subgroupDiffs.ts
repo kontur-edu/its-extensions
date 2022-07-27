@@ -33,17 +33,22 @@ function checkIfMetasAndSubgroupsAreSameForMupAndSubgroup(
       loadsToCounts[load] = loadsToMeta[load].count;
     }
   }
-  if (Object.keys(loadsToCounts).length === 0) {
-    return true;
-  }
+  const expectCreatedSubgroups = Object.keys(loadsToCounts).length !== 0;
+  // if (expectCreatedSubgroups) { // Если нет нагрузок с количеством > 0, ожидать, что подгрупп не должно быть создано
+  //   return true;
+  // }
 
   if (
     !subgroupDiffs.hasOwnProperty(mupName) ||
     !subgroupDiffs[mupName].hasOwnProperty(competitionGroupId)
   ) {
-    return false;
+    return !expectCreatedSubgroups;
   }
   const load_numberToSubgroupId = subgroupDiffs[mupName][competitionGroupId];
+  
+  const haveCreatedSubgroups = Object.keys(load_numberToSubgroupId).length !== 0;
+  if (haveCreatedSubgroups !== expectCreatedSubgroups) return false;
+
   const actualLoadsToCounts: { [key: string]: number } = {};
   for (const load_number in load_numberToSubgroupId) {
     const subgroup = subgroupData.data[load_numberToSubgroupId[load_number]];

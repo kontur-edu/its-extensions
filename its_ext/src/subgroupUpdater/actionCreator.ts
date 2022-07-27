@@ -99,7 +99,7 @@ export function createActionsByDiffs(
     const sDiff = sDiffs[mupName];
 
     actions.push(
-      ...CreateUpdateTeacherActionsBySubgroupDiff(
+      ...createUpdateTeacherActionsBySubgroupDiff(
         // TODO: lowercase
         mupName,
         sDiff,
@@ -145,7 +145,7 @@ export function createUpdateSubgroupMetaLoadCountBySubgroupDiff(
   return actions;
 }
 
-export function CreateUpdateTeacherActionsBySubgroupDiff(
+export function createUpdateTeacherActionsBySubgroupDiff(
   mupName: string,
   sDiff: IMupSubgroupDiff,
   competitionGroupIds: number[]

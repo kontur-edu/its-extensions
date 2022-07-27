@@ -9,7 +9,10 @@ import {
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 
 import { ITSContext } from "../../../common/Context";
-import { DEBOUNCE_MS } from "../../../utils/constants";
+import {
+  COMPETITION_GROUP_SUBGROUP_URL,
+  DEBOUNCE_MS,
+} from "../../../utils/constants";
 import { createDebouncedWrapper } from "../../../utils/helpers";
 
 import {
@@ -22,12 +25,15 @@ import {
 } from "../../../subgroupMembership/actionCreator";
 import { createSubgroupDiffInfo } from "../../../subgroupUpdater/subgroupDiffs";
 
-import Button from "@mui/material/Button";
-import RefreshIcon from "@mui/icons-material/Refresh";
 import {
   parseSubgroupMembershipFromText,
   validateSubgroupMembership,
 } from "../../../subgroupMembership/subgroupMembershipParser";
+
+import Button from "@mui/material/Button";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import Link from "@mui/material/Link";
+import NorthEastIcon from "@mui/icons-material/NorthEast";
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
@@ -84,6 +90,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     }
 
     const { success, messages } = validateSubgroupMembership(
+      props.competitionGroupIds,
       newMupToLoadToSubgroupMembership,
       subgroupDiffInfo,
       context.dataRepository.studentData
@@ -101,10 +108,9 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     }
   };
 
-
   const renderSubgroupDistributionTextInputMessages = () => {
     return (
-      <ul className="list_without_decorations warning">
+      <ul className="warning">
         {subgroupDistributionTextInputMessages.map((message, index) => (
           <li key={index}>{message}</li>
         ))}
@@ -134,64 +140,75 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
           cgId
         )
       );
-    return Promise.allSettled([
-      hasSubgroupMetas
-        ? Promise.resolve()
-        : context.dataRepository.UpdateSubgroupMetas(props.competitionGroupIds),
-      hasSubgroups
-        ? Promise.resolve()
-        : context.dataRepository.UpdateSubgroups(props.competitionGroupIds),
-      hasAdmissionMetas
-        ? Promise.resolve()
-        : context.dataRepository.UpdateAdmissionMetas(
-            props.competitionGroupIds
-          ),
-    ]).then(() => {
-      const allSubgroupIds: number[] = [];
-      props.competitionGroupIds.forEach((cgId) =>
-        allSubgroupIds.push(
-          ...context.dataRepository.competitionGroupToSubgroupIds[cgId]
-        )
-      );
-      const hasSubgroupMemberships =
-        !refresh &&
-        allSubgroupIds.every((sId) =>
-          context.dataRepository.subgroupIdToStudentSubgroupMembership.hasOwnProperty(
-            sId
+    return Promise.allSettled(
+      props.competitionGroupIds.map((cId) =>
+        context.apiService.EmulateCheckSubgroupMetas(cId)
+      )
+    )
+      .then(() =>
+        Promise.allSettled([
+          hasSubgroupMetas
+            ? Promise.resolve()
+            : context.dataRepository.UpdateSubgroupMetas(
+                props.competitionGroupIds
+              ),
+          hasSubgroups
+            ? Promise.resolve()
+            : context.dataRepository.UpdateSubgroups(props.competitionGroupIds),
+          hasAdmissionMetas
+            ? Promise.resolve()
+            : context.dataRepository.UpdateAdmissionMetas(
+                props.competitionGroupIds
+              ),
+        ])
+      )
+      .then(() => {
+        const allSubgroupIds: number[] = [];
+        props.competitionGroupIds.forEach((cgId) =>
+          allSubgroupIds.push(
+            ...context.dataRepository.competitionGroupToSubgroupIds[cgId]
           )
         );
-      const updateSubgroupMembershipPromise = hasSubgroupMemberships
-        ? Promise.resolve()
-        : context.dataRepository.UpdateSubgroupMembership(allSubgroupIds);
-
-      const competitionGroupIdToAdmissionIds: { [key: number]: number[] } = {};
-      for (const cgId in context.dataRepository
-        .competitionGroupIdToMupAdmissions) {
-        const mupIdToAdmissions =
-          context.dataRepository.competitionGroupIdToMupAdmissions[cgId];
-        competitionGroupIdToAdmissionIds[cgId] = Object.values(
-          mupIdToAdmissions
-        ).map((a) => a.admissionsId);
-      }
-      const hasStudentAndAdmissionData =
-        !refresh &&
-        context.dataRepository.studentData.ids.length > 0 &&
-        props.competitionGroupIds.every((cgId) =>
-          competitionGroupIdToAdmissionIds[cgId].every((aId) =>
-            context.dataRepository.admissionInfo.hasOwnProperty(aId)
-          )
-        );
-      const updateStudentAndAdmissionsPromise = hasStudentAndAdmissionData
-        ? Promise.resolve()
-        : context.dataRepository.UpdateStudentAdmissionsAndStudentData(
-            competitionGroupIdToAdmissionIds
+        const hasSubgroupMemberships =
+          !refresh &&
+          allSubgroupIds.every((sId) =>
+            context.dataRepository.subgroupIdToStudentSubgroupMembership.hasOwnProperty(
+              sId
+            )
           );
+        const updateSubgroupMembershipPromise = hasSubgroupMemberships
+          ? Promise.resolve()
+          : context.dataRepository.UpdateSubgroupMembership(allSubgroupIds);
 
-      return Promise.allSettled([
-        updateSubgroupMembershipPromise,
-        updateStudentAndAdmissionsPromise,
-      ]);
-    });
+        const competitionGroupIdToAdmissionIds: { [key: number]: number[] } =
+          {};
+        for (const cgId in context.dataRepository
+          .competitionGroupIdToMupAdmissions) {
+          const mupIdToAdmissions =
+            context.dataRepository.competitionGroupIdToMupAdmissions[cgId];
+          competitionGroupIdToAdmissionIds[cgId] = Object.values(
+            mupIdToAdmissions
+          ).map((a) => a.admissionsId);
+        }
+        const hasStudentAndAdmissionData =
+          !refresh &&
+          context.dataRepository.studentData.ids.length > 0 &&
+          props.competitionGroupIds.every((cgId) =>
+            competitionGroupIdToAdmissionIds[cgId].every((aId) =>
+              context.dataRepository.admissionInfo.hasOwnProperty(aId)
+            )
+          );
+        const updateStudentAndAdmissionsPromise = hasStudentAndAdmissionData
+          ? Promise.resolve()
+          : context.dataRepository.UpdateStudentAdmissionsAndStudentData(
+              competitionGroupIdToAdmissionIds
+            );
+
+        return Promise.allSettled([
+          updateSubgroupMembershipPromise,
+          updateStudentAndAdmissionsPromise,
+        ]);
+      });
   };
 
   const prepareData = () => {
@@ -225,12 +242,14 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
         }
         return prepareData();
       })
-      .then(newSubgroupDiffInfo => {
+      .then((newSubgroupDiffInfo) => {
         generateActionsForOneGroupPerLoadDistribution(newSubgroupDiffInfo);
       });
   }, [props.competitionGroupIds]);
 
-  const generateActionsForOneGroupPerLoadDistribution = (newSubgroupDiffInfo: ISubgoupDiffInfo) => {
+  const generateActionsForOneGroupPerLoadDistribution = (
+    newSubgroupDiffInfo: ISubgoupDiffInfo
+  ) => {
     const actions =
       createSubgroupMembershipActionsForOneGroupPerLoadDistribution(
         props.competitionGroupIds,
@@ -242,14 +261,18 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     setSubgroupDistributionForOneGroupPerLoadActions(actions);
   };
 
-  const generateActionsForOneGroupPerLoadDistributionDebounced = (newSubgroupDiffInfo: ISubgoupDiffInfo) => {
-    debouncedWrapperForApply(() => generateActionsForOneGroupPerLoadDistribution(newSubgroupDiffInfo));
-  }
+  const generateActionsForOneGroupPerLoadDistributionDebounced = (
+    newSubgroupDiffInfo: ISubgoupDiffInfo
+  ) => {
+    debouncedWrapperForApply(() =>
+      generateActionsForOneGroupPerLoadDistribution(newSubgroupDiffInfo)
+    );
+  };
 
   const generateActionsForSubgroupDistribution = (
     newMupToLoadToSubgroupMembership: MupToLoadToSubgroupMembership
   ) => {
-    console.log('generateActionsForSubgroupDistribution');
+    console.log("generateActionsForSubgroupDistribution");
     if (!subgroupDiffInfo) {
       console.log(`subgroupDiffInfo is null`);
       return;
@@ -289,13 +312,14 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
               ...context.dataRepository.competitionGroupToSubgroupIds[cgId]
             )
           );
-          return context.dataRepository.UpdateSubgroupMembership(
-            allSubgroupIds
-          )
-          .then(() => {
-            prepareData();
-            generateActionsForSubgroupDistributionDebounced(mupToLoadToSubgroupMembership);
-          });
+          return context.dataRepository
+            .UpdateSubgroupMembership(allSubgroupIds)
+            .then(() => {
+              prepareData();
+              generateActionsForSubgroupDistributionDebounced(
+                mupToLoadToSubgroupMembership
+              );
+            });
         });
     });
   };
@@ -322,24 +346,53 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
         })
         .then(() => {
           const newSubgroupDiffInfo = prepareData();
-          generateActionsForOneGroupPerLoadDistributionDebounced(newSubgroupDiffInfo);
+          generateActionsForOneGroupPerLoadDistributionDebounced(
+            newSubgroupDiffInfo
+          );
         });
     });
   };
 
-  const renderContent = () => {
+  const renderCompetitionGroupsSubgroupsLinkList = () => {
+    const links = props.competitionGroupIds.map((cgId) => {
+      const link = COMPETITION_GROUP_SUBGROUP_URL + cgId;
+      let competitionGroupName: string = `${cgId}`;
+      if (
+        context.dataRepository.competitionGroupData.data.hasOwnProperty(cgId)
+      ) {
+        competitionGroupName =
+          context.dataRepository.competitionGroupData.data[cgId].name;
+      }
+      return (
+        <li key={cgId}>
+          <Link
+            href={link}
+            rel="noreferrer"
+            target="_blank"
+            style={{
+              textDecoration: "none",
+              display: "flex",
+              alignItems: "center",
+              fontSize: 16,
+            }}
+          >
+            <NorthEastIcon />
+            {competitionGroupName}
+          </Link>
+        </li>
+      );
+    });
+    return <ul className="list_without_decorations">{links}</ul>;
+  };
+
+  const renderSubgroupDistributionForOneGroupPerLoad = () => {
+    const haveActions =
+      subgroupDistributionForOneGroupPerLoadActions.length > 0 ||
+      subgroupDistributionActionForOneGroupPerLoadResults.length > 0;
     return (
       <React.Fragment>
-        <Button
-          onClick={handleRefreshDataDebounced}
-          style={{ fontSize: 12, marginBottom: "1em" }}
-          variant="text"
-          startIcon={<RefreshIcon />}
-        >
-          Обновить
-        </Button>
-
         <h3>Зачисление студентов на МУПы с одной подгруппой</h3>
+        {!haveActions && <p>Не найдено возможных действий для этого шага</p>}
         <ApplyButtonWithActionDisplay
           showErrorWarning={true}
           showSuccessMessage={true}
@@ -347,19 +400,46 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
           actionResults={subgroupDistributionActionForOneGroupPerLoadResults}
           onApply={handleSubgroupDistributionForOneGroupPerLoadApplyDebounced}
         />
+      </React.Fragment>
+    );
+  };
+
+  const renderContent = () => {
+    return (
+      <React.Fragment>
+        <Button
+          onClick={handleRefreshDataDebounced}
+          style={{ fontSize: 12, alignSelf: "flex-start" }}
+          variant="text"
+          startIcon={<RefreshIcon />}
+        >
+          Обновить данные
+        </Button>
+
+        {renderSubgroupDistributionForOneGroupPerLoad()}
 
         <h3>Зачисление студентов на МУПы с несколькими подгруппами</h3>
 
-        <p>
-          Запустите алгоритм распределения студентов на подгруппы.
-          <br />
-          Входные данные можно получить из предыдущего шага во вкладке Ручного
-          редактирования
-          <br />
-          Вставьте вывод алгоритма в поле ниже
-          <br />
-          Распарсите данные и примените изменения, чтобы распределить студентов
-        </p>
+        <ol className={style.step_list}>
+          <li>
+            Получите входные данные алгоритма из предыдущего шага во вкладке
+            "Редактирование вручную"
+          </li>
+          <li>Запустите алгоритм распределения студентов на подгруппы</li>
+          <li>Вставьте вывод алгоритма в поле ниже и распарсите данные</li>
+          <li>
+            Если данные ИТС изменились, нажмите кнопку "Обновить данные" в
+            начале шага
+          </li>
+          <li>
+            Примените изменения, чтобы распределить студентов по выбранным
+            группам
+          </li>
+          <li>
+            Проверьте распределение в ИТС для следующих Конкурсных групп:
+            {renderCompetitionGroupsSubgroupsLinkList()}
+          </li>
+        </ol>
 
         <textarea
           value={subgroupDistributionTextInput}
@@ -381,7 +461,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
         />
 
         <Button onClick={handleParseSubgroupDistributionFromTextArea}>
-          Распарсить
+          Распарсить и подготовить изменения
         </Button>
 
         {subgroupDistributionTextInputMessages.length > 0 &&

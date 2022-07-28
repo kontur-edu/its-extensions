@@ -184,8 +184,8 @@ td {
   z-index: 1;
 }
 
-.table__сontainer {
-  max-height: 600px;
+.table__container {
+  max-height: 800px;
   overflow: auto;
   margin: 1em 0;
 }

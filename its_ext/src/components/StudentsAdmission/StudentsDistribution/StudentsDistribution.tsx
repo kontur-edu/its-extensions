@@ -485,7 +485,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           onClick={handleRefreshDebounced}
           title="Обновить список"
         />
-        <section className="table__сontainer" ref={tableRef}>
+        <section className="table__container" ref={tableRef}>
           <table className="table table_vertical_borders">
             <thead>
               <tr>

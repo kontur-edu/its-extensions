@@ -47,14 +47,13 @@ export function Main(props: IMainProps) {
     }
   };
 
-
   context?.requestService.setOnConnectionRefused(handleConnectoinRefused);
 
   return (
     <div>
       <Routes>
         <Route path="/" element={<MainMenu login={currentLogin} />} />
-        
+
         <Route
           path="/semesterPreparation"
           element={
@@ -88,8 +87,20 @@ export function Main(props: IMainProps) {
 
       <Modal visible={connectionRefused}>
         <div className="litebox">
-          <h2 className={"litebox__header warning " + style.connectionRefused__header}>Не получилось установить соединение, проверьте доступность Proxy</h2>
-          <Button onClick={handleIgnoreConnectionRefused} variant="contained" style={{fontSize: 16}}>Закрать</Button>
+          <h2
+            className={
+              "litebox__header warning " + style.connectionRefused__header
+            }
+          >
+            Не получилось установить соединение, проверьте доступность Proxy
+          </h2>
+          <Button
+            onClick={handleIgnoreConnectionRefused}
+            variant="contained"
+            style={{ fontSize: "1em" }}
+          >
+            Закрать
+          </Button>
         </div>
       </Modal>
     </div>

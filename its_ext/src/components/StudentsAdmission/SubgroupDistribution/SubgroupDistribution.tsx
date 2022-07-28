@@ -37,12 +37,11 @@ import {
   getAvailableAdmissionIds,
   createStudentsDistributionData,
 } from "../../../studentAdmission/studentDistributor";
-
-import Button from "@mui/material/Button";
-import Link from "@mui/material/Link";
-import NorthEastIcon from "@mui/icons-material/NorthEast";
+import { OuterLink } from "../../OuterLink";
 import { CopyOrDownload } from "../../CopyOrDownload";
 import { RefreshButton } from "../../RefreshButton";
+
+import Button from "@mui/material/Button";
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
@@ -446,20 +445,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
       }
       return (
         <li key={cgId}>
-          <Link
-            href={link}
-            rel="noreferrer"
-            target="_blank"
-            style={{
-              textDecoration: "none",
-              display: "flex",
-              alignItems: "center",
-              fontSize: 16,
-            }}
-          >
-            <NorthEastIcon />
-            {competitionGroupName}
-          </Link>
+          <OuterLink url={link} title={competitionGroupName} />
         </li>
       );
     });

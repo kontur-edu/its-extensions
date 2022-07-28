@@ -9,6 +9,7 @@ import {
   IMupDistributionItem,
   getAllPersonalNumbers,
   prepareStudentAndMupItems,
+  getAvailableAdmissionIds,
   createStudentsDistributionData,
   filterActiveStudentsAndSortByRating,
   parseStudentAdmissionsFromText,
@@ -23,10 +24,7 @@ import {
   REQUEST_ERROR_UNAUTHORIZED,
   DEBOUNCE_MS,
 } from "../../../utils/constants";
-import {
-  createDebouncedWrapper,
-  downloadFileFromText,
-} from "../../../utils/helpers";
+import { createDebouncedWrapper } from "../../../utils/helpers";
 import { createStudentAdmissionActions } from "../../../studentAdmission/actionCreator";
 import {
   executeActions,
@@ -38,9 +36,8 @@ import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import EditIcon from "@mui/icons-material/Edit";
 import AutoFixNormalIcon from "@mui/icons-material/AutoFixNormal";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import DownloadIcon from "@mui/icons-material/Download";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import { CopyOrDownload } from "../../CopyOrDownload";
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
@@ -194,16 +191,20 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     }
     competitionGroupIdToZELimit.current = newZeLimits;
 
-    const availableAdmissionIds = new Set<number>();
-    for (const competitionGroupId of props.competitionGroupIds) {
-      const mupToAdmissionMeta =
-        context.dataRepository.competitionGroupIdToMupAdmissions[
-          competitionGroupId
-        ];
-      for (const mupId in mupToAdmissionMeta) {
-        availableAdmissionIds.add(mupToAdmissionMeta[mupId].admissionsId);
-      }
-    }
+    // const availableAdmissionIds = new Set<number>();
+    // for (const competitionGroupId of props.competitionGroupIds) {
+    //   const mupToAdmissionMeta =
+    //     context.dataRepository.competitionGroupIdToMupAdmissions[
+    //       competitionGroupId
+    //     ];
+    //   for (const mupId in mupToAdmissionMeta) {
+    //     availableAdmissionIds.add(mupToAdmissionMeta[mupId].admissionsId);
+    //   }
+    // }
+    const availableAdmissionIds = getAvailableAdmissionIds(
+      props.competitionGroupIds,
+      context.dataRepository.competitionGroupIdToMupAdmissions
+    );
     const newStudentDistributionData = createStudentsDistributionData(
       studentAndMupItems.personalNumberToStudentItems,
       context.dataRepository.studentData,
@@ -232,10 +233,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
 
   const handleRefreshDebounced = () => {
     debouncedWrapperForApply(handleRefresh);
-  };
-
-  const handleDownlad = () => {
-    downloadFileFromText(`studentAdmissions.json`, studentAdmissionsText);
   };
 
   const handleStudentAdmissionsTextInputChange = (
@@ -553,24 +550,11 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         <Collapse in={manualEditOpen} timeout="auto" unmountOnExit>
           <div className={style.manualEdit__container}>
             <h4>Распределение по курсам в ИТС</h4>
-            <div>
-              <Button
-                onClick={() =>
-                  navigator.clipboard.writeText(studentAdmissionsText)
-                }
-                style={{ alignSelf: "flex-start" }}
-                startIcon={<ContentCopyIcon />}
-              >
-                Скопировать распределение
-              </Button>
-              <Button
-                onClick={handleDownlad}
-                style={{ alignSelf: "flex-start" }}
-                startIcon={<DownloadIcon />}
-              >
-                Скачать файл
-              </Button>
-            </div>
+            <CopyOrDownload
+              title="Скопировать распределение"
+              filename="StudentAdmissions.json"
+              data={studentAdmissionsText}
+            />
 
             {renderAdmissionsInput()}
           </div>

@@ -327,6 +327,23 @@ export interface IStudentsDistributionData {
   }; // mupId -> mupName
 }
 
+
+export function getAvailableAdmissionIds(
+  competitionGroupIds: number[],
+  competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions,
+) {
+  const availableAdmissionIds = new Set<number>();
+  for (const competitionGroupId of competitionGroupIds) {
+    const mupToAdmissionMeta =
+      competitionGroupIdToMupAdmissions[
+        competitionGroupId
+      ];
+    for (const mupId in mupToAdmissionMeta) {
+      availableAdmissionIds.add(mupToAdmissionMeta[mupId].admissionsId);
+    }
+  }
+  return availableAdmissionIds;
+}
 export function createStudentsDistributionData(
   newPersonalNumberToStudentItems: {
     [key: string]: IStudentAdmissionDistributionItem;

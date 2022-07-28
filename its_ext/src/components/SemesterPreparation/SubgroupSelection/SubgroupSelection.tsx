@@ -82,7 +82,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
     }
     if (!checkArraysSame(sgMupIds[0], sgMupIds[1])) {
       setMupIdsSame(false);
-      alert(`not setMupIdsSame`);
+      // alert(`not setMupIdsSame`);
       return;
     }
 

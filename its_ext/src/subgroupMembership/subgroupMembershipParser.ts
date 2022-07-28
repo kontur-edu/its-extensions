@@ -94,12 +94,79 @@ export function trySubstituteMupShortNamesWithFullNames(
   return newMupToLoadToSubgroupMembership;
 }
 
+export function getLoadsForMup(
+  mupName: string,
+  competitionGroupIds: number[],
+  subgoupDiffInfo: ISubgoupDiffInfo
+) {
+  const competitionGroupToLoadToMetas = subgoupDiffInfo.metaDiffs[mupName];
+  const loads = new Set<string>();
+  for (const cgId of competitionGroupIds) {
+    if (!competitionGroupToLoadToMetas.hasOwnProperty(cgId)) {
+      continue;
+    }
+    for (const load in competitionGroupToLoadToMetas[cgId]) {
+      if (competitionGroupToLoadToMetas[cgId][load].count) {
+        loads.add(load);
+      }
+    }
+  }
+  return Array.from(loads);
+}
+
+export function trySubstituteLoadWildcards(
+  mupToLoadToSubgroupMembership: MupToLoadToSubgroupMembership,
+  competitionGroupIds: number[],
+  subgoupDiffInfo: ISubgoupDiffInfo
+) {
+  const newMupToLoadToSubgroupMembership: MupToLoadToSubgroupMembership = {};
+
+  for (const mupName in mupToLoadToSubgroupMembership) {
+    if (!subgoupDiffInfo.metaDiffs.hasOwnProperty(mupName)) {
+      newMupToLoadToSubgroupMembership[mupName] =
+        mupToLoadToSubgroupMembership[mupName];
+      continue;
+    }
+
+    const newLoadToSubgroups: { [key: string]: string[][] } = {};
+
+    const loadToSubgroups = mupToLoadToSubgroupMembership[mupName];
+    const wildcard = "*";
+    const haveWildCard = Object.keys(loadToSubgroups).some(
+      (load) => load === wildcard
+    );
+    if (haveWildCard) {
+      const loads = getLoadsForMup(
+        mupName,
+        competitionGroupIds,
+        subgoupDiffInfo
+      );
+      for (const load of loads) {
+        newLoadToSubgroups[load] = loadToSubgroups[wildcard];
+      }
+    }
+
+    for (const load in loadToSubgroups) {
+      if (load === wildcard) {
+        continue;
+      }
+      newLoadToSubgroups[load] = loadToSubgroups[load];
+    }
+
+    newMupToLoadToSubgroupMembership[mupName] = newLoadToSubgroups;
+  }
+
+  return newMupToLoadToSubgroupMembership;
+}
+
+// Возможно сначала заменить короткие имена на полные, потом "*" на нагрузки
+
 export function validateSubgroupMembership(
   competitionGroupIds: number[],
   mupToLoadToSubgroupMembership: MupToLoadToSubgroupMembership,
   subgoupDiffInfo: ISubgoupDiffInfo,
-  studentData: IStudentData,
-  mupData: IMupData
+  studentData: IStudentData
+  // mupData: IMupData
 ): { success: boolean; messages: string[] } {
   const notDeterminedPersonalNumbers = new Set<string>();
   const notDeterminedMupNames: string[] = [];
@@ -107,14 +174,14 @@ export function validateSubgroupMembership(
   const wrongSubgroupCountForLoadsPerMup: { [key: string]: string[] } = {};
   const subgroupCountsDifferentForMups = new Set<string>();
 
-  const mupShortNameToFullName = createMupShortNameToFullName(mupData);
+  // const mupShortNameToFullName = createMupShortNameToFullName(mupData);
 
-  for (const mupShortName in mupToLoadToSubgroupMembership) {
-    let mupName = mupShortName;
+  for (const mupName in mupToLoadToSubgroupMembership) {
+    // let mupName = mupShortName;
 
-    if (mupShortNameToFullName.hasOwnProperty(mupShortName)) {
-      mupName = mupShortNameToFullName[mupShortName];
-    }
+    // if (mupShortNameToFullName.hasOwnProperty(mupShortName)) {
+    //   mupName = mupShortNameToFullName[mupShortName];
+    // }
 
     if (!subgoupDiffInfo.metaDiffs.hasOwnProperty(mupName)) {
       notDeterminedMupNames.push(mupName);
@@ -125,10 +192,22 @@ export function validateSubgroupMembership(
     let loadToMetas: { [key: string]: ISubgroupMeta } = {};
     // TODO: check if it works
     for (const cgId of competitionGroupIds) {
-      loadToMetas = { ...loadToMetas, ...competitionGroupToLoadToMetas[cgId] };
+      if (competitionGroupToLoadToMetas.hasOwnProperty(cgId)) {
+        loadToMetas = {
+          ...loadToMetas,
+          ...competitionGroupToLoadToMetas[cgId],
+        };
+      }
     }
     const loadToGroupPersonalNumbers = mupToLoadToSubgroupMembership[mupName];
     for (const load in loadToGroupPersonalNumbers) {
+      if (load !== "*" && !loadToMetas.hasOwnProperty(load)) {
+        if (!notDeterminedLoadsForMups.hasOwnProperty(mupName)) {
+          notDeterminedLoadsForMups[mupName] = [];
+        }
+        notDeterminedLoadsForMups[mupName].push(load);
+      }
+
       if (
         !checkSubgroupMetaCountsAreSame(
           mupName,
@@ -138,12 +217,6 @@ export function validateSubgroupMembership(
         )
       ) {
         subgroupCountsDifferentForMups.add(mupName);
-      }
-      if (!loadToMetas.hasOwnProperty(load)) {
-        if (!notDeterminedLoadsForMups.hasOwnProperty(mupName)) {
-          notDeterminedLoadsForMups[mupName] = [];
-        }
-        notDeterminedLoadsForMups[mupName].push(load);
       }
 
       const personalNumbersPerGroup = loadToGroupPersonalNumbers[load];

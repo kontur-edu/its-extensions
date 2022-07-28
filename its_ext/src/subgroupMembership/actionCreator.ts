@@ -19,8 +19,7 @@ function generateUpdateMembershipActions(
 ): ITSAction[] {
   const actions: ITSAction[] = [];
 
-  const newSubroupIdToIncludedStudentIds: { [key: number]: string[] } =
-    {};
+  const newSubroupIdToIncludedStudentIds: { [key: number]: string[] } = {};
   for (const mupName in mupToLoadToSubgroupMembership) {
     const loadToMemberships = mupToLoadToSubgroupMembership[mupName];
     for (const load in loadToMemberships) {
@@ -33,16 +32,20 @@ function generateUpdateMembershipActions(
           const student = studentData.data[pn];
 
           const cgId = student.competitionGroupId;
-          if (!subgoupDiffInfo.subgroupDiffs[mupName][cgId].hasOwnProperty(load_number)) {
-            console.log(`нагрузка "load_number" не найдена в subgoupDiffInfo.subgroupDiffs[${mupName}][${cgId}]`);
+          if (
+            !subgoupDiffInfo.subgroupDiffs[mupName][cgId].hasOwnProperty(
+              load_number
+            )
+          ) {
+            console.log(
+              `нагрузка "load_number" не найдена в subgoupDiffInfo.subgroupDiffs[${mupName}][${cgId}]`
+            );
             continue;
           }
           const subgroupId =
             subgoupDiffInfo.subgroupDiffs[mupName][cgId][load_number];
-          
-          if (
-            !newSubroupIdToIncludedStudentIds.hasOwnProperty(subgroupId)
-          ) {
+
+          if (!newSubroupIdToIncludedStudentIds.hasOwnProperty(subgroupId)) {
             newSubroupIdToIncludedStudentIds[subgroupId] = [];
           }
           newSubroupIdToIncludedStudentIds[subgroupId].push(student.id);

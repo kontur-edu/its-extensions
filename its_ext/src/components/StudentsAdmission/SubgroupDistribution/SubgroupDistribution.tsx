@@ -27,6 +27,7 @@ import { createSubgroupDiffInfo } from "../../../subgroupUpdater/subgroupDiffs";
 
 import {
   parseSubgroupMembershipFromText,
+  trySubstituteLoadWildcards,
   trySubstituteMupShortNamesWithFullNames,
   validateSubgroupMembership,
 } from "../../../subgroupMembership/subgroupMembershipParser";
@@ -100,12 +101,23 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
       return;
     }
 
+    let substitutedMupToLoadToSubgroupMembership =
+      trySubstituteMupShortNamesWithFullNames(
+        newMupToLoadToSubgroupMembership,
+        context.dataRepository.mupData
+      );
+    substitutedMupToLoadToSubgroupMembership = trySubstituteLoadWildcards(
+      substitutedMupToLoadToSubgroupMembership,
+      props.competitionGroupIds,
+      subgroupDiffInfo
+    );
+
     const { success, messages } = validateSubgroupMembership(
       props.competitionGroupIds,
-      newMupToLoadToSubgroupMembership,
+      substitutedMupToLoadToSubgroupMembership,
       subgroupDiffInfo,
-      context.dataRepository.studentData,
-      context.dataRepository.mupData
+      context.dataRepository.studentData
+      // context.dataRepository.mupData
     );
 
     setSubgroupDistributionTextInputMessages(messages);
@@ -113,11 +125,6 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     console.log({ success, messages });
 
     if (success) {
-      const substitutedMupToLoadToSubgroupMembership =
-        trySubstituteMupShortNamesWithFullNames(
-          newMupToLoadToSubgroupMembership,
-          context.dataRepository.mupData
-        );
       setMupToLoadToSubgroupMembership(
         substitutedMupToLoadToSubgroupMembership
       );

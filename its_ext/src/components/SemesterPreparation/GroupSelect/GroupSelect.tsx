@@ -3,10 +3,9 @@ import { SelectionList } from "../../SelectionList";
 import style from "./GroupSelect.module.css";
 import { IGroupSelectProps } from "./types";
 import { EDU_SPACE_URL } from "../../../utils/constants";
-import Button from "@mui/material/Button";
 import Link from "@mui/material/Link";
-import RefreshIcon from "@mui/icons-material/Refresh";
 import NorthEastIcon from "@mui/icons-material/NorthEast";
+import { RefreshButton } from "../../RefreshButton";
 
 export function GroupSelect(props: IGroupSelectProps) {
   const [selectionGroupsIds, setSelectionGroupsIds] = useState<number[]>([]);
@@ -42,14 +41,10 @@ export function GroupSelect(props: IGroupSelectProps) {
       <article className="step__message_container "></article>
       <article className={style.selectionGroup_link}>
         <p>Если групп нет, создайте их в ИТС или попробуйте обновить список</p>
-        <Button
+        <RefreshButton
           onClick={handleRefreshSelectionGroups}
-          style={{ fontSize: 12 }}
-          variant="text"
-          startIcon={<RefreshIcon />}
-        >
-          Обновить список
-        </Button>
+          title="Обновить список"
+        />
         <Link
           href={EDU_SPACE_URL}
           rel="noreferrer"

@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import style from "./StudentsDistribution.module.css";
 import Button from "@mui/material/Button";
-import RefreshIcon from "@mui/icons-material/Refresh";
 import { IStudentsDistributionProps } from "./types";
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 import {
@@ -38,6 +37,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import AutoFixNormalIcon from "@mui/icons-material/AutoFixNormal";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { CopyOrDownload } from "../../CopyOrDownload";
+import { RefreshButton } from "../../RefreshButton";
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
@@ -481,14 +481,10 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   const renderTable = () => {
     return (
       <article>
-        <Button
+        <RefreshButton
           onClick={handleRefreshDebounced}
-          style={{ fontSize: 12, marginBottom: "1em" }}
-          variant="text"
-          startIcon={<RefreshIcon />}
-        >
-          Обновить список
-        </Button>
+          title="Обновить список"
+        />
         <section className="table__сontainer" ref={tableRef}>
           <table className="table table_vertical_borders">
             <thead>

@@ -63,7 +63,7 @@ export function MupsList(props: IMupsListProps) {
                       textDecoration: "none",
                       display: "flex",
                       alignItems: "center",
-                      fontSize: 16,
+                      fontSize: '1em',
                     }}
                   >
                     в ИТС

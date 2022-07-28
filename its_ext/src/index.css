@@ -8,6 +8,7 @@ body {
 
   background-color: #c6c6c6;
   /* background-color: #dbdbdb; */
+  font-size: 18px;
 }
 
 code {
@@ -19,6 +20,7 @@ h2,
 h3,
 h4 {
   font-weight: 500;
+  font-size: 1em;
 }
 
 .litebox {
@@ -28,7 +30,8 @@ h4 {
   align-items: center;
   width: 600px;
 
-  font-size: 24px;
+  /* font-size: 24px; */
+  font-size: 1.3em;
 
   background-color: #fff;
   padding: 2em;
@@ -38,12 +41,14 @@ h4 {
   font-weight: 400;
   margin: 0;
   padding: 0.3em 0;
+  font-size: 1.5em;
 }
 
 .action_header {
   position: relative;
 
-  font-size: 42px;
+  /* font-size: 42px; */
+  font-size: 2.25em;
   font-weight: 500;
   text-align: center;
   padding: 0.5em 0;
@@ -57,7 +62,8 @@ h4 {
 .step {
   display: flex;
   flex-direction: column;
-  font-size: 18px;
+  /* font-size: 18px; */
+  font-size: 1em;
   background-color: #fff;
   border-radius: 8px;
   padding: 2em;
@@ -81,7 +87,8 @@ h4 {
 }
 
 .step__header {
-  font-size: 24px;
+  /* font-size: 24px; */
+  font-size: 1.3em;
   font-weight: 500;
   margin: 0.4em 0;
 }
@@ -89,7 +96,8 @@ h4 {
 .step__container {
   display: flex;
   flex-direction: column;
-  font-size: 16px;
+  /* font-size: 16px; */
+  font-size: 1em;
 }
 
 .step__button {
@@ -156,8 +164,13 @@ td {
 }
 
 .table th {
-  font-size: 12px;
+  /* font-size: 12px; */
+  font-size: 0.8em;
   font-weight: 500;
+}
+
+.table td {
+  font-size: 0.8em;
 }
 
 .table tr {

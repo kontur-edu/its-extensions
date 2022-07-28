@@ -29,8 +29,8 @@ import { createTaskResultActions } from "../../../taskResultUpdater/actionCreato
 import { createDebouncedWrapper } from "../../../utils/helpers";
 
 import Button from "@mui/material/Button";
-import RefreshIcon from "@mui/icons-material/Refresh";
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
+import { RefreshButton } from "../../RefreshButton";
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
@@ -434,14 +434,11 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
         </Button>
         <h3>Студенты (активные), прошедшие Тестовое</h3>
 
-        <Button
+        <RefreshButton
           onClick={handleRefreshAdmissionInfo}
-          style={{ fontSize: 12, marginBottom: "1em" }}
-          variant="text"
-          startIcon={<RefreshIcon />}
-        >
-          Обновить список
-        </Button>
+          title="Обновить список"
+        />
+
         <section className="table__container">
           <table className="table">
             <thead>

@@ -24,7 +24,7 @@ export function MainMenu(props: IMainMenuProps) {
             backgroundColor: "#fff",
             color: "#000",
             margin: "0 0.4em",
-            fontSize: 12,
+            fontSize: '0.8em',
           }}
           endIcon={<ExitToAppIcon />}
           variant="contained"
@@ -37,7 +37,7 @@ export function MainMenu(props: IMainMenuProps) {
             backgroundColor: "#fff",
             color: "#000",
             margin: "0 0.4em",
-            fontSize: 12,
+            fontSize: '0.8em',
           }}
           endIcon={<ExitToAppIcon />}
           variant="contained"

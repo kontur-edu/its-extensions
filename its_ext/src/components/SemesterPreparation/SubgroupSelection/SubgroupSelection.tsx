@@ -31,6 +31,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import Link from "@mui/material/Link";
 import NorthEastIcon from "@mui/icons-material/NorthEast";
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
+import { RefreshButton } from "../../RefreshButton";
 
 function checkArraysSame(arr1: any[], arr2: any[]) {
   return arr1.sort().join(",") === arr2.sort().join(",");
@@ -363,14 +364,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
   return (
     <section className="step__container">
       <article>
-        <Button
-          onClick={refreshDataDebounced}
-          style={{ fontSize: 12 }}
-          variant="text"
-          startIcon={<RefreshIcon />}
-        >
-          Обновить список
-        </Button>
+        <RefreshButton onClick={refreshDataDebounced} title="Обновить список" />
         {competitionGroupIds.length !== 2 &&
           renderCompetitionGroupIsMissingMessage()}
         {renderCompetitionGroupSubgroupMetaLinks()}

@@ -16,7 +16,12 @@ import {
 
 import { ITSContext } from "../../../common/Context";
 
-import { ActionType, ITSAction, executeActions, checkAllRefreshAction } from "../../../common/actions";
+import {
+  ActionType,
+  ITSAction,
+  executeActions,
+  checkAllRefreshAction,
+} from "../../../common/actions";
 import {
   createActions,
   getMupActions,
@@ -25,11 +30,11 @@ import { UpdateSelectionGroupAction } from "../../../mupUpdater/actions";
 import { createDebouncedWrapper } from "../../../utils/helpers";
 import { IActionExecutionLogItem } from "../../../common/actions";
 
-
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 
 import Button from "@mui/material/Button";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import { RefreshButton } from "../../RefreshButton";
 
 // Получение данных:
 // Запросить все Группы выбора
@@ -448,14 +453,11 @@ export function MupEditor(props: IMupEditorProps) {
 
         <h4>Выберите МУПы и лимиты на количество зачисленных студентов</h4>
 
-        <Button
+        <RefreshButton
           onClick={handleRefreshDebounced}
-          style={{ fontSize: 12, marginBottom: "1em" }}
-          variant="text"
-          startIcon={<RefreshIcon />}
-        >
-          Обновить список
-        </Button>
+          title="Обновить список"
+        />
+
         <MupsList
           mupData={context.dataRepository.mupData}
           mupEdits={mupEdits}

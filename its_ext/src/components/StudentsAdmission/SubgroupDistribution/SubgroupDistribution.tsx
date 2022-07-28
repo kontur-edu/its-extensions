@@ -39,10 +39,10 @@ import {
 } from "../../../studentAdmission/studentDistributor";
 
 import Button from "@mui/material/Button";
-import RefreshIcon from "@mui/icons-material/Refresh";
 import Link from "@mui/material/Link";
 import NorthEastIcon from "@mui/icons-material/NorthEast";
 import { CopyOrDownload } from "../../CopyOrDownload";
+import { RefreshButton } from "../../RefreshButton";
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
@@ -489,14 +489,10 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
   const renderContent = () => {
     return (
       <React.Fragment>
-        <Button
+        <RefreshButton
           onClick={handleRefreshDataDebounced}
-          style={{ fontSize: 12, alignSelf: "flex-start" }}
-          variant="text"
-          startIcon={<RefreshIcon />}
-        >
-          Обновить данные
-        </Button>
+          title="Обновить данные"
+        />
 
         {renderSubgroupDistributionForOneGroupPerLoad()}
 

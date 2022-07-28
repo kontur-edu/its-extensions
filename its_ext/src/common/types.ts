@@ -25,6 +25,7 @@ export interface IEduSpace {
 export interface IMup {
   id: string;
   name: string;
+  shortName: string;
   ze: number; // testUnits
 }
 

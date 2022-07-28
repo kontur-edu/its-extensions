@@ -99,7 +99,13 @@ export class ITSApiService {
     const url = `https://its.urfu.ru/MUP/Index?page=1&start=0&limit=${MUPS_MAX_COUNT}`;
     const res = await this.requestService.GetJson(url);
     return res.map((obj: any) => {
-      return { id: obj["id"], name: obj["title"], ze: obj["testUnits"] };
+      const mup: IMup = {
+        id: obj["id"],
+        name: obj["title"],
+        shortName: obj["shortTitle"],
+        ze: obj["testUnits"],
+      };
+      return mup;
     });
   }
 

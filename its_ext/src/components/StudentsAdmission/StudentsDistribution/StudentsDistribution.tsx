@@ -518,7 +518,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           variant="contained"
           style={{
             alignSelf: "flex-start",
-            marginTop: "1em",
           }}
           startIcon={<AutoFixNormalIcon />}
         >

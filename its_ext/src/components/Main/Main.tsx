@@ -1,6 +1,5 @@
 import React, { useContext, useState } from "react";
-import { Routes, Route, useNavigate } from "react-router-dom";
-// import {Authenticate} from '../../utils/api';
+import { Routes, Route } from "react-router-dom";
 import { LoginForm } from "../LoginForm";
 import { ICredentials } from "../../common/types";
 import { IMainProps } from "./types";
@@ -15,7 +14,6 @@ import Button from "@mui/material/Button";
 export function Main(props: IMainProps) {
   const [needAuthentication, setNeedAuthentication] = useState(false);
   const [connectionRefused, setConnectionRefused] = useState(false);
-  const navigate = useNavigate();
   const context = useContext(ITSContext);
   const [currentLogin, setCurrentLogin] = useState<string>("");
 
@@ -49,23 +47,12 @@ export function Main(props: IMainProps) {
     }
   };
 
-  const handleHeaderClick = () => {
-    navigate("/");
-  };
 
   context?.requestService.setOnConnectionRefused(handleConnectoinRefused);
 
   return (
     <div>
-      {/* <h1 className={style.header} onClick={handleHeaderClick}>
-                Индивидуальная траектория студента
-            </h1> */}
-      
       <Routes>
-        {/* <Route path="/editor" element={<Editor />}/>
-                <Route path="/educationalSpaces" element={<EducationalSpacesList />}/>
-                <Route path="/selectionGroups" element={<SelectionGroupsList />}/>
-                <Route path="/competitiveGroups" element={<CompetitiveGroupsList />}/> */}
         <Route path="/" element={<MainMenu login={currentLogin} />} />
         
         <Route
@@ -79,7 +66,6 @@ export function Main(props: IMainProps) {
                 isUnauthorized={needAuthentication}
                 onUnauthorized={handleUnauthorized}
               />
-              {/* <MupsList isUnauthorized={needAuthentication} onUnauthorized={handleUnauthorized} /> */}
             </React.Fragment>
           }
         />
@@ -95,11 +81,9 @@ export function Main(props: IMainProps) {
                 isUnauthorized={needAuthentication}
                 onUnauthorized={handleUnauthorized}
               />
-              {/* <MupsList isUnauthorized={needAuthentication} onUnauthorized={handleUnauthorized} /> */}
             </React.Fragment>
           }
         />
-        {/* <Route path="/students" element={<StudentsList />}/> */}
       </Routes>
 
       <Modal visible={connectionRefused}>

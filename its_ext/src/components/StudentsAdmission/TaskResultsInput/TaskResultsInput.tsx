@@ -145,7 +145,8 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   >([]);
   const [textAreaValue, setTextAreaValue] = useState<string>("");
   const [invalidStudentRows, setInvalidStudentRows] = useState<string[]>([]);
-  const allowSuccessMessage = useRef<boolean>(false);
+  // const allowSuccessMessage = useRef<boolean>(false);
+  const [applyClicked, setApplyClicked] = useState<boolean>(false);
   const context = useContext(ITSContext)!;
 
   const getMupNameById = (mupId: string) => {
@@ -189,7 +190,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     const newCompetitionGroupToAdmissionIds =
       getCurrentAdmissionIdsPerCompetitionGroup(selectedMupId);
 
-    setCompetitionGroupToAdmissionIds(newCompetitionGroupToAdmissionIds);
+    // setCompetitionGroupToAdmissionIds(newCompetitionGroupToAdmissionIds);
     context.dataRepository
       .UpdateStudentAdmissionsAndStudentData(newCompetitionGroupToAdmissionIds)
       .then(() =>
@@ -238,7 +239,8 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   }, [competitionGroupToAdmissionIds]);
 
   const handleMupChange = (event: SelectChangeEvent) => {
-    allowSuccessMessage.current = false;
+    setApplyClicked(false);
+    // allowSuccessMessage.current = false;
 
     const newMupId = event.target.value;
     console.log("newMupId");
@@ -254,6 +256,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
 
   const handleStudentPassedToggle = (personalNumber: string) => {
     console.log("handleStudentPassedToggle");
+    setApplyClicked(false);
     const newStudentItems = { ...studentItems };
     const studentItem = newStudentItems[personalNumber];
     if (studentItem.testResult) {
@@ -309,6 +312,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   };
 
   const handleSelectStudentsFromTextArea = () => {
+    setApplyClicked(false);
     const records = getNameRecords(textAreaValue);
     selectStudentsDebounced(records);
   };
@@ -382,6 +386,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
 
   const handleRealApply = () => {
     alert(`Настоящее применение изменений`);
+    setApplyClicked(true);
     executeActions(taskResultsActions, context)
       .then((actionResults) => {
         setTaskResultsActionResults(actionResults);
@@ -390,7 +395,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   };
 
   const handleRealApplyDebounced = () => {
-    allowSuccessMessage.current = true;
+    // allowSuccessMessage.current = true;
     debouncedWrapperForApply(handleRealApply);
   };
 
@@ -409,31 +414,9 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     );
   };
 
-  return (
-    <section className="step__container">
-      <article>
-        <h3 className={style.mup_select__header}>
-          Выберите МУП:
-          <FormControl sx={{ minWidth: 120, marginLeft: "1em" }}>
-            <InputLabel id="task-results-mup-select-label">МУП</InputLabel>
-            <Select
-              labelId="task-results-mup-select-label"
-              value={selectedMupId}
-              label="МУП"
-              onChange={handleMupChange}
-            >
-              <MenuItem key={""} value={""}>
-                Не выбран
-              </MenuItem>
-              {mupIds.map((mupId) => (
-                <MenuItem key={mupId} value={mupId}>
-                  {getMupNameById(mupId)}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </h3>
-
+  const renderContent = () => {
+    return (
+      <React.Fragment>
         <h3>
           Вставьте список ФИО студентов, прошедших тестовое или выберите
           студентов в таблице
@@ -474,12 +457,43 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
 
         <ApplyButtonWithActionDisplay
           showErrorWarning={true}
-          showSuccessMessage={allowSuccessMessage.current}
+          showSuccessMessage={true}
           actions={taskResultsActions}
           actionResults={taskResultsActionResults}
+          clicked={applyClicked}
           onNextStep={props.onNextStep}
           onApply={handleRealApplyDebounced}
         />
+      </React.Fragment>
+    );
+  };
+
+  return (
+    <section className="step__container">
+      <article>
+        <h3 className={style.mup_select__header}>
+          Выберите МУП:
+          <FormControl sx={{ minWidth: 120, marginLeft: "1em" }}>
+            <InputLabel id="task-results-mup-select-label">МУП</InputLabel>
+            <Select
+              labelId="task-results-mup-select-label"
+              value={selectedMupId}
+              label="МУП"
+              onChange={handleMupChange}
+            >
+              <MenuItem key={""} value={""}>
+                Не выбран
+              </MenuItem>
+              {mupIds.map((mupId) => (
+                <MenuItem key={mupId} value={mupId}>
+                  {getMupNameById(mupId)}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </h3>
+
+        {selectedMupId ? renderContent() : null}
       </article>
     </section>
   );

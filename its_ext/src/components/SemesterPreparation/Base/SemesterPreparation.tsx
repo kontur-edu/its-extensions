@@ -3,22 +3,15 @@ import { MupEditor } from "../MupEditor";
 import { ISelectionListItem } from "../../SelectionList/types";
 import style from "./SemesterPreparation.module.css";
 import { ISemesterPreparationProps } from "./types";
-import {
-  DEBOUNCE_MS,
-  REQUEST_ERROR_UNAUTHORIZED,
-} from "../../../utils/constants";
+import { REQUEST_ERROR_UNAUTHORIZED } from "../../../utils/constants";
 
 import { GroupSelect } from "../GroupSelect/GroupSelect";
 import { unionArrays } from "../../../utils/helpers";
 import { ITSContext } from "../../../common/Context";
 import { SubgroupSelection } from "../SubgroupSelection";
-import { useNavigate } from "react-router-dom";
 
-import { Button } from "@mui/material";
-import SystemUpdateAltIcon from "@mui/icons-material/SystemUpdateAlt";
-import WestIcon from "@mui/icons-material/West";
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
-// import { CreateDebouncedWrapper } from "../../../utils/helpers";
+import { BackButton } from "../../BackButton";
 
 // Получение данных:
 // Запросить все Группы выбора
@@ -64,12 +57,6 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
   const stepThreeRef = useRef<HTMLElement | null>(null);
   const context = useContext(ITSContext)!;
 
-  const navigate = useNavigate();
-
-  const handleBackButton = () => {
-    navigate("/");
-  };
-
   const refreshSelectionGroups = () => {
     if (props.isUnauthorized) {
       return;
@@ -101,8 +88,6 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
   };
 
   const refreshSelectionGroupMups = async (ids: number[]) => {
-    // console.log(`refreshSelectionGroupMups`);
-    // console.log(ids);
     await context.dataRepository.UpdateSelectionGroupToMupsData(ids);
     let newChosenMups: string[] = [];
     if (ids.length === 2) {
@@ -128,20 +113,16 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
   };
 
   const refreshMupData = async () => {
-    // console.log(`refreshMupData`);
     await context.dataRepository.UpdateMupData();
   };
 
   const refreshPeriods = async (mupIds: string[]) => {
-    // console.log(`refreshPeriods`);
-    // console.log(mupIds);
     await context.dataRepository.UpdatePeriods(mupIds);
   };
 
   const refreshSubgroupMetasAndSubgroups = async (
     selectionGroupIds: number[]
   ) => {
-    // console.log(`refreshSubgroupMetasAndSubgroups`);
     const competitionGroupIds: number[] = [];
     for (let selectionGroupId of selectionGroupIds) {
       const selectionGroup =
@@ -208,8 +189,6 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
   }, [props.isUnauthorized]);
 
   const renderStep2 = () => {
-    // console.log("mupEditorActionResults");
-    // console.log(mupEditorActionResults);
     return (
       <article className="step" ref={stepTwoRef}>
         <h3 className="step__header">2. Лимиты МУПов и даты выбора</h3>
@@ -243,19 +222,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
   return (
     <section className="page">
       <h2 className="action_header">
-        <Button
-          onClick={handleBackButton}
-          variant="text"
-          style={{
-            position: "absolute",
-            left: 0,
-            top: "50%",
-            transform: "translate(0, -50%)",
-          }}
-          startIcon={<WestIcon />}
-        >
-          Вернуться назад
-        </Button>
+        <BackButton route={"/"} />
         Подготовка семестра
       </h2>
       <article className="step">

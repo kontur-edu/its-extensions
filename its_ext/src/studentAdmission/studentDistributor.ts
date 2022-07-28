@@ -359,7 +359,7 @@ export function createStudentsDistributionData(
 
   for (const admissionId of availableAdmissionIds) {
     const mupId = admissionIdToMupId[admissionId];
-    result.mupIdToMupName[mupId] = mupData.data[mupId].name;
+    result.mupIdToMupName[mupId] = mupData.data[mupId].shortName; // FIXME: use short name
   }
   return result;
 }
@@ -451,7 +451,7 @@ export function createAdmissionRecord(
   }
 
   const mupId = admissionIdToMupId[admissionId];
-  res.name = mupData.data[mupId].name;
+  res.name = mupData.data[mupId].shortName;
 
   return res;
 }

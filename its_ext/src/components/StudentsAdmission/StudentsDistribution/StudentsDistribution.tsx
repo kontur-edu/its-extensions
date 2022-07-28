@@ -41,8 +41,10 @@ import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import EditIcon from "@mui/icons-material/Edit";
 import AutoFixNormalIcon from "@mui/icons-material/AutoFixNormal";
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import DownloadIcon from '@mui/icons-material/Download';
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import DownloadIcon from "@mui/icons-material/Download";
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
@@ -77,7 +79,14 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   const [studentAdmissionActionResults, setStudentAdmissionActionResults] =
     useState<IActionExecutionLogItem[]>([]);
 
+  const tableRef = useRef<HTMLElement | null>(null);
+
   const context = useContext(ITSContext)!;
+
+
+  const handleGoToTable = () => {
+    tableRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   const refreshData = () => {
     if (refreshInProgress.current) return Promise.resolve();
@@ -95,18 +104,22 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     const updateAdmissionsPromise = context.dataRepository
       .UpdateAdmissionMetas(props.competitionGroupIds)
       .then(() => {
-        const admissionIds: number[] = [];
+        const competitionGroupIdToAdmissionIds: { [key: number]: number[] } =
+          {};
         for (const competitionGroupId of props.competitionGroupIds) {
+          competitionGroupIdToAdmissionIds[competitionGroupId] = [];
           const mupToAdmission =
             context.dataRepository.competitionGroupIdToMupAdmissions[
               competitionGroupId
             ];
           for (const mupId in mupToAdmission) {
-            admissionIds.push(mupToAdmission[mupId].admissionsId);
+            competitionGroupIdToAdmissionIds[competitionGroupId].push(
+              mupToAdmission[mupId].admissionsId
+            );
           }
         }
         return context.dataRepository.UpdateStudentAdmissionsAndStudentData(
-          admissionIds
+          competitionGroupIdToAdmissionIds
         );
       });
     return Promise.allSettled([
@@ -285,7 +298,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
 
   const renderStudentAdmissionsTextInputMessages = () => {
     return (
-      <ul className="list_without_decorations warning">
+      <ul className="warning">
         {studentAdmissionsTextInputMessages.map((message, index) => (
           <li key={index}>{message}</li>
         ))}
@@ -356,8 +369,8 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
 
   const handleRealApplyDebounced = () => {
     debouncedWrapperForApply(() => {
-      alert("Real apply declined");
-      return;
+      // alert("Real apply declined");
+      // return;
       executeActions(studentAdmissionActions, context).then((actionResults) => {
         setStudentAdmissionActionResults(actionResults);
       });
@@ -413,7 +426,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           <tr key={personalNumber}>
             <td>
               {student.surname} {student.firstname} {student.patronymic}{" "}
-              {/* {personalNumber} */}
+              {personalNumber}
             </td>
             <td>{student.groupName}</td>
             <td>{student.rating}</td>
@@ -452,8 +465,8 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     return (
       <React.Fragment>
         <h4>
-          Вставивьте распределение студентов по МУПам
-            (формат данных как в файле сверху)
+          Вставьте распределение студентов по МУПам (формат данных как в файле
+          сверху)
         </h4>
         <textarea
           value={studentAdmissionsTextInput}
@@ -461,9 +474,14 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           rows={10}
           placeholder="Вставьте содержимое файла с распределением студентов по группам"
         />
-        <Button onClick={handleParseStudentAdmissionsFromTextArea}>
-          Распарсить и отобразить в таблице
-        </Button>
+        <div className={style.button_container}>
+          <Button onClick={handleParseStudentAdmissionsFromTextArea} style={{flexGrow: 1, marginBottom: '1.2em'}}>
+            Распарсить и отобразить в таблице
+          </Button>
+          <Button onClick={handleGoToTable}>
+            <ArrowUpwardIcon/>
+          </Button>
+        </div>
         {studentAdmissionsTextInputMessages.length > 0 &&
           renderStudentAdmissionsTextInputMessages()}
       </React.Fragment>
@@ -481,7 +499,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         >
           Обновить список
         </Button>
-        <section className="table__сontainer">
+        <section className="table__сontainer" ref={tableRef}>
           <table className="table table_vertical_borders">
             <thead>
               <tr>
@@ -506,9 +524,23 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         {renderTable()}
 
         <Button
+          onClick={handleDistributeRemainingStudents}
+          variant="contained"
+          style={{
+            alignSelf: "flex-start",
+            marginTop: "1em",
+          }}
+          startIcon={<AutoFixNormalIcon />}
+        >
+          {" "}
+          Дораспределить студентов по курсам
+        </Button>
+
+        <Button
           onClick={toggleManualEditSection}
           style={{
             alignSelf: "flex-start",
+            margin: "1em 0",
           }}
           startIcon={<EditIcon />}
         >
@@ -518,34 +550,28 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         <Collapse in={manualEditOpen} timeout="auto" unmountOnExit>
           <div className={style.manualEdit__container}>
             <h4>Распределение по курсам в ИТС</h4>
-            {/* <textarea value={studentAdmissionsText} rows={10} readOnly /> */}
-            <Button 
-              onClick={() => navigator.clipboard.writeText(studentAdmissionsText)}
-              style={{ alignSelf: "flex-start" }}
-              startIcon={<ContentCopyIcon/>}>
-               Скопировать распределение
-            </Button>
-            <Button onClick={handleDownlad} style={{ alignSelf: "flex-start" }}
-              startIcon={<DownloadIcon/>}>
-              Скачать файл
-            </Button>
+            <div>
+              <Button
+                onClick={() =>
+                  navigator.clipboard.writeText(studentAdmissionsText)
+                }
+                style={{ alignSelf: "flex-start" }}
+                startIcon={<ContentCopyIcon />}
+              >
+                Скопировать распределение
+              </Button>
+              <Button
+                onClick={handleDownlad}
+                style={{ alignSelf: "flex-start" }}
+                startIcon={<DownloadIcon />}
+              >
+                Скачать файл
+              </Button>
+            </div>
 
             {renderAdmissionsInput()}
           </div>
         </Collapse>
-
-        <Button
-          onClick={handleDistributeRemainingStudents}
-          variant="contained"
-          style={{
-            alignSelf: "flex-start",
-            margin: "1em 0",
-          }}
-          startIcon={<AutoFixNormalIcon />}
-        >
-          {" "}
-          Дораспределить студентов по курсам
-        </Button>
 
         <ApplyButtonWithActionDisplay
           showErrorWarning={true}

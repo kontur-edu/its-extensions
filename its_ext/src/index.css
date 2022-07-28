@@ -14,6 +14,12 @@ code {
     monospace;
 }
 
+h2,
+h3,
+h4 {
+  font-weight: 500;
+}
+
 .litebox {
   display: flex;
   flex-direction: column;

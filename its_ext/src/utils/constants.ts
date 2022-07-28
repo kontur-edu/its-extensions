@@ -8,6 +8,8 @@ export const COMPETITION_GROUP_URL =
   "https://its.urfu.ru/MUPItsCompetitionGroups";
 export const COMPETITION_GROUP_SUBGROUP_META_URL =
   "https://its.urfu.ru/MUPItsSubgroupMeta/Index?competitionGroupId=";
+export const COMPETITION_GROUP_SUBGROUP_URL =
+  "https://its.urfu.ru/MUPItsSubgroup/Index?competitionGroupId=";
 export const MUP_PERIOD_URL = "https://its.urfu.ru/MUP/Periods/";
 // export const UNAUTHORIZED = "Unauthorized";
 

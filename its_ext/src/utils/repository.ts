@@ -15,6 +15,7 @@ import {
   IStudent,
   IStudentAdmission,
   IStudentAdmissionRaw,
+  IStudentSubgroupMembership,
 } from "../common/types";
 
 import { ITSApiService } from "./ITSApiService";
@@ -39,9 +40,15 @@ export class ITSRepository {
   competitionGroupData: ICompetitionGroupData = { ids: [], data: {} };
 
   studentData: IStudentData = { ids: [], data: {} };
+  studentIdToPersonalNumber: { [key: string]: string } = {};
+
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions = {};
   admissionIdToMupId: { [key: number]: string } = {};
   admissionInfo: AdmissionInfo = {};
+
+  subgroupIdToStudentSubgroupMembership: {
+    [key: number]: IStudentSubgroupMembership[];
+  } = {}; // subgroupId -> studentId[]
 
   constructor(public api: ITSApiService) {}
 
@@ -185,8 +192,8 @@ export class ITSRepository {
 
   fillStudentRawInfoToStudentDataAndAdmissionInfo(
     admissionId: number,
-    studentsRaw: IStudentAdmissionRaw[]
-    // mupId: string
+    studentsRaw: IStudentAdmissionRaw[],
+    competitionGroupId: number
   ) {
     const studentAdmissionInfo: { [key: string]: IStudentAdmission | null } =
       {};
@@ -204,9 +211,11 @@ export class ITSRepository {
         rating: studentRaw.rating,
         status: studentRaw.studentStatus,
         groupName: studentRaw.groupName,
+        competitionGroupId: competitionGroupId,
       };
 
       this.studentData.data[studentRaw.personalNumber] = student;
+      this.studentIdToPersonalNumber[student.id] = student.personalNumber; // TODO: beter store only studentId everywhere
 
       if (
         !studentRaw.priority &&
@@ -235,20 +244,49 @@ export class ITSRepository {
   }
 
   // NOTE: need admissionIdToMupId (call UpdateAdmissionMetas first)
-  async UpdateStudentAdmissionsAndStudentData(admissionIds: number[]) {
+  async UpdateStudentAdmissionsAndStudentData(competitionGroupIdToAdmissionIds: {
+    [key: number]: number[];
+  }) {
     console.log(`ITSRepository: UpdateStudentAdmissionsAndStudentData`);
-    const requests = admissionIds.map((aId) =>
-      this.api.GetStudentsForAdmission(aId)
+    for (let competitionGroupIdStr in competitionGroupIdToAdmissionIds) {
+      const competitionGroupId = Number(competitionGroupIdStr);
+      const admissionIds = competitionGroupIdToAdmissionIds[competitionGroupId];
+      const requests = admissionIds.map((aId) =>
+        this.api.GetStudentsForAdmission(aId)
+      );
+      const responses = await Promise.allSettled(requests);
+      for (let i = 0; i < admissionIds.length; i++) {
+        const resp = responses[i];
+        const admissionId = admissionIds[i];
+        if (resp.status === "fulfilled") {
+          this.fillStudentRawInfoToStudentDataAndAdmissionInfo(
+            admissionId,
+            resp.value,
+            competitionGroupId
+          );
+        }
+      }
+    }
+  }
+
+  async UpdateSubgroupMembership(subgroupIds: number[]) {
+    console.log(`ITSRepository: UpdateSubgroupMembership`);
+    const requests = subgroupIds.map((sId) =>
+      this.api.GetSubgroupMembershipInfo(sId)
     );
     const responses = await Promise.allSettled(requests);
-    for (let i = 0; i < admissionIds.length; i++) {
+    for (let i = 0; i < subgroupIds.length; i++) {
       const resp = responses[i];
-      const admissionId = admissionIds[i];
+      const subgroupId = subgroupIds[i];
       if (resp.status === "fulfilled") {
-        this.fillStudentRawInfoToStudentDataAndAdmissionInfo(
-          admissionId,
-          resp.value
-        );
+        // const includedStudentIds: string[] = [];
+        // for (const membership of resp.value) {
+        //   if (membership.included) {
+        //     includedStudentIds.push(membership.studentId);
+        //   }
+        // }
+
+        this.subgroupIdToStudentSubgroupMembership[subgroupId] = resp.value;
       }
     }
   }

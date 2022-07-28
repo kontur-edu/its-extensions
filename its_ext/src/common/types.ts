@@ -25,6 +25,7 @@ export interface IEduSpace {
 export interface IMup {
   id: string;
   name: string;
+  shortName: string;
   ze: number; // testUnits
 }
 
@@ -160,7 +161,7 @@ export type SubgroupDiffs = {
   [key: string]: {
     // competitionGroupId
     [key: number]: {
-      // <load> + <number>
+      // <load>_<number>
       [key: string]: number; // subgroupId
     };
   };
@@ -245,6 +246,8 @@ export interface IStudent {
 
   rating: number | null;
   status: string;
+
+  competitionGroupId: number;
 }
 
 export interface IStudentData {
@@ -275,7 +278,14 @@ export type AdmissionInfo = {
   };
 };
 
-// export interface IAdmissionInfo {
-//   admissionIdToStudentAdmission: AdmissionInfo;
-//   admissionIdToPersonalNumbers: {[key: number]: string[]};
-// }
+export interface IStudentSubgroupMembership {
+  studentId: string;
+  included: boolean;
+}
+
+
+export type MupToLoadToSubgroupMembership = {
+  [key: string]: { // mupName
+    [key: string]: string[][] // loadName => [['personalNumber', 'personalNumber'], ...]
+  }
+}

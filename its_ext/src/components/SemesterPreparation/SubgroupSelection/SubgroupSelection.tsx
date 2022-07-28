@@ -120,8 +120,8 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
         newSubgoupDiffInfo,
         context.dataRepository.subgroupData
       );
-    // console.log("newMupToDiffs");
-    // console.log(newMupToDiffs);
+    console.log("newMupToDiffs");
+    console.log(newMupToDiffs);
     // setMupToDiffs(newMupToDiffs);
 
     const newMupToDifferenceMessages = createMupToDifferenceMessages(
@@ -130,8 +130,8 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
       // newCompetitionGroupIds,
       newSubgoupDiffInfo
     );
-    // console.log("newMupToDifferenceMessages");
-    // console.log(newMupToDifferenceMessages);
+    console.log("newMupToDifferenceMessages");
+    console.log(newMupToDifferenceMessages);
 
     const newActions = createActionsByDiffs(
       newCompetitionGroupIds,
@@ -139,6 +139,9 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
       newSubgoupDiffInfo
       // context.dataRepository.subgroupData
     );
+
+    console.log("SubgroupSelection: newActions");
+    console.log(newActions);
 
     setSubgroupSelectionActions(newActions);
 

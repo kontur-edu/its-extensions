@@ -11,6 +11,7 @@ import {
   ICompetitionGroup,
   IAdmissionMeta,
   IStudentAdmissionRaw,
+  IStudentSubgroupMembership,
 } from "../common/types";
 
 import {
@@ -98,7 +99,13 @@ export class ITSApiService {
     const url = `https://its.urfu.ru/MUP/Index?page=1&start=0&limit=${MUPS_MAX_COUNT}`;
     const res = await this.requestService.GetJson(url);
     return res.map((obj: any) => {
-      return { id: obj["id"], name: obj["title"], ze: obj["testUnits"] };
+      const mup: IMup = {
+        id: obj["id"],
+        name: obj["title"],
+        shortName: obj["shortTitle"],
+        ze: obj["testUnits"],
+      };
+      return mup;
     });
   }
 
@@ -561,13 +568,53 @@ export class ITSApiService {
       "https://its.urfu.ru/MUPItsAdmission/SetCompetitionGroupAdmissionStatus";
 
     const data = {
-      studentId: studentId,
+      studentIds: studentId,
       id: admissionId,
       status: status,
     };
 
     if (admissionId < 146) {
       const message = `Tried to update not test Admission id: ${admissionId}`;
+      alert(message);
+      return { success: false, message };
+    }
+
+    const result = await this.requestService.PostFormData(url, data);
+    return result;
+  }
+
+  async GetSubgroupMembershipInfo(
+    subgroupId: number
+  ): Promise<IStudentSubgroupMembership[]> {
+    const url = `https://its.urfu.ru/MUPItsSubgroup/Students?id=${subgroupId}`;
+    const res = await this.requestService.GetJson(url);
+
+    return res.map((obj: any) => {
+      const admissionMeta: IStudentSubgroupMembership = {
+        studentId: obj["Id"],
+        included: obj["Included"],
+      };
+      return admissionMeta;
+    });
+  }
+
+  async UpdateStudentSubgroupMembership(
+    subgroupId: number,
+    studentId: string,
+    included: boolean
+  ) {
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
+
+    const url = "https://its.urfu.ru/MUPItsSubgroup/StudentMembership";
+
+    const data = {
+      subgroupId: subgroupId,
+      studentId: studentId,
+      include: included ? "true" : "false",
+    };
+
+    if (subgroupId < 594) {
+      const message = `Tried to update not test Subgroup id: ${subgroupId}`;
       alert(message);
       return { success: false, message };
     }

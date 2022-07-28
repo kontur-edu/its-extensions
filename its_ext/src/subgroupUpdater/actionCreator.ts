@@ -26,9 +26,10 @@ function generateRefrshSubgroupsActions(competitionGroupIds: number[]) {
   return [new RefreshSubgroupsAction(competitionGroupIds)];
 }
 
-function findCompetitionGroupsWithMetaAndSubgroupsDifferent(
+function findCompetitionGroupsToCreateSubgroups(
   competitionGroupIds: number[],
-  subgroupAndMetaAreSameDiffs: SubgroupAndMetaAreSameDiffs
+  subgroupAndMetaAreSameDiffs: SubgroupAndMetaAreSameDiffs,
+  sDiffs: { [key: string]: IMupSubgroupDiff }
 ): number[] {
   console.log("subgroupAndMetaAreSameDiffs");
   console.log(subgroupAndMetaAreSameDiffs);
@@ -42,6 +43,22 @@ function findCompetitionGroupsWithMetaAndSubgroupsDifferent(
     }
     if (!s2) {
       res.add(competitionGroupIds[1]);
+    }
+  }
+  for (const mupName in sDiffs) {
+    const sDiff = sDiffs[mupName];
+    const haveLoadMetas = Object.keys(sDiff.loadsToMetas).length !== 0;
+    const haveLoadsWithGroupCount = Object.keys(sDiff.loadsToMetas).some(
+      (load) => {
+        const [m1, m2] = sDiff.loadsToMetas[load];
+        return m1?.count || m2?.count;
+      }
+    );
+    const haveCreatedSubgroups = Object.keys(sDiff.loadToTeachers).length !== 0;
+    if (haveLoadMetas && haveLoadsWithGroupCount && !haveCreatedSubgroups) {
+      for (const competitionGroupId of competitionGroupIds) {
+        res.add(competitionGroupId);
+      }
     }
   }
   return Array.from(res);
@@ -59,19 +76,22 @@ export function createActionsByDiffs(
     const sDiff = sDiffs[mupName];
 
     actions.push(
-      ...CreateUpdateSubgroupMetaLoadCountBySubgroupDiff(mupName, sDiff)
+      ...createUpdateSubgroupMetaLoadCountBySubgroupDiff(mupName, sDiff)
     );
   }
 
-  const subgroupIdsToCreateSubgroups: number[] =
-    findCompetitionGroupsWithMetaAndSubgroupsDifferent(
+  const competitionGroupIdsToCreateSubgroups: number[] =
+    findCompetitionGroupsToCreateSubgroups(
       competitionGroupIds,
-      subgroupInfo.subgroupAndMetaAreSameDiffs
+      subgroupInfo.subgroupAndMetaAreSameDiffs,
+      sDiffs
     );
-  console.log("subgroupIdsToCreateSubgroups");
-  console.log(subgroupIdsToCreateSubgroups);
-  actions.push(...generateCreateSubgroupsActions(subgroupIdsToCreateSubgroups));
-  if (subgroupIdsToCreateSubgroups.length > 0) {
+  console.log("competitionGroupIdsToCreateSubgroups");
+  console.log(competitionGroupIdsToCreateSubgroups);
+  actions.push(
+    ...generateCreateSubgroupsActions(competitionGroupIdsToCreateSubgroups)
+  );
+  if (competitionGroupIdsToCreateSubgroups.length > 0) {
     actions.push(...generateRefrshSubgroupsActions(competitionGroupIds));
   }
 
@@ -79,7 +99,7 @@ export function createActionsByDiffs(
     const sDiff = sDiffs[mupName];
 
     actions.push(
-      ...CreateUpdateTeacherActionsBySubgroupDiff(
+      ...createUpdateTeacherActionsBySubgroupDiff(
         // TODO: lowercase
         mupName,
         sDiff,
@@ -93,7 +113,7 @@ export function createActionsByDiffs(
   return actions;
 }
 
-export function CreateUpdateSubgroupMetaLoadCountBySubgroupDiff(
+export function createUpdateSubgroupMetaLoadCountBySubgroupDiff(
   mupName: string,
   sDiff: IMupSubgroupDiff
 ): ITSAction[] {
@@ -125,7 +145,7 @@ export function CreateUpdateSubgroupMetaLoadCountBySubgroupDiff(
   return actions;
 }
 
-export function CreateUpdateTeacherActionsBySubgroupDiff(
+export function createUpdateTeacherActionsBySubgroupDiff(
   mupName: string,
   sDiff: IMupSubgroupDiff,
   competitionGroupIds: number[]

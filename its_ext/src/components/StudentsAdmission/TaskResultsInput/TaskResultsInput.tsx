@@ -32,15 +32,14 @@ import Button from "@mui/material/Button";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 
-
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
-export function getAdmissionIds(
+export function getAdmissionIdsPerCompetitionGroup(
   competitionGroupIds: number[],
   mupId: string,
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions
 ) {
-  const admissionIds: number[] = [];
+  const competitionGroupIdToAdmissionIds: { [key: number]: number[] } = {};
   for (const competitionGroupId of competitionGroupIds) {
     if (!competitionGroupIdToMupAdmissions.hasOwnProperty(competitionGroupId)) {
       console.log(
@@ -54,9 +53,14 @@ export function getAdmissionIds(
       console.log(`mupId: ${mupId} not found in mupIdToAdmissionId`);
       continue;
     }
-    admissionIds.push(mupIdToAdmissionId[mupId].admissionsId);
+    if (!competitionGroupIdToAdmissionIds.hasOwnProperty(competitionGroupId)) {
+      competitionGroupIdToAdmissionIds[competitionGroupId] = [];
+    }
+    competitionGroupIdToAdmissionIds[competitionGroupId].push(
+      mupIdToAdmissionId[mupId].admissionsId
+    );
   }
-  return admissionIds;
+  return competitionGroupIdToAdmissionIds;
 }
 
 function getMupIdsToChoseFrom(
@@ -129,7 +133,8 @@ export function createStudentItems(
 
 export function TaskResultsInput(props: ITaskResultsInputProps) {
   const [selectedMupId, setSelectedMupId] = useState<string>("");
-  const [admissionIds, setAdmissionIds] = useState<number[]>([]);
+  const [competitionGroupToAdmissionIds, setCompetitionGroupToAdmissionIds] =
+    useState<{ [key: number]: number[] }>({});
   const [mupIds, setMupIds] = useState<string[]>([]);
   const [studentItems, setStudentItems] = useState<{
     [key: string]: IStudentItem;
@@ -150,20 +155,18 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     return context.dataRepository.mupData.data[mupId].name;
   };
 
-  const getCurrentAdmissionIds = (mupId: string) => {
+  const getCurrentAdmissionIdsPerCompetitionGroup = (mupId: string) => {
     if (!mupId) {
-      // setAdmissionIds([]);
-      return [];
+      return {};
     }
-    const newAdmissionIds = getAdmissionIds(
+    const competitionGroupIdToAdmissionIds = getAdmissionIdsPerCompetitionGroup(
       props.competitionGroupIds,
       mupId,
       context.dataRepository.competitionGroupIdToMupAdmissions
     );
-    console.log("newAdmissionIds");
-    console.log(newAdmissionIds);
-    // setAdmissionIds(admissionIds);
-    return newAdmissionIds;
+    console.log("competitionGroupIdToAdmissionIds");
+    console.log(competitionGroupIdToAdmissionIds);
+    return competitionGroupIdToAdmissionIds;
   };
 
   const refreshAdmissionInfo = async () => {
@@ -183,11 +186,15 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     );
     setMupIds(newMupIds);
 
-    const newAdmissionIds = getCurrentAdmissionIds(selectedMupId);
+    const newCompetitionGroupToAdmissionIds =
+      getCurrentAdmissionIdsPerCompetitionGroup(selectedMupId);
 
+    setCompetitionGroupToAdmissionIds(newCompetitionGroupToAdmissionIds);
     context.dataRepository
-      .UpdateStudentAdmissionsAndStudentData(newAdmissionIds)
-      .then(() => setAdmissionIds(newAdmissionIds));
+      .UpdateStudentAdmissionsAndStudentData(newCompetitionGroupToAdmissionIds)
+      .then(() =>
+        setCompetitionGroupToAdmissionIds(newCompetitionGroupToAdmissionIds)
+      );
   };
 
   useEffect(() => {
@@ -197,6 +204,12 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   useEffect(() => {
     let ensureStudentAdmissionDataIsPresentPromise = Promise.resolve();
     let admissionDataIsPresent = true;
+
+    const admissionIds: number[] = [];
+    Object.values(competitionGroupToAdmissionIds).forEach((aIds) =>
+      admissionIds.push(...aIds)
+    );
+
     for (const admissionId of admissionIds) {
       if (!context.dataRepository.admissionInfo.hasOwnProperty(admissionId)) {
         admissionDataIsPresent = false;
@@ -206,7 +219,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     if (!admissionDataIsPresent) {
       ensureStudentAdmissionDataIsPresentPromise =
         context.dataRepository.UpdateStudentAdmissionsAndStudentData(
-          admissionIds
+          competitionGroupToAdmissionIds
         );
     }
     ensureStudentAdmissionDataIsPresentPromise
@@ -222,7 +235,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
       .then((newStudentItems) =>
         handleGenerateActionsDebounced(newStudentItems)
       );
-  }, [admissionIds]);
+  }, [competitionGroupToAdmissionIds]);
 
   const handleMupChange = (event: SelectChangeEvent) => {
     allowSuccessMessage.current = false;
@@ -232,8 +245,9 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     console.log(newMupId);
     setSelectedMupId(newMupId);
 
-    const admissionIds = getCurrentAdmissionIds(newMupId);
-    setAdmissionIds(admissionIds);
+    const newCompetitionGroupToAdmissionIds =
+      getCurrentAdmissionIdsPerCompetitionGroup(newMupId);
+    setCompetitionGroupToAdmissionIds(newCompetitionGroupToAdmissionIds);
     // ensure AdmissionInfo for admission Id for each group
     // sho each student from groups
   };
@@ -340,6 +354,11 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   const generateActions = (newStudentItems: {
     [key: string]: IStudentItem;
   }) => {
+    const admissionIds: number[] = [];
+    Object.values(competitionGroupToAdmissionIds).forEach((aIds) =>
+      admissionIds.push(...aIds)
+    );
+
     if (admissionIds.length === 0 || admissionIds.length > 2) return;
     const personalNumberToTaskResult: { [key: string]: number | null } = {};
     for (const personalNumber in newStudentItems) {

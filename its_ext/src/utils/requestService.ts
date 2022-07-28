@@ -4,7 +4,6 @@ import {
   CSRF_TOKEN_INPUT_NAME,
   REQUEST_ERROR_UNAUTHORIZED,
   REQUEST_ERROR_REQUEST_FAILED,
-  REQUEST_ERROR_CONNECTION_REFUSED,
 } from "./constants";
 
 export type FormBodyObj = { [key: string]: string | number | string[] };

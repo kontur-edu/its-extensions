@@ -126,25 +126,17 @@ export function findPersonalNumber(
   personalNumbers: string[],
   studentData: IStudentData
 ): string | null {
-  // console.log("findPersonalNumber");
-  // console.log("nameRecord");
-  // console.log(nameRecord);
   const surnameIdx = getSurnameIdx(
     nameRecord.nameParts,
     surnameToPersonalNumbers
   );
   if (surnameIdx >= 0) {
-    // console.log(`surname = ${nameRecord.nameParts[surnameIdx]}`);
     const surname = nameRecord.nameParts[surnameIdx];
     const personalNumbers = surnameToPersonalNumbers[surname];
-    // console.log(`surname -> personalNumbers`);
-    // console.log(personalNumbers);
     if (personalNumbers.length === 1) {
       return personalNumbers[0];
     }
     const res = tryFindByNameParts(nameRecord, personalNumbers, studentData);
-    // console.log(`tryFindByNameParts`);
-    // console.log(res);
     if (res.length === 1) {
       return res[0];
     } else {
@@ -153,13 +145,8 @@ export function findPersonalNumber(
   }
 
   const res = tryFindByNameParts(nameRecord, personalNumbers, studentData);
-  // console.log(`tryFindByNameParts all personalNumbers`);
-  // console.log(res);
   if (res.length === 1) {
     return res[0];
   }
   return null;
-  // return res;
 }
-// Найти список фамилий
-// Вытащить фамилии из входных данных по этому списку

@@ -423,7 +423,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           <tr key={personalNumber}>
             <td>
               {student.surname} {student.firstname} {student.patronymic}{" "}
-              {personalNumber}
+              {/* {personalNumber} */}
             </td>
             <td>{student.groupName}</td>
             <td>{student.rating}</td>

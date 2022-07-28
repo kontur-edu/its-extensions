@@ -411,7 +411,6 @@ export function prepareStudentAndMupItems(
       if (studentPersonalNumberToMupIds.hasOwnProperty(pn)) {
         const student = studentData.data[pn];
         const selectedMupIds = studentPersonalNumberToMupIds[pn];
-        // FIXME: find admissionIds by mupIds
         const newSelectedAdmissionIds: number[] = selectedMupIds.map(
           (mId) =>
             competitionGroupIdToMupAdmissions[student.competitionGroupId][mId]
@@ -534,7 +533,6 @@ export function validateStudentAdmissions(
       studentFound = false;
     }
 
-    // FIXME: find admissionIds
     for (const mupId of studentInfo.mupIds) {
       if (!mupData.data.hasOwnProperty(mupId)) {
         notDeterminedMupIds.add(mupId);

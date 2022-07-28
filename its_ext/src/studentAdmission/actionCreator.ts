@@ -11,8 +11,6 @@ function generateUpdateStudentAdmissionActions(
   admissionInfo: AdmissionInfo,
   studentData: IStudentData
 ): ITSAction[] {
-  // console.log("generateUpdateStudentAdmissionActions");
-  // console.log(personalNumberToDistributionItem);
   const actions: ITSAction[] = [];
 
   for (const personalNumber in personalNumberToDistributionItem) {

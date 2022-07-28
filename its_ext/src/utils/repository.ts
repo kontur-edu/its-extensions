@@ -34,7 +34,6 @@ export class ITSRepository {
   selectionGroupToMupsData: ISelectionGroupToMupsData = { ids: [], data: {} };
   mupToPeriods: IMupToPeriods = {};
   competitionGroupToSubgroupMetas: ICompetitionGroupToSubgroupMetas = {};
-  // competitionGroupToSubgroups: ICompetitionGroupToSubgroups = {};
   subgroupData: ISubgroupData = { data: {} };
   competitionGroupToSubgroupIds: ICompetitionGroupToSubgroupIds = {};
   competitionGroupData: ICompetitionGroupData = { ids: [], data: {} };
@@ -225,12 +224,7 @@ export class ITSRepository {
         studentAdmissionInfo[studentRaw.personalNumber] = null;
         continue;
       }
-      // if (studentRaw.priority)
-      // TODO: add student meta
       const studentAdmission: IStudentAdmission = {
-        // id: studentRaw.id,
-        // personalNumber: studentRaw.personalNumber,
-        // mupId: mupId,
         admissionId: admissionId,
         priority: studentRaw.priority,
         testResult: studentRaw.testResult,
@@ -279,13 +273,6 @@ export class ITSRepository {
       const resp = responses[i];
       const subgroupId = subgroupIds[i];
       if (resp.status === "fulfilled") {
-        // const includedStudentIds: string[] = [];
-        // for (const membership of resp.value) {
-        //   if (membership.included) {
-        //     includedStudentIds.push(membership.studentId);
-        //   }
-        // }
-
         this.subgroupIdToStudentSubgroupMembership[subgroupId] = resp.value;
       }
     }

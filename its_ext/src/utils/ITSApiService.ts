@@ -302,8 +302,7 @@ export class ITSApiService {
     return result;
   }
 
-  // DANGER: probably no body from response
-  // TODO: (fix proxy)
+  // NOTE: probably no body from response
   async UpdateMupLimit(
     connectionId: number,
     limit: number

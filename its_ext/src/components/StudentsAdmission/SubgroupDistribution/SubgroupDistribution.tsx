@@ -477,7 +477,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
           <li>
             Получите входные данные алгоритма
             <CopyOrDownload
-              title="Скопировать распределение"
+              title="Скопировать входные данные"
               filename="StudentAdmissions.json"
               data={studentAdmissionsText}
             />

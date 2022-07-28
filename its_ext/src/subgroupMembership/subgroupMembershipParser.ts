@@ -174,15 +174,8 @@ export function validateSubgroupMembership(
   const wrongSubgroupCountForLoadsPerMup: { [key: string]: string[] } = {};
   const subgroupCountsDifferentForMups = new Set<string>();
 
-  // const mupShortNameToFullName = createMupShortNameToFullName(mupData);
 
   for (const mupName in mupToLoadToSubgroupMembership) {
-    // let mupName = mupShortName;
-
-    // if (mupShortNameToFullName.hasOwnProperty(mupShortName)) {
-    //   mupName = mupShortNameToFullName[mupShortName];
-    // }
-
     if (!subgoupDiffInfo.metaDiffs.hasOwnProperty(mupName)) {
       notDeterminedMupNames.push(mupName);
       continue;
@@ -190,7 +183,6 @@ export function validateSubgroupMembership(
     const competitionGroupToLoadToMetas = subgoupDiffInfo.metaDiffs[mupName];
 
     let loadToMetas: { [key: string]: ISubgroupMeta } = {};
-    // TODO: check if it works
     for (const cgId of competitionGroupIds) {
       if (competitionGroupToLoadToMetas.hasOwnProperty(cgId)) {
         loadToMetas = {
@@ -279,20 +271,3 @@ export function validateSubgroupMembership(
 
   return { success: messages.length === 0, messages: messages };
 }
-
-// export function checkCompetitionGroupsHaveSameSubgroups(
-//   competitionGroupIds: number[],
-//   subgoupDiffInfo: ISubgoupDiffInfo
-// ) {
-//   const allLoad_number = new Set<string>();
-//   for (const mupName in subgoupDiffInfo.subgroupDiffs) {
-//     const cgIdToSubgroups = subgoupDiffInfo.subgroupDiffs[mupName];
-//     for (const competitionGroupId of competitionGroupIds) {
-//       if (cgIdToSubgroups.hasOwnProperty(competitionGroupId)) {
-//         for (const load_number in cgIdToSubgroups[competitionGroupId]) {
-//           allLoad_number.add()
-//         }
-//       }
-//     }
-//   }
-// }

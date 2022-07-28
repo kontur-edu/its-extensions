@@ -191,16 +191,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     }
     competitionGroupIdToZELimit.current = newZeLimits;
 
-    // const availableAdmissionIds = new Set<number>();
-    // for (const competitionGroupId of props.competitionGroupIds) {
-    //   const mupToAdmissionMeta =
-    //     context.dataRepository.competitionGroupIdToMupAdmissions[
-    //       competitionGroupId
-    //     ];
-    //   for (const mupId in mupToAdmissionMeta) {
-    //     availableAdmissionIds.add(mupToAdmissionMeta[mupId].admissionsId);
-    //   }
-    // }
     const availableAdmissionIds = getAvailableAdmissionIds(
       props.competitionGroupIds,
       context.dataRepository.competitionGroupIdToMupAdmissions

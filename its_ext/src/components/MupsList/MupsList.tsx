@@ -4,9 +4,8 @@ import { IMupsListProps } from "./types";
 import Checkbox from "@mui/material/Checkbox";
 import Input from "@mui/material/Input";
 import { MUP_PERIOD_URL } from "../../utils/constants";
-import { Link } from "@mui/material";
+import { OuterLink } from "../OuterLink";
 // import Tooltip from '@mui/material/Tooltip';
-
 
 export function MupsList(props: IMupsListProps) {
   const handleLimitChange =
@@ -35,7 +34,7 @@ export function MupsList(props: IMupsListProps) {
           <td onClick={handleToggle(mup.id)}>
             <Checkbox readOnly checked={mupEdit.selected} />
             {/* <Tooltip title={mup.name} placement="top"> */}
-              <span>{mup.name}</span>
+            <span>{mup.name}</span>
             {/* </Tooltip> */}
           </td>
           <td>
@@ -55,19 +54,7 @@ export function MupsList(props: IMupsListProps) {
               {!mupEdit.addLoadsManual ? null : (
                 <li>
                   Заполните нагрузку{" "}
-                  <Link
-                    href={MUP_PERIOD_URL + mupId}
-                    rel="noreferrer"
-                    target="_blank"
-                    style={{
-                      textDecoration: "none",
-                      display: "flex",
-                      alignItems: "center",
-                      fontSize: 16,
-                    }}
-                  >
-                    в ИТС
-                  </Link>
+                  <OuterLink url={MUP_PERIOD_URL + mupId} title="в ИТС" />
                 </li>
               )}
             </ul>
@@ -78,7 +65,7 @@ export function MupsList(props: IMupsListProps) {
   };
 
   return (
-    <section className="table__сontainer">
+    <section className="table__container">
       <table className="table">
         <colgroup>
           <col style={{ width: "50%" }} />

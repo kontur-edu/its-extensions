@@ -29,8 +29,8 @@ import { createTaskResultActions } from "../../../taskResultUpdater/actionCreato
 import { createDebouncedWrapper } from "../../../utils/helpers";
 
 import Button from "@mui/material/Button";
-import RefreshIcon from "@mui/icons-material/Refresh";
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
+import { RefreshButton } from "../../RefreshButton";
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
@@ -145,7 +145,8 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   >([]);
   const [textAreaValue, setTextAreaValue] = useState<string>("");
   const [invalidStudentRows, setInvalidStudentRows] = useState<string[]>([]);
-  const allowSuccessMessage = useRef<boolean>(false);
+  // const allowSuccessMessage = useRef<boolean>(false);
+  const [applyClicked, setApplyClicked] = useState<boolean>(false);
   const context = useContext(ITSContext)!;
 
   const getMupNameById = (mupId: string) => {
@@ -189,7 +190,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     const newCompetitionGroupToAdmissionIds =
       getCurrentAdmissionIdsPerCompetitionGroup(selectedMupId);
 
-    setCompetitionGroupToAdmissionIds(newCompetitionGroupToAdmissionIds);
+    // setCompetitionGroupToAdmissionIds(newCompetitionGroupToAdmissionIds);
     context.dataRepository
       .UpdateStudentAdmissionsAndStudentData(newCompetitionGroupToAdmissionIds)
       .then(() =>
@@ -238,7 +239,8 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   }, [competitionGroupToAdmissionIds]);
 
   const handleMupChange = (event: SelectChangeEvent) => {
-    allowSuccessMessage.current = false;
+    setApplyClicked(false);
+    // allowSuccessMessage.current = false;
 
     const newMupId = event.target.value;
     console.log("newMupId");
@@ -254,6 +256,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
 
   const handleStudentPassedToggle = (personalNumber: string) => {
     console.log("handleStudentPassedToggle");
+    setApplyClicked(false);
     const newStudentItems = { ...studentItems };
     const studentItem = newStudentItems[personalNumber];
     if (studentItem.testResult) {
@@ -309,6 +312,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   };
 
   const handleSelectStudentsFromTextArea = () => {
+    setApplyClicked(false);
     const records = getNameRecords(textAreaValue);
     selectStudentsDebounced(records);
   };
@@ -382,6 +386,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
 
   const handleRealApply = () => {
     alert(`Настоящее применение изменений`);
+    setApplyClicked(true);
     executeActions(taskResultsActions, context)
       .then((actionResults) => {
         setTaskResultsActionResults(actionResults);
@@ -390,7 +395,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   };
 
   const handleRealApplyDebounced = () => {
-    allowSuccessMessage.current = true;
+    // allowSuccessMessage.current = true;
     debouncedWrapperForApply(handleRealApply);
   };
 
@@ -406,6 +411,57 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
           ))}
         </ul>
       </article>
+    );
+  };
+
+  const renderContent = () => {
+    return (
+      <React.Fragment>
+        <h3>
+          Вставьте список ФИО студентов, прошедших тестовое или выберите
+          студентов в таблице
+        </h3>
+        <textarea
+          value={textAreaValue}
+          onChange={handleTextAreaChange}
+          rows={10}
+          className="textarea"
+          placeholder="Вставьте <Группa> <Фамилия> <Имя> <Отчество> разделяя переносом строки"
+        />
+        {invalidStudentRows.length > 0 && renderInvalidStudentRows()}
+        <Button onClick={handleSelectStudentsFromTextArea}>
+          Распрасить студентов
+        </Button>
+        <h3>Студенты (активные), прошедшие Тестовое</h3>
+
+        <RefreshButton
+          onClick={handleRefreshAdmissionInfo}
+          title="Обновить список"
+        />
+
+        <section className="table__container">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Группа</th>
+                <th>ФИО</th>
+                <th>Прошел тестовое</th>
+              </tr>
+            </thead>
+            <tbody>{renderRows()}</tbody>
+          </table>
+        </section>
+
+        <ApplyButtonWithActionDisplay
+          showErrorWarning={true}
+          showSuccessMessage={true}
+          actions={taskResultsActions}
+          actionResults={taskResultsActionResults}
+          clicked={applyClicked}
+          onNextStep={props.onNextStep}
+          onApply={handleRealApplyDebounced}
+        />
+      </React.Fragment>
     );
   };
 
@@ -434,52 +490,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
           </FormControl>
         </h3>
 
-        <h3>
-          Вставьте список ФИО студентов, прошедших тестовое или выберите
-          студентов в таблице
-        </h3>
-        <textarea
-          value={textAreaValue}
-          onChange={handleTextAreaChange}
-          rows={10}
-          className="textarea"
-          placeholder="Вставьте <Группa> <Фамилия> <Имя> <Отчество> разделяя переносом строки"
-        />
-        {invalidStudentRows.length > 0 && renderInvalidStudentRows()}
-        <Button onClick={handleSelectStudentsFromTextArea}>
-          Распрасить студентов
-        </Button>
-        <h3>Студенты (активные), прошедшие Тестовое</h3>
-
-        <Button
-          onClick={handleRefreshAdmissionInfo}
-          style={{ fontSize: 12, marginBottom: "1em" }}
-          variant="text"
-          startIcon={<RefreshIcon />}
-        >
-          Обновить список
-        </Button>
-        <section className="table__container">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Группа</th>
-                <th>ФИО</th>
-                <th>Прошел тестовое</th>
-              </tr>
-            </thead>
-            <tbody>{renderRows()}</tbody>
-          </table>
-        </section>
-
-        <ApplyButtonWithActionDisplay
-          showErrorWarning={true}
-          showSuccessMessage={allowSuccessMessage.current}
-          actions={taskResultsActions}
-          actionResults={taskResultsActionResults}
-          onNextStep={props.onNextStep}
-          onApply={handleRealApplyDebounced}
-        />
+        {selectedMupId ? renderContent() : null}
       </article>
     </section>
   );

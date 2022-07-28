@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import style from "./StudentsDistribution.module.css";
 import Button from "@mui/material/Button";
-import RefreshIcon from "@mui/icons-material/Refresh";
 import { IStudentsDistributionProps } from "./types";
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 import {
@@ -38,6 +37,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import AutoFixNormalIcon from "@mui/icons-material/AutoFixNormal";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { CopyOrDownload } from "../../CopyOrDownload";
+import { RefreshButton } from "../../RefreshButton";
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
@@ -191,16 +191,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     }
     competitionGroupIdToZELimit.current = newZeLimits;
 
-    // const availableAdmissionIds = new Set<number>();
-    // for (const competitionGroupId of props.competitionGroupIds) {
-    //   const mupToAdmissionMeta =
-    //     context.dataRepository.competitionGroupIdToMupAdmissions[
-    //       competitionGroupId
-    //     ];
-    //   for (const mupId in mupToAdmissionMeta) {
-    //     availableAdmissionIds.add(mupToAdmissionMeta[mupId].admissionsId);
-    //   }
-    // }
     const availableAdmissionIds = getAvailableAdmissionIds(
       props.competitionGroupIds,
       context.dataRepository.competitionGroupIdToMupAdmissions
@@ -491,15 +481,11 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   const renderTable = () => {
     return (
       <article>
-        <Button
+        <RefreshButton
           onClick={handleRefreshDebounced}
-          style={{ fontSize: 12, marginBottom: "1em" }}
-          variant="text"
-          startIcon={<RefreshIcon />}
-        >
-          Обновить список
-        </Button>
-        <section className="table__сontainer" ref={tableRef}>
+          title="Обновить список"
+        />
+        <section className="table__container" ref={tableRef}>
           <table className="table table_vertical_borders">
             <thead>
               <tr>
@@ -528,7 +514,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           variant="contained"
           style={{
             alignSelf: "flex-start",
-            marginTop: "1em",
           }}
           startIcon={<AutoFixNormalIcon />}
         >

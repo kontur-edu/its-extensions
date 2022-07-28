@@ -1,10 +1,9 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import style from "./ApplyButtonWithActionDisplay.module.css";
 import { IApplyButtonWithActionDisplayProps } from "./types";
 import {
   IActionExecutionLogItem,
   ITSAction,
-  ActionType,
   checkAllRefreshAction,
 } from "../../common/actions";
 
@@ -21,7 +20,14 @@ export function ApplyButtonWithActionDisplay(
   const [actionListOpen, setActionListOpen] = useState<boolean>(false);
   const [actionResultsListOpen, setActionResultsListOpen] =
     useState<boolean>(false);
-  const wasApply = useRef<boolean>(false);
+  // const wasApply = useRef<boolean>(false);
+  const [wasApply, setWasApply] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (props.clicked !== null && props.clicked !== undefined) {
+      setWasApply(props.clicked);
+    }
+  }, [props.clicked]);
 
   const handleActionListOpen = () => {
     setActionListOpen(!actionListOpen);
@@ -96,7 +102,7 @@ export function ApplyButtonWithActionDisplay(
     );
 
     let successMessage: JSX.Element | null = null;
-    if (wasApply.current && props.showSuccessMessage) {
+    if (wasApply && props.showSuccessMessage) {
       let allSuccess = true;
       if (
         props.actionResults &&
@@ -125,12 +131,11 @@ export function ApplyButtonWithActionDisplay(
   };
 
   const handleApply = () => {
-    wasApply.current = true;
+    setWasApply(true);
     props.onApply?.();
   };
 
   const renderApplyButton = () => {
-
     return (
       <React.Fragment>
         <Button
@@ -147,14 +152,18 @@ export function ApplyButtonWithActionDisplay(
   const renderButtons = () => {
     const haveOnlyRefreshActions =
       !props.actions || checkAllRefreshAction(props.actions);
-    const actionsСompletedSuccessfully = !props.actionResults?.length || props.actionResults?.every((logItem) =>
-            logItem.actionResults.every((ar) => ar.success));
+    const actionsСompletedSuccessfully =
+      !props.actionResults?.length ||
+      props.actionResults?.every((logItem) =>
+        logItem.actionResults.every((ar) => ar.success)
+      );
     return (
       <div className="apply_button__container">
         {!haveOnlyRefreshActions && props.onApply && renderApplyButton()}
         {haveOnlyRefreshActions && renderSuccessButtonWithNextStep()}
         <p className="warning">
-          {props.showErrorWarning && !actionsСompletedSuccessfully &&
+          {props.showErrorWarning &&
+            !actionsСompletedSuccessfully &&
             "При сохранении изменений возникли ошибки"}
         </p>
       </div>

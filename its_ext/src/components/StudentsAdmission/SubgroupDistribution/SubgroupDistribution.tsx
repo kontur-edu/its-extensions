@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useRef } from "react";
 import style from "./SubgroupDistribution.module.css";
 import { ISubgroupDistributionProps } from "./types";
 import {
@@ -37,12 +37,11 @@ import {
   getAvailableAdmissionIds,
   createStudentsDistributionData,
 } from "../../../studentAdmission/studentDistributor";
+import { OuterLink } from "../../OuterLink";
+import { CopyOrDownload } from "../../CopyOrDownload";
+import { RefreshButton } from "../../RefreshButton";
 
 import Button from "@mui/material/Button";
-import RefreshIcon from "@mui/icons-material/Refresh";
-import Link from "@mui/material/Link";
-import NorthEastIcon from "@mui/icons-material/NorthEast";
-import { CopyOrDownload } from "../../CopyOrDownload";
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
@@ -79,6 +78,10 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
   const [studentAdmissionsText, setStudentAdmissionsText] =
     useState<string>("");
 
+  const [firstApplyClicked, setFirstApplyClicked] = useState<boolean>(false);
+  const [secondApplyClicked, setSecondApplyClicked] = useState<boolean>(false);
+  const parseButtonClicked = useRef<boolean>(false);
+
   const context = useContext(ITSContext)!;
 
   const handleSubgroupDistributionTextInputChange = (
@@ -90,6 +93,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
 
   const handleParseSubgroupDistributionFromTextArea = () => {
     if (!subgroupDiffInfo) return;
+    parseButtonClicked.current = true;
     const newMupToLoadToSubgroupMembership = parseSubgroupMembershipFromText(
       subgroupDistributionTextInput
     );
@@ -323,16 +327,17 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
   };
 
   const generateActionsForSubgroupDistribution = (
-    newMupToLoadToSubgroupMembership: MupToLoadToSubgroupMembership
+    newMupToLoadToSubgroupMembership: MupToLoadToSubgroupMembership,
+    newSubgroupDiffInfo: ISubgoupDiffInfo
   ) => {
     console.log("generateActionsForSubgroupDistribution");
-    if (!subgroupDiffInfo) {
+    if (!newSubgroupDiffInfo) {
       console.log(`subgroupDiffInfo is null`);
       return;
     }
 
     const actions = createSubgroupMembershipActions(
-      subgroupDiffInfo,
+      newSubgroupDiffInfo,
       newMupToLoadToSubgroupMembership,
       context.dataRepository.subgroupIdToStudentSubgroupMembership,
       context.dataRepository.studentData
@@ -344,14 +349,33 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
   const generateActionsForSubgroupDistributionDebounced = (
     newMupToLoadToSubgroupMembership: MupToLoadToSubgroupMembership
   ) => {
+    if (!subgroupDiffInfo) return;
     debouncedWrapperForApply(() =>
-      generateActionsForSubgroupDistribution(newMupToLoadToSubgroupMembership)
+      generateActionsForSubgroupDistribution(
+        newMupToLoadToSubgroupMembership,
+        subgroupDiffInfo
+      )
     );
+  };
+
+  const generateAllActionsDebounced = (
+    newMupToLoadToSubgroupMembership: MupToLoadToSubgroupMembership,
+    newSubgroupDiffInfo: ISubgoupDiffInfo
+  ) => {
+    debouncedWrapperForApply(() => {
+      generateActionsForSubgroupDistribution(
+        newMupToLoadToSubgroupMembership,
+        newSubgroupDiffInfo
+      );
+      generateActionsForOneGroupPerLoadDistribution(newSubgroupDiffInfo);
+    });
   };
 
   const handleSubgroupDistributionRealApplyDebounced = () => {
     debouncedWrapperForApply(() => {
       alert(`Настоящее применение изменений`);
+      setFirstApplyClicked(false);
+      setSecondApplyClicked(true);
       // alert(`Safe mode`);
       // return;
       executeActions(subgroupDistributionActions, context)
@@ -368,9 +392,10 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
           return context.dataRepository
             .UpdateSubgroupMembership(allSubgroupIds)
             .then(() => {
-              prepareData();
-              generateActionsForSubgroupDistributionDebounced(
-                mupToLoadToSubgroupMembership
+              const newSubgroupDiffInfo = prepareData();
+              generateAllActionsDebounced(
+                mupToLoadToSubgroupMembership,
+                newSubgroupDiffInfo
               );
             });
         });
@@ -380,6 +405,8 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
   const handleSubgroupDistributionForOneGroupPerLoadApplyDebounced = () => {
     debouncedWrapperForApply(() => {
       alert(`Настоящее применение изменений`);
+      setFirstApplyClicked(true);
+      setSecondApplyClicked(false);
       // alert(`Safe mode`);
       // return;
       executeActions(subgroupDistributionForOneGroupPerLoadActions, context)
@@ -418,20 +445,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
       }
       return (
         <li key={cgId}>
-          <Link
-            href={link}
-            rel="noreferrer"
-            target="_blank"
-            style={{
-              textDecoration: "none",
-              display: "flex",
-              alignItems: "center",
-              fontSize: 16,
-            }}
-          >
-            <NorthEastIcon />
-            {competitionGroupName}
-          </Link>
+          <OuterLink url={link} title={competitionGroupName} />
         </li>
       );
     });
@@ -451,6 +465,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
           showSuccessMessage={true}
           actions={subgroupDistributionForOneGroupPerLoadActions}
           actionResults={subgroupDistributionActionForOneGroupPerLoadResults}
+          clicked={firstApplyClicked}
           onApply={handleSubgroupDistributionForOneGroupPerLoadApplyDebounced}
         />
       </React.Fragment>
@@ -460,14 +475,10 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
   const renderContent = () => {
     return (
       <React.Fragment>
-        <Button
+        <RefreshButton
           onClick={handleRefreshDataDebounced}
-          style={{ fontSize: 12, alignSelf: "flex-start" }}
-          variant="text"
-          startIcon={<RefreshIcon />}
-        >
-          Обновить данные
-        </Button>
+          title="Обновить данные"
+        />
 
         {renderSubgroupDistributionForOneGroupPerLoad()}
 
@@ -523,12 +534,18 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
 
         {subgroupDistributionTextInputMessages.length > 0 &&
           renderSubgroupDistributionTextInputMessages()}
-
+        {parseButtonClicked.current &&
+          subgroupDistributionTextInputMessages.length === 0 &&
+          subgroupDistributionActions.length === 0 &&
+          !secondApplyClicked && (
+            <p>Не найдено возможных действий для этого шага</p>
+          )}
         <ApplyButtonWithActionDisplay
           showErrorWarning={true}
           showSuccessMessage={true}
           actions={subgroupDistributionActions}
           actionResults={subgroupDistributionActionResults}
+          clicked={secondApplyClicked}
           onApply={handleSubgroupDistributionRealApplyDebounced}
         />
       </React.Fragment>

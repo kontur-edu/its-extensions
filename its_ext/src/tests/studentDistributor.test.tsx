@@ -236,13 +236,6 @@ describe("addRandomMupsForStudentIfNeeded", () => {
       m2: { limit: 2, count: 2 },
       m3: { limit: 2, count: 1 },
       m4: { limit: 2, count: 1 },
-      // m5: { limit: 2, count: 0, },
-    };
-    const admissionInfo: AdmissionInfo = {
-      1: { s1: { admissionId: 1, priority: 2, testResult: 0, status: 0 } },
-      2: {},
-      3: {},
-      4: {},
     };
 
     const personalNumberToStudentItem: IPnToStudentItem = {

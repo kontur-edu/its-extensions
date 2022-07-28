@@ -12,7 +12,8 @@
 }
 
 .menu__header {
-  font-size: 32px;
+  /* font-size: 32px; */
+  font-size: 1.8em;
 }
 
 .menu__container {
@@ -27,7 +28,8 @@
   background-color: #fff!;
   color: #000;
   margin: 0 0.4em;
-  font-size: 12px;
+  /* font-size: 12px; */
+  font-size: 1em;
 }
 
 .menu__button:hover {

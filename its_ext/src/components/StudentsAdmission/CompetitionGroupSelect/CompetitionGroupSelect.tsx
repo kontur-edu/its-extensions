@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import style from "./CompetitionGroupSelect.module.css";
 import { ICompetitionGroupSelectProps } from "./types";
-import Button from "@mui/material/Button";
-import RefreshIcon from "@mui/icons-material/Refresh";
 import Checkbox from "@mui/material/Checkbox";
+import { RefreshButton } from "../../RefreshButton";
 
 export function CompetitionGroupSelect(props: ICompetitionGroupSelectProps) {
   const [selectedCompetitionGroupIds, setSelectedCompetitionGroupIds] =
@@ -52,14 +51,7 @@ export function CompetitionGroupSelect(props: ICompetitionGroupSelectProps) {
   return (
     <section className="step__container">
       <article>
-        <Button
-          onClick={handleRefreshCompetitionGroups}
-          style={{ fontSize: 12, marginBottom: "1em" }}
-          variant="text"
-          startIcon={<RefreshIcon />}
-        >
-          Обновить список
-        </Button>
+        <RefreshButton onClick={handleRefreshCompetitionGroups} title="Обновить список"/>
         <section className="table__container">
           <table className="table">
             <thead>

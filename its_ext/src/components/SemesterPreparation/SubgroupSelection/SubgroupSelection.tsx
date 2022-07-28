@@ -26,11 +26,9 @@ import {
 import { createDebouncedWrapper } from "../../../utils/helpers";
 import { executeActions } from "../../../common/actions";
 
-import Button from "@mui/material/Button";
-import RefreshIcon from "@mui/icons-material/Refresh";
-import Link from "@mui/material/Link";
-import NorthEastIcon from "@mui/icons-material/NorthEast";
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
+import { RefreshButton } from "../../RefreshButton";
+import { OuterLink } from "../../OuterLink";
 
 function checkArraysSame(arr1: any[], arr2: any[]) {
   return arr1.sort().join(",") === arr2.sort().join(",");
@@ -84,7 +82,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
     }
     if (!checkArraysSame(sgMupIds[0], sgMupIds[1])) {
       setMupIdsSame(false);
-      alert(`not setMupIdsSame`);
+      // alert(`not setMupIdsSame`);
       return;
     }
 
@@ -242,19 +240,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
         </ul>
         <p>
           Создайте недостающие Конкрусные группы и укажите Группы выбора{" "}
-          <Link
-            href={COMPETITION_GROUP_URL}
-            rel="noreferrer"
-            target="_blank"
-            style={{
-              textDecoration: "none",
-              display: "flex",
-              alignItems: "center",
-              fontSize: 16,
-            }}
-          >
-            <NorthEastIcon />в ИТС
-          </Link>
+          <OuterLink url={COMPETITION_GROUP_URL} title="в ИТС" />
         </p>
       </div>
     );
@@ -275,20 +261,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
               selectionGroup.competitionGroupId;
             return (
               <li key={sgId}>
-                <Link
-                  href={link}
-                  rel="noreferrer"
-                  target="_blank"
-                  style={{
-                    textDecoration: "none",
-                    display: "flex",
-                    alignItems: "center",
-                    fontSize: 16,
-                  }}
-                >
-                  <NorthEastIcon />
-                  {competitionGroupName}
-                </Link>
+                <OuterLink url={link} title={competitionGroupName} />
               </li>
             );
           })}
@@ -363,14 +336,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
   return (
     <section className="step__container">
       <article>
-        <Button
-          onClick={refreshDataDebounced}
-          style={{ fontSize: 12 }}
-          variant="text"
-          startIcon={<RefreshIcon />}
-        >
-          Обновить список
-        </Button>
+        <RefreshButton onClick={refreshDataDebounced} title="Обновить список" />
         {competitionGroupIds.length !== 2 &&
           renderCompetitionGroupIsMissingMessage()}
         {renderCompetitionGroupSubgroupMetaLinks()}

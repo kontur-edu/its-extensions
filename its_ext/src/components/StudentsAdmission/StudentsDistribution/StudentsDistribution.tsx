@@ -8,10 +8,8 @@ import {
   IStudentAdmissionDistributionItem,
   IMupDistributionItem,
   getAllPersonalNumbers,
-  // createPersonalNumberToStudentItem,
-  // createMupIdToMupItem,
-  // createMupIdToMupItemByStudentItems,
   prepareStudentAndMupItems,
+  getAvailableAdmissionIds,
   createStudentsDistributionData,
   filterActiveStudentsAndSortByRating,
   parseStudentAdmissionsFromText,
@@ -26,10 +24,7 @@ import {
   REQUEST_ERROR_UNAUTHORIZED,
   DEBOUNCE_MS,
 } from "../../../utils/constants";
-import {
-  createDebouncedWrapper,
-  downloadFileFromText,
-} from "../../../utils/helpers";
+import { createDebouncedWrapper } from "../../../utils/helpers";
 import { createStudentAdmissionActions } from "../../../studentAdmission/actionCreator";
 import {
   executeActions,
@@ -41,10 +36,8 @@ import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import EditIcon from "@mui/icons-material/Edit";
 import AutoFixNormalIcon from "@mui/icons-material/AutoFixNormal";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import DownloadIcon from "@mui/icons-material/Download";
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import { CopyOrDownload } from "../../CopyOrDownload";
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
@@ -82,7 +75,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   const tableRef = useRef<HTMLElement | null>(null);
 
   const context = useContext(ITSContext)!;
-
 
   const handleGoToTable = () => {
     tableRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -162,7 +154,8 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       context.dataRepository.mupData,
       context.dataRepository.competitionGroupIdToMupAdmissions,
       context.dataRepository.admissionInfo,
-      context.dataRepository.admissionIdToMupId
+      context.dataRepository.admissionIdToMupId,
+      context.dataRepository.studentData
     );
 
     const newMupIdsWithIncorrectLimits: string[] = [];
@@ -198,24 +191,30 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     }
     competitionGroupIdToZELimit.current = newZeLimits;
 
-    const availableAdmissionIds = new Set<number>();
-    for (const competitionGroupId of props.competitionGroupIds) {
-      const mupToAdmissionMeta =
-        context.dataRepository.competitionGroupIdToMupAdmissions[
-          competitionGroupId
-        ];
-      for (const mupId in mupToAdmissionMeta) {
-        availableAdmissionIds.add(mupToAdmissionMeta[mupId].admissionsId);
-      }
-    }
-    const studentMupsData = createStudentsDistributionData(
+    // const availableAdmissionIds = new Set<number>();
+    // for (const competitionGroupId of props.competitionGroupIds) {
+    //   const mupToAdmissionMeta =
+    //     context.dataRepository.competitionGroupIdToMupAdmissions[
+    //       competitionGroupId
+    //     ];
+    //   for (const mupId in mupToAdmissionMeta) {
+    //     availableAdmissionIds.add(mupToAdmissionMeta[mupId].admissionsId);
+    //   }
+    // }
+    const availableAdmissionIds = getAvailableAdmissionIds(
+      props.competitionGroupIds,
+      context.dataRepository.competitionGroupIdToMupAdmissions
+    );
+    const newStudentDistributionData = createStudentsDistributionData(
       studentAndMupItems.personalNumberToStudentItems,
       context.dataRepository.studentData,
       context.dataRepository.mupData,
       context.dataRepository.admissionIdToMupId,
       Array.from(availableAdmissionIds)
     );
-    setStudentAdmissionsText(JSON.stringify(studentMupsData, null, 2));
+    setStudentAdmissionsText(
+      JSON.stringify(newStudentDistributionData, null, 2)
+    );
 
     console.log("newPersonalNumberToStudentItems");
     console.log(studentAndMupItems.personalNumberToStudentItems);
@@ -234,10 +233,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
 
   const handleRefreshDebounced = () => {
     debouncedWrapperForApply(handleRefresh);
-  };
-
-  const handleDownlad = () => {
-    downloadFileFromText(`studentAdmissions.json`, studentAdmissionsText);
   };
 
   const handleStudentAdmissionsTextInputChange = (
@@ -260,18 +255,19 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     const { success, messages } = validateStudentAdmissions(
       newStudentsDistributionData,
       context.dataRepository.studentData,
-      context.dataRepository.admissionIdToMupId
+      context.dataRepository.mupData,
+      context.dataRepository.competitionGroupIdToMupAdmissions
     );
     setStudentAdmissionsTextInputMessages(messages);
     console.log("validateStudentAdmissions");
     console.log({ success, messages });
 
     if (success) {
-      const personalNumberToSelectedAdmissionIds: { [key: string]: number[] } =
+      const personalNumberToSelectedAdmissionIds: { [key: string]: string[] } =
         {};
       for (const studentInfo of newStudentsDistributionData.students) {
         personalNumberToSelectedAdmissionIds[studentInfo.personalNumber] =
-          studentInfo.admissions;
+          studentInfo.mupIds;
       }
       // Отобразить распределение в таблице
       const studentAndMupItems = prepareStudentAndMupItems(
@@ -280,6 +276,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         context.dataRepository.competitionGroupIdToMupAdmissions,
         context.dataRepository.admissionInfo,
         context.dataRepository.admissionIdToMupId,
+        context.dataRepository.studentData,
         personalNumberToSelectedAdmissionIds
       );
 
@@ -426,7 +423,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           <tr key={personalNumber}>
             <td>
               {student.surname} {student.firstname} {student.patronymic}{" "}
-              {personalNumber}
+              {/* {personalNumber} */}
             </td>
             <td>{student.groupName}</td>
             <td>{student.rating}</td>
@@ -475,11 +472,14 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           placeholder="Вставьте содержимое файла с распределением студентов по группам"
         />
         <div className={style.button_container}>
-          <Button onClick={handleParseStudentAdmissionsFromTextArea} style={{flexGrow: 1, marginBottom: '1.2em'}}>
+          <Button
+            onClick={handleParseStudentAdmissionsFromTextArea}
+            style={{ flexGrow: 1, marginBottom: "1.2em" }}
+          >
             Распарсить и отобразить в таблице
           </Button>
           <Button onClick={handleGoToTable}>
-            <ArrowUpwardIcon/>
+            <ArrowUpwardIcon />
           </Button>
         </div>
         {studentAdmissionsTextInputMessages.length > 0 &&
@@ -550,24 +550,11 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         <Collapse in={manualEditOpen} timeout="auto" unmountOnExit>
           <div className={style.manualEdit__container}>
             <h4>Распределение по курсам в ИТС</h4>
-            <div>
-              <Button
-                onClick={() =>
-                  navigator.clipboard.writeText(studentAdmissionsText)
-                }
-                style={{ alignSelf: "flex-start" }}
-                startIcon={<ContentCopyIcon />}
-              >
-                Скопировать распределение
-              </Button>
-              <Button
-                onClick={handleDownlad}
-                style={{ alignSelf: "flex-start" }}
-                startIcon={<DownloadIcon />}
-              >
-                Скачать файл
-              </Button>
-            </div>
+            <CopyOrDownload
+              title="Скопировать распределение"
+              filename="StudentAdmissions.json"
+              data={studentAdmissionsText}
+            />
 
             {renderAdmissionsInput()}
           </div>

@@ -104,8 +104,6 @@ export function createActionsByDiffs(
         mupName,
         sDiff,
         competitionGroupIds
-        // subgroupInfo,
-        // subgroupData
       )
     );
   }

@@ -11,7 +11,6 @@ export const COMPETITION_GROUP_SUBGROUP_META_URL =
 export const COMPETITION_GROUP_SUBGROUP_URL =
   "https://its.urfu.ru/MUPItsSubgroup/Index?competitionGroupId=";
 export const MUP_PERIOD_URL = "https://its.urfu.ru/MUP/Periods/";
-// export const UNAUTHORIZED = "Unauthorized";
 
 export const REQUEST_ERROR_UNAUTHORIZED = "REQUEST_ERROR_UNAUTHORIZED";
 export const REQUEST_ERROR_REQUEST_FAILED = "REQUEST_ERROR_REQUEST_FAILED";

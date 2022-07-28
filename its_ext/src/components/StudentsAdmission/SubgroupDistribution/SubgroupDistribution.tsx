@@ -27,13 +27,22 @@ import { createSubgroupDiffInfo } from "../../../subgroupUpdater/subgroupDiffs";
 
 import {
   parseSubgroupMembershipFromText,
+  trySubstituteLoadWildcards,
+  trySubstituteMupShortNamesWithFullNames,
   validateSubgroupMembership,
 } from "../../../subgroupMembership/subgroupMembershipParser";
+
+import {
+  prepareStudentAndMupItems,
+  getAvailableAdmissionIds,
+  createStudentsDistributionData,
+} from "../../../studentAdmission/studentDistributor";
 
 import Button from "@mui/material/Button";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import Link from "@mui/material/Link";
 import NorthEastIcon from "@mui/icons-material/NorthEast";
+import { CopyOrDownload } from "../../CopyOrDownload";
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
@@ -67,6 +76,9 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
   const [mupToLoadToSubgroupMembership, setMupToLoadToSubgroupMembership] =
     useState<MupToLoadToSubgroupMembership>({});
 
+  const [studentAdmissionsText, setStudentAdmissionsText] =
+    useState<string>("");
+
   const context = useContext(ITSContext)!;
 
   const handleSubgroupDistributionTextInputChange = (
@@ -89,11 +101,23 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
       return;
     }
 
+    let substitutedMupToLoadToSubgroupMembership =
+      trySubstituteMupShortNamesWithFullNames(
+        newMupToLoadToSubgroupMembership,
+        context.dataRepository.mupData
+      );
+    substitutedMupToLoadToSubgroupMembership = trySubstituteLoadWildcards(
+      substitutedMupToLoadToSubgroupMembership,
+      props.competitionGroupIds,
+      subgroupDiffInfo
+    );
+
     const { success, messages } = validateSubgroupMembership(
       props.competitionGroupIds,
-      newMupToLoadToSubgroupMembership,
+      substitutedMupToLoadToSubgroupMembership,
       subgroupDiffInfo,
       context.dataRepository.studentData
+      // context.dataRepository.mupData
     );
 
     setSubgroupDistributionTextInputMessages(messages);
@@ -101,9 +125,11 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     console.log({ success, messages });
 
     if (success) {
-      setMupToLoadToSubgroupMembership(newMupToLoadToSubgroupMembership);
+      setMupToLoadToSubgroupMembership(
+        substitutedMupToLoadToSubgroupMembership
+      );
       generateActionsForSubgroupDistributionDebounced(
-        newMupToLoadToSubgroupMembership
+        substitutedMupToLoadToSubgroupMembership
       );
     }
   };
@@ -220,6 +246,33 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     );
 
     setSubgroupDiffInfo(newSubgroupDiffInfo);
+
+    const studentAndMupItems = prepareStudentAndMupItems(
+      props.competitionGroupIds,
+      context.dataRepository.mupData,
+      context.dataRepository.competitionGroupIdToMupAdmissions,
+      context.dataRepository.admissionInfo,
+      context.dataRepository.admissionIdToMupId,
+      context.dataRepository.studentData
+    );
+
+    const availableAdmissionIds = getAvailableAdmissionIds(
+      props.competitionGroupIds,
+      context.dataRepository.competitionGroupIdToMupAdmissions
+    );
+
+    const newStudentDistributionData = createStudentsDistributionData(
+      studentAndMupItems.personalNumberToStudentItems,
+      context.dataRepository.studentData,
+      context.dataRepository.mupData,
+      context.dataRepository.admissionIdToMupId,
+      Array.from(availableAdmissionIds)
+    );
+    // NOTE: Algorithm input data
+    setStudentAdmissionsText(
+      JSON.stringify(newStudentDistributionData, null, 2)
+    );
+
     return newSubgroupDiffInfo;
   };
 
@@ -422,8 +475,12 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
 
         <ol className={style.step_list}>
           <li>
-            Получите входные данные алгоритма из предыдущего шага во вкладке
-            "Редактирование вручную"
+            Получите входные данные алгоритма
+            <CopyOrDownload
+              title="Скопировать входные данные"
+              filename="StudentAdmissions.json"
+              data={studentAdmissionsText}
+            />
           </li>
           <li>Запустите алгоритм распределения студентов на подгруппы</li>
           <li>Вставьте вывод алгоритма в поле ниже и распарсите данные</li>

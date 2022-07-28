@@ -5,6 +5,8 @@ import Checkbox from "@mui/material/Checkbox";
 import Input from "@mui/material/Input";
 import { MUP_PERIOD_URL } from "../../utils/constants";
 import { Link } from "@mui/material";
+// import Tooltip from '@mui/material/Tooltip';
+
 
 export function MupsList(props: IMupsListProps) {
   const handleLimitChange =
@@ -32,7 +34,9 @@ export function MupsList(props: IMupsListProps) {
         <tr key={mupId}>
           <td onClick={handleToggle(mup.id)}>
             <Checkbox readOnly checked={mupEdit.selected} />
-            {mup.name}
+            {/* <Tooltip title={mup.name} placement="top"> */}
+              <span>{mup.name}</span>
+            {/* </Tooltip> */}
           </td>
           <td>
             <Input

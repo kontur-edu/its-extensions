@@ -283,9 +283,9 @@ export interface IStudentSubgroupMembership {
   included: boolean;
 }
 
-
 export type MupToLoadToSubgroupMembership = {
-  [key: string]: { // mupName
-    [key: string]: string[][] // loadName => [['personalNumber', 'personalNumber'], ...]
-  }
-}
+  [key: string]: {
+    // mupName
+    [key: string]: string[][]; // loadName => [['personalNumber', 'personalNumber'], ...]
+  };
+};

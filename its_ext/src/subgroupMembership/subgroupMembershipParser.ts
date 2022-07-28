@@ -3,6 +3,7 @@ import {
   ISubgoupDiffInfo,
   ISubgroupMeta,
   IStudentData,
+  IMupData,
 } from "../common/types";
 
 // {
@@ -41,16 +42,18 @@ function checkSubgroupMetaCountsAreSame(
   mupName: string,
   load: string,
   competitionGroupIds: number[],
-  subgoupDiffInfo: ISubgoupDiffInfo,
+  subgoupDiffInfo: ISubgoupDiffInfo
 ) {
   const competitionGroupToLoadToMetas = subgoupDiffInfo.metaDiffs[mupName];
   let groupCount: number | null = null;
   for (const cgId of competitionGroupIds) {
-    if (!competitionGroupToLoadToMetas.hasOwnProperty(cgId) ||
-    !competitionGroupToLoadToMetas[cgId].hasOwnProperty(load)) {
+    if (
+      !competitionGroupToLoadToMetas.hasOwnProperty(cgId) ||
+      !competitionGroupToLoadToMetas[cgId].hasOwnProperty(load)
+    ) {
       return true;
     }
-  
+
     const meta = competitionGroupToLoadToMetas[cgId][load];
     if (groupCount === null) {
       groupCount = meta.count;
@@ -61,17 +64,116 @@ function checkSubgroupMetaCountsAreSame(
   return true;
 }
 
+function createMupShortNameToFullName(mupData: IMupData) {
+  const mupShortNameToFullName: { [key: string]: string } = {};
+  for (const mupId in mupData.data) {
+    const mup = mupData.data[mupId];
+    mupShortNameToFullName[mup.shortName] = mup.name;
+  }
+  return mupShortNameToFullName;
+}
+
+export function trySubstituteMupShortNamesWithFullNames(
+  mupToLoadToSubgroupMembership: MupToLoadToSubgroupMembership,
+  mupData: IMupData
+) {
+  const mupShortNameToFullName = createMupShortNameToFullName(mupData);
+
+  const newMupToLoadToSubgroupMembership: MupToLoadToSubgroupMembership = {};
+
+  for (const mupShortName in mupToLoadToSubgroupMembership) {
+    let mupName = mupShortName;
+    if (mupShortNameToFullName.hasOwnProperty(mupShortName)) {
+      mupName = mupShortNameToFullName[mupShortName];
+    }
+
+    newMupToLoadToSubgroupMembership[mupName] =
+      mupToLoadToSubgroupMembership[mupShortName];
+  }
+
+  return newMupToLoadToSubgroupMembership;
+}
+
+export function getLoadsForMup(
+  mupName: string,
+  competitionGroupIds: number[],
+  subgoupDiffInfo: ISubgoupDiffInfo
+) {
+  const competitionGroupToLoadToMetas = subgoupDiffInfo.metaDiffs[mupName];
+  const loads = new Set<string>();
+  for (const cgId of competitionGroupIds) {
+    if (!competitionGroupToLoadToMetas.hasOwnProperty(cgId)) {
+      continue;
+    }
+    for (const load in competitionGroupToLoadToMetas[cgId]) {
+      if (competitionGroupToLoadToMetas[cgId][load].count) {
+        loads.add(load);
+      }
+    }
+  }
+  return Array.from(loads);
+}
+
+export function trySubstituteLoadWildcards(
+  mupToLoadToSubgroupMembership: MupToLoadToSubgroupMembership,
+  competitionGroupIds: number[],
+  subgoupDiffInfo: ISubgoupDiffInfo
+) {
+  const newMupToLoadToSubgroupMembership: MupToLoadToSubgroupMembership = {};
+
+  for (const mupName in mupToLoadToSubgroupMembership) {
+    if (!subgoupDiffInfo.metaDiffs.hasOwnProperty(mupName)) {
+      newMupToLoadToSubgroupMembership[mupName] =
+        mupToLoadToSubgroupMembership[mupName];
+      continue;
+    }
+
+    const newLoadToSubgroups: { [key: string]: string[][] } = {};
+
+    const loadToSubgroups = mupToLoadToSubgroupMembership[mupName];
+    const wildcard = "*";
+    const haveWildCard = Object.keys(loadToSubgroups).some(
+      (load) => load === wildcard
+    );
+    if (haveWildCard) {
+      const loads = getLoadsForMup(
+        mupName,
+        competitionGroupIds,
+        subgoupDiffInfo
+      );
+      for (const load of loads) {
+        newLoadToSubgroups[load] = loadToSubgroups[wildcard];
+      }
+    }
+
+    for (const load in loadToSubgroups) {
+      if (load === wildcard) {
+        continue;
+      }
+      newLoadToSubgroups[load] = loadToSubgroups[load];
+    }
+
+    newMupToLoadToSubgroupMembership[mupName] = newLoadToSubgroups;
+  }
+
+  return newMupToLoadToSubgroupMembership;
+}
+
+// Возможно сначала заменить короткие имена на полные, потом "*" на нагрузки
+
 export function validateSubgroupMembership(
   competitionGroupIds: number[],
   mupToLoadToSubgroupMembership: MupToLoadToSubgroupMembership,
   subgoupDiffInfo: ISubgoupDiffInfo,
   studentData: IStudentData
+  // mupData: IMupData
 ): { success: boolean; messages: string[] } {
   const notDeterminedPersonalNumbers = new Set<string>();
   const notDeterminedMupNames: string[] = [];
   const notDeterminedLoadsForMups: { [key: string]: string[] } = {};
   const wrongSubgroupCountForLoadsPerMup: { [key: string]: string[] } = {};
   const subgroupCountsDifferentForMups = new Set<string>();
+
 
   for (const mupName in mupToLoadToSubgroupMembership) {
     if (!subgoupDiffInfo.metaDiffs.hasOwnProperty(mupName)) {
@@ -81,20 +183,32 @@ export function validateSubgroupMembership(
     const competitionGroupToLoadToMetas = subgoupDiffInfo.metaDiffs[mupName];
 
     let loadToMetas: { [key: string]: ISubgroupMeta } = {};
-    // TODO: check if it works
     for (const cgId of competitionGroupIds) {
-      loadToMetas = { ...loadToMetas, ...competitionGroupToLoadToMetas[cgId] };
+      if (competitionGroupToLoadToMetas.hasOwnProperty(cgId)) {
+        loadToMetas = {
+          ...loadToMetas,
+          ...competitionGroupToLoadToMetas[cgId],
+        };
+      }
     }
     const loadToGroupPersonalNumbers = mupToLoadToSubgroupMembership[mupName];
     for (const load in loadToGroupPersonalNumbers) {
-      if (!checkSubgroupMetaCountsAreSame(mupName, load, competitionGroupIds, subgoupDiffInfo)) {
-        subgroupCountsDifferentForMups.add(mupName);
-      }
-      if (!loadToMetas.hasOwnProperty(load)) {
+      if (load !== "*" && !loadToMetas.hasOwnProperty(load)) {
         if (!notDeterminedLoadsForMups.hasOwnProperty(mupName)) {
           notDeterminedLoadsForMups[mupName] = [];
         }
         notDeterminedLoadsForMups[mupName].push(load);
+      }
+
+      if (
+        !checkSubgroupMetaCountsAreSame(
+          mupName,
+          load,
+          competitionGroupIds,
+          subgoupDiffInfo
+        )
+      ) {
+        subgroupCountsDifferentForMups.add(mupName);
       }
 
       const personalNumbersPerGroup = loadToGroupPersonalNumbers[load];
@@ -148,7 +262,8 @@ export function validateSubgroupMembership(
 
   if (subgroupCountsDifferentForMups.size > 0) {
     const mupNames = Array.from(subgroupCountsDifferentForMups)
-      .map(mupName => `"${mupName}"`).join(", ");
+      .map((mupName) => `"${mupName}"`)
+      .join(", ");
     messages.push(
       `Количество подгрупп отличается в разных конкурсных группах для МУПов: ${mupNames}`
     );
@@ -156,21 +271,3 @@ export function validateSubgroupMembership(
 
   return { success: messages.length === 0, messages: messages };
 }
-
-
-// export function checkCompetitionGroupsHaveSameSubgroups(
-//   competitionGroupIds: number[],
-//   subgoupDiffInfo: ISubgoupDiffInfo
-// ) {
-//   const allLoad_number = new Set<string>();
-//   for (const mupName in subgoupDiffInfo.subgroupDiffs) {
-//     const cgIdToSubgroups = subgoupDiffInfo.subgroupDiffs[mupName];
-//     for (const competitionGroupId of competitionGroupIds) {
-//       if (cgIdToSubgroups.hasOwnProperty(competitionGroupId)) {
-//         for (const load_number in cgIdToSubgroups[competitionGroupId]) {
-//           allLoad_number.add()
-//         }
-//       }
-//     }
-//   }
-// }

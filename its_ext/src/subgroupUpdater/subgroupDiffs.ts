@@ -34,9 +34,6 @@ function checkIfMetasAndSubgroupsAreSameForMupAndSubgroup(
     }
   }
   const expectCreatedSubgroups = Object.keys(loadsToCounts).length !== 0;
-  // if (expectCreatedSubgroups) { // Если нет нагрузок с количеством > 0, ожидать, что подгрупп не должно быть создано
-  //   return true;
-  // }
 
   if (
     !subgroupDiffs.hasOwnProperty(mupName) ||
@@ -417,7 +414,6 @@ export function createDifferenceMessagesForSubgroupDiff(
 }
 
 export function createTodoMessages(
-  // sDiff: IMupSubgroupDiff,
   actions: ITSAction[]
 ): string[] {
   const messages = actions.map((a) => a.getMessageSimple());

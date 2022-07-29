@@ -3,19 +3,16 @@ import { ITSContext } from "../../common/Context";
 import style from "./StudentInfo.module.css";
 import { IStudentInfoProps } from "./types";
 
-
 export function StudentInfo(props: IStudentInfoProps) {
   const [data, setData] = useState<string>("");
 
   const context = useContext(ITSContext)!;
 
-  useEffect(() => {
-    alert("StudentInfo");
-  }, []);
+  useEffect(() => {}, []);
 
   const handleClick = () => {
-
-    const url = "https://istudent.urfu.ru/s/http-urfu-ru-ru-students-study-brs/";
+    const url =
+      "https://istudent.urfu.ru/s/http-urfu-ru-ru-students-study-brs/";
     const urlWithProxy = `${context.requestService.proxyUrl}/${url}`;
     const headers = {
       "x-url": url,
@@ -28,22 +25,18 @@ export function StudentInfo(props: IStudentInfoProps) {
     };
 
     context.requestService.SendRequest(urlWithProxy, options).then((res) => {
-      console.log("res");
-      console.log(res);
-
       if (!res.data) {
         props.onUnauthorized();
       }
 
       setData(res.data);
     });
-  }
-
+  };
 
   return (
     <section className={style.modal}>
       <button onClick={handleClick}>RequestData</button>
-      {data}
+      <div dangerouslySetInnerHTML={{ __html: data }} />
     </section>
   );
 }

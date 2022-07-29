@@ -14,7 +14,8 @@ import Button from "@mui/material/Button";
 
 export function Main(props: IMainProps) {
   const [needAuthentication, setNeedAuthentication] = useState(false);
-  const [needStudentAuthentication, setNeedStudentAuthentication] = useState(false);
+  const [needStudentAuthentication, setNeedStudentAuthentication] =
+    useState(false);
   const [connectionRefused, setConnectionRefused] = useState(false);
   const context = useContext(ITSContext);
   const [currentLogin, setCurrentLogin] = useState<string>("");
@@ -36,7 +37,9 @@ export function Main(props: IMainProps) {
     if (!credentials.username || !credentials.password) {
       return;
     }
-    const success = await context?.requestService.AuthenticateStudent(credentials);
+    const success = await context?.requestService.AuthenticateStudent(
+      credentials
+    );
     if (success) {
       setCurrentLogin(credentials.username);
       setNeedStudentAuthentication(false);
@@ -89,7 +92,6 @@ export function Main(props: IMainProps) {
             </React.Fragment>
           }
         />
-
 
         <Route
           path="/semesterPreparation"

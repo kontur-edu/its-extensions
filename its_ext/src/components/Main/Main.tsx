@@ -78,7 +78,7 @@ export function Main(props: IMainProps) {
       <Routes>
         <Route path="/" element={<MainMenu login={currentLogin} />} />
 
-        <Route
+        {/* <Route
           path="/student"
           element={
             <React.Fragment>
@@ -91,7 +91,7 @@ export function Main(props: IMainProps) {
               />
             </React.Fragment>
           }
-        />
+        /> */}
 
         <Route
           path="/semesterPreparation"

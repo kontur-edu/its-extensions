@@ -45,7 +45,7 @@ export function MainMenu(props: IMainMenuProps) {
     <section className={style.menu}>
       <h2 className={style.menu__header}>Индивидуальная траектория студента</h2>
       <div className={style.menu__container}>
-        <MainMenuButton onClick={handleStudent}>Студент</MainMenuButton>
+        {/* <MainMenuButton onClick={handleStudent}>Студент</MainMenuButton> */}
         <MainMenuButton onClick={handleSemesterPreparation}>
           Подготовка семестра
         </MainMenuButton>

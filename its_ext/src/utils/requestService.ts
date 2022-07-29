@@ -126,6 +126,79 @@ export class RequestService {
     return false;
   }
 
+  async AuthenticateStudent(credentials: ICredentials): Promise<boolean> {
+    // STEP 1
+    const urlWithProxy = `${this.proxyUrl}/https://sts.urfu.ru/adfs/OAuth2/authorize?resource=https%3A%2F%2Fistudent.urfu.ru&type=web_server&client_id=https%3A%2F%2Fistudent.urfu.ru&redirect_uri=https%3A%2F%2Fistudent.urfu.ru%3Fauth%26rp%3DL3MvaHR0cC11cmZ1LXJ1LXJ1LXN0dWRlbnRzLXN0dWR5LWJycy8%253D85d9e950dfd8804a8f231fbc88a9c610&response_type=code&scope=`;
+    const credentialsData = {
+      UserName: credentials.username,
+      Password: credentials.password,
+      AuthMethod: "FormsAuthentication",
+    };
+    const formData = RequestService.formatFormData(credentialsData);
+
+    const headers = {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Accept: "*/*",
+      "x-redirect": "manual",
+      "x-handle-location": "true",
+    };
+    const options: any = {
+      method: "POST",
+      headers: headers,
+      body: formData,
+      credentials: "include",
+      withCredentials: true,
+      redirect: "manual", // not worked
+    };
+    let responseAuth1 = await fetch(urlWithProxy, options);
+    console.log("responseAuth1");
+    console.log(responseAuth1);
+
+    let body1 = await responseAuth1.json();
+    console.log("body1");
+    console.log(body1);
+    const url2 = body1.location;
+
+    // STEP 2
+    const headersGET = {
+      Accept: "*/*",
+      "x-redirect": "manual",
+      "x-handle-location": "true",
+    };
+    const options2: any = {
+      method: "GET",
+      headers: headersGET,
+      credentials: "include",
+      withCredentials: true,
+      redirect: "manual", // not worked
+    };
+    let responseAuth2 = await fetch(`${this.proxyUrl}/${url2}`, options2);
+    console.log("responseAuth2");
+    console.log(responseAuth2);
+
+    let body2 = await responseAuth2.json();
+    console.log("body2");
+    console.log(body2);
+    const url3 = body2.location;
+
+    // STEP 3
+    const options3: any = {
+      method: "GET",
+      headers: headersGET,
+      credentials: "include",
+      withCredentials: true,
+      redirect: "manual", // not worked
+    };
+    let responseAuth3 = await fetch(`${this.proxyUrl}/${url3}`, options3);
+    console.log("responseAuth3");
+    console.log(responseAuth3);
+
+    if (responseAuth3.status === 200 || responseAuth3.status === 204) {
+      return true;
+    }
+    return false;
+  }
+
   async GetJson(url: string): Promise<any> {
     console.log(`GetJson ${url}`);
 

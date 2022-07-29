@@ -10,7 +10,7 @@ export function StudentInfo(props: IStudentInfoProps) {
 
   useEffect(() => {}, []);
 
-  const handleClick = () => {
+  const handleRequest = () => {
     const url =
       "https://istudent.urfu.ru/s/http-urfu-ru-ru-students-study-brs/";
     const urlWithProxy = `${context.requestService.proxyUrl}/${url}`;
@@ -33,10 +33,23 @@ export function StudentInfo(props: IStudentInfoProps) {
     });
   };
 
+  const handleExit = () => {
+    context.requestService.ExitStudent().then(res => {
+      alert(`Exit result: ${res}`);
+    });
+  }
+
+  const handleAuth = () => {
+    
+  }
+
   return (
     <section className={style.modal}>
-      <button onClick={handleClick}>RequestData</button>
+      <button onClick={handleAuth}>Auth</button>
+      <button onClick={handleRequest}>RequestData</button>
+      <button onClick={handleExit}>Exit</button>
       <div dangerouslySetInnerHTML={{ __html: data }} />
+      
     </section>
   );
 }

@@ -9,7 +9,7 @@ function getCookiesFromHeadrs(headers) {
   const preparedCookies = rawSetCookie.map((entry) => {
     const preparedCookie = entry
       .replace(/domain\s*=\s*[^;]+;\s?/gim, "")
-      .replace(/path\s*=\s*[^;]+;\s?/gim, "");
+      .replace(/path\s*=\s*[^;]+;\s?/gim, "path=/; ");
     return preparedCookie;
   });
 

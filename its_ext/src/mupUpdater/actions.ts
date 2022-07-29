@@ -298,7 +298,7 @@ export class UpdateModulesAction extends ITSAction {
   constructor(
     public mupId: string,
     public selectionGroupId: number,
-    public moduleSelection: IModuleSelection
+    public moduleSelections: IModuleSelection[]
   ) {
     super(ActionType.UpdateModules);
   }
@@ -308,7 +308,7 @@ export class UpdateModulesAction extends ITSAction {
   }
 
   getMessage(): string {
-    const modulesStr = JSON.stringify(this.moduleSelection);
+    const modulesStr = JSON.stringify(this.moduleSelections.filter(m => m.selected.length > 0));
     return `Обновить модули для МУПа с id: ${this.mupId} для Группы выбора с id: ${this.selectionGroupId} на ${modulesStr}`;
   }
 
@@ -329,7 +329,7 @@ export class UpdateModulesAction extends ITSAction {
 
     const res = await context.apiService.UpdateSelectionGroupMupModules(
       connectionId,
-      this.moduleSelection
+      this.moduleSelections
     );
     return [res];
   }

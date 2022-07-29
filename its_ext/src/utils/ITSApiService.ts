@@ -650,7 +650,7 @@ export class ITSApiService {
 
   async UpdateSelectionGroupMupModules(
     connectionId: number,
-    moduleSelection: IModuleSelection
+    moduleSelections: IModuleSelection[]
   ) {
     if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
@@ -658,7 +658,7 @@ export class ITSApiService {
 
     const data = {
       id: connectionId,
-      moduleDisciplines: JSON.stringify(moduleSelection),
+      moduleDisciplines: JSON.stringify(moduleSelections),
     };
 
     if (connectionId < 124) {

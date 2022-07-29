@@ -93,6 +93,8 @@ function findModuleSelection(
   ze: number,
   moduleData: IModuleData
 ) {
+  // console.log("moduleData");
+  // console.log(moduleData);
   let semesterNumbers: number[] = [5, 7];
   if (semesterName !== "Осенний") {
     semesterNumbers = [6, 8];
@@ -100,13 +102,17 @@ function findModuleSelection(
   const res: IModuleSelection[] = [];
   for (const moduleId in moduleData.data) {
     const module = moduleData.data[moduleId];
-
+    // специальные курсы 7 семестра <-> специальные курсы 7
     for (const course of semesterNumbers) {
+      // console.log(`${module.name.toLocaleLowerCase()} <-> специальные курсы ${course}`);
+      // console.log(`ze ${ze}`);
       if (
-        module.name.toLocaleLowerCase().includes(`cпециальные курсы ${course}`)
+        module.name.toLocaleLowerCase().includes(`специальные курсы ${course}`)
       ) {
+        // console.log("Found");
+        // console.log(module);
         const moduleSelection: IModuleSelection = {
-          id: module.name,
+          id: module.id,
           selected: module.disciplines
             .filter((d) => d.ze === ze)
             .map((d) => d.id),
@@ -117,6 +123,8 @@ function findModuleSelection(
       }
     }
   }
+  // console.log("res");
+  // console.log(res);
   return res;
 }
 
@@ -425,6 +433,7 @@ export function MupEditor(props: IMupEditorProps) {
       mupDiffs,
       newDates,
       mupLimits,
+      zeToModuleSelection,
       context
     );
 

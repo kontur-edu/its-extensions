@@ -9,6 +9,7 @@ import {
   AddLoadsAction,
   RefreshSelectionGroupsAction,
   RefreshPeriodsAction,
+  UpdateModulesAction,
 } from "./actions";
 
 import {
@@ -17,6 +18,9 @@ import {
   IPeriodTimeInfo,
   IMupToPeriods,
   IPeriod,
+  IMupData,
+  IModuleSelection,
+  IModuleData,
 } from "../common/types";
 
 import { ITSRepository } from "../utils/repository";
@@ -250,12 +254,54 @@ function generateUpdatePeriodActions(
   return actions;
 }
 
+function generateUpdateModulesAction(
+  selectionGroupsIds: number[],
+  selectedMupsIds: string[],
+  mupDiffs: { [key: string]: IMupDiff },
+  zeToModuleSelection: {[key: number]: IModuleSelection[]},
+  mupData: IMupData,
+  moduleData: IModuleData
+) {
+  const actions: ITSAction[] = [];
+  console.log("zeToModuleSelection");
+  console.log(zeToModuleSelection);
+  for (let mupId of selectedMupsIds) {
+    const ze = mupData.data[mupId].ze;
+    const referenceModules = zeToModuleSelection[ze];
+    const moduleIdToSelection: {[key: string]: string[]} = {};
+    referenceModules.forEach(rm => {
+      moduleIdToSelection[rm.id] = rm.selected;
+    });
+    console.log("moduleIdToSelection");
+    console.log(moduleIdToSelection);
+    for (let i = 0; i < selectedMupsIds.length; i++) {
+      const selectionGroupId = selectionGroupsIds[i];
+      if (mupDiffs[mupId].updateSelectedModuleDisciplines[i]) {
+        const ms = Object.keys(moduleData.data).map(moduleId => {
+          const moduleSelection: IModuleSelection = {
+            id: moduleId,
+            selected: []
+          };
+
+          if (moduleIdToSelection.hasOwnProperty(moduleId)) {
+            moduleSelection.selected = moduleIdToSelection[moduleId];
+          }
+          return moduleSelection;
+        });
+        actions.push(new UpdateModulesAction(mupId, selectionGroupId, ms));
+      }
+    }
+  }
+  return actions;
+}
+
 export function createActions(
   selectionGroupsIds: number[],
   selectedMupsIds: string[],
   mupDiffs: { [key: string]: IMupDiff },
   dates: [string, string],
   mupLimits: { [key: string]: number },
+  zeToModuleSelection: {[key: number]: IModuleSelection[]},
   itsContext: IITSContext
 ): ITSAction[] {
   if (selectionGroupsIds.length === 0) {
@@ -306,6 +352,15 @@ export function createActions(
       mupDiffs
     )
   );
+
+  actions.push(...generateUpdateModulesAction(
+    selectionGroupsIds,
+    selectedMupsIds,
+    mupDiffs,
+    zeToModuleSelection,
+    itsContext.dataRepository.mupData,
+    itsContext.dataRepository.moduleData
+  ));
 
   
 

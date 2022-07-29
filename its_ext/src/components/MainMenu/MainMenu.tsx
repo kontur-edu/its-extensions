@@ -5,9 +5,36 @@ import { useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 
+export interface IMainMenuButtonProps {
+  onClick: () => void;
+}
+
+export function MainMenuButton(
+  props: React.PropsWithChildren<IMainMenuButtonProps>
+) {
+  return (
+    <Button
+      onClick={props.onClick}
+      style={{
+        backgroundColor: "#fff",
+        color: "#000",
+        margin: "0 0.4em",
+        fontSize: "0.8em",
+      }}
+      endIcon={<ExitToAppIcon />}
+      variant="contained"
+    >
+      {props.children}
+    </Button>
+  );
+}
+
 export function MainMenu(props: IMainMenuProps) {
   const navigate = useNavigate();
 
+  const handleStudent = () => {
+    navigate("/student");
+  };
   const handleSemesterPreparation = () => {
     navigate("/semesterPreparation");
   };
@@ -18,32 +45,13 @@ export function MainMenu(props: IMainMenuProps) {
     <section className={style.menu}>
       <h2 className={style.menu__header}>Индивидуальная траектория студента</h2>
       <div className={style.menu__container}>
-        <Button
-          onClick={handleSemesterPreparation}
-          style={{
-            backgroundColor: "#fff",
-            color: "#000",
-            margin: "0 0.4em",
-            fontSize: '0.8em',
-          }}
-          endIcon={<ExitToAppIcon />}
-          variant="contained"
-        >
+        {/* <MainMenuButton onClick={handleStudent}>Студент</MainMenuButton> */}
+        <MainMenuButton onClick={handleSemesterPreparation}>
           Подготовка семестра
-        </Button>
-        <Button
-          onClick={handleStudentEnrollment}
-          style={{
-            backgroundColor: "#fff",
-            color: "#000",
-            margin: "0 0.4em",
-            fontSize: '0.8em',
-          }}
-          endIcon={<ExitToAppIcon />}
-          variant="contained"
-        >
+        </MainMenuButton>
+        <MainMenuButton onClick={handleStudentEnrollment}>
           Зачисление студентов
-        </Button>
+        </MainMenuButton>
       </div>
       <p>{props.login ? `Вы авторизованы под логином ${props.login}` : ""}</p>
     </section>

@@ -8,11 +8,14 @@ import { MainMenu } from "../MainMenu/MainMenu";
 import style from "./Main.module.css";
 import { SemesterPreparation } from "../SemesterPreparation/Base";
 import { StudentsAdmission } from "../StudentsAdmission/Base";
+import { StudentInfo } from "../StudentInfo/StudentInfo";
 import { ITSContext } from "../../common/Context";
 import Button from "@mui/material/Button";
 
 export function Main(props: IMainProps) {
   const [needAuthentication, setNeedAuthentication] = useState(false);
+  const [needStudentAuthentication, setNeedStudentAuthentication] =
+    useState(false);
   const [connectionRefused, setConnectionRefused] = useState(false);
   const context = useContext(ITSContext);
   const [currentLogin, setCurrentLogin] = useState<string>("");
@@ -27,6 +30,27 @@ export function Main(props: IMainProps) {
       setNeedAuthentication(false);
     } else {
       setCurrentLogin("");
+    }
+  };
+
+  const handleStudentLogin = async (credentials: ICredentials) => {
+    if (!credentials.username || !credentials.password) {
+      return;
+    }
+    const success = await context?.requestService.AuthenticateStudent(
+      credentials
+    );
+    if (success) {
+      setCurrentLogin(credentials.username);
+      setNeedStudentAuthentication(false);
+    } else {
+      setCurrentLogin("");
+    }
+  };
+
+  const handleStudentUnauthorized = () => {
+    if (!needStudentAuthentication) {
+      setNeedStudentAuthentication(true);
     }
   };
 
@@ -54,12 +78,27 @@ export function Main(props: IMainProps) {
       <Routes>
         <Route path="/" element={<MainMenu login={currentLogin} />} />
 
+        {/* <Route
+          path="/student"
+          element={
+            <React.Fragment>
+              <Modal visible={needStudentAuthentication}>
+                <LoginForm onSubmit={handleStudentLogin} title="Вход в аккаунт sts.urfu.ru" />
+              </Modal>
+              <StudentInfo
+                isUnauthorized={needStudentAuthentication}
+                onUnauthorized={handleStudentUnauthorized}
+              />
+            </React.Fragment>
+          }
+        /> */}
+
         <Route
           path="/semesterPreparation"
           element={
             <React.Fragment>
               <Modal visible={needAuthentication}>
-                <LoginForm onSubmit={handleLogin} />
+                <LoginForm onSubmit={handleLogin} title="Вход в аккаунт its.urfu.ru" />
               </Modal>
               <SemesterPreparation
                 isUnauthorized={needAuthentication}
@@ -74,7 +113,7 @@ export function Main(props: IMainProps) {
           element={
             <React.Fragment>
               <Modal visible={needAuthentication}>
-                <LoginForm onSubmit={handleLogin} />
+                <LoginForm onSubmit={handleLogin} title="Вход в аккаунт its.urfu.ru" />
               </Modal>
               <StudentsAdmission
                 isUnauthorized={needAuthentication}

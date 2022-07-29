@@ -7,7 +7,9 @@ function getCookiesFromHeadrs(headers) {
 
   const rawSetCookie = headers.raw()["set-cookie"];
   const preparedCookies = rawSetCookie.map((entry) => {
-    const preparedCookie = entry.replace(/domain\s*=\s*[^;]+;\s?/gim, "");
+    const preparedCookie = entry
+      .replace(/domain\s*=\s*[^;]+;\s?/gim, "")
+      .replace(/path\s*=\s*[^;]+;\s?/gim, "path=/; ");
     return preparedCookie;
   });
 
@@ -65,6 +67,9 @@ async function processRequest(
   }
 
   const redirect = headers["x-redirect"] ? headers["x-redirect"] : "manual";
+  const sendLocationInBody = headers["x-handle-location"]
+    ? headers["x-handle-location"]
+    : false;
   const preparedRequestHeaders = prepareRequestHeaders(
     url,
     headers,
@@ -110,9 +115,19 @@ async function processRequest(
   }
 
   let status = resp.status;
+  let bodyWithLocationForRedirectResponse = null;
   if ((redirect === "manual" && status === 301) || status === 302) {
+    resultHeaders["x-location"] = resultHeaders["location"];
     delete resultHeaders["location"];
     status = 204;
+
+    if (sendLocationInBody) {
+      status = 200;
+      let rbody = { location: resultHeaders["x-location"] };
+      bodyWithLocationForRedirectResponse = Buffer.from(
+        JSON.stringify(rbody)
+      ).toString("base64");
+    }
   }
 
   const result = {
@@ -123,6 +138,11 @@ async function processRequest(
 
   try {
     if (status !== 204 && status !== 301 && status !== 302) {
+      if (bodyWithLocationForRedirectResponse) {
+        result.body = bodyWithLocationForRedirectResponse;
+        result.isBase64Encoded = true;
+        return result;
+      }
       const bodyBlob = await resp.blob();
       const arrayBuffer = await bodyBlob.arrayBuffer();
       const base64 = convertArrayBufferToBase64(arrayBuffer);

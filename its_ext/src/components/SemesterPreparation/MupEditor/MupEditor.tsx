@@ -2,7 +2,12 @@ import React, { useState, useEffect, useContext } from "react";
 import { MupsList } from "../../MupsList";
 import style from "./MupEditor.module.css";
 import { IMupEditorProps } from "./types";
-import { IMupEdit, IMupDiff } from "../../../common/types";
+import {
+  IMupEdit,
+  IMupDiff,
+  IModuleData,
+  IModuleSelection,
+} from "../../../common/types";
 
 import {
   DEBOUNCE_MS,
@@ -83,6 +88,38 @@ const findInitDates = (initDiffs: {
   return dates;
 };
 
+function findModuleSelection(
+  semesterName: string,
+  ze: number,
+  moduleData: IModuleData
+) {
+  let semesterNumbers: number[] = [5, 7];
+  if (semesterName !== "Осенний") {
+    semesterNumbers = [6, 8];
+  }
+  const res: IModuleSelection[] = [];
+  for (const moduleId in moduleData.data) {
+    const module = moduleData.data[moduleId];
+
+    for (const course of semesterNumbers) {
+      if (
+        module.name.toLocaleLowerCase().includes(`cпециальные курсы ${course}`)
+      ) {
+        const moduleSelection: IModuleSelection = {
+          id: module.name,
+          selected: module.disciplines
+            .filter((d) => d.ze === ze)
+            .map((d) => d.id),
+        };
+        if (moduleSelection.selected.length > 0) {
+          res.push(moduleSelection);
+        }
+      }
+    }
+  }
+  return res;
+}
+
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
 export function MupEditor(props: IMupEditorProps) {
@@ -95,6 +132,9 @@ export function MupEditor(props: IMupEditorProps) {
   const [mupEditorActionResults, setMupEditorActionResults] = useState<
     IActionExecutionLogItem[]
   >([]);
+  const [zeToModuleSelection, setZeToModuleSelection] = useState<{
+    [key: number]: IModuleSelection[];
+  }>({});
 
   const context = useContext(ITSContext)!;
 
@@ -266,6 +306,33 @@ export function MupEditor(props: IMupEditorProps) {
     callDebouncedApply(mupDiffs, newEdits, [startDate, endDate]);
   };
 
+  const setUpReferenceModules = () => {
+    let semesterName: string = "Осенний";
+    for (const sgId of props.selectionGroupIds) {
+      if (context.dataRepository.selectionGroupData.data.hasOwnProperty(sgId)) {
+        semesterName =
+          context.dataRepository.selectionGroupData.data[sgId].semesterName;
+        break;
+      }
+    }
+    const zes = new Set<number>();
+    for (const mupId in context.dataRepository.mupData.data) {
+      zes.add(context.dataRepository.mupData.data[mupId].ze);
+    }
+    const newZeToModuleSelection: { [key: number]: IModuleSelection[] } = {};
+    for (const ze of Array.from(zes)) {
+      const moduleSelection = findModuleSelection(
+        semesterName,
+        ze,
+        context.dataRepository.moduleData
+      );
+      newZeToModuleSelection[ze] = moduleSelection;
+    }
+    setZeToModuleSelection(newZeToModuleSelection);
+
+    return newZeToModuleSelection
+  };
+
   const handleRefresh = () => {
     let mupIdsToRefresh: string[] = Object.keys(mupDiffs);
     let selectedMupIds: Set<string> = new Set<string>();
@@ -296,6 +363,27 @@ export function MupEditor(props: IMupEditorProps) {
       ),
       context.dataRepository.UpdatePeriods(mupIdsToRefresh),
     ])
+      .then(() => {
+        const allConnectionIds: number[] = [];
+        for (const selectionGroupId of props.selectionGroupIds) {
+          allConnectionIds.push(
+            ...Object.values(
+              context.dataRepository.selectionGroupToMupsData.data[
+                selectionGroupId
+              ].data
+            ).map((m) => m.connectionId)
+          );
+        }
+        if (allConnectionIds.length === 0) return;
+        return context.dataRepository
+          .UpdateModuleData(allConnectionIds[0])
+          .then(() =>
+            context.dataRepository.UpdateSelectionGroupMupModuleDisciplines(
+              allConnectionIds
+            )
+          );
+      })
+      .then(() => setUpReferenceModules())
       .then(() => createInitDiffsAndDates(selectedMupIds))
       .then(([newMupDiffs, newMupEdits, initDates]) => {
         setUpDiffsAndDates(newMupDiffs, newMupEdits, initDates);

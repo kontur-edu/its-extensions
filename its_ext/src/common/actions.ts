@@ -8,6 +8,7 @@ export enum ActionType {
   DeleteSubgroupAction,
   UpdateSelectionGroup,
   UpdateLimit,
+  UpdateModules,
   CreatePeriod,
   UpdatePeriod,
   AddLoads,

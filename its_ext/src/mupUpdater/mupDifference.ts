@@ -2,14 +2,13 @@ import {
   IMupLoad,
   IMupDiff,
   IPeriod,
-  IMupEdit,
   ISelectionGroupToMupsData,
   ISelectionGroupData,
+  ISelectedModuleDisciplines,
 } from "../common/types";
 
 import { checkDateIsLess } from "../utils/helpers";
 
-import { createResultLoads, findLoadsToAdd } from "./actionCreater";
 
 function findInitLimits(
   mupId: string,
@@ -71,7 +70,7 @@ function checkIfNeedChangeDates(
 
 function CheckIfCanBeDeleted(
   courseToCurrentPeriod: { [key: number]: IPeriod },
-  dates: [string, string]
+  // dates: [string, string]
 ): boolean {
   let canBeDeleted = true;
 
@@ -91,6 +90,37 @@ function CheckIfCanBeDeleted(
     }
   }
   return canBeDeleted;
+}
+
+function CheckIfNeedUpdateModules(
+  mupId: string,
+  selectionGroupIds: number[],
+  selectionGroupToMupsData: ISelectionGroupToMupsData,
+  selectionGroupModuleIdToSelectedModuleDisciplines: {[key: number]: ISelectedModuleDisciplines},
+  
+) {
+  const res: boolean[] = [];
+  for (const selectionGroupId of selectionGroupIds) {
+    if (!selectionGroupToMupsData.data.hasOwnProperty(selectionGroupId)) {
+      res.push(true);
+      continue;
+    }
+    const selectionGroupMupData = selectionGroupToMupsData.data[selectionGroupId];
+    if (!selectionGroupMupData.data.hasOwnProperty(mupId)) {
+      res.push(true);
+      continue;
+    }
+
+    const cId = selectionGroupMupData.data[mupId].connectionId;
+
+    if (!selectionGroupModuleIdToSelectedModuleDisciplines.hasOwnProperty(cId)) {
+      res.push(true);
+      continue;
+    }
+    const selectedModuleDisciplines = selectionGroupModuleIdToSelectedModuleDisciplines[cId];
+    // need course
+    // need semester
+  }
 }
 
 export function createDiffForMup(
@@ -145,7 +175,7 @@ export function createDiffForMup(
     dates
   );
 
-  const canBeDeleted = CheckIfCanBeDeleted(courseToCurrentPeriod, dates);
+  const canBeDeleted = CheckIfCanBeDeleted(courseToCurrentPeriod);
 
   const mupDiff: IMupDiff = {
     presentInGroups: presentInGroups,
@@ -155,6 +185,7 @@ export function createDiffForMup(
     changeDates: needToChangeDates,
     initLimits: limits,
     canBeDeleted: canBeDeleted,
+    updateSelectedModuleDisciplines: [true, true],
   };
 
   return mupDiff;

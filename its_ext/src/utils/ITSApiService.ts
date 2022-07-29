@@ -64,6 +64,7 @@ export class ITSApiService {
         name: obj["Name"],
         year: obj["Year"],
         semesterId: obj["SemesterId"],
+        semesterName: obj["SemesterName"],
         // ze: obj["UnitsSum"],
         eduSpaceId: obj["EduSpaceId"],
         unitSum: obj["UnitsSum"],
@@ -625,7 +626,7 @@ export class ITSApiService {
     return result;
   }
 
-  async GetSelectionGroupMupModules(connectionId: number) {
+  async GetSelectionGroupMupModules(connectionId: number): Promise<IModuleWithSelection[]> {
     const url = `https://its.urfu.ru/EduSpace/ModulesForMUP?id=${connectionId}`;
     const res = await this.requestService.GetJson(url);
     return res.map((obj: any) => {
@@ -641,12 +642,13 @@ export class ITSApiService {
         id: obj["uuid"],
         name: obj["title"],
         disciplines: disciplines,
+        selected: obj["selectedDisciplines"],
       };
       return admissionMeta;
     });
   }
 
-  async UpdateSelectionGroipMupModules(
+  async UpdateSelectionGroupMupModules(
     connectionId: number,
     moduleSelection: IModuleSelection
   ) {

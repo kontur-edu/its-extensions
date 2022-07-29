@@ -4,6 +4,7 @@ import {
   IPeriod,
   IMupLoad,
   IPeriodTimeInfo,
+  IModuleSelection,
 } from "../common/types";
 import { ActionType, ITSAction } from "../common/actions";
 import { IActionResponse } from "../utils/ITSApiService";
@@ -65,7 +66,11 @@ export class RefreshSelectionGroupsAction extends ITSAction {
   }
 
   getMessage(): string {
-    const selectionGroupIdsString = JSON.stringify(this.selectionGroupIds, null, 2);
+    const selectionGroupIdsString = JSON.stringify(
+      this.selectionGroupIds,
+      null,
+      2
+    );
     return `Запросить обновленные данные для Групп выбора с id: ${selectionGroupIdsString}`;
   }
 
@@ -237,14 +242,19 @@ export class AddLoadsAction extends ITSAction {
   }
 
   getMessageSimple(): string {
-    const loadsString = JSON.stringify(this.loads.map((l) => `${l.name}`), null, 2);
+    const loadsString = JSON.stringify(
+      this.loads.map((l) => `${l.name}`),
+      null,
+      2
+    );
     return `Добавить нагрузки: ${loadsString}`;
   }
 
   getMessage(): string {
     const loadsString = JSON.stringify(
       this.loads.map((l) => `${l.name} (${l.kmer})`),
-      null, 2
+      null,
+      2
     );
     return `Добавить нагрузки для МУПа с id: ${this.mupId}
             в период: год: ${this.periodTimeInfo.year}
@@ -280,5 +290,47 @@ export class AddLoadsAction extends ITSAction {
     }
 
     return res;
+  }
+}
+
+
+export class UpdateModulesAction extends ITSAction {
+  constructor(
+    public mupId: string,
+    public selectionGroupId: number,
+    public moduleSelection: IModuleSelection
+  ) {
+    super(ActionType.UpdateModules);
+  }
+
+  getMessageSimple(): string {
+    return this.getMessage();
+  }
+
+  getMessage(): string {
+    const modulesStr = JSON.stringify(this.moduleSelection);
+    return `Обновить модули для МУПа с id: ${this.mupId} для Группы выбора с id: ${this.selectionGroupId} на ${modulesStr}`;
+  }
+
+  async execute(context: IITSContext): Promise<IActionResponse[]> {
+    const groupMups = context.dataRepository.selectionGroupToMupsData;
+    if (!groupMups.data.hasOwnProperty(this.selectionGroupId)) {
+      throw Error(
+        `SelectionGroupId ${this.selectionGroupId} not found in SelectionGroupToMupsData in repository`
+      );
+    }
+    const groupMupData = groupMups.data[this.selectionGroupId];
+    if (!groupMupData.data.hasOwnProperty(this.mupId)) {
+      throw Error(
+        `MupId ${this.mupId} not found in SelectionGroupMupData in repository`
+      );
+    }
+    const connectionId = groupMupData.data[this.mupId].connectionId;
+
+    const res = await context.apiService.UpdateSelectionGroupMupModules(
+      connectionId,
+      this.moduleSelection
+    );
+    return [res];
   }
 }

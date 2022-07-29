@@ -8,6 +8,7 @@ export interface ISelectionGroup {
   name: string;
   year: number;
   semesterId: number;
+  semesterName: string;
   // ze: number; // UnitsSum.
 
   eduSpaceId: number;
@@ -81,6 +82,11 @@ export interface IMupEdit {
   addLoadsManual?: boolean;
 }
 
+export interface ISelectedModuleDisciplines {
+  // Module id -> disciplineId[]
+  [key: string]: string[];
+}
+
 export interface IMupDiff {
   presentInGroups: number[];
   initLimits: (number | null)[];
@@ -89,6 +95,7 @@ export interface IMupDiff {
   someLoads: IMupLoad[];
   changeDates: boolean;
   canBeDeleted: boolean;
+  updateSelectedModuleDisciplines: boolean[];
 }
 
 export interface IMupEditorConfig {
@@ -299,11 +306,16 @@ export interface IDiscipline {
 export interface IModule {
   id: string;
   name: string;
-  disciplines: IDiscipline;
+  disciplines: IDiscipline[];
+}
+
+export interface IModuleData {
+  data: {[key: string]: IModule};
+  ids: string[];
 }
 
 export interface IModuleWithSelection extends IModule {
-  disciplines: IDiscipline;
+  selected: string[];
 }
 
 export interface IModuleSelection {

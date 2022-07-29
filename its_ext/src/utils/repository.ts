@@ -16,6 +16,9 @@ import {
   IStudentAdmission,
   IStudentAdmissionRaw,
   IStudentSubgroupMembership,
+  IModuleData,
+  IModule,
+  ISelectedModuleDisciplines,
 } from "../common/types";
 
 import { ITSApiService } from "./ITSApiService";
@@ -48,6 +51,9 @@ export class ITSRepository {
   subgroupIdToStudentSubgroupMembership: {
     [key: number]: IStudentSubgroupMembership[];
   } = {}; // subgroupId -> studentId[]
+
+  moduleData: IModuleData = {data: {}, ids: []};
+  selectionGroupModuleIdToSelectedModuleDisciplines: {[key: number]: ISelectedModuleDisciplines} = {};
 
   constructor(public api: ITSApiService) {}
 
@@ -274,6 +280,44 @@ export class ITSRepository {
       const subgroupId = subgroupIds[i];
       if (resp.status === "fulfilled") {
         this.subgroupIdToStudentSubgroupMembership[subgroupId] = resp.value;
+      }
+    }
+  }
+
+  // any connectionId 
+  async UpdateModuleData(connectionId: number) {
+    console.log(`ITSRepository: UpdateModuleData`);
+    const mupModules = await this.api.GetSelectionGroupMupModules(connectionId);
+    const ids: string[] = [];
+    mupModules.forEach(mmodule => {
+      ids.push(mmodule.id);
+    })
+    
+    const data: {[key: string]: IModule} = {};
+    for (const mmodule of mupModules) {
+      data[mmodule.id] = mmodule;
+    }
+    this.moduleData.data = data;
+    this.moduleData.ids = ids;
+  }
+
+  async UpdateSelectionGroupMupModuleDisciplines(connectionIds: number[]) {
+    console.log(`ITSRepository: UpdateSelectionGroupMupModuleDisciplines`);
+    const requests = connectionIds.map((cId) =>
+      this.api.GetSelectionGroupMupModules(cId)
+    );
+    const responses = await Promise.allSettled(requests);
+    for (let i = 0; i < connectionIds.length; i++) {
+      const resp = responses[i];
+      const connectionId = connectionIds[i];
+      if (resp.status === "fulfilled") {
+        const selectedModuleDisciplines: ISelectedModuleDisciplines = {};
+        for (const module of resp.value) {
+          if (module.disciplines.length > 0) {
+            selectedModuleDisciplines[module.id] = module.selected;
+          }
+        }
+        this.selectionGroupModuleIdToSelectedModuleDisciplines[connectionId] = selectedModuleDisciplines;
       }
     }
   }

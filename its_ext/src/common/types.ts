@@ -290,10 +290,10 @@ export type MupToLoadToSubgroupMembership = {
   };
 };
 
-
 export interface IDiscipline {
   id: string;
   name: string;
+  ze: number;
 }
 
 export interface IModule {

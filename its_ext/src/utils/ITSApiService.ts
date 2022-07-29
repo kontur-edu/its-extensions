@@ -631,11 +631,12 @@ export class ITSApiService {
     return res.map((obj: any) => {
       const disciplines = obj["disciplines"].map((dObj: any) => {
         const disc: IDiscipline = {
-          id: obj["uid"],
-          name: obj["title"],
-        }
+          id: dObj["uid"],
+          name: dObj["title"],
+          ze: dObj["testUnits"],
+        };
         return disc;
-      })
+      });
       const admissionMeta: IModuleWithSelection = {
         id: obj["uuid"],
         name: obj["title"],
@@ -645,7 +646,10 @@ export class ITSApiService {
     });
   }
 
-  async UpdateSelectionGroipMupModules(connectionId: number, moduleSelection: IModuleSelection) {
+  async UpdateSelectionGroipMupModules(
+    connectionId: number,
+    moduleSelection: IModuleSelection
+  ) {
     if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/EduSpace/UpdateDisciplineConnection";

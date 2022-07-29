@@ -225,7 +225,9 @@ export class RequestService {
   }
 
   async ExitStudent(): Promise<boolean> {
-    const resp = await this.getWithManualRedirectInBody("https://istudent.urfu.ru/exit/");
+    const resp = await this.getWithManualRedirectInBody(
+      "https://istudent.urfu.ru/exit/"
+    );
     if (!resp.success || !resp.data || !resp.data.location) return false;
     const resp2 = await this.getWithManualRedirectInBody(resp.data.location);
     return resp2.success;

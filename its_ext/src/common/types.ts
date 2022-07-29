@@ -289,3 +289,24 @@ export type MupToLoadToSubgroupMembership = {
     [key: string]: string[][]; // loadName => [['personalNumber', 'personalNumber'], ...]
   };
 };
+
+
+export interface IDiscipline {
+  id: string;
+  name: string;
+}
+
+export interface IModule {
+  id: string;
+  name: string;
+  disciplines: IDiscipline;
+}
+
+export interface IModuleWithSelection extends IModule {
+  disciplines: IDiscipline;
+}
+
+export interface IModuleSelection {
+  id: string;
+  selected: string[];
+}

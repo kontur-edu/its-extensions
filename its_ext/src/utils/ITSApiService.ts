@@ -12,6 +12,9 @@ import {
   IAdmissionMeta,
   IStudentAdmissionRaw,
   IStudentSubgroupMembership,
+  IModuleWithSelection,
+  IDiscipline,
+  IModuleSelection,
 } from "../common/types";
 
 import {
@@ -614,6 +617,46 @@ export class ITSApiService {
 
     if (subgroupId < 594) {
       const message = `Tried to update not test Subgroup id: ${subgroupId}`;
+      alert(message);
+      return { success: false, message };
+    }
+
+    const result = await this.requestService.PostFormData(url, data);
+    return result;
+  }
+
+  async GetSelectionGroupMupModules(connectionId: number) {
+    const url = `https://its.urfu.ru/EduSpace/ModulesForMUP?id=${connectionId}`;
+    const res = await this.requestService.GetJson(url);
+    return res.map((obj: any) => {
+      const disciplines = obj["disciplines"].map((dObj: any) => {
+        const disc: IDiscipline = {
+          id: obj["uid"],
+          name: obj["title"],
+        }
+        return disc;
+      })
+      const admissionMeta: IModuleWithSelection = {
+        id: obj["uuid"],
+        name: obj["title"],
+        disciplines: disciplines,
+      };
+      return admissionMeta;
+    });
+  }
+
+  async UpdateSelectionGroipMupModules(connectionId: number, moduleSelection: IModuleSelection) {
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
+
+    const url = "https://its.urfu.ru/EduSpace/UpdateDisciplineConnection";
+
+    const data = {
+      id: connectionId,
+      moduleDisciplines: JSON.stringify(moduleSelection),
+    };
+
+    if (connectionId < 124) {
+      const message = `Tried to update not test Connection id: ${connectionId}`;
       alert(message);
       return { success: false, message };
     }

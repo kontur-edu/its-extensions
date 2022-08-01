@@ -146,13 +146,13 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     const refreshGroupMupsThenPeriodsPromise = refreshSelectionGroupMups(
       selectionGroupIds
     ).then((mupIds) => refreshPeriods(mupIds));
-    const refreshSubgroupMetasAndSubgroupsPromise =
-      refreshSubgroupMetasAndSubgroups(selectionGroupIds);
+    // const refreshSubgroupMetasAndSubgroupsPromise =
+    //   refreshSubgroupMetasAndSubgroups(selectionGroupIds);
     return Promise.all([
       ensureMupDataPromise,
       refreshGroupMupsThenPeriodsPromise,
-      refreshSubgroupMetasAndSubgroupsPromise,
-    ]);
+      // refreshSubgroupMetasAndSubgroupsPromise,
+    ]).then(() => refreshSubgroupMetasAndSubgroups(selectionGroupIds));
   };
 
   // selectionGroupMups, SubgroupGroupMetas, Subgroups

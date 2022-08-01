@@ -267,11 +267,13 @@ function generateUpdateModulesAction(
   console.log(zeToModuleSelection);
   for (let mupId of selectedMupsIds) {
     const ze = mupData.data[mupId].ze;
-    const referenceModules = zeToModuleSelection[ze];
+    
     const moduleIdToSelection: {[key: string]: string[]} = {};
-    referenceModules.forEach(rm => {
-      moduleIdToSelection[rm.id] = rm.selected;
-    });
+    if (zeToModuleSelection.hasOwnProperty(ze)) {
+      zeToModuleSelection[ze].forEach(rm => {
+        moduleIdToSelection[rm.id] = rm.selected;
+      });
+    }
     console.log("moduleIdToSelection");
     console.log(moduleIdToSelection);
     for (let i = 0; i < selectedMupsIds.length; i++) {

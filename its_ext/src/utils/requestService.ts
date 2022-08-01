@@ -77,12 +77,12 @@ export class RequestService {
     const jsonBody = await this.SendRequest(urlWithProxy, optionsLoginPage);
 
     const pageString = jsonBody["data"];
-    console.log("pageString");
-    console.log(pageString);
+    // console.log("pageString");
+    // console.log(pageString);
     const tokens: string[] = findCsrfTokens(pageString);
-    console.log("tokens");
-    console.log(tokens);
-    console.log(`tokens found: ${tokens.length}`);
+    // console.log("tokens");
+    // console.log(tokens);
+    // console.log(`tokens found: ${tokens.length}`);
     if (tokens.length === 0) {
       alert(
         `ERROR::RequestService::Authenticate: Incorrect count of CSRF tokens found ${tokens.length}`

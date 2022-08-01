@@ -370,7 +370,10 @@ export function MupEditor(props: IMupEditorProps) {
 
         return ensureData(Array.from(mupIdUnion), false).then(() => mupIdUnion);
       })
-      .then((mupIdUnion) => prepareData(mupIdUnion));
+      .then((mupIdUnion) => {
+        prepareData(mupIdUnion);
+        props.onLoad();
+      });
     // const { newMupDiffs, newMupEdits, initDates } =
     //   createInitDiffsAndDates(mupIdUnion);
 

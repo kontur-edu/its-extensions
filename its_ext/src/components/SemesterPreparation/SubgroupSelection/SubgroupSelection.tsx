@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import { ITSContext } from "../../../common/Context";
 import style from "./SubgroupSelection.module.css";
 import { ISubgroupSelectionProps } from "./types";
@@ -53,6 +53,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
   >([]);
   const [subgroupSelectionActionsResults, setSubgroupSelectionActionsResults] =
     useState<IActionExecutionLogItem[]>([]);
+  const ensureDataInProgress = useRef<boolean>(false);
 
   const context = useContext(ITSContext)!;
 
@@ -66,6 +67,71 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
       }
     });
     return newCompetitionGroupIds;
+  };
+
+  const ensureData = (refresh: boolean) => {
+    console.log("ensureData");
+    if (ensureDataInProgress.current) {
+      console.log("SubgroupSelection: ensureData is already in progress");
+      return Promise.resolve();
+    }
+    ensureDataInProgress.current = true;
+
+    const repo = context.dataRepository;
+    const updateSelectionGroupPromise = () =>
+      !refresh && repo.CheckSelectionGroupDataPresent(props.selectionGroupIds)
+        ? Promise.resolve()
+        : repo.UpdateSelectionGroupData();
+    const updateSelectionGroupToMupDataPromise = () =>
+      !refresh &&
+      repo.CheckSelectionGroupToMupDataPresent(props.selectionGroupIds)
+        ? Promise.resolve()
+        : repo.UpdateSelectionGroupToMupsData(props.selectionGroupIds);
+    const emulateCheckSubgroupMetas = (newCompetitionGroupIds: number[]) =>
+      !refresh
+        ? Promise.resolve()
+        : Promise.allSettled(
+            newCompetitionGroupIds.map((cId) =>
+              context.apiService.EmulateCheckSubgroupMetas(cId)
+            )
+          );
+    const updateSubgroupMetasPromise = (newCompetitionGroupIds: number[]) =>
+      !refresh && repo.CheckSubgroupMetasPresent(newCompetitionGroupIds)
+        ? Promise.resolve()
+        : repo.UpdateSubgroupMetas(newCompetitionGroupIds);
+    const updateSubgroupsPromise = (newCompetitionGroupIds: number[]) =>
+      !refresh && repo.CheckSubgroupPresent(competitionGroupIds)
+        ? Promise.resolve()
+        : repo.UpdateSubgroups(newCompetitionGroupIds);
+
+    return Promise.allSettled([
+      updateSelectionGroupPromise(),
+      updateSelectionGroupToMupDataPromise(),
+    ])
+      .then(() => extractCompetitionGroupIds(props.selectionGroupIds))
+      .then((newCompetitionGroupIds) =>
+        emulateCheckSubgroupMetas(newCompetitionGroupIds).then(
+          () => newCompetitionGroupIds
+        )
+      )
+      .then((newCompetitionGroupIds) => {
+        return Promise.allSettled([
+          updateSubgroupMetasPromise(newCompetitionGroupIds),
+          updateSubgroupsPromise(newCompetitionGroupIds),
+        ]);
+      })
+      .then(() => {
+        ensureDataInProgress.current = false;
+        prepareData();
+      })
+      .catch((err) => {
+        ensureDataInProgress.current = false;
+        if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+          props.onUnauthorized();
+          return;
+        }
+        throw err;
+      });
   };
 
   const prepareData = () => {
@@ -170,34 +236,35 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
   };
 
   const refreshData = () => {
-    return Promise.allSettled([
-      context.dataRepository.UpdateSelectionGroupData(),
-      context.dataRepository.UpdateSelectionGroupToMupsData(
-        props.selectionGroupIds
-      ),
-    ])
-      .then(() => extractCompetitionGroupIds(props.selectionGroupIds))
-      .then((newCompetitionGroupIds) => {
-        return Promise.allSettled(
-          newCompetitionGroupIds.map((cId) =>
-            context.apiService.EmulateCheckSubgroupMetas(cId)
-          )
-        ).then(() => newCompetitionGroupIds);
-      })
-      .then((newCompetitionGroupIds) => {
-        return Promise.allSettled([
-          context.dataRepository.UpdateSubgroupMetas(newCompetitionGroupIds),
-          context.dataRepository.UpdateSubgroups(newCompetitionGroupIds),
-        ]);
-      })
-      .then(() => prepareData())
-      .catch((err) => {
-        if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-          props.onUnauthorized();
-          return;
-        }
-        throw err;
-      });
+    return ensureData(true);
+    // return Promise.allSettled([
+    //   context.dataRepository.UpdateSelectionGroupData(),
+    //   context.dataRepository.UpdateSelectionGroupToMupsData(
+    //     props.selectionGroupIds
+    //   ),
+    // ])
+    //   .then(() => extractCompetitionGroupIds(props.selectionGroupIds))
+    //   .then((newCompetitionGroupIds) => {
+    //     return Promise.allSettled(
+    //       newCompetitionGroupIds.map((cId) =>
+    //         context.apiService.EmulateCheckSubgroupMetas(cId)
+    //       )
+    //     ).then(() => newCompetitionGroupIds);
+    //   })
+    //   .then((newCompetitionGroupIds) => {
+    //     return Promise.allSettled([
+    //       context.dataRepository.UpdateSubgroupMetas(newCompetitionGroupIds),
+    //       context.dataRepository.UpdateSubgroups(newCompetitionGroupIds),
+    //     ]);
+    //   })
+    //   .then(() => prepareData())
+    //   .catch((err) => {
+    //     if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+    //       props.onUnauthorized();
+    //       return;
+    //     }
+    //     throw err;
+    //   });
   };
 
   const refreshDataDebounced = () => {
@@ -208,10 +275,12 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
   };
 
   useEffect(() => {
-    if (!props.dataIsPrepared || props.selectionGroupIds.length !== 2) {
+    if (props.selectionGroupIds.length !== 2) {
       return;
     }
-    prepareData();
+    ensureData(false).then(() => {
+      prepareData();
+    });
     // handleApply();
   }, [props.dataIsPrepared, props.selectionGroupIds]);
 

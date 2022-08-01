@@ -50,6 +50,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     ISelectionListItem[]
   >([]);
   const [selectionGroupsIds, setSelectionGroupsIds] = useState<number[]>([]);
+  const [mupEditorLoaded, setMupEditorLoaded] = useState<boolean>(false);
   // const [editorDataPrepared, setEditorDataPrepared] = useState<boolean>(false);
   const requestSelectionGroupsInProgress = useRef(false);
 
@@ -85,6 +86,10 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
           throw err;
         });
     }
+  };
+
+  const handleMupEditorLoaded = () => {
+    setMupEditorLoaded(true);
   };
 
   /*
@@ -162,7 +167,13 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     // setEditorDataPrepared(false);
     // console.log("handleSelectionGroupValid");
     // remember chosen selectionGroup ids
-    setSelectionGroupsIds(selectionGroupIds);
+    const repo = context.dataRepository;
+    const updateMupDataPromise =
+      repo.mupData.ids.length > 0 ? Promise.resolve() : repo.UpdateMupData();
+    // const updateSelectionSelectionGroupDataPromise = repo.CheckSelectionGroupDataPresent(selectionGroupIds) ?
+    //   Promise.resolve() : repo.UpdateSelectionGroupData();
+    updateMupDataPromise.then(() => setSelectionGroupsIds(selectionGroupIds));
+
     // request mups for chosen selectionGroups
     // find union of mupIds in chosen selectionGroups
     // const groupMupsRefreshPromise = refreshSelectionGroupMups(selectionGroupIds);
@@ -198,6 +209,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
         <MupEditor
           selectionGroupIds={selectionGroupsIds}
           // dataIsPrepared={editorDataPrepared}
+          onLoad={handleMupEditorLoaded}
           onNextStep={handleMupEditorNextStepButton}
           onUnauthorized={props.onUnauthorized}
         />
@@ -214,7 +226,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
 
         <SubgroupSelection
           selectionGroupIds={selectionGroupsIds}
-          dataIsPrepared={false} // TODO: delete this
+          dataIsPrepared={mupEditorLoaded} // TODO: delete this
           onUnauthorized={props.onUnauthorized}
         />
       </article>
@@ -253,7 +265,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
 
       {selectionGroupsIds.length === 2 ? renderStep2() : null}
 
-      {selectionGroupsIds.length === 2 && false // TODO Delete this
+      {selectionGroupsIds.length === 2 && mupEditorLoaded // TODO Delete this
         ? renderStep3()
         : null}
     </section>

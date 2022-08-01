@@ -310,7 +310,7 @@ export interface IModule {
 }
 
 export interface IModuleData {
-  data: {[key: string]: IModule};
+  data: { [key: string]: IModule };
   ids: string[];
 }
 

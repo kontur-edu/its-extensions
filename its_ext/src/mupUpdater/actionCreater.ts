@@ -21,6 +21,7 @@ import {
   IMupData,
   IModuleSelection,
   IModuleData,
+  ISelectionGroupToMupsData,
 } from "../common/types";
 
 import { ITSRepository } from "../utils/repository";
@@ -46,6 +47,41 @@ function generateDeleteSubgroupsActions(
       }
       if (subgroupIdsToDelete.length > 0) {
         actions.push(new DeleteSubgroupsAction(subgroupIdsToDelete));
+      }
+    }
+  }
+  return actions;
+}
+
+function generateDeleteModulesActions(
+  selectionGroupsIds: number[],
+  selectedMupsIds: string[],
+  selectionGroupToMupsData: ISelectionGroupToMupsData,
+  moduleData: IModuleData
+) {
+  const selectedMupsIdsSet = new Set<string>(selectedMupsIds);
+  const emptyModules: IModuleSelection[] = Object.keys(moduleData.data).map(
+    (moduleId) => {
+      const moduleSelection: IModuleSelection = {
+        id: moduleId,
+        selected: [],
+      };
+      return moduleSelection;
+    }
+  );
+  const actions: ITSAction[] = [];
+  for (let selectionGroupId of selectionGroupsIds) {
+    if (!selectionGroupToMupsData.data.hasOwnProperty(selectionGroupId)) {
+      continue;
+    }
+    const selectionGroupMups =
+      selectionGroupToMupsData.data[selectionGroupId].data;
+    for (const mupId in selectionGroupMups) {
+      if (!selectedMupsIdsSet.has(mupId)) {
+        // delete all modules
+        actions.push(
+          new UpdateModulesAction(mupId, selectionGroupId, emptyModules)
+        );
       }
     }
   }
@@ -322,6 +358,15 @@ export function createActions(
       selectionGroupsIds,
       selectedMupsIds,
       itsContext.dataRepository
+    )
+  );
+
+  actions.push(
+    ...generateDeleteModulesActions(
+      selectionGroupsIds,
+      selectedMupsIds,
+      itsContext.dataRepository.selectionGroupToMupsData,
+      itsContext.dataRepository.moduleData
     )
   );
 

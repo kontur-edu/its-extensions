@@ -49,6 +49,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
   const [selectionGroupsListItems, setSelectionGroupsListItems] = useState<
     ISelectionListItem[]
   >([]);
+  const [selectionValid, setSelectionValid] = useState<boolean>(false);
   const [selectionGroupsIds, setSelectionGroupsIds] = useState<number[]>([]);
   const [mupEditorLoaded, setMupEditorLoaded] = useState<boolean>(false);
   // const [editorDataPrepared, setEditorDataPrepared] = useState<boolean>(false);
@@ -164,7 +165,10 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
   */
 
   // selectionGroupMups, SubgroupGroupMetas, Subgroups
-  const handleSelectionGroupValid = (selectionGroupIds: number[]) => {
+  const handleSelectionGroupSelected = (selectionGroupIds: number[]) => {
+    if (selectionGroupIds.length !== 2) {
+      setSelectionValid(false);
+    }
     // setEditorDataPrepared(false);
     // console.log("handleSelectionGroupValid");
     // remember chosen selectionGroup ids
@@ -173,7 +177,10 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
       repo.mupData.ids.length > 0 ? Promise.resolve() : repo.UpdateMupData();
     // const updateSelectionSelectionGroupDataPromise = repo.CheckSelectionGroupDataPresent(selectionGroupIds) ?
     //   Promise.resolve() : repo.UpdateSelectionGroupData();
-    updateMupDataPromise.then(() => setSelectionGroupsIds(selectionGroupIds));
+    updateMupDataPromise.then(() => {
+      setSelectionValid(true);
+      setSelectionGroupsIds(selectionGroupIds)
+    });
 
     // request mups for chosen selectionGroups
     // find union of mupIds in chosen selectionGroups
@@ -247,26 +254,26 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
         <GroupSelect
           selectionGroupsList={selectionGroupsListItems}
           onRefresh={refreshSelectionGroups}
-          onSelectionValid={handleSelectionGroupValid}
+          onSelection={handleSelectionGroupSelected}
         />
 
         <div className="next_step__container">
-          <ApplyButtonWithActionDisplay
+          {selectionValid && <ApplyButtonWithActionDisplay
             showErrorWarning={false}
             showSuccessMessage={false}
             onNextStep={handleGroupSelectButton}
-          />
+          />}
           <p className="next_step__message">
-            {selectionGroupsIds.length !== 2
+            {selectionValid && selectionGroupsIds.length !== 2
               ? "Выберите две группы для перехода к следующему шагу"
               : null}
           </p>
         </div>
       </article>
 
-      {selectionGroupsIds.length === 2 ? renderStep2() : null}
+      {selectionValid && selectionGroupsIds.length === 2 ? renderStep2() : null}
 
-      {selectionGroupsIds.length === 2 && mupEditorLoaded // TODO Delete this
+      {selectionValid && selectionGroupsIds.length === 2 && mupEditorLoaded // TODO Delete this
         ? renderStep3()
         : null}
     </section>

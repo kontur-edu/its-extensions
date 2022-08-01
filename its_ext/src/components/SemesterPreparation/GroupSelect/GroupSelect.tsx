@@ -23,9 +23,9 @@ export function GroupSelect(props: IGroupSelectProps) {
     }
 
     setSelectionGroupsIds(newIds);
-    if (newIds.length === 2) {
-      props.onSelectionValid(newIds);
-    }
+    // if (newIds.length === 2) {
+      props.onSelection(newIds);
+    // }
   };
 
   return (

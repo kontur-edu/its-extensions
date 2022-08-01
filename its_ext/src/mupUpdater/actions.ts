@@ -303,7 +303,7 @@ export class UpdateModulesAction extends ITSAction {
   }
 
   getMessageSimple(): string {
-    return `Обновить модули для Группы выбора с id: ${this.selectionGroupId}`;
+    return `Обновить модули-контейнеры для связи в Группе выбора с id: ${this.selectionGroupId}`;
   }
 
   getMessage(): string {
@@ -312,7 +312,7 @@ export class UpdateModulesAction extends ITSAction {
       null,
       2
     );
-    return `Обновить модули для МУПа с id: ${this.mupId} для Группы выбора с id: ${this.selectionGroupId} на ${modulesStr}`;
+    return `Обновить модули-контейнеры связи МУПа с id: ${this.mupId} и Группы выбора с id: ${this.selectionGroupId} на ${modulesStr}`;
   }
 
   async execute(context: IITSContext): Promise<IActionResponse[]> {

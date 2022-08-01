@@ -40,6 +40,7 @@ import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay
 // import Button from "@mui/material/Button";
 // import RefreshIcon from "@mui/icons-material/Refresh";
 import { RefreshButton } from "../../RefreshButton";
+import CircularProgress from "@mui/material/CircularProgress";
 // Получение данных:
 // Запросить все Группы выбора
 // Запросить МУПы с Лимитами для выбранных Групп выбора
@@ -143,6 +144,7 @@ export function MupEditor(props: IMupEditorProps) {
     [key: number]: IModuleSelection[];
   }>({});
   // const refreshInProgress = useRef<boolean>(false);
+  const [ensureInProgress, setEnsureInProgress] = useState<boolean>(false);
   const currentEnsurePromise = useRef<Promise<any> | null>(null);
 
   const context = useContext(ITSContext)!;
@@ -259,6 +261,7 @@ export function MupEditor(props: IMupEditorProps) {
       console.log("refreshInProgress is already in progress");
       return currentEnsurePromise.current;
     }
+    setEnsureInProgress(true);
 
     const repo = context.dataRepository;
     const updateSelectionGroupPromise = () =>
@@ -336,9 +339,11 @@ export function MupEditor(props: IMupEditorProps) {
       )
       .then(() => {
         currentEnsurePromise.current = null;
+        setEnsureInProgress(false);
       })
       .catch((err) => {
         currentEnsurePromise.current = null;
+        setEnsureInProgress(false);
         if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
           props.onUnauthorized();
           return;
@@ -621,6 +626,31 @@ export function MupEditor(props: IMupEditorProps) {
     debouncedWrapperForApply(() => handleApplyReal());
   };
 
+  const renderTable = () => {
+    // return ensureInProgress ? <CircularProgress className={style.progress_icon} style={{width: '100px', height: '100px'}} /> : (
+    //   <MupsList
+    //       mupData={context.dataRepository.mupData}
+    //       mupEdits={mupEdits}
+    //       onMupToggle={handleMupToggle}
+    //       onMupLimitChange={handleMupLimitChange}
+    //     />
+    // );
+
+    return (
+      <div className={style.mup_table_container}>
+        <MupsList
+          mupData={context.dataRepository.mupData}
+          mupEdits={mupEdits}
+          onMupToggle={handleMupToggle}
+          onMupLimitChange={handleMupLimitChange}
+        />
+        {ensureInProgress && <div className={style.progress_screen}></div>}
+        {ensureInProgress && (
+          <CircularProgress className={style.progress_icon} size="8rem" />
+        )}
+      </div>
+    );
+  };
 
   return props.selectionGroupIds.length !== 2 ? null : (
     <section className="step__container">
@@ -657,12 +687,13 @@ export function MupEditor(props: IMupEditorProps) {
           title="Обновить список"
         />
 
-        <MupsList
+        {renderTable()}
+        {/* <MupsList
           mupData={context.dataRepository.mupData}
           mupEdits={mupEdits}
           onMupToggle={handleMupToggle}
           onMupLimitChange={handleMupLimitChange}
-        />
+        /> */}
 
         <ApplyButtonWithActionDisplay
           showErrorWarning={true}

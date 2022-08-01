@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { MupsList } from "../../MupsList";
 import style from "./MupEditor.module.css";
 import { IMupEditorProps } from "./types";
@@ -143,6 +143,7 @@ export function MupEditor(props: IMupEditorProps) {
   const [zeToModuleSelection, setZeToModuleSelection] = useState<{
     [key: number]: IModuleSelection[];
   }>({});
+  const refreshInProgress = useRef<boolean>(false);
 
   const context = useContext(ITSContext)!;
 
@@ -228,17 +229,6 @@ export function MupEditor(props: IMupEditorProps) {
         updateMupDiffDateInfo(newMupDiffs[mupId], initDates);
       }
     }
-    // initDates[0] && setStartDate(initDates[0]);
-    // initDates[1] && setEndDate(initDates[1]);
-
-    // setMupDiffs(newMupDiffs);
-    // setMupEdits(newMupEdits);
-
-    // const res: [
-    //   { [key: string]: IMupDiff },
-    //   { [key: string]: IMupEdit },
-    //   [string, string]
-    // ] = [newMupDiffs, newMupEdits, initDates];
     return { newMupDiffs, newMupEdits, initDates };
   };
 
@@ -254,36 +244,171 @@ export function MupEditor(props: IMupEditorProps) {
     setMupEdits(newMupEdits);
   };
 
-  useEffect(() => {
-    if (!props.dataIsPrepared) return;
-
-    let mupIdUnionArr: string[][] = [];
-    for (let sgId of props.selectionGroupIds) {
-      mupIdUnionArr.push(
-        context.dataRepository.selectionGroupToMupsData.data[sgId].ids
-      );
+  const ensureData = (mupIds: string[], refresh: boolean) => {
+    console.log(`ensureData mupIds: ${mupIds.length} refresh: ${refresh}`);
+    console.log("selectionGroupIds");
+    console.log(props.selectionGroupIds);
+    if (refreshInProgress.current) {
+      console.log("refreshInProgress is already in progress");
+      return Promise.resolve();
     }
-    const mupIdUnion = new Set(mupIdUnionArr.flat());
-    const { newMupDiffs, newMupEdits, initDates } =
-      createInitDiffsAndDates(mupIdUnion);
+    refreshInProgress.current = true;
+    const repo = context.dataRepository;
+    const updateSelectionGroupPromise = () =>
+      !refresh && repo.CheckSelectionGroupDataPresent(props.selectionGroupIds)
+        ? Promise.resolve()
+        : repo.UpdateSelectionGroupData();
+    const updateMupDataPromise = () =>
+      !refresh && repo.mupData.ids.length !== 0
+        ? Promise.resolve()
+        : repo.UpdateMupData();
+    const updateSelectionGroupToMupDataPromise = () =>
+      !refresh &&
+      repo.CheckSelectionGroupToMupDataPresent(props.selectionGroupIds)
+        ? Promise.resolve()
+        : repo.UpdateSelectionGroupToMupsData(props.selectionGroupIds);
+    const updatePeriodsPromise = () =>
+      !refresh && repo.CheckPeriodDataPresent(mupIds)
+        ? Promise.resolve()
+        : repo.UpdatePeriods(mupIds);
+    const updateSubgroupsPromise = () => {
+      const competitionGroupIds: number[] = [];
+      props.selectionGroupIds.forEach((sgId) => {
+        const cgId =
+          context.dataRepository.selectionGroupData.data[sgId]
+            .competitionGroupId;
+        if (cgId !== null && cgId !== undefined) {
+          competitionGroupIds.push(cgId);
+        }
+      });
+      const updateSubgroupsAction = repo.CheckSubgroupPresent(
+        competitionGroupIds
+      )
+        ? Promise.resolve()
+        : context.dataRepository.UpdateSubgroups(competitionGroupIds);
+      return updateSubgroupsAction;
+    };
 
+    const createUpdateModuleAndSelectionGroupMupModuleDisciplinesPromise =
+      () => {
+        const allConnectionIds: number[] = [];
+        for (const selectionGroupId of props.selectionGroupIds) {
+          allConnectionIds.push(
+            ...Object.values(
+              context.dataRepository.selectionGroupToMupsData.data[
+                selectionGroupId
+              ].data
+            ).map((m) => m.connectionId)
+          );
+        }
+        if (allConnectionIds.length === 0) return;
+        const updateModuleDataPromise =
+          !refresh && repo.CheckModuleDataPresent()
+            ? Promise.resolve()
+            : repo.UpdateModuleData(allConnectionIds[0]);
+        const updateSelectionGroupMupModuleDisciplinesPromise =
+          !refresh &&
+          repo.CheckSelectionGroupMupModuleDisciplinesPresent(allConnectionIds)
+            ? Promise.resolve()
+            : repo.UpdateSelectionGroupMupModuleDisciplines(allConnectionIds);
+
+        return Promise.allSettled([
+          updateModuleDataPromise,
+          updateSelectionGroupMupModuleDisciplinesPromise,
+        ]);
+      };
+
+    return Promise.allSettled([
+      updateSelectionGroupPromise().then(() => updateSubgroupsPromise()), // update selectionGrousp then subgroups
+      updateMupDataPromise(),
+      updateSelectionGroupToMupDataPromise(),
+      updatePeriodsPromise(),
+    ])
+      .then(() =>
+        createUpdateModuleAndSelectionGroupMupModuleDisciplinesPromise()
+      )
+      .then(() => {
+        refreshInProgress.current = false;
+      })
+      .catch((err) => {
+        refreshInProgress.current = false;
+        if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+          props.onUnauthorized();
+          return;
+        }
+        throw err;
+      });
+  };
+
+  const prepareData = (mupIds: Set<string>) => {
+    console.log("prepareData");
+    const { newMupDiffs, newMupEdits, initDates } =
+      createInitDiffsAndDates(mupIds);
+    const referenceModules = findReferenceModules();
+    setZeToModuleSelection(referenceModules);
     setUpDiffsAndDates(newMupDiffs, newMupEdits, initDates);
+    callDebouncedApply(newMupDiffs, newMupEdits, initDates, referenceModules);
+  };
+
+  useEffect(() => {
+    const repo = context.dataRepository;
+    // if (!props.dataIsPrepared) return;
+    const updateSelectionGroupToMupDataPromise = () =>
+      repo.CheckSelectionGroupToMupDataPresent(props.selectionGroupIds)
+        ? Promise.resolve()
+        : repo.UpdateSelectionGroupToMupsData(props.selectionGroupIds);
+
+    updateSelectionGroupToMupDataPromise()
+      .then(() => {
+        let mupIdUnionArr: string[][] = [];
+        for (let sgId of props.selectionGroupIds) {
+          mupIdUnionArr.push(
+            context.dataRepository.selectionGroupToMupsData.data[sgId].ids
+          );
+        }
+        const mupIdUnion = new Set(mupIdUnionArr.flat());
+
+        return ensureData(Array.from(mupIdUnion), false).then(() => mupIdUnion);
+      })
+      .then((mupIdUnion) => prepareData(mupIdUnion));
+    // const { newMupDiffs, newMupEdits, initDates } =
+    //   createInitDiffsAndDates(mupIdUnion);
+
+    // setUpDiffsAndDates(newMupDiffs, newMupEdits, initDates);
     // initDates[0] && setStartDate(initDates[0]);
     // initDates[1] && setEndDate(initDates[1]);
 
     // setMupDiffs(newMupDiffs);
     // setMupEdits(newMupEdits);
-    callDebouncedApply(
-      newMupDiffs,
-      newMupEdits,
-      initDates,
-      zeToModuleSelection
-    );
-  }, [props.dataIsPrepared, props.selectionGroupIds]);
+    // callDebouncedApply(
+    //   newMupDiffs,
+    //   newMupEdits,
+    //   initDates,
+    //   zeToModuleSelection
+    // );
+  }, [props.selectionGroupIds]);
 
   const handleMupToggle = (mupId: string) => {
-    context.dataRepository
-      .EnsurePeriodInfoFor(mupId)
+    console.log(`handleMupToggle: ${mupId}`);
+    const repo = context.dataRepository;
+    // repo.EnsurePeriodInfoFor(mupId)
+    const mupIds = [mupId];
+    const periodPromise = repo.CheckPeriodDataPresent(mupIds)
+      ? Promise.resolve()
+      : repo.UpdatePeriods(mupIds);
+    const connectionIds: number[] = [];
+    for (const sgId of props.selectionGroupIds) {
+      const selectionGroupMups = repo.selectionGroupToMupsData.data[sgId];
+      if (selectionGroupMups.data.hasOwnProperty(mupId)) {
+        connectionIds.push(selectionGroupMups.data[mupId].connectionId);
+      }
+    }
+    const modulePromise =
+      connectionIds.length === 0 ||
+      repo.CheckSelectionGroupMupModuleDisciplinesPresent(connectionIds)
+        ? Promise.resolve()
+        : repo.UpdateSelectionGroupMupModuleDisciplines(connectionIds);
+    return Promise.allSettled([periodPromise, modulePromise])
       .then(() => {
         let mupDiffsToCompareWith = mupDiffs;
         if (!mupDiffs.hasOwnProperty(mupId) || !mupDiffs[mupId]) {
@@ -291,9 +416,9 @@ export function MupEditor(props: IMupEditorProps) {
             mupId,
             props.selectionGroupIds,
             [startDate, endDate],
-            context.dataRepository.selectionGroupToMupsData,
-            context.dataRepository.selectionGroupData,
-            context.dataRepository.mupToPeriods
+            repo.selectionGroupToMupsData,
+            repo.selectionGroupData,
+            repo.mupToPeriods
           );
           const newMupDiffs = { ...mupDiffs, [mupId]: newInitDiff };
           mupDiffsToCompareWith = newMupDiffs;
@@ -306,16 +431,16 @@ export function MupEditor(props: IMupEditorProps) {
         newMupEdits[mupId].selected = !newMupEdits[mupId].selected;
 
         setMupEdits(newMupEdits);
-        const res: [{ [key: string]: IMupDiff }, { [x: string]: IMupEdit }] = [
+        // const res: [{ [key: string]: IMupDiff }, { [x: string]: IMupEdit }] = [
+        //   mupDiffsToCompareWith,
+        //   newMupEdits,
+        // ];
+        return { mupDiffsToCompareWith, newMupEdits };
+      })
+      .then(({ mupDiffsToCompareWith, newMupEdits }) => {
+        callDebouncedApply(
           mupDiffsToCompareWith,
           newMupEdits,
-        ];
-        return res;
-      })
-      .then((mupDiffsAndEdits) => {
-        callDebouncedApply(
-          mupDiffsAndEdits[0],
-          mupDiffsAndEdits[1],
           [startDate, endDate],
           zeToModuleSelection
         );
@@ -366,6 +491,7 @@ export function MupEditor(props: IMupEditorProps) {
   };
 
   const handleRefresh = () => {
+    console.log("handleRefresh");
     let mupIdsToRefresh: string[] = Object.keys(mupDiffs);
     let selectedMupIds: Set<string> = new Set<string>();
     for (let mupId of mupIdsToRefresh) {
@@ -373,72 +499,83 @@ export function MupEditor(props: IMupEditorProps) {
         selectedMupIds.add(mupId);
       }
     }
-    const updateSelectionGroupsThenSubgroupsPromise = context.dataRepository
-      .UpdateSelectionGroupData()
-      .then(() => {
-        const competitionGroupIds: number[] = [];
-        props.selectionGroupIds.forEach((sgId) => {
-          const cgId =
-            context.dataRepository.selectionGroupData.data[sgId]
-              .competitionGroupId;
-          if (cgId !== null && cgId !== undefined) {
-            competitionGroupIds.push(cgId);
-          }
-        });
-        return context.dataRepository.UpdateSubgroups(competitionGroupIds);
-      });
-    return Promise.all([
-      updateSelectionGroupsThenSubgroupsPromise,
-      context.dataRepository.UpdateMupData(),
-      context.dataRepository.UpdateSelectionGroupToMupsData(
-        props.selectionGroupIds
-      ),
-      context.dataRepository.UpdatePeriods(mupIdsToRefresh),
-    ])
-      .then(() => {
-        const allConnectionIds: number[] = [];
-        for (const selectionGroupId of props.selectionGroupIds) {
-          allConnectionIds.push(
-            ...Object.values(
-              context.dataRepository.selectionGroupToMupsData.data[
-                selectionGroupId
-              ].data
-            ).map((m) => m.connectionId)
-          );
-        }
-        if (allConnectionIds.length === 0) return;
-        return context.dataRepository
-          .UpdateModuleData(allConnectionIds[0])
-          .then(() =>
-            context.dataRepository.UpdateSelectionGroupMupModuleDisciplines(
-              allConnectionIds
-            )
-          );
-      })
-      .then(() => {
-        const { newMupDiffs, newMupEdits, initDates } =
-          createInitDiffsAndDates(selectedMupIds);
-        const referenceModules = findReferenceModules();
-        const res = { newMupDiffs, newMupEdits, initDates, referenceModules };
-        return res;
-      })
-      .then(({ newMupDiffs, newMupEdits, initDates, referenceModules }) => {
-        setUpDiffsAndDates(newMupDiffs, newMupEdits, initDates);
-        setZeToModuleSelection(referenceModules);
-        callDebouncedApply(
-          newMupDiffs,
-          newMupEdits,
-          initDates,
-          referenceModules
-        );
-      })
-      .catch((err) => {
-        if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-          props.onUnauthorized();
-          return;
-        }
-        throw err;
-      });
+    return ensureData(mupIdsToRefresh, true).then(() =>
+      prepareData(selectedMupIds)
+    );
+    // .catch((err) => {
+    //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+    //     props.onUnauthorized();
+    //     return;
+    //   }
+    //   throw err;
+    // });
+    // const updateSelectionGroupsThenSubgroupsPromise = context.dataRepository
+    //   .UpdateSelectionGroupData()
+    //   .then(() => {
+    //     const competitionGroupIds: number[] = [];
+    //     props.selectionGroupIds.forEach((sgId) => {
+    //       const cgId =
+    //         context.dataRepository.selectionGroupData.data[sgId]
+    //           .competitionGroupId;
+    //       if (cgId !== null && cgId !== undefined) {
+    //         competitionGroupIds.push(cgId);
+    //       }
+    //     });
+    //     return context.dataRepository.UpdateSubgroups(competitionGroupIds);
+    //   });
+    // return Promise.all([
+    //   updateSelectionGroupsThenSubgroupsPromise,
+    //   context.dataRepository.UpdateMupData(),
+    //   context.dataRepository.UpdateSelectionGroupToMupsData(
+    //     props.selectionGroupIds
+    //   ),
+    //   context.dataRepository.UpdatePeriods(mupIdsToRefresh),
+    // ])
+    // .then(() => {
+    //   const allConnectionIds: number[] = [];
+    //   for (const selectionGroupId of props.selectionGroupIds) {
+    //     allConnectionIds.push(
+    //       ...Object.values(
+    //         context.dataRepository.selectionGroupToMupsData.data[
+    //           selectionGroupId
+    //         ].data
+    //       ).map((m) => m.connectionId)
+    //     );
+    //   }
+    //   if (allConnectionIds.length === 0) return;
+    //   return context.dataRepository
+    //     .UpdateModuleData(allConnectionIds[0])
+    //     .then(() =>
+    //       context.dataRepository.UpdateSelectionGroupMupModuleDisciplines(
+    //         allConnectionIds
+    //       )
+    //     );
+    // })
+    // .then(() => prepareData(selectedMupIds))
+    // .then(() => {
+    //   const { newMupDiffs, newMupEdits, initDates } =
+    //     createInitDiffsAndDates(selectedMupIds);
+    //   const referenceModules = findReferenceModules();
+    //   const res = { newMupDiffs, newMupEdits, initDates, referenceModules };
+    //   return res;
+    // })
+    // .then(({ newMupDiffs, newMupEdits, initDates, referenceModules }) => {
+    //   setUpDiffsAndDates(newMupDiffs, newMupEdits, initDates);
+    //   setZeToModuleSelection(referenceModules);
+    //   callDebouncedApply(
+    //     newMupDiffs,
+    //     newMupEdits,
+    //     initDates,
+    //     referenceModules
+    //   );
+    // })
+    // .catch((err) => {
+    //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+    //     props.onUnauthorized();
+    //     return;
+    //   }
+    //   throw err;
+    // });
   };
 
   const handleRefreshDebounced = () => {

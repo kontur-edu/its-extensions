@@ -50,7 +50,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     ISelectionListItem[]
   >([]);
   const [selectionGroupsIds, setSelectionGroupsIds] = useState<number[]>([]);
-  const [editorDataPrepared, setEditorDataPrepared] = useState<boolean>(false);
+  // const [editorDataPrepared, setEditorDataPrepared] = useState<boolean>(false);
   const requestSelectionGroupsInProgress = useRef(false);
 
   const stepTwoRef = useRef<HTMLElement | null>(null);
@@ -87,6 +87,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     }
   };
 
+  /*
   const refreshSelectionGroupMups = async (ids: number[]) => {
     await context.dataRepository.UpdateSelectionGroupToMupsData(ids);
     let newChosenMups: string[] = [];
@@ -154,25 +155,26 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
       // refreshSubgroupMetasAndSubgroupsPromise,
     ]).then(() => refreshSubgroupMetasAndSubgroups(selectionGroupIds));
   };
+  */
 
   // selectionGroupMups, SubgroupGroupMetas, Subgroups
   const handleSelectionGroupValid = (selectionGroupIds: number[]) => {
-    setEditorDataPrepared(false);
+    // setEditorDataPrepared(false);
     // console.log("handleSelectionGroupValid");
     // remember chosen selectionGroup ids
     setSelectionGroupsIds(selectionGroupIds);
     // request mups for chosen selectionGroups
     // find union of mupIds in chosen selectionGroups
     // const groupMupsRefreshPromise = refreshSelectionGroupMups(selectionGroupIds);
-    prepareDataForSelectionGroups(selectionGroupIds)
-      .then(() => setEditorDataPrepared(true))
-      .catch((err) => {
-        if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-          props.onUnauthorized();
-          return;
-        }
-        throw err;
-      });
+    // prepareDataForSelectionGroups(selectionGroupIds)
+    //   .then(() => setEditorDataPrepared(true))
+    //   .catch((err) => {
+    //     if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+    //       props.onUnauthorized();
+    //       return;
+    //     }
+    //     throw err;
+    //   });
   };
 
   const handleGroupSelectButton = () => {
@@ -195,7 +197,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
 
         <MupEditor
           selectionGroupIds={selectionGroupsIds}
-          dataIsPrepared={editorDataPrepared}
+          // dataIsPrepared={editorDataPrepared}
           onNextStep={handleMupEditorNextStepButton}
           onUnauthorized={props.onUnauthorized}
         />
@@ -212,7 +214,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
 
         <SubgroupSelection
           selectionGroupIds={selectionGroupsIds}
-          dataIsPrepared={editorDataPrepared}
+          dataIsPrepared={false} // TODO: delete this
           onUnauthorized={props.onUnauthorized}
         />
       </article>
@@ -251,7 +253,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
 
       {selectionGroupsIds.length === 2 ? renderStep2() : null}
 
-      {selectionGroupsIds.length === 2 && editorDataPrepared
+      {selectionGroupsIds.length === 2 && false // TODO Delete this
         ? renderStep3()
         : null}
     </section>

@@ -626,7 +626,9 @@ export class ITSApiService {
     return result;
   }
 
-  async GetSelectionGroupMupModules(connectionId: number): Promise<IModuleWithSelection[]> {
+  async GetSelectionGroupMupModules(
+    connectionId: number
+  ): Promise<IModuleWithSelection[]> {
     const url = `https://its.urfu.ru/EduSpace/ModulesForMUP?id=${connectionId}`;
     const res = await this.requestService.GetJson(url);
     return res.map((obj: any) => {
@@ -656,9 +658,13 @@ export class ITSApiService {
 
     const url = "https://its.urfu.ru/EduSpace/UpdateDisciplineConnection";
 
+    const moduleDisciplines = moduleSelections.map((ms) => {
+      return { moduleUid: ms.id, disciplines: ms.selected };
+    });
+
     const data = {
       id: connectionId,
-      moduleDisciplines: JSON.stringify(moduleSelections),
+      moduleDisciplines: JSON.stringify(moduleDisciplines),
     };
 
     if (connectionId < 124) {

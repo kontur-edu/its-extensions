@@ -40,7 +40,6 @@ import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay
 // import Button from "@mui/material/Button";
 // import RefreshIcon from "@mui/icons-material/Refresh";
 import { RefreshButton } from "../../RefreshButton";
-
 // Получение данных:
 // Запросить все Группы выбора
 // Запросить МУПы с Лимитами для выбранных Групп выбора
@@ -143,7 +142,8 @@ export function MupEditor(props: IMupEditorProps) {
   const [zeToModuleSelection, setZeToModuleSelection] = useState<{
     [key: number]: IModuleSelection[];
   }>({});
-  const refreshInProgress = useRef<boolean>(false);
+  // const refreshInProgress = useRef<boolean>(false);
+  const currentEnsurePromise = useRef<Promise<any> | null>(null);
 
   const context = useContext(ITSContext)!;
 
@@ -185,7 +185,7 @@ export function MupEditor(props: IMupEditorProps) {
     );
   };
 
-  const createInitDiffsAndDates = (selectedMupIdsSet: Set<string>) => {
+  const createInitDiffsAndDates = (selectedMupIdsSet: Set<string>, zeToModuleSelections: {[key: number]: IModuleSelection[]}) => {
     const newMupEdits: { [key: string]: IMupEdit } = {};
     const newMupDiffs: { [key: string]: IMupDiff } = {};
     context.dataRepository.mupData.ids.forEach((mupId) => {
@@ -197,9 +197,12 @@ export function MupEditor(props: IMupEditorProps) {
           mupId,
           props.selectionGroupIds,
           [startDate, endDate],
+          zeToModuleSelections,
+          context.dataRepository.mupData,
           context.dataRepository.selectionGroupToMupsData,
           context.dataRepository.selectionGroupData,
-          context.dataRepository.mupToPeriods
+          context.dataRepository.mupToPeriods,
+          context.dataRepository.selectionGroupModuleIdToSelectedModuleDisciplines
         );
         newMupDiffs[mupId] = mupDiff;
         for (let initLimit of mupDiff.initLimits) {
@@ -248,11 +251,15 @@ export function MupEditor(props: IMupEditorProps) {
     console.log(`ensureData mupIds: ${mupIds.length} refresh: ${refresh}`);
     console.log("selectionGroupIds");
     console.log(props.selectionGroupIds);
-    if (refreshInProgress.current) {
+    if (currentEnsurePromise.current !== null) {
       console.log("refreshInProgress is already in progress");
-      return Promise.resolve();
+      return currentEnsurePromise.current;
     }
-    refreshInProgress.current = true;
+    // if (refreshInProgress.current) {
+    //   console.log("refreshInProgress is already in progress");
+    //   return Promise.resolve();
+    // }
+    // refreshInProgress.current = true;
     const repo = context.dataRepository;
     const updateSelectionGroupPromise = () =>
       !refresh && repo.CheckSelectionGroupDataPresent(props.selectionGroupIds)
@@ -318,7 +325,7 @@ export function MupEditor(props: IMupEditorProps) {
         ]);
       };
 
-    return Promise.allSettled([
+    const ensureDataPromise = Promise.allSettled([
       updateSelectionGroupPromise().then(() => updateSubgroupsPromise()), // update selectionGrousp then subgroups
       updateMupDataPromise(),
       updateSelectionGroupToMupDataPromise(),
@@ -328,23 +335,25 @@ export function MupEditor(props: IMupEditorProps) {
         createUpdateModuleAndSelectionGroupMupModuleDisciplinesPromise()
       )
       .then(() => {
-        refreshInProgress.current = false;
+        currentEnsurePromise.current = null;
       })
       .catch((err) => {
-        refreshInProgress.current = false;
+        currentEnsurePromise.current = null;
         if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
           props.onUnauthorized();
           return;
         }
         throw err;
       });
+    currentEnsurePromise.current = ensureDataPromise;
+    return ensureDataPromise;
   };
 
   const prepareData = (mupIds: Set<string>) => {
     console.log("prepareData");
-    const { newMupDiffs, newMupEdits, initDates } =
-      createInitDiffsAndDates(mupIds);
     const referenceModules = findReferenceModules();
+    const { newMupDiffs, newMupEdits, initDates } =
+      createInitDiffsAndDates(mupIds, referenceModules);
     setZeToModuleSelection(referenceModules);
     setUpDiffsAndDates(newMupDiffs, newMupEdits, initDates);
     callDebouncedApply(newMupDiffs, newMupEdits, initDates, referenceModules);
@@ -419,9 +428,12 @@ export function MupEditor(props: IMupEditorProps) {
             mupId,
             props.selectionGroupIds,
             [startDate, endDate],
+            zeToModuleSelection,
+            repo.mupData,
             repo.selectionGroupToMupsData,
             repo.selectionGroupData,
-            repo.mupToPeriods
+            repo.mupToPeriods,
+            repo.selectionGroupModuleIdToSelectedModuleDisciplines,
           );
           const newMupDiffs = { ...mupDiffs, [mupId]: newInitDiff };
           mupDiffsToCompareWith = newMupDiffs;
@@ -736,7 +748,7 @@ export function MupEditor(props: IMupEditorProps) {
           onClick={handleRefreshDebounced}
           title="Обновить список"
         />
-
+        
         <MupsList
           mupData={context.dataRepository.mupData}
           mupEdits={mupEdits}

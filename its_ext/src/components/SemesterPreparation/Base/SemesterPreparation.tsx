@@ -89,6 +89,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
   };
 
   const handleMupEditorLoaded = () => {
+    console.log("handleMupEditorLoaded");
     setMupEditorLoaded(true);
   };
 

@@ -16,7 +16,7 @@ import {
   IMupLoad,
   IMupDiff,
   IPeriodTimeInfo,
-  IMupToPeriods,
+  // IMupToPeriods,
   IPeriod,
   IMupData,
   IModuleSelection,
@@ -409,6 +409,12 @@ export function getMupActions(actions: ITSAction[]): {
     } else if (action.actionType === ActionType.UpdatePeriod) {
       const updatePeriodAction = action as UpdatePeriodAction;
       const mupId = updatePeriodAction.mupId;
+
+      if (!res.hasOwnProperty(mupId)) res[mupId] = [];
+      res[mupId].push(action);
+    } else if (action.actionType === ActionType.UpdateModules) {
+      const updateModulesAction = action as UpdateModulesAction;
+      const mupId = updateModulesAction.mupId;
 
       if (!res.hasOwnProperty(mupId)) res[mupId] = [];
       res[mupId].push(action);

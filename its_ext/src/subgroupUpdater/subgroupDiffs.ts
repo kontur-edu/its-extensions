@@ -42,8 +42,9 @@ function checkIfMetasAndSubgroupsAreSameForMupAndSubgroup(
     return !expectCreatedSubgroups;
   }
   const load_numberToSubgroupId = subgroupDiffs[mupName][competitionGroupId];
-  
-  const haveCreatedSubgroups = Object.keys(load_numberToSubgroupId).length !== 0;
+
+  const haveCreatedSubgroups =
+    Object.keys(load_numberToSubgroupId).length !== 0;
   if (haveCreatedSubgroups !== expectCreatedSubgroups) return false;
 
   const actualLoadsToCounts: { [key: string]: number } = {};
@@ -105,9 +106,19 @@ export function createSubgroupDiffInfo(
   competitionGroupToSubgroupIds: ICompetitionGroupToSubgroupIds,
   subgroupData: ISubgroupData
 ): ISubgoupDiffInfo {
+  // console.log(`>>>>>> createSubgroupDiffInfo ${competitionGroupIds}`);
+  // console.log("competitionGroupToSubgroupMetas");
+  // console.log(competitionGroupToSubgroupMetas);
   const metaDiffs: MetaDiffs = {};
   for (let competitionGroupId of competitionGroupIds) {
+    // console.log("> competitionGroupToSubgroupMetas");
+    // console.log(competitionGroupToSubgroupMetas);
+    // console.log("> competitionGroupId");
+    // console.log(competitionGroupId);
+
     const subgroupMetas = competitionGroupToSubgroupMetas[competitionGroupId];
+    // console.log("subgroupMetas");
+    // console.log(subgroupMetas);
     for (let subgroupMeta of subgroupMetas) {
       if (!metaDiffs.hasOwnProperty(subgroupMeta.discipline)) {
         metaDiffs[subgroupMeta.discipline] = {};
@@ -413,9 +424,7 @@ export function createDifferenceMessagesForSubgroupDiff(
   return messages;
 }
 
-export function createTodoMessages(
-  actions: ITSAction[]
-): string[] {
+export function createTodoMessages(actions: ITSAction[]): string[] {
   const messages = actions.map((a) => a.getMessageSimple());
 
   return messages;

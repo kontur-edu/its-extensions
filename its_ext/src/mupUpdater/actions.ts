@@ -293,7 +293,6 @@ export class AddLoadsAction extends ITSAction {
   }
 }
 
-
 export class UpdateModulesAction extends ITSAction {
   constructor(
     public mupId: string,
@@ -304,11 +303,15 @@ export class UpdateModulesAction extends ITSAction {
   }
 
   getMessageSimple(): string {
-    return this.getMessage();
+    return `Обновить модули для Группы выбора с id: ${this.selectionGroupId}`;
   }
 
   getMessage(): string {
-    const modulesStr = JSON.stringify(this.moduleSelections.filter(m => m.selected.length > 0));
+    const modulesStr = JSON.stringify(
+      this.moduleSelections.filter((m) => m.selected.length > 0),
+      null,
+      2
+    );
     return `Обновить модули для МУПа с id: ${this.mupId} для Группы выбора с id: ${this.selectionGroupId} на ${modulesStr}`;
   }
 

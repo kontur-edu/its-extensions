@@ -53,7 +53,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
   >([]);
   const [subgroupSelectionActionsResults, setSubgroupSelectionActionsResults] =
     useState<IActionExecutionLogItem[]>([]);
-  const ensureDataInProgress = useRef<boolean>(false);
+  const currentEnsurePromise = useRef<Promise<any> | null>(null);
 
   const context = useContext(ITSContext)!;
 
@@ -70,12 +70,12 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
   };
 
   const ensureData = (refresh: boolean) => {
-    console.log("ensureData");
-    if (ensureDataInProgress.current) {
+    console.log("SubgroupSelection: ensureData");
+    if (currentEnsurePromise.current !== null) {
       console.log("SubgroupSelection: ensureData is already in progress");
-      return Promise.resolve();
+      return currentEnsurePromise.current;
     }
-    ensureDataInProgress.current = true;
+    // currentEnsurePromise.current = Promise.resolve();
 
     const repo = context.dataRepository;
     const updateSelectionGroupPromise = () =>
@@ -104,7 +104,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
         ? Promise.resolve()
         : repo.UpdateSubgroups(newCompetitionGroupIds);
 
-    return Promise.allSettled([
+    const ensurePromise = Promise.allSettled([
       updateSelectionGroupPromise(),
       updateSelectionGroupToMupDataPromise(),
     ])
@@ -121,17 +121,19 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
         ]);
       })
       .then(() => {
-        ensureDataInProgress.current = false;
-        prepareData();
+        currentEnsurePromise.current = null;
       })
       .catch((err) => {
-        ensureDataInProgress.current = false;
+        currentEnsurePromise.current = null;
         if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
           props.onUnauthorized();
           return;
         }
         throw err;
       });
+
+    currentEnsurePromise.current = ensurePromise;
+    return ensurePromise;
   };
 
   const prepareData = () => {
@@ -236,7 +238,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
   };
 
   const refreshData = () => {
-    return ensureData(true);
+    return ensureData(true).then(() => prepareData());
     // return Promise.allSettled([
     //   context.dataRepository.UpdateSelectionGroupData(),
     //   context.dataRepository.UpdateSelectionGroupToMupsData(

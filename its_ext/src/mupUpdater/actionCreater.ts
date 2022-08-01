@@ -177,7 +177,7 @@ export function findLoadsToAdd(
 function generateAddLoadsActions(
   selectedMupsIds: string[],
   mupDiffs: { [key: string]: IMupDiff },
-  courseToPeriodTimeInfo: { [key: number]: IPeriodTimeInfo },
+  courseToPeriodTimeInfo: { [key: number]: IPeriodTimeInfo }
   // mupToPeriods: IMupToPeriods
 ) {
   const actions: ITSAction[] = [];
@@ -201,10 +201,7 @@ function generateAddLoadsActions(
       let loadsToAdd: IMupLoad[] = resulLoads;
       if (mupDiff.courseToCurrentPeriod.hasOwnProperty(course)) {
         const currentPeriod = mupDiff.courseToCurrentPeriod[course];
-        loadsToAdd = findLoadsToAdd(
-          currentPeriod,
-          resulLoads
-        );
+        loadsToAdd = findLoadsToAdd(currentPeriod, resulLoads);
         if (loadsToAdd.length > 0) {
           actions.push(new AddLoadsAction(mupId, periodTimeInfo, loadsToAdd));
         }
@@ -258,7 +255,7 @@ function generateUpdateModulesAction(
   selectionGroupsIds: number[],
   selectedMupsIds: string[],
   mupDiffs: { [key: string]: IMupDiff },
-  zeToModuleSelection: {[key: number]: IModuleSelection[]},
+  zeToModuleSelection: { [key: number]: IModuleSelection[] },
   mupData: IMupData,
   moduleData: IModuleData
 ) {
@@ -267,22 +264,22 @@ function generateUpdateModulesAction(
   console.log(zeToModuleSelection);
   for (let mupId of selectedMupsIds) {
     const ze = mupData.data[mupId].ze;
-    
-    const moduleIdToSelection: {[key: string]: string[]} = {};
+
+    const moduleIdToSelection: { [key: string]: string[] } = {};
     if (zeToModuleSelection.hasOwnProperty(ze)) {
-      zeToModuleSelection[ze].forEach(rm => {
+      zeToModuleSelection[ze].forEach((rm) => {
         moduleIdToSelection[rm.id] = rm.selected;
       });
     }
-    console.log("moduleIdToSelection");
-    console.log(moduleIdToSelection);
+    // console.log("moduleIdToSelection");
+    // console.log(moduleIdToSelection);
     for (let i = 0; i < selectedMupsIds.length; i++) {
       const selectionGroupId = selectionGroupsIds[i];
       if (mupDiffs[mupId].updateSelectedModuleDisciplines[i]) {
-        const ms = Object.keys(moduleData.data).map(moduleId => {
+        const ms = Object.keys(moduleData.data).map((moduleId) => {
           const moduleSelection: IModuleSelection = {
             id: moduleId,
-            selected: []
+            selected: [],
           };
 
           if (moduleIdToSelection.hasOwnProperty(moduleId)) {
@@ -303,7 +300,7 @@ export function createActions(
   mupDiffs: { [key: string]: IMupDiff },
   dates: [string, string],
   mupLimits: { [key: string]: number },
-  zeToModuleSelection: {[key: number]: IModuleSelection[]},
+  zeToModuleSelection: { [key: number]: IModuleSelection[] },
   itsContext: IITSContext
 ): ITSAction[] {
   if (selectionGroupsIds.length === 0) {
@@ -355,22 +352,22 @@ export function createActions(
     )
   );
 
-  actions.push(...generateUpdateModulesAction(
-    selectionGroupsIds,
-    selectedMupsIds,
-    mupDiffs,
-    zeToModuleSelection,
-    itsContext.dataRepository.mupData,
-    itsContext.dataRepository.moduleData
-  ));
-
-  
+  actions.push(
+    ...generateUpdateModulesAction(
+      selectionGroupsIds,
+      selectedMupsIds,
+      mupDiffs,
+      zeToModuleSelection,
+      itsContext.dataRepository.mupData,
+      itsContext.dataRepository.moduleData
+    )
+  );
 
   actions.push(
     ...generateAddLoadsActions(
       selectedMupsIds,
       mupDiffs,
-      courseToPeriodTimeInfo,
+      courseToPeriodTimeInfo
       // itsContext.dataRepository.mupToPeriods
     )
   );

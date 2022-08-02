@@ -38,6 +38,7 @@ import AutoFixNormalIcon from "@mui/icons-material/AutoFixNormal";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { CopyOrDownload } from "../../CopyOrDownload";
 import { RefreshButton } from "../../RefreshButton";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
@@ -547,21 +548,27 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           title="Обновить список"
           loading={ensureInProgress}
         />
-        <section className="table__container" ref={tableRef}>
-          <table className="table table_vertical_borders">
-            <thead>
-              <tr>
-                <th>ФИО</th>
-                <th>Группа</th>
-                <th>Рейтинг</th>
-                <th>З.Е.</th>
-                <th>Зачислен на курсы</th>
-                <th>Приоритеты оставшихся курсов</th>
-              </tr>
-            </thead>
-            <tbody>{renderRows()}</tbody>
-          </table>
-        </section>
+        <div className="load_content_container">
+          <section className="table__container" ref={tableRef}>
+            <table className="table table_vertical_borders">
+              <thead>
+                <tr>
+                  <th>ФИО</th>
+                  <th>Группа</th>
+                  <th>Рейтинг</th>
+                  <th>З.Е.</th>
+                  <th>Зачислен на курсы</th>
+                  <th>Приоритеты оставшихся курсов</th>
+                </tr>
+              </thead>
+              <tbody>{renderRows()}</tbody>
+            </table>
+          </section>
+          {ensureInProgress && <div className="progress_screen"></div>}
+          {ensureInProgress && (
+            <CircularProgress className="progress_icon" size="8rem" />
+          )}
+        </div>
       </article>
     );
   };

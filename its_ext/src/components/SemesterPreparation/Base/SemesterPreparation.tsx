@@ -11,6 +11,7 @@ import { SubgroupSelection } from "../SubgroupSelection";
 
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 import { BackButton } from "../../BackButton";
+import { CompetitionGroupPreparation } from "../CompetitionGroupPreparation";
 
 // Получение данных:
 // Запросить все Группы выбора
@@ -227,6 +228,20 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
   const renderStep3 = () => {
     return (
       <article className="step" ref={stepThreeRef}>
+        <h3 className="step__header">3. Подготовьте Конкурсную группу</h3>
+
+        <CompetitionGroupPreparation
+          selectionGroupIds={selectionGroupsIds}
+          dataIsPrepared={mupEditorLoaded} // TODO: delete this
+          onUnauthorized={props.onUnauthorized}
+        />
+      </article>
+    );
+  };
+
+  const renderStep4 = () => {
+    return (
+      <article className="step" ref={stepThreeRef}>
         <h3 className="step__header">
           3. Определите количество подгрупп для МУПов и выберите преподавателей
         </h3>
@@ -272,10 +287,19 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
         </div>
       </article>
 
-      {selectionValid && selectionGroupsIds.length === 2 ? renderStep2() : null}
+      {false && selectionValid && selectionGroupsIds.length === 2
+        ? renderStep2()
+        : null}
 
-      {selectionValid && selectionGroupsIds.length === 2 && mupEditorLoaded // TODO Delete this
+      {selectionValid && selectionGroupsIds.length === 2 && true // TODO Delete this
         ? renderStep3()
+        : null}
+
+      {false &&
+      selectionValid &&
+      selectionGroupsIds.length === 2 &&
+      mupEditorLoaded // TODO Delete this
+        ? renderStep4()
         : null}
     </section>
   );

@@ -24,8 +24,6 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
   const stepThreeRef = useRef<HTMLElement | null>(null);
   const stepFourRef = useRef<HTMLElement | null>(null);
 
-
-
   const isGroupSelectionValid = () => {
     return competitionGroupIds.length > 0 && competitionGroupIds.length <= 2;
   };

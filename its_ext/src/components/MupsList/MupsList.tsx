@@ -5,7 +5,31 @@ import Checkbox from "@mui/material/Checkbox";
 import Input from "@mui/material/Input";
 import { MUP_PERIOD_URL } from "../../utils/constants";
 import { OuterLink } from "../OuterLink";
+import { CollapsableList } from "../CollapsableList";
 // import Tooltip from '@mui/material/Tooltip';
+// import Collapse from "@mui/material/Collapse";
+// interface ICollapsableListProps {
+//   title: string;
+//   haveItems: boolean;
+// }
+
+// function CollapsableList(
+//   props: React.PropsWithChildren<ICollapsableListProps>
+// ) {
+//   const [listOpen, setListOpen] = useState<boolean>(false);
+//   const handleListToggle = () => {
+//     setListOpen(!listOpen);
+//   };
+//   return (
+//     <ul onClick={handleListToggle} className={style.message__list + " warning"}>
+//       {!listOpen && props.haveItems && <li>{props.title}</li>}
+
+//       <Collapse in={listOpen} timeout="auto" unmountOnExit>
+//         {props.children}
+//       </Collapse>
+//     </ul>
+//   );
+// }
 
 export function MupsList(props: IMupsListProps) {
   const handleLimitChange =
@@ -37,6 +61,8 @@ export function MupsList(props: IMupsListProps) {
           console.log(`Not found mup for [${mupId}]`);
         }
         const mupEdit = props.mupEdits[mupId];
+        const haveMessages =
+          mupEdit.addLoadsManual || mupEdit.messages.length > 0;
         return (
           <tr key={mupId}>
             <td onClick={handleToggle(mup.id)}>
@@ -55,7 +81,10 @@ export function MupsList(props: IMupsListProps) {
               />
             </td>
             <td>
-              <ul className={style.message__list + " warning"}>
+              <CollapsableList
+                title={"Посмотреть созданные действия"}
+                haveItems={haveMessages}
+              >
                 {mupEdit.messages.map((me, index) => (
                   <li key={index}>{me}</li>
                 ))}
@@ -65,7 +94,30 @@ export function MupsList(props: IMupsListProps) {
                     <OuterLink url={MUP_PERIOD_URL + mupId} title="в ИТС" />
                   </li>
                 )}
-              </ul>
+              </CollapsableList>
+              {/* <ul className={style.message__list + " warning"}> */}
+              {/* <li
+              <Collapse in={actionListOpen} timeout="auto" unmountOnExit>
+                  {mupEdit.messages.filter((v, i) => i > 0).map((me, index) => (
+                  <li key={index}>{me}</li>
+                ))}
+                {!mupEdit.addLoadsManual ? null : (
+                  <li>
+                    Заполните нагрузку{" "}
+                    <OuterLink url={MUP_PERIOD_URL + mupId} title="в ИТС" />
+                  </li>
+                )}
+              </Collapse> */}
+              {/* {mupEdit.messages.map((me, index) => (
+                  <li key={index}>{me}</li>
+                ))}
+                {!mupEdit.addLoadsManual ? null : (
+                  <li>
+                    Заполните нагрузку{" "}
+                    <OuterLink url={MUP_PERIOD_URL + mupId} title="в ИТС" />
+                  </li>
+                )} */}
+              {/* </ul> */}
             </td>
           </tr>
         );

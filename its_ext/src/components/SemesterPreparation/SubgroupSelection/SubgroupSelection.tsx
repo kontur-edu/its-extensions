@@ -196,15 +196,6 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
     console.log(newMupToDiffs);
     // setMupToDiffs(newMupToDiffs);
 
-    const newMupToDifferenceMessages = createMupToDifferenceMessages(
-      mupNames,
-      newMupToDiffs,
-      // newCompetitionGroupIds,
-      newSubgoupDiffInfo
-    );
-    console.log("newMupToDifferenceMessages");
-    console.log(newMupToDifferenceMessages);
-
     const newActions = createActionsByDiffs(
       newCompetitionGroupIds,
       newMupToDiffs,
@@ -218,6 +209,15 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
     setSubgroupSelectionActions(newActions);
 
     const mupNameToActions = getMupNameActions(newActions);
+
+    const newMupToDifferenceMessages = createMupToDifferenceMessages(
+      mupNames,
+      newMupToDiffs,
+      // newCompetitionGroupIds,
+      newSubgoupDiffInfo
+    );
+    console.log("newMupToDifferenceMessages");
+    console.log(newMupToDifferenceMessages);
 
     const mupToDifferenceTodoMessages: {
       [key: string]: [string[], string[]];
@@ -245,40 +245,11 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
 
   const refreshData = () => {
     return ensureData(true).then(() => prepareData());
-    // return Promise.allSettled([
-    //   context.dataRepository.UpdateSelectionGroupData(),
-    //   context.dataRepository.UpdateSelectionGroupToMupsData(
-    //     props.selectionGroupIds
-    //   ),
-    // ])
-    //   .then(() => extractCompetitionGroupIds(props.selectionGroupIds))
-    //   .then((newCompetitionGroupIds) => {
-    //     return Promise.allSettled(
-    //       newCompetitionGroupIds.map((cId) =>
-    //         context.apiService.EmulateCheckSubgroupMetas(cId)
-    //       )
-    //     ).then(() => newCompetitionGroupIds);
-    //   })
-    //   .then((newCompetitionGroupIds) => {
-    //     return Promise.allSettled([
-    //       context.dataRepository.UpdateSubgroupMetas(newCompetitionGroupIds),
-    //       context.dataRepository.UpdateSubgroups(newCompetitionGroupIds),
-    //     ]);
-    //   })
-    //   .then(() => prepareData())
-    //   .catch((err) => {
-    //     if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-    //       props.onUnauthorized();
-    //       return;
-    //     }
-    //     throw err;
-    //   });
   };
 
   const refreshDataDebounced = () => {
     debouncedWrapperForApply(() => {
       refreshData();
-      // .then(() => handleApply());
     });
   };
 
@@ -441,18 +412,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
           renderCompetitionGroupIsMissingMessage()}
         {renderCompetitionGroupSubgroupMetaLinks()}
         {renderMupsAreDifferent()}
-        {/* <section className="table__container">
-          <table className="table table_vertical_borders">
-            <thead>
-              <tr>
-                <th>МУП</th>
-                <th>Отличия</th>
-                <th>Действие</th>
-              </tr>
-            </thead>
-            <tbody>{competitionGroupIds.length === 2 && renderRows()}</tbody>
-          </table>
-        </section> */}
+
         <div className="load_content_container">
           {renderTable()}
           {ensureInProgress && <div className="progress_screen"></div>}

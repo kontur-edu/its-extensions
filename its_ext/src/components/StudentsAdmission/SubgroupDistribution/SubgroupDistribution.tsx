@@ -31,6 +31,7 @@ import {
   trySubstituteLoadWildcards,
   trySubstituteMupShortNamesWithFullNames,
   validateSubgroupMembership,
+  createMupToLoadToSubgroupMembership,
 } from "../../../subgroupMembership/subgroupMembershipParser";
 
 import {
@@ -66,6 +67,8 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     useState<ISubgoupDiffInfo | null>(null);
 
   const [subgroupDistributionTextInput, setSubgroupDistributionTextInput] =
+    useState<string>("");
+  const [subgroupDistributionTextOutput, setSubgroupDistributionTextOutput] =
     useState<string>("");
   const [
     subgroupDistributionTextInputMessages,
@@ -296,6 +299,19 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     setStudentAdmissionsText(
       JSON.stringify(newStudentDistributionData, null, 2)
     );
+
+    try {
+    const mupToLoadToSubgroupMembership = createMupToLoadToSubgroupMembership(
+      props.competitionGroupIds,
+      newSubgroupDiffInfo,
+      context.dataRepository.subgroupIdToStudentSubgroupMembership,
+      context.dataRepository.studentIdToPersonalNumber,
+    );
+    const newSubgroupDistributionTextOutput = JSON.stringify(mupToLoadToSubgroupMembership, null, 2);
+    setSubgroupDistributionTextOutput(newSubgroupDistributionTextOutput);
+    } catch(err: any) {
+      setSubgroupDistributionTextOutput(`Error: ${err.message}`);
+    }
 
     return newSubgroupDiffInfo;
   };
@@ -536,6 +552,12 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
             {renderCompetitionGroupsSubgroupsLinkList()}
           </li>
         </ol>
+
+        <CopyOrDownload
+          title={"Скопировать распределение студентов по подгруппам"}
+          data={subgroupDistributionTextOutput}
+          filename={"subgroupDistribution.josn"}
+        />
 
         <textarea
           value={subgroupDistributionTextInput}

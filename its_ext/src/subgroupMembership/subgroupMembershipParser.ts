@@ -4,6 +4,8 @@ import {
   ISubgroupMeta,
   IStudentData,
   IMupData,
+  SubgroupDiffs,
+  IStudentSubgroupMembership,
 } from "../common/types";
 
 // {
@@ -270,4 +272,88 @@ export function validateSubgroupMembership(
   }
 
   return { success: messages.length === 0, messages: messages };
+}
+
+
+
+function prepareMupToLoadToSubgroupMembership(
+  competitionGroupIds: number[],
+  subgoupDiffInfo: ISubgoupDiffInfo,
+) {
+  const res: MupToLoadToSubgroupMembership = {};
+  for (const mupName in subgoupDiffInfo.subgroupDiffs) {
+    res[mupName] = {};
+    const cgIdToMeta = subgoupDiffInfo.metaDiffs[mupName];
+    for (const competitionGroupId of competitionGroupIds) {
+      for (const load in cgIdToMeta[competitionGroupId]) {
+        const meta = cgIdToMeta[competitionGroupId][load];
+        // console.log("meta");
+        // console.log(meta);
+        if (res[mupName].hasOwnProperty(load)) {
+          if (res[mupName][load].length !== meta.count) {
+            throw Error(`Mup: ${mupName}, load: ${load} have different counts for competition groups ${competitionGroupIds}`);
+          }
+          continue;
+        } else {
+          res[mupName][load] = [];
+        }
+        for (let i = 0; i < meta.count; i++) {
+          res[mupName][load].push([]);
+        }
+      }
+    }
+  }
+  return res;
+}
+
+// function getIncludedStudentPersonalNumbers() {
+
+// }
+
+export function createMupToLoadToSubgroupMembership(
+  competitionGroupIds: number[],
+  subgoupDiffInfo: ISubgoupDiffInfo,
+  subgroupIdToStudentSubgroupMembership: {
+    [key: number]: IStudentSubgroupMembership[];
+  },
+  studentIdToPersonalNumber: { [key: string]: string } = {},
+): MupToLoadToSubgroupMembership {
+  const res = prepareMupToLoadToSubgroupMembership(
+    competitionGroupIds,
+    subgoupDiffInfo
+  );
+  for (const mupName in subgoupDiffInfo.subgroupDiffs) {
+    for (const competitionGroupId of competitionGroupIds) {
+
+      if (!subgoupDiffInfo.subgroupDiffs[mupName].hasOwnProperty(competitionGroupId)) {
+        continue;
+      }
+      const load_numberToSubgroupId = subgoupDiffInfo.subgroupDiffs[mupName][competitionGroupId];
+      const loadToSubgroups: {[key: string]: number[]} = {};
+      for (const load_number in load_numberToSubgroupId) {
+        const subgroupId = load_numberToSubgroupId[load_number];
+        const loadAndNumber = load_number.split('_');
+        if (loadAndNumber.length !== 2 || (loadAndNumber.length === 2 && !isFinite(Number(loadAndNumber[1])))) {
+          throw Error(`createupToLoadToSubgroupMembership: load_number: ${load_number} has incorrectFormat`);
+        }
+        const [load, numberStr] = loadAndNumber;
+        if (!loadToSubgroups.hasOwnProperty(load)) {
+          loadToSubgroups[load] = [];
+        }
+        const number = Number(numberStr) - 1;
+        const studentIds: string[] = [];
+        if (subgroupIdToStudentSubgroupMembership.hasOwnProperty(subgroupId) && subgroupIdToStudentSubgroupMembership[subgroupId]) {
+          for (const membership of subgroupIdToStudentSubgroupMembership[subgroupId]) {
+            if (membership && membership.included) {
+              const personalNumber = studentIdToPersonalNumber[membership.studentId];
+              studentIds.push(personalNumber)
+            }
+          }
+        }
+        res[mupName][loadAndNumber[0]][number] = studentIds;
+      }
+    }
+  }
+
+  return res;
 }

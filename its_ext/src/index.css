@@ -248,8 +248,22 @@ td {
   margin-top: 8rem;
 }
 
+.progress_icon_small {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .load_content_container {
   position: relative;
   width: 100%;
   min-height: 300px;
+}
+
+.load_content_container_small {
+  position: relative;
+  width: 100%;
 }

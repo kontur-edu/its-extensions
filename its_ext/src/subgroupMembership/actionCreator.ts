@@ -131,7 +131,10 @@ function generateUpdateMembershipActionsForOneGroupPerLoadDistribution(
   const subgroupIdsToAutoAddAllStudents: number[] = [];
   for (const competitionGroupId of competitionGroupIds) {
     for (const meta of competitionGroupToSubgroupMetas[competitionGroupId]) {
-      if (meta.count === 1) {
+      if (
+        subgroupDiffInfo.subgroupDiffs.hasOwnProperty(meta.discipline) &&
+        meta.count === 1
+      ) {
         for (const load_number in subgroupDiffInfo.subgroupDiffs[
           meta.discipline
         ][competitionGroupId]) {

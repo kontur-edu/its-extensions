@@ -708,6 +708,7 @@ export function MupEditor(props: IMupEditorProps) {
         <RefreshButton
           onClick={handleRefreshDebounced}
           title="Обновить список"
+          loading={ensureInProgress}
         />
 
         {renderTable()}

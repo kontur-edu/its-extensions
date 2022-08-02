@@ -106,6 +106,7 @@ export function createSubgroupDiffInfo(
   competitionGroupToSubgroupIds: ICompetitionGroupToSubgroupIds,
   subgroupData: ISubgroupData
 ): ISubgoupDiffInfo {
+  // debugger;
   // console.log(`>>>>>> createSubgroupDiffInfo ${competitionGroupIds}`);
   // console.log("competitionGroupToSubgroupMetas");
   // console.log(competitionGroupToSubgroupMetas);

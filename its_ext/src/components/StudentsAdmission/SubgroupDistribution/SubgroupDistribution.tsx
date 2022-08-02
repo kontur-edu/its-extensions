@@ -12,6 +12,7 @@ import { ITSContext } from "../../../common/Context";
 import {
   COMPETITION_GROUP_SUBGROUP_URL,
   DEBOUNCE_MS,
+  REQUEST_ERROR_UNAUTHORIZED,
 } from "../../../utils/constants";
 import { createDebouncedWrapper } from "../../../utils/helpers";
 
@@ -40,7 +41,6 @@ import {
 import { OuterLink } from "../../OuterLink";
 import { CopyOrDownload } from "../../CopyOrDownload";
 import { RefreshButton } from "../../RefreshButton";
-
 import Button from "@mui/material/Button";
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
@@ -82,6 +82,8 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
   const [secondApplyClicked, setSecondApplyClicked] = useState<boolean>(false);
   const parseButtonClicked = useRef<boolean>(false);
 
+  const [ensureDataInProgress, setEnsureDataInProgress] =
+    useState<boolean>(false);
   const context = useContext(ITSContext)!;
 
   const handleSubgroupDistributionTextInputChange = (
@@ -149,6 +151,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
   };
 
   const ensureData = (refresh: boolean = false) => {
+    setEnsureDataInProgress(true);
     const hasSubgroupMetas =
       !refresh &&
       props.competitionGroupIds.every((cgId) =>
@@ -238,6 +241,17 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
           updateSubgroupMembershipPromise,
           updateStudentAndAdmissionsPromise,
         ]);
+      })
+      .then(() => {
+        setEnsureDataInProgress(false);
+      })
+      .catch((err) => {
+        setEnsureDataInProgress(false);
+        if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+          props.onUnauthorized();
+          return;
+        }
+        throw err;
       });
   };
 
@@ -249,6 +263,9 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
       context.dataRepository.subgroupData
     );
 
+    console.log("prepareData newSubgroupDiffInfo");
+    console.log(newSubgroupDiffInfo);
+
     setSubgroupDiffInfo(newSubgroupDiffInfo);
 
     const studentAndMupItems = prepareStudentAndMupItems(
@@ -259,6 +276,9 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
       context.dataRepository.admissionIdToMupId,
       context.dataRepository.studentData
     );
+
+    console.log("studentAndMupItems");
+    console.log(studentAndMupItems);
 
     const availableAdmissionIds = getAvailableAdmissionIds(
       props.competitionGroupIds,
@@ -475,9 +495,17 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
   const renderContent = () => {
     return (
       <React.Fragment>
+        {/* <div className="load_content_container_small">
+          {ensureDataInProgress && <CircularProgress className="progress_icon_small" />}
+          <RefreshButton
+            onClick={handleRefreshDataDebounced}
+            title="Обновить данные"
+          />
+        </div> */}
         <RefreshButton
           onClick={handleRefreshDataDebounced}
           title="Обновить данные"
+          loading={ensureDataInProgress}
         />
 
         {renderSubgroupDistributionForOneGroupPerLoad()}

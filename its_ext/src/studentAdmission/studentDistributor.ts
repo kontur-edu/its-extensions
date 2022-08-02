@@ -79,6 +79,11 @@ export function createPersonalNumberToStudentItem(
         const studentItem = personalNumberToStudentItem[personalNumber];
         const admission = personalNumberToAdmission[personalNumber];
 
+        if (personalNumber === "56904306") {
+          console.log("admission");
+          console.log(admission);
+        }
+
         if (admission?.priority || admission?.status === 1) {
           studentItem.admissionIds.push(admissionId);
         }

@@ -407,7 +407,11 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
   return (
     <section className="step__container">
       <article>
-        <RefreshButton onClick={refreshDataDebounced} title="Обновить список" />
+        <RefreshButton
+          onClick={refreshDataDebounced}
+          title="Обновить список"
+          loading={ensureInProgress}
+        />
         {competitionGroupIds.length !== 2 &&
           renderCompetitionGroupIsMissingMessage()}
         {renderCompetitionGroupSubgroupMetaLinks()}

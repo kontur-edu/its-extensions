@@ -65,7 +65,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   const mupIdsWithTestResultRequired = useRef<Set<string>>(new Set<string>());
   const competitionGroupIdToZELimit = useRef<{ [key: number]: number }>({});
   const personalNumbersOfActiveStudentsSortedByRating = useRef<string[]>([]);
-  const refreshInProgress = useRef<boolean>(false);
+  // const refreshInProgress = useRef<boolean>(false);
   const [studentAdmissionActions, setStudentAdmissionActions] = useState<
     ITSAction[]
   >([]);
@@ -74,56 +74,64 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
 
   const tableRef = useRef<HTMLElement | null>(null);
 
+  const [ensureInProgress, setEnsureInProgress] = useState<boolean>(false);
+  const currentEnsurePromise = useRef<Promise<any> | null>(null);
+
   const context = useContext(ITSContext)!;
 
   const handleGoToTable = () => {
     tableRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const refreshData = () => {
-    if (refreshInProgress.current) return Promise.resolve();
-    refreshInProgress.current = true;
-    let ensureMupDataPromise = Promise.resolve();
-    if (context.dataRepository.mupData.ids.length === 0) {
-      // update mupData
-      ensureMupDataPromise = context.dataRepository.UpdateMupData();
+  const ensureData = (refresh: boolean) => {
+    if (currentEnsurePromise.current !== null) {
+      return currentEnsurePromise.current;
     }
-    let ensureSelectionGroupDataPromise = Promise.resolve();
-    if (context.dataRepository.selectionGroupData.ids.length === 0) {
-      ensureSelectionGroupDataPromise =
-        context.dataRepository.UpdateSelectionGroupData();
-    }
-    const updateAdmissionsPromise = context.dataRepository
-      .UpdateAdmissionMetas(props.competitionGroupIds)
-      .then(() => {
-        const competitionGroupIdToAdmissionIds: { [key: number]: number[] } =
-          {};
-        for (const competitionGroupId of props.competitionGroupIds) {
-          competitionGroupIdToAdmissionIds[competitionGroupId] = [];
-          const mupToAdmission =
-            context.dataRepository.competitionGroupIdToMupAdmissions[
-              competitionGroupId
-            ];
-          for (const mupId in mupToAdmission) {
-            competitionGroupIdToAdmissionIds[competitionGroupId].push(
-              mupToAdmission[mupId].admissionsId
-            );
-          }
+    setEnsureInProgress(true);
+    const repo = context.dataRepository;
+
+    const updateMupDataPromise = () =>
+      repo.mupData.ids.length > 0 ? Promise.resolve() : repo.UpdateMupData();
+    const updateSelectionGroupDataPromise = () =>
+      repo.selectionGroupData.ids.length > 0
+        ? Promise.resolve()
+        : repo.UpdateSelectionGroupData();
+    const updateAdmissionMetasPromise = () =>
+      !refresh && repo.CheckAdmissionMetasPresent(props.competitionGroupIds)
+        ? Promise.resolve()
+        : repo.UpdateAdmissionMetas(props.competitionGroupIds);
+    const updateStudentAdmissionsAndStudentDataPromise = () => {
+      const competitionGroupIdToAdmissionIds: { [key: number]: number[] } = {};
+      for (const competitionGroupId of props.competitionGroupIds) {
+        competitionGroupIdToAdmissionIds[competitionGroupId] = [];
+        const mupToAdmission =
+          context.dataRepository.competitionGroupIdToMupAdmissions[
+            competitionGroupId
+          ];
+        for (const mupId in mupToAdmission) {
+          competitionGroupIdToAdmissionIds[competitionGroupId].push(
+            mupToAdmission[mupId].admissionsId
+          );
         }
-        return context.dataRepository.UpdateStudentAdmissionsAndStudentData(
-          competitionGroupIdToAdmissionIds
-        );
-      });
+      }
+      return context.dataRepository.UpdateStudentAdmissionsAndStudentData(
+        competitionGroupIdToAdmissionIds
+      );
+    };
     return Promise.allSettled([
-      ensureMupDataPromise,
-      ensureSelectionGroupDataPromise,
-      updateAdmissionsPromise,
+      updateMupDataPromise(),
+      updateSelectionGroupDataPromise(),
+      updateAdmissionMetasPromise().then(() =>
+        updateStudentAdmissionsAndStudentDataPromise()
+      ),
     ])
       .then(() => {
-        refreshInProgress.current = false;
+        currentEnsurePromise.current = null;
+        setEnsureInProgress(false);
       })
       .catch((err) => {
-        refreshInProgress.current = false;
+        currentEnsurePromise.current = null;
+        setEnsureInProgress(false);
         if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
           props.onUnauthorized();
           return;
@@ -131,6 +139,58 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         throw err;
       });
   };
+
+  const refreshData = () => ensureData(true);
+
+  // const refreshData = () => {
+
+  //   if (context.dataRepository.mupData.ids.length === 0) {
+  //     // update mupData
+  //     ensureMupDataPromise = context.dataRepository.UpdateMupData();
+  //   }
+  //   let ensureSelectionGroupDataPromise = Promise.resolve();
+  //   if (context.dataRepository.selectionGroupData.ids.length === 0) {
+  //     ensureSelectionGroupDataPromise =
+  //       context.dataRepository.UpdateSelectionGroupData();
+  //   }
+  //   const updateAdmissionsPromise = context.dataRepository
+  //     .UpdateAdmissionMetas(props.competitionGroupIds)
+  //     .then(() => {
+  //       const competitionGroupIdToAdmissionIds: { [key: number]: number[] } =
+  //         {};
+  //       for (const competitionGroupId of props.competitionGroupIds) {
+  //         competitionGroupIdToAdmissionIds[competitionGroupId] = [];
+  //         const mupToAdmission =
+  //           context.dataRepository.competitionGroupIdToMupAdmissions[
+  //             competitionGroupId
+  //           ];
+  //         for (const mupId in mupToAdmission) {
+  //           competitionGroupIdToAdmissionIds[competitionGroupId].push(
+  //             mupToAdmission[mupId].admissionsId
+  //           );
+  //         }
+  //       }
+  //       return context.dataRepository.UpdateStudentAdmissionsAndStudentData(
+  //         competitionGroupIdToAdmissionIds
+  //       );
+  //     });
+  //   return Promise.allSettled([
+  //     ensureMupDataPromise,
+  //     ensureSelectionGroupDataPromise,
+  //     updateAdmissionsPromise,
+  //   ])
+  //     .then(() => {
+  //       refreshInProgress.current = false;
+  //     })
+  //     .catch((err) => {
+  //       refreshInProgress.current = false;
+  //       if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+  //         props.onUnauthorized();
+  //         return;
+  //       }
+  //       throw err;
+  //     });
+  // };
 
   const prepareItemsAndStudentMupDataText = () => {
     console.log("context.dataRepository.competitionGroupIdToMupAdmissions");
@@ -360,6 +420,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       // return;
       executeActions(studentAdmissionActions, context).then((actionResults) => {
         setStudentAdmissionActionResults(actionResults);
+        handleRefresh();
       });
     });
   };
@@ -484,6 +545,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         <RefreshButton
           onClick={handleRefreshDebounced}
           title="Обновить список"
+          loading={ensureInProgress}
         />
         <section className="table__container" ref={tableRef}>
           <table className="table table_vertical_borders">

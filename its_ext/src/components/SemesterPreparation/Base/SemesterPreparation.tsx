@@ -179,7 +179,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     //   Promise.resolve() : repo.UpdateSelectionGroupData();
     updateMupDataPromise.then(() => {
       setSelectionValid(true);
-      setSelectionGroupsIds(selectionGroupIds)
+      setSelectionGroupsIds(selectionGroupIds);
     });
 
     // request mups for chosen selectionGroups
@@ -258,11 +258,13 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
         />
 
         <div className="next_step__container">
-          {selectionValid && <ApplyButtonWithActionDisplay
-            showErrorWarning={false}
-            showSuccessMessage={false}
-            onNextStep={handleGroupSelectButton}
-          />}
+          {selectionValid && (
+            <ApplyButtonWithActionDisplay
+              showErrorWarning={false}
+              showSuccessMessage={false}
+              onNextStep={handleGroupSelectButton}
+            />
+          )}
           <p className="next_step__message">
             {selectionValid && selectionGroupsIds.length !== 2
               ? "Выберите две группы для перехода к следующему шагу"

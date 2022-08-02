@@ -301,15 +301,21 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     );
 
     try {
-    const mupToLoadToSubgroupMembership = createMupToLoadToSubgroupMembership(
-      props.competitionGroupIds,
-      newSubgroupDiffInfo,
-      context.dataRepository.subgroupIdToStudentSubgroupMembership,
-      context.dataRepository.studentIdToPersonalNumber,
-    );
-    const newSubgroupDistributionTextOutput = JSON.stringify(mupToLoadToSubgroupMembership, null, 2);
-    setSubgroupDistributionTextOutput(newSubgroupDistributionTextOutput);
-    } catch(err: any) {
+      const mupToLoadToSubgroupMembership = createMupToLoadToSubgroupMembership(
+        props.competitionGroupIds,
+        newSubgroupDiffInfo,
+        context.dataRepository.subgroupIdToStudentSubgroupMembership,
+        context.dataRepository.studentIdToPersonalNumber
+      );
+      console.log("mupToLoadToSubgroupMembership");
+      console.log(mupToLoadToSubgroupMembership);
+      const newSubgroupDistributionTextOutput = JSON.stringify(
+        mupToLoadToSubgroupMembership,
+        null,
+        2
+      );
+      setSubgroupDistributionTextOutput(newSubgroupDistributionTextOutput);
+    } catch (err: any) {
       setSubgroupDistributionTextOutput(`Error: ${err.message}`);
     }
 

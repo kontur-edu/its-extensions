@@ -27,8 +27,10 @@ import { createDebouncedWrapper } from "../../../utils/helpers";
 import { executeActions } from "../../../common/actions";
 
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
-import { RefreshButton } from "../../RefreshButton";
 import { OuterLink } from "../../OuterLink";
+
+import { RefreshButton } from "../../RefreshButton";
+import CircularProgress from "@mui/material/CircularProgress";
 
 function checkArraysSame(arr1: any[], arr2: any[]) {
   return arr1.sort().join(",") === arr2.sort().join(",");
@@ -53,6 +55,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
   >([]);
   const [subgroupSelectionActionsResults, setSubgroupSelectionActionsResults] =
     useState<IActionExecutionLogItem[]>([]);
+  const [ensureInProgress, setEnsureInProgress] = useState<boolean>(false);
   const currentEnsurePromise = useRef<Promise<any> | null>(null);
 
   const context = useContext(ITSContext)!;
@@ -75,6 +78,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
       console.log("SubgroupSelection: ensureData is already in progress");
       return currentEnsurePromise.current;
     }
+    setEnsureInProgress(true);
     // currentEnsurePromise.current = Promise.resolve();
 
     const repo = context.dataRepository;
@@ -122,9 +126,11 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
       })
       .then(() => {
         currentEnsurePromise.current = null;
+        setEnsureInProgress(false);
       })
       .catch((err) => {
         currentEnsurePromise.current = null;
+        setEnsureInProgress(false);
         if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
           props.onUnauthorized();
           return;
@@ -386,6 +392,23 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
     });
   };
 
+  const renderTable = () => {
+    return (
+      <section className="table__container">
+        <table className="table table_vertical_borders">
+          <thead>
+            <tr>
+              <th>МУП</th>
+              <th>Отличия</th>
+              <th>Действие</th>
+            </tr>
+          </thead>
+          <tbody>{competitionGroupIds.length === 2 && renderRows()}</tbody>
+        </table>
+      </section>
+    );
+  };
+
   const handleApplyReal = () => {
     executeActions(subgroupSelectionActions, context)
       .then((results) => setSubgroupSelectionActionsResults(results))
@@ -412,7 +435,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
           renderCompetitionGroupIsMissingMessage()}
         {renderCompetitionGroupSubgroupMetaLinks()}
         {renderMupsAreDifferent()}
-        <section className="table__container">
+        {/* <section className="table__container">
           <table className="table table_vertical_borders">
             <thead>
               <tr>
@@ -423,7 +446,14 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
             </thead>
             <tbody>{competitionGroupIds.length === 2 && renderRows()}</tbody>
           </table>
-        </section>
+        </section> */}
+        <div className="load_content_container">
+          {renderTable()}
+          {ensureInProgress && <div className="progress_screen"></div>}
+          {ensureInProgress && (
+            <CircularProgress className="progress_icon" size="8rem" />
+          )}
+        </div>
 
         <ApplyButtonWithActionDisplay
           showErrorWarning={true}

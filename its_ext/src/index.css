@@ -227,3 +227,29 @@ td {
 .textarea {
   width: 100%;
 }
+
+.progress_screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.progress_icon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 8rem;
+}
+
+.load_content_container {
+  position: relative;
+  width: 100%;
+  min-height: 300px;
+}

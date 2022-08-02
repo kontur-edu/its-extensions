@@ -269,17 +269,18 @@ function generateUpdatePeriodActions(
           currentPeriod.selectionBegin !== periodTimeInfo.dates[0] ||
           currentPeriod.selectionDeadline !== periodTimeInfo.dates[1]
         ) {
-          if (!mupDiff.canBeDeleted) {
-            const periodInfoNotChangedSelectionBegin: IPeriodTimeInfo = {
-              ...periodTimeInfo,
-              dates: [currentPeriod.selectionBegin, periodTimeInfo.dates[1]],
-            };
-            actions.push(
-              new UpdatePeriodAction(mupId, periodInfoNotChangedSelectionBegin)
-            );
-          } else {
-            actions.push(new UpdatePeriodAction(mupId, periodTimeInfo));
-          }
+          // if (!mupDiff.canBeDeleted) {
+          //   const periodInfoNotChangedSelectionBegin: IPeriodTimeInfo = {
+          //     ...periodTimeInfo,
+          //     dates: [currentPeriod.selectionBegin, periodTimeInfo.dates[1]],
+          //   };
+          //   actions.push(
+          //     new UpdatePeriodAction(mupId, periodInfoNotChangedSelectionBegin)
+          //   );
+          // } else {
+          //   actions.push(new UpdatePeriodAction(mupId, periodTimeInfo));
+          // }
+          actions.push(new UpdatePeriodAction(mupId, periodTimeInfo));
         }
       }
     }

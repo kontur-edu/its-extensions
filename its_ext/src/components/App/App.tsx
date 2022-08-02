@@ -10,7 +10,7 @@ import { ITSApiService } from "../../utils/ITSApiService";
 import { ITSRepository } from "../../utils/repository";
 
 const requestService = new RequestService(PROXY_URL, LOGIN_URL);
-const apiService = new ITSApiService(requestService, true);
+const apiService = new ITSApiService(requestService, false);
 const dataRepository = new ITSRepository(apiService);
 
 function App() {

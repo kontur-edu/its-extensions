@@ -391,10 +391,8 @@ export function MupEditor(props: IMupEditorProps) {
       });
   }, [props.selectionGroupIds]);
 
-  const handleMupToggle = (mupId: string) => {
-    console.log(`handleMupToggle: ${mupId}`);
+  const ensurePeriodAndModulesForMup = (mupId: string) => {
     const repo = context.dataRepository;
-    // repo.EnsurePeriodInfoFor(mupId)
     const mupIds = [mupId];
     const periodPromise = repo.CheckPeriodDataPresent(mupIds)
       ? Promise.resolve()
@@ -411,42 +409,55 @@ export function MupEditor(props: IMupEditorProps) {
       repo.CheckSelectionGroupMupModuleDisciplinesPresent(connectionIds)
         ? Promise.resolve()
         : repo.UpdateSelectionGroupMupModuleDisciplines(connectionIds);
-    return Promise.allSettled([periodPromise, modulePromise])
-      .then(() => {
-        let mupDiffsToCompareWith = mupDiffs;
-        if (!mupDiffs.hasOwnProperty(mupId) || !mupDiffs[mupId]) {
-          const newInitDiff = createDiffForMup(
-            mupId,
-            props.selectionGroupIds,
-            [startDate, endDate],
-            zeToModuleSelection,
-            repo.mupData,
-            repo.selectionGroupToMupsData,
-            repo.selectionGroupData,
-            repo.mupToPeriods,
-            repo.selectionGroupModuleIdToSelectedModuleDisciplines
-          );
-          const newMupDiffs = { ...mupDiffs, [mupId]: newInitDiff };
-          mupDiffsToCompareWith = newMupDiffs;
-          console.log("newInitDiff");
-          console.log(newInitDiff);
-          setMupDiffs(newMupDiffs);
-        }
+    return Promise.allSettled([periodPromise, modulePromise]);
+  };
 
-        const newMupEdits = { ...mupEdits };
-        newMupEdits[mupId].selected = !newMupEdits[mupId].selected;
-
-        setMupEdits(newMupEdits);
-        return { mupDiffsToCompareWith, newMupEdits };
-      })
-      .then(({ mupDiffsToCompareWith, newMupEdits }) => {
-        callDebouncedApply(
-          mupDiffsToCompareWith,
-          newMupEdits,
+  const handleMupToggle = (mupId: string) => {
+    console.log(`handleMupToggle: ${mupId}`);
+    const repo = context.dataRepository;
+    // repo.EnsurePeriodInfoFor(mupId)
+    ensurePeriodAndModulesForMup(mupId).then(() => {
+      let mupDiffsToCompareWith = mupDiffs;
+      if (!mupDiffs.hasOwnProperty(mupId) || !mupDiffs[mupId]) {
+        const newInitDiff = createDiffForMup(
+          mupId,
+          props.selectionGroupIds,
           [startDate, endDate],
-          zeToModuleSelection
+          zeToModuleSelection,
+          repo.mupData,
+          repo.selectionGroupToMupsData,
+          repo.selectionGroupData,
+          repo.mupToPeriods,
+          repo.selectionGroupModuleIdToSelectedModuleDisciplines
         );
-      });
+        const newMupDiffs = { ...mupDiffs, [mupId]: newInitDiff };
+        mupDiffsToCompareWith = newMupDiffs;
+        console.log("newInitDiff");
+        console.log(newInitDiff);
+        setMupDiffs(newMupDiffs);
+      }
+
+      const newMupEdits = { ...mupEdits };
+      newMupEdits[mupId].selected = !newMupEdits[mupId].selected;
+
+      setMupEdits(newMupEdits);
+      // return { mupDiffsToCompareWith, newMupEdits };
+
+      callDebouncedApply(
+        mupDiffsToCompareWith,
+        newMupEdits,
+        [startDate, endDate],
+        zeToModuleSelection
+      );
+    });
+    // .then(({ mupDiffsToCompareWith, newMupEdits }) => {
+    //   callDebouncedApply(
+    //     mupDiffsToCompareWith,
+    //     newMupEdits,
+    //     [startDate, endDate],
+    //     zeToModuleSelection
+    //   );
+    // });
   };
 
   const handleMupLimitChange = (mupId: string, newLimit: number) => {
@@ -564,15 +575,27 @@ export function MupEditor(props: IMupEditorProps) {
     for (const mupId in mupEdits) {
       newMupEdits[mupId].messages = [];
 
-      if (selectedMups && mupDiffs.hasOwnProperty(mupId)) {
-        const isSelected = selectedMups.has(mupId);
-        if (isSelected && mupDiffs[mupId].presentInGroups.length !== 2) {
-          newMupEdits[mupId].messages.push("Добавить МУП в группы");
-        } else if (!isSelected && mupDiffs[mupId].presentInGroups.length > 0) {
-          newMupEdits[mupId].messages.push("Удалить МУП из групп");
+      if (mupDiffs.hasOwnProperty(mupId)) {
+        if (selectedMups) {
+          const isSelected = selectedMups.has(mupId);
+          if (isSelected && mupDiffs[mupId].presentInGroups.length !== 2) {
+            newMupEdits[mupId].messages.push("Добавить МУП в группы");
+          } else if (
+            !isSelected &&
+            mupDiffs[mupId].presentInGroups.length > 0
+          ) {
+            newMupEdits[mupId].messages.push("Удалить МУП из групп");
+          }
+
+          if (isSelected && mupDiffs[mupId].someLoads.length === 0) {
+            newMupEdits[mupId].addLoadsManual = true;
+          }
         }
-        if (isSelected && mupDiffs[mupId].someLoads.length === 0) {
-          newMupEdits[mupId].addLoadsManual = true;
+
+        if (!newMupEdits[mupId].selected && !mupDiffs[mupId].canBeDeleted) {
+          newMupEdits[mupId].messages.push(
+            "Нельзя удалить МУП, так как период выбора уже начался, установите Лимит в 0 и оповестите студентов"
+          );
         }
       }
     }
@@ -637,16 +660,16 @@ export function MupEditor(props: IMupEditorProps) {
     // );
 
     return (
-      <div className={style.mup_table_container}>
+      <div className="load_content_container">
         <MupsList
           mupData={context.dataRepository.mupData}
           mupEdits={mupEdits}
           onMupToggle={handleMupToggle}
           onMupLimitChange={handleMupLimitChange}
         />
-        {ensureInProgress && <div className={style.progress_screen}></div>}
+        {ensureInProgress && <div className="progress_screen"></div>}
         {ensureInProgress && (
-          <CircularProgress className={style.progress_icon} size="8rem" />
+          <CircularProgress className="progress_icon" size="8rem" />
         )}
       </div>
     );

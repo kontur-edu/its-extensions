@@ -49,8 +49,10 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
   const [selectionGroupsListItems, setSelectionGroupsListItems] = useState<
     ISelectionListItem[]
   >([]);
+  const [selectionValid, setSelectionValid] = useState<boolean>(false);
   const [selectionGroupsIds, setSelectionGroupsIds] = useState<number[]>([]);
-  const [editorDataPrepared, setEditorDataPrepared] = useState<boolean>(false);
+  const [mupEditorLoaded, setMupEditorLoaded] = useState<boolean>(false);
+  // const [editorDataPrepared, setEditorDataPrepared] = useState<boolean>(false);
   const requestSelectionGroupsInProgress = useRef(false);
 
   const stepTwoRef = useRef<HTMLElement | null>(null);
@@ -87,6 +89,12 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     }
   };
 
+  const handleMupEditorLoaded = () => {
+    console.log("handleMupEditorLoaded");
+    setMupEditorLoaded(true);
+  };
+
+  /*
   const refreshSelectionGroupMups = async (ids: number[]) => {
     await context.dataRepository.UpdateSelectionGroupToMupsData(ids);
     let newChosenMups: string[] = [];
@@ -146,33 +154,46 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     const refreshGroupMupsThenPeriodsPromise = refreshSelectionGroupMups(
       selectionGroupIds
     ).then((mupIds) => refreshPeriods(mupIds));
-    const refreshSubgroupMetasAndSubgroupsPromise =
-      refreshSubgroupMetasAndSubgroups(selectionGroupIds);
+    // const refreshSubgroupMetasAndSubgroupsPromise =
+    //   refreshSubgroupMetasAndSubgroups(selectionGroupIds);
     return Promise.all([
       ensureMupDataPromise,
       refreshGroupMupsThenPeriodsPromise,
-      refreshSubgroupMetasAndSubgroupsPromise,
-    ]);
+      // refreshSubgroupMetasAndSubgroupsPromise,
+    ]).then(() => refreshSubgroupMetasAndSubgroups(selectionGroupIds));
   };
+  */
 
   // selectionGroupMups, SubgroupGroupMetas, Subgroups
-  const handleSelectionGroupValid = (selectionGroupIds: number[]) => {
-    setEditorDataPrepared(false);
+  const handleSelectionGroupSelected = (selectionGroupIds: number[]) => {
+    if (selectionGroupIds.length !== 2) {
+      setSelectionValid(false);
+    }
+    // setEditorDataPrepared(false);
     // console.log("handleSelectionGroupValid");
     // remember chosen selectionGroup ids
-    setSelectionGroupsIds(selectionGroupIds);
+    const repo = context.dataRepository;
+    const updateMupDataPromise =
+      repo.mupData.ids.length > 0 ? Promise.resolve() : repo.UpdateMupData();
+    // const updateSelectionSelectionGroupDataPromise = repo.CheckSelectionGroupDataPresent(selectionGroupIds) ?
+    //   Promise.resolve() : repo.UpdateSelectionGroupData();
+    updateMupDataPromise.then(() => {
+      setSelectionValid(true);
+      setSelectionGroupsIds(selectionGroupIds);
+    });
+
     // request mups for chosen selectionGroups
     // find union of mupIds in chosen selectionGroups
     // const groupMupsRefreshPromise = refreshSelectionGroupMups(selectionGroupIds);
-    prepareDataForSelectionGroups(selectionGroupIds)
-      .then(() => setEditorDataPrepared(true))
-      .catch((err) => {
-        if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-          props.onUnauthorized();
-          return;
-        }
-        throw err;
-      });
+    // prepareDataForSelectionGroups(selectionGroupIds)
+    //   .then(() => setEditorDataPrepared(true))
+    //   .catch((err) => {
+    //     if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+    //       props.onUnauthorized();
+    //       return;
+    //     }
+    //     throw err;
+    //   });
   };
 
   const handleGroupSelectButton = () => {
@@ -195,7 +216,8 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
 
         <MupEditor
           selectionGroupIds={selectionGroupsIds}
-          dataIsPrepared={editorDataPrepared}
+          // dataIsPrepared={editorDataPrepared}
+          onLoad={handleMupEditorLoaded}
           onNextStep={handleMupEditorNextStepButton}
           onUnauthorized={props.onUnauthorized}
         />
@@ -212,7 +234,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
 
         <SubgroupSelection
           selectionGroupIds={selectionGroupsIds}
-          dataIsPrepared={editorDataPrepared}
+          dataIsPrepared={mupEditorLoaded} // TODO: delete this
           onUnauthorized={props.onUnauthorized}
         />
       </article>
@@ -232,26 +254,28 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
         <GroupSelect
           selectionGroupsList={selectionGroupsListItems}
           onRefresh={refreshSelectionGroups}
-          onSelectionValid={handleSelectionGroupValid}
+          onSelection={handleSelectionGroupSelected}
         />
 
         <div className="next_step__container">
-          <ApplyButtonWithActionDisplay
-            showErrorWarning={false}
-            showSuccessMessage={false}
-            onNextStep={handleGroupSelectButton}
-          />
+          {selectionValid && (
+            <ApplyButtonWithActionDisplay
+              showErrorWarning={false}
+              showSuccessMessage={false}
+              onNextStep={handleGroupSelectButton}
+            />
+          )}
           <p className="next_step__message">
-            {selectionGroupsIds.length !== 2
+            {selectionValid && selectionGroupsIds.length !== 2
               ? "Выберите две группы для перехода к следующему шагу"
               : null}
           </p>
         </div>
       </article>
 
-      {selectionGroupsIds.length === 2 ? renderStep2() : null}
+      {selectionValid && selectionGroupsIds.length === 2 ? renderStep2() : null}
 
-      {selectionGroupsIds.length === 2 && editorDataPrepared
+      {selectionValid && selectionGroupsIds.length === 2 && mupEditorLoaded // TODO Delete this
         ? renderStep3()
         : null}
     </section>

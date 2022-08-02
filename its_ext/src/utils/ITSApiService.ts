@@ -12,6 +12,9 @@ import {
   IAdmissionMeta,
   IStudentAdmissionRaw,
   IStudentSubgroupMembership,
+  IModuleWithSelection,
+  IDiscipline,
+  IModuleSelection,
 } from "../common/types";
 
 import {
@@ -61,6 +64,7 @@ export class ITSApiService {
         name: obj["Name"],
         year: obj["Year"],
         semesterId: obj["SemesterId"],
+        semesterName: obj["SemesterName"],
         // ze: obj["UnitsSum"],
         eduSpaceId: obj["EduSpaceId"],
         unitSum: obj["UnitsSum"],
@@ -614,6 +618,57 @@ export class ITSApiService {
 
     if (subgroupId < 594) {
       const message = `Tried to update not test Subgroup id: ${subgroupId}`;
+      alert(message);
+      return { success: false, message };
+    }
+
+    const result = await this.requestService.PostFormData(url, data);
+    return result;
+  }
+
+  async GetSelectionGroupMupModules(
+    connectionId: number
+  ): Promise<IModuleWithSelection[]> {
+    const url = `https://its.urfu.ru/EduSpace/ModulesForMUP?id=${connectionId}`;
+    const res = await this.requestService.GetJson(url);
+    return res.map((obj: any) => {
+      const disciplines = obj["disciplines"].map((dObj: any) => {
+        const disc: IDiscipline = {
+          id: dObj["uid"],
+          name: dObj["title"],
+          ze: dObj["testUnits"],
+        };
+        return disc;
+      });
+      const admissionMeta: IModuleWithSelection = {
+        id: obj["uuid"],
+        name: obj["title"],
+        disciplines: disciplines,
+        selected: obj["selectedDisciplines"],
+      };
+      return admissionMeta;
+    });
+  }
+
+  async UpdateSelectionGroupMupModules(
+    connectionId: number,
+    moduleSelections: IModuleSelection[]
+  ) {
+    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
+
+    const url = "https://its.urfu.ru/EduSpace/UpdateDisciplineConnection";
+
+    const moduleDisciplines = moduleSelections.map((ms) => {
+      return { moduleUid: ms.id, disciplines: ms.selected };
+    });
+
+    const data = {
+      id: connectionId,
+      moduleDisciplines: JSON.stringify(moduleDisciplines),
+    };
+
+    if (connectionId < 124) {
+      const message = `Tried to update not test Connection id: ${connectionId}`;
       alert(message);
       return { success: false, message };
     }

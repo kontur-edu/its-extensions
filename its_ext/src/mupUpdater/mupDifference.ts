@@ -2,14 +2,15 @@ import {
   IMupLoad,
   IMupDiff,
   IPeriod,
-  IMupEdit,
   ISelectionGroupToMupsData,
   ISelectionGroupData,
+  ISelectedModuleDisciplines,
+  IModuleSelection,
+  IMupData,
 } from "../common/types";
 
 import { checkDateIsLess } from "../utils/helpers";
 
-import { createResultLoads, findLoadsToAdd } from "./actionCreater";
 
 function findInitLimits(
   mupId: string,
@@ -69,9 +70,9 @@ function checkIfNeedChangeDates(
   return changeDates;
 }
 
-function CheckIfCanBeDeleted(
+function checkIfCanBeDeleted(
   courseToCurrentPeriod: { [key: number]: IPeriod },
-  dates: [string, string]
+  // dates: [string, string]
 ): boolean {
   let canBeDeleted = true;
 
@@ -93,13 +94,77 @@ function CheckIfCanBeDeleted(
   return canBeDeleted;
 }
 
+
+function checkNeedUpdateForConnectionId(
+  connectionId: number,
+  referenceModuleDisciplines: IModuleSelection[],
+  selectionGroupModuleIdToSelectedModuleDisciplines: {[key: number]: ISelectedModuleDisciplines},
+) {
+  if (!selectionGroupModuleIdToSelectedModuleDisciplines.hasOwnProperty(connectionId)) {
+    return true;
+  }
+  
+  const selectedModuleDisciplines = selectionGroupModuleIdToSelectedModuleDisciplines[connectionId];
+  
+  for (const ms of referenceModuleDisciplines) {
+    if (!selectedModuleDisciplines.hasOwnProperty(ms.id)) {
+      return true;
+    }
+    if(selectedModuleDisciplines[ms.id].sort().join(',') !== ms.selected.sort().join(',')){
+      return true;
+    }
+  }
+  return false;
+}
+
+function checkIfNeedUpdateModules(
+  mupId: string,
+  selectionGroupIds: number[],
+  zeToModuleSelections: {[key: number]: IModuleSelection[]},
+  mupData: IMupData,
+  selectionGroupToMupsData: ISelectionGroupToMupsData,
+  selectionGroupModuleIdToSelectedModuleDisciplines: {[key: number]: ISelectedModuleDisciplines},
+) {
+  const ze = mupData.data[mupId].ze;
+  if (!zeToModuleSelections.hasOwnProperty(ze)) {
+    return selectionGroupIds.map(() => false);
+  }
+  const referenceModuleDisciplines = zeToModuleSelections[ze];
+  const res: boolean[] = [];
+  
+  for (const selectionGroupId of selectionGroupIds) {
+    if (!selectionGroupToMupsData.data.hasOwnProperty(selectionGroupId)) {
+      res.push(true);
+      continue;
+    }
+    const selectionGroupMupData = selectionGroupToMupsData.data[selectionGroupId];
+    if (!selectionGroupMupData.data.hasOwnProperty(mupId)) {
+      res.push(true);
+      continue;
+    }
+
+    const cId = selectionGroupMupData.data[mupId].connectionId;
+
+    const needUpdate = checkNeedUpdateForConnectionId(
+      cId, referenceModuleDisciplines, selectionGroupModuleIdToSelectedModuleDisciplines
+    )
+    res.push(needUpdate);
+  }
+
+  return res;
+}
+
+
 export function createDiffForMup(
   mupId: string,
   selectionGroupIds: number[],
   dates: [string, string],
+  zeToModuleSelections: {[key: number]: IModuleSelection[]},
+  mupData: IMupData,
   selectionGroupToMupsData: ISelectionGroupToMupsData,
   selectionGroupData: ISelectionGroupData,
-  mupToPeriods: { [key: string]: IPeriod[] }
+  mupToPeriods: { [key: string]: IPeriod[] },
+  selectionGroupModuleIdToSelectedModuleDisciplines: {[key: number]: ISelectedModuleDisciplines},
 ): IMupDiff {
   let periods: IPeriod[] = [];
   if (mupToPeriods.hasOwnProperty(mupId)) {
@@ -145,7 +210,16 @@ export function createDiffForMup(
     dates
   );
 
-  const canBeDeleted = CheckIfCanBeDeleted(courseToCurrentPeriod, dates);
+  const canBeDeleted = checkIfCanBeDeleted(courseToCurrentPeriod);
+
+  const updateSelectedModuleDisciplines = checkIfNeedUpdateModules(
+    mupId,
+    selectionGroupIds,
+    zeToModuleSelections,
+    mupData,
+    selectionGroupToMupsData,
+    selectionGroupModuleIdToSelectedModuleDisciplines,
+  );
 
   const mupDiff: IMupDiff = {
     presentInGroups: presentInGroups,
@@ -155,6 +229,7 @@ export function createDiffForMup(
     changeDates: needToChangeDates,
     initLimits: limits,
     canBeDeleted: canBeDeleted,
+    updateSelectedModuleDisciplines: updateSelectedModuleDisciplines,
   };
 
   return mupDiff;

@@ -16,6 +16,9 @@ import {
   IStudentAdmission,
   IStudentAdmissionRaw,
   IStudentSubgroupMembership,
+  IModuleData,
+  IModule,
+  ISelectedModuleDisciplines,
 } from "../common/types";
 
 import { ITSApiService } from "./ITSApiService";
@@ -49,6 +52,11 @@ export class ITSRepository {
     [key: number]: IStudentSubgroupMembership[];
   } = {}; // subgroupId -> studentId[]
 
+  moduleData: IModuleData = { data: {}, ids: [] };
+  selectionGroupModuleIdToSelectedModuleDisciplines: {
+    [key: number]: ISelectedModuleDisciplines;
+  } = {};
+
   constructor(public api: ITSApiService) {}
 
   async UpdateMupData() {
@@ -57,10 +65,29 @@ export class ITSRepository {
     this.mupData = prepareMupData(allMups);
   }
 
+  CheckSelectionGroupDataPresent(selectionGroupIds: number[]) {
+    const res = selectionGroupIds.every((sgId) =>
+      this.selectionGroupData.data.hasOwnProperty(sgId)
+    );
+    console.log(`CheckSelectionGroupDataPresent: ${res}`);
+    return res;
+  }
+
   async UpdateSelectionGroupData() {
     console.log(`ITSRepository: UpdateSelectionGroupData`);
     const allSelectionGroups = await this.api.GetAllSelectionGroupsParallel();
     this.selectionGroupData = prepareSelectionGroupData(allSelectionGroups);
+  }
+
+  CheckSelectionGroupToMupDataPresent(selectionGroupIds: number[]) {
+    const res = selectionGroupIds.every((sgId) =>
+      this.selectionGroupToMupsData.data.hasOwnProperty(sgId)
+    );
+    console.log(`CheckSelectionGroupToMupDataPresent: ${res}`);
+    if (!res) {
+      console.log(this.selectionGroupToMupsData);
+    }
+    return res;
   }
 
   async UpdateSelectionGroupToMupsData(selectionGroupIds: number[]) {
@@ -90,6 +117,13 @@ export class ITSRepository {
     this.selectionGroupToMupsData = prepareSelectionGroupToMupsData(
       selectionGroupIdToSelectionGroupMups
     );
+    console.log(this.selectionGroupToMupsData);
+  }
+
+  CheckPeriodDataPresent(mupIds: string[]) {
+    const res = mupIds.every((mId) => this.mupToPeriods.hasOwnProperty(mId));
+    console.log(`CheckPeriodDataPresent: ${res}`);
+    return res;
   }
 
   async UpdatePeriods(mupIds: string[]) {
@@ -105,15 +139,24 @@ export class ITSRepository {
         console.error(`Failed to request Periods for mupId: ${mupId}`);
       }
     }
+    console.log("/ UpdatePeriods");
   }
 
   async EnsurePeriodInfoFor(mupId: string) {
-    console.log(`ITSRepository: AddPeriodInfoFor ${mupId}`);
+    console.log(`ITSRepository: EnsurePeriodInfoFor ${mupId}`);
     if (this.mupToPeriods.hasOwnProperty(mupId)) return;
 
-    this.mupToPeriods[mupId] = [];
+    // this.mupToPeriods[mupId] = [];
     const periods = await this.api.GetPeriods(mupId);
     this.mupToPeriods[mupId] = periods;
+  }
+
+  CheckSubgroupMetasPresent(competitionGroupIds: number[]) {
+    const res = competitionGroupIds.every((cgId) =>
+      this.competitionGroupToSubgroupMetas.hasOwnProperty(cgId)
+    );
+    console.log(`CheckSubgroupMetasPresent: ${res}`);
+    return res;
   }
 
   async UpdateSubgroupMetas(competitionGroupIds: number[]) {
@@ -133,6 +176,14 @@ export class ITSRepository {
         );
       }
     }
+  }
+
+  CheckSubgroupPresent(competitionGroupIds: number[]) {
+    const res = competitionGroupIds.every((cgId) =>
+      this.competitionGroupToSubgroupIds.hasOwnProperty(cgId)
+    );
+    console.log(`CheckSubgroupPresent: ${res}`);
+    return res;
   }
 
   async UpdateSubgroups(competitionGroupIds: number[]) {
@@ -160,10 +211,26 @@ export class ITSRepository {
     }
   }
 
+  CheckCompetitionGroupDataPresent(competitionGroupIds: number[]) {
+    const res = competitionGroupIds.every((cgId) =>
+      this.competitionGroupData.hasOwnProperty(cgId)
+    );
+    console.log(`CheckCompetitionGroupDataPresent: ${res}`);
+    return res;
+  }
+
   async UpdateCompetitionGroupData() {
     console.log(`ITSRepository: UpdateCompetitionGroupData`);
     const competitionGroups = await this.api.GetCompetitionGroups();
     this.competitionGroupData = prepareCompetitionGroupData(competitionGroups);
+  }
+
+  CheckAdmissionMetasPresent(competitionGroupIds: number[]) {
+    const res = competitionGroupIds.every((cgId) =>
+      this.competitionGroupIdToMupAdmissions.hasOwnProperty(cgId)
+    );
+    console.log(`CheckAdmissionMetasPresent: ${res}`);
+    return res;
   }
 
   async UpdateAdmissionMetas(competitionGroupIds: number[]) {
@@ -237,6 +304,22 @@ export class ITSRepository {
     this.admissionInfo[admissionId] = studentAdmissionInfo;
   }
 
+  CheckAdmissionInfoPresent(admissionIds: number[]) {
+    const res = admissionIds.every((aId) =>
+      this.admissionInfo.hasOwnProperty(aId)
+    );
+    console.log(`CheckAdmissionInfoPresent: ${res}`);
+    return res;
+  }
+
+  CheckStudentInfoPresent(personalNumbers: string[]) {
+    const res = personalNumbers.every((pn) =>
+      this.studentData.data.hasOwnProperty(pn)
+    );
+    console.log(`CheckStudentInfoPresent: ${res}`);
+    return res;
+  }
+
   // NOTE: need admissionIdToMupId (call UpdateAdmissionMetas first)
   async UpdateStudentAdmissionsAndStudentData(competitionGroupIdToAdmissionIds: {
     [key: number]: number[];
@@ -263,6 +346,14 @@ export class ITSRepository {
     }
   }
 
+  CheckSubgroupMembershipPresent(subgroupIds: string[]) {
+    const res = subgroupIds.every((sId) =>
+      this.subgroupIdToStudentSubgroupMembership.hasOwnProperty(sId)
+    );
+    console.log(`CheckSubgroupMembershipPresent: ${res}`);
+    return res;
+  }
+
   async UpdateSubgroupMembership(subgroupIds: number[]) {
     console.log(`ITSRepository: UpdateSubgroupMembership`);
     const requests = subgroupIds.map((sId) =>
@@ -274,6 +365,68 @@ export class ITSRepository {
       const subgroupId = subgroupIds[i];
       if (resp.status === "fulfilled") {
         this.subgroupIdToStudentSubgroupMembership[subgroupId] = resp.value;
+      }
+    }
+  }
+
+  CheckModuleDataPresent() {
+    const res = this.moduleData.ids.length > 0;
+    console.log(`CheckModuleDataPresent: ${res}`);
+    return res;
+  }
+
+  // any connectionId
+  async UpdateModuleData(connectionId: number) {
+    console.log(`ITSRepository: UpdateModuleData`);
+    const mupModules = await this.api.GetSelectionGroupMupModules(connectionId);
+    const ids: string[] = [];
+    mupModules.forEach((mmodule) => {
+      ids.push(mmodule.id);
+    });
+
+    const data: { [key: string]: IModule } = {};
+    for (const mmodule of mupModules) {
+      data[mmodule.id] = mmodule;
+    }
+    this.moduleData.data = data;
+    this.moduleData.ids = ids;
+  }
+
+  CheckSelectionGroupMupModuleDisciplinesPresent(connectionIds: number[]) {
+    const res = connectionIds.every((cId) =>
+      this.selectionGroupModuleIdToSelectedModuleDisciplines.hasOwnProperty(cId)
+    );
+    console.log(`CheckSelectionGroupMupModuleDisciplinesPresent: ${res}`);
+    return res;
+  }
+
+  // async EnsureSelectionGroupMupModuleDisciplinesForConnection(mupId: string) {
+  //   console.log(`ITSRepository: EnsurePeriodInfoFor ${mupId}`);
+  //   if (this.mupToPeriods.hasOwnProperty(mupId)) return;
+
+  //   // this.mupToPeriods[mupId] = [];
+  //   const periods = await this.api.GetPeriods(mupId);
+  //   this.mupToPeriods[mupId] = periods;
+  // }
+
+  async UpdateSelectionGroupMupModuleDisciplines(connectionIds: number[]) {
+    console.log(`ITSRepository: UpdateSelectionGroupMupModuleDisciplines`);
+    const requests = connectionIds.map((cId) =>
+      this.api.GetSelectionGroupMupModules(cId)
+    );
+    const responses = await Promise.allSettled(requests);
+    for (let i = 0; i < connectionIds.length; i++) {
+      const resp = responses[i];
+      const connectionId = connectionIds[i];
+      if (resp.status === "fulfilled") {
+        const selectedModuleDisciplines: ISelectedModuleDisciplines = {};
+        for (const module of resp.value) {
+          if (module.disciplines.length > 0) {
+            selectedModuleDisciplines[module.id] = module.selected;
+          }
+        }
+        this.selectionGroupModuleIdToSelectedModuleDisciplines[connectionId] =
+          selectedModuleDisciplines;
       }
     }
   }

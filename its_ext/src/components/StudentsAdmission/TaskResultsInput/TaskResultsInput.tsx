@@ -31,6 +31,7 @@ import { createDebouncedWrapper } from "../../../utils/helpers";
 import Button from "@mui/material/Button";
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 import { RefreshButton } from "../../RefreshButton";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
@@ -147,6 +148,10 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   const [invalidStudentRows, setInvalidStudentRows] = useState<string[]>([]);
   // const allowSuccessMessage = useRef<boolean>(false);
   const [applyClicked, setApplyClicked] = useState<boolean>(false);
+
+  const [ensureDataInProgress, setEnsureDataInProgress] =
+    useState<boolean>(false);
+
   const context = useContext(ITSContext)!;
 
   const getMupNameById = (mupId: string) => {
@@ -171,6 +176,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   };
 
   const refreshAdmissionInfo = async () => {
+    setEnsureDataInProgress(true);
     // ensure mup data is present
     if (context.dataRepository.mupData.ids.length === 0) {
       await context.dataRepository.UpdateMupData();
@@ -191,11 +197,12 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
       getCurrentAdmissionIdsPerCompetitionGroup(selectedMupId);
 
     // setCompetitionGroupToAdmissionIds(newCompetitionGroupToAdmissionIds);
-    context.dataRepository
+    await context.dataRepository
       .UpdateStudentAdmissionsAndStudentData(newCompetitionGroupToAdmissionIds)
       .then(() =>
         setCompetitionGroupToAdmissionIds(newCompetitionGroupToAdmissionIds)
       );
+    setEnsureDataInProgress(false);
   };
 
   useEffect(() => {
@@ -203,39 +210,49 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   }, [props.competitionGroupIds]);
 
   useEffect(() => {
-    let ensureStudentAdmissionDataIsPresentPromise = Promise.resolve();
-    let admissionDataIsPresent = true;
+    setEnsureDataInProgress(true);
+    const repo = context.dataRepository;
+    // let ensureStudentAdmissionDataIsPresentPromise = Promise.resolve();
+    // let admissionDataIsPresent = true;
 
     const admissionIds: number[] = [];
     Object.values(competitionGroupToAdmissionIds).forEach((aIds) =>
       admissionIds.push(...aIds)
     );
 
-    for (const admissionId of admissionIds) {
-      if (!context.dataRepository.admissionInfo.hasOwnProperty(admissionId)) {
-        admissionDataIsPresent = false;
-        break;
-      }
-    }
-    if (!admissionDataIsPresent) {
-      ensureStudentAdmissionDataIsPresentPromise =
-        context.dataRepository.UpdateStudentAdmissionsAndStudentData(
-          competitionGroupToAdmissionIds
-        );
-    }
+    // for (const admissionId of admissionIds) {
+    //   if (!repo.admissionInfo.hasOwnProperty(admissionId)) {
+    //     admissionDataIsPresent = false;
+    //     break;
+    //   }
+    // }
+    const ensureStudentAdmissionDataIsPresentPromise =
+      repo.CheckAdmissionInfoPresent(admissionIds)
+        ? Promise.resolve()
+        : repo.UpdateStudentAdmissionsAndStudentData(
+            competitionGroupToAdmissionIds
+          );
+
+    // if (!admissionDataIsPresent) {
+    //   ensureStudentAdmissionDataIsPresentPromise =
+    //     repo.UpdateStudentAdmissionsAndStudentData(
+    //       competitionGroupToAdmissionIds
+    //     );
+    // }
     ensureStudentAdmissionDataIsPresentPromise
       .then(() => {
         const newStudentItems = createStudentItems(
           admissionIds,
-          context.dataRepository.admissionInfo,
-          context.dataRepository.studentData
+          repo.admissionInfo,
+          repo.studentData
         );
         setStudentItems(newStudentItems);
         return newStudentItems;
       })
-      .then((newStudentItems) =>
-        handleGenerateActionsDebounced(newStudentItems)
-      );
+      .then((newStudentItems) => {
+        handleGenerateActionsDebounced(newStudentItems);
+        setEnsureDataInProgress(false);
+      });
   }, [competitionGroupToAdmissionIds]);
 
   const handleMupChange = (event: SelectChangeEvent) => {
@@ -434,10 +451,19 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
         </Button>
         <h3>Студенты (активные), прошедшие Тестовое</h3>
 
+        {/* <RefreshButton
+          onClick={handleRefreshAdmissionInfo}
+          title="Обновить список"
+        /> */}
+
+        {/* <div className="load_content_container_small">
+          {ensureDataInProgress && <CircularProgress className="progress_icon_small" />} */}
         <RefreshButton
           onClick={handleRefreshAdmissionInfo}
           title="Обновить список"
+          loading={ensureDataInProgress}
         />
+        {/* </div> */}
 
         <section className="table__container">
           <table className="table">

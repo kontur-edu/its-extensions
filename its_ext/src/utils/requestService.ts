@@ -77,12 +77,12 @@ export class RequestService {
     const jsonBody = await this.SendRequest(urlWithProxy, optionsLoginPage);
 
     const pageString = jsonBody["data"];
-    console.log("pageString");
-    console.log(pageString);
+    // console.log("pageString");
+    // console.log(pageString);
     const tokens: string[] = findCsrfTokens(pageString);
-    console.log("tokens");
-    console.log(tokens);
-    console.log(`tokens found: ${tokens.length}`);
+    // console.log("tokens");
+    // console.log(tokens);
+    // console.log(`tokens found: ${tokens.length}`);
     if (tokens.length === 0) {
       alert(
         `ERROR::RequestService::Authenticate: Incorrect count of CSRF tokens found ${tokens.length}`
@@ -225,7 +225,9 @@ export class RequestService {
   }
 
   async ExitStudent(): Promise<boolean> {
-    const resp = await this.getWithManualRedirectInBody("https://istudent.urfu.ru/exit/");
+    const resp = await this.getWithManualRedirectInBody(
+      "https://istudent.urfu.ru/exit/"
+    );
     if (!resp.success || !resp.data || !resp.data.location) return false;
     const resp2 = await this.getWithManualRedirectInBody(resp.data.location);
     return resp2.success;

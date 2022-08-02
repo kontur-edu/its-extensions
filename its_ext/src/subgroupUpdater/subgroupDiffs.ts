@@ -42,8 +42,9 @@ function checkIfMetasAndSubgroupsAreSameForMupAndSubgroup(
     return !expectCreatedSubgroups;
   }
   const load_numberToSubgroupId = subgroupDiffs[mupName][competitionGroupId];
-  
-  const haveCreatedSubgroups = Object.keys(load_numberToSubgroupId).length !== 0;
+
+  const haveCreatedSubgroups =
+    Object.keys(load_numberToSubgroupId).length !== 0;
   if (haveCreatedSubgroups !== expectCreatedSubgroups) return false;
 
   const actualLoadsToCounts: { [key: string]: number } = {};
@@ -105,9 +106,20 @@ export function createSubgroupDiffInfo(
   competitionGroupToSubgroupIds: ICompetitionGroupToSubgroupIds,
   subgroupData: ISubgroupData
 ): ISubgoupDiffInfo {
+  // debugger;
+  // console.log(`>>>>>> createSubgroupDiffInfo ${competitionGroupIds}`);
+  // console.log("competitionGroupToSubgroupMetas");
+  // console.log(competitionGroupToSubgroupMetas);
   const metaDiffs: MetaDiffs = {};
   for (let competitionGroupId of competitionGroupIds) {
+    // console.log("> competitionGroupToSubgroupMetas");
+    // console.log(competitionGroupToSubgroupMetas);
+    // console.log("> competitionGroupId");
+    // console.log(competitionGroupId);
+
     const subgroupMetas = competitionGroupToSubgroupMetas[competitionGroupId];
+    // console.log("subgroupMetas");
+    // console.log(subgroupMetas);
     for (let subgroupMeta of subgroupMetas) {
       if (!metaDiffs.hasOwnProperty(subgroupMeta.discipline)) {
         metaDiffs[subgroupMeta.discipline] = {};
@@ -317,17 +329,6 @@ export function createDifferenceMessagesForMup(
 ): string[] {
   const messages: string[] = [];
   messages.push(...createDifferenceMessagesForSubgroupDiff(sDiff));
-  if (subgroupDiffInfo.subgroupAndMetaAreSameDiffs.hasOwnProperty(mupName)) {
-    const [same1, same2] =
-      subgroupDiffInfo.subgroupAndMetaAreSameDiffs[mupName];
-    if (!same1) {
-      messages.push(`Группа 1 имеет подгруппы отличные от настроек подгрупп`);
-    }
-    if (!same2) {
-      messages.push(`Группа 2 имеет подгруппы отличные от настроек подгрупп`);
-    }
-  }
-
   const haveLoadMetas = Object.keys(sDiff.loadsToMetas).length !== 0;
   const haveCreatedSubgroups = Object.keys(sDiff.loadToTeachers).length !== 0;
 
@@ -343,6 +344,20 @@ export function createDifferenceMessagesForMup(
     );
   }
 
+  if (
+    haveCreatedSubgroups &&
+    subgroupDiffInfo.subgroupAndMetaAreSameDiffs.hasOwnProperty(mupName)
+  ) {
+    const [same1, same2] =
+      subgroupDiffInfo.subgroupAndMetaAreSameDiffs[mupName];
+    if (!same1) {
+      messages.push(`Группа 1 имеет подгруппы отличные от настроек подгрупп`);
+    }
+    if (!same2) {
+      messages.push(`Группа 2 имеет подгруппы отличные от настроек подгрупп`);
+    }
+  }
+
   return messages;
 }
 
@@ -352,6 +367,7 @@ export function createDifferenceMessagesForSubgroupDiff(
   const messages: string[] = [];
 
   const absentLoads: [string[], string[]] = [[], []];
+  const loadsWithDifferentCounts: string[] = [];
   for (const load in sDiff.loadsToMetas) {
     const [sm1, sm2] = sDiff.loadsToMetas[load];
     if (sm1 === null) {
@@ -362,22 +378,30 @@ export function createDifferenceMessagesForSubgroupDiff(
     }
     if (sm1 && sm2) {
       if (sm1.count !== sm2.count) {
-        messages.push(`Количество групп для нагрузки: "${load}" отличается (${sm1.count} != ${sm2.count}).
-                    Проверьте настройки, перейдя по ссылкам над таблицей`);
+        loadsWithDifferentCounts.push(
+          `"${load}" (${sm1.count} != ${sm2.count})`
+        );
+        // messages.push(`Количество групп для нагрузки: "${load}" отличается (${sm1.count} != ${sm2.count}).
+        //             Проверьте настройки, перейдя по ссылкам над таблицей`);
       }
     }
   }
+  if (loadsWithDifferentCounts.length > 0) {
+    const loadsWithDifferentCountsStr = loadsWithDifferentCounts.join(", ");
+    messages.push(
+      `Количество групп для следующих нагрузок оличается: ${loadsWithDifferentCountsStr}. Проверьте настройки, перейдя по ссылкам над таблицей`
+    );
+  }
   if (absentLoads[0].length > 0) {
     const loadsStr = absentLoads[0].join(", ");
-    messages.push(
-      `Группа 1 не содержит нагрузки: ${loadsStr}. Проверьте состав нагрузки периода`
-    );
+    messages.push(`Группа 1 не содержит нагрузки: ${loadsStr}`);
   }
   if (absentLoads[1].length > 0) {
     const loadsStr = absentLoads[1].join(", ");
-    messages.push(
-      `Группа 2 не содержит нагрузки: ${loadsStr}. Проверьте состав нагрузки периода`
-    );
+    messages.push(`Группа 2 не содержит нагрузки: ${loadsStr}`);
+  }
+  if (absentLoads[0].length > 0 || absentLoads[1].length > 0) {
+    messages.push("Проверьте состав нагрузки периода");
   }
 
   const load_numberWithAbsentTeachers: [string[], string[]] = [[], []];
@@ -413,9 +437,7 @@ export function createDifferenceMessagesForSubgroupDiff(
   return messages;
 }
 
-export function createTodoMessages(
-  actions: ITSAction[]
-): string[] {
+export function createTodoMessages(actions: ITSAction[]): string[] {
   const messages = actions.map((a) => a.getMessageSimple());
 
   return messages;

@@ -9,14 +9,19 @@ import {
   AddLoadsAction,
   RefreshSelectionGroupsAction,
   RefreshPeriodsAction,
+  UpdateModulesAction,
 } from "./actions";
 
 import {
   IMupLoad,
   IMupDiff,
   IPeriodTimeInfo,
-  IMupToPeriods,
+  // IMupToPeriods,
   IPeriod,
+  IMupData,
+  IModuleSelection,
+  IModuleData,
+  ISelectionGroupToMupsData,
 } from "../common/types";
 
 import { ITSRepository } from "../utils/repository";
@@ -42,6 +47,41 @@ function generateDeleteSubgroupsActions(
       }
       if (subgroupIdsToDelete.length > 0) {
         actions.push(new DeleteSubgroupsAction(subgroupIdsToDelete));
+      }
+    }
+  }
+  return actions;
+}
+
+function generateDeleteModulesActions(
+  selectionGroupsIds: number[],
+  selectedMupsIds: string[],
+  selectionGroupToMupsData: ISelectionGroupToMupsData,
+  moduleData: IModuleData
+) {
+  const selectedMupsIdsSet = new Set<string>(selectedMupsIds);
+  const emptyModules: IModuleSelection[] = Object.keys(moduleData.data).map(
+    (moduleId) => {
+      const moduleSelection: IModuleSelection = {
+        id: moduleId,
+        selected: [],
+      };
+      return moduleSelection;
+    }
+  );
+  const actions: ITSAction[] = [];
+  for (let selectionGroupId of selectionGroupsIds) {
+    if (!selectionGroupToMupsData.data.hasOwnProperty(selectionGroupId)) {
+      continue;
+    }
+    const selectionGroupMups =
+      selectionGroupToMupsData.data[selectionGroupId].data;
+    for (const mupId in selectionGroupMups) {
+      if (!selectedMupsIdsSet.has(mupId)) {
+        // delete all modules
+        actions.push(
+          new UpdateModulesAction(mupId, selectionGroupId, emptyModules)
+        );
       }
     }
   }
@@ -173,7 +213,7 @@ export function findLoadsToAdd(
 function generateAddLoadsActions(
   selectedMupsIds: string[],
   mupDiffs: { [key: string]: IMupDiff },
-  courseToPeriodTimeInfo: { [key: number]: IPeriodTimeInfo },
+  courseToPeriodTimeInfo: { [key: number]: IPeriodTimeInfo }
   // mupToPeriods: IMupToPeriods
 ) {
   const actions: ITSAction[] = [];
@@ -197,10 +237,7 @@ function generateAddLoadsActions(
       let loadsToAdd: IMupLoad[] = resulLoads;
       if (mupDiff.courseToCurrentPeriod.hasOwnProperty(course)) {
         const currentPeriod = mupDiff.courseToCurrentPeriod[course];
-        loadsToAdd = findLoadsToAdd(
-          currentPeriod,
-          resulLoads
-        );
+        loadsToAdd = findLoadsToAdd(currentPeriod, resulLoads);
         if (loadsToAdd.length > 0) {
           actions.push(new AddLoadsAction(mupId, periodTimeInfo, loadsToAdd));
         }
@@ -232,18 +269,62 @@ function generateUpdatePeriodActions(
           currentPeriod.selectionBegin !== periodTimeInfo.dates[0] ||
           currentPeriod.selectionDeadline !== periodTimeInfo.dates[1]
         ) {
-          if (!mupDiff.canBeDeleted) {
-            const periodInfoNotChangedSelectionBegin: IPeriodTimeInfo = {
-              ...periodTimeInfo,
-              dates: [currentPeriod.selectionBegin, periodTimeInfo.dates[1]],
-            };
-            actions.push(
-              new UpdatePeriodAction(mupId, periodInfoNotChangedSelectionBegin)
-            );
-          } else {
-            actions.push(new UpdatePeriodAction(mupId, periodTimeInfo));
-          }
+          // if (!mupDiff.canBeDeleted) {
+          //   const periodInfoNotChangedSelectionBegin: IPeriodTimeInfo = {
+          //     ...periodTimeInfo,
+          //     dates: [currentPeriod.selectionBegin, periodTimeInfo.dates[1]],
+          //   };
+          //   actions.push(
+          //     new UpdatePeriodAction(mupId, periodInfoNotChangedSelectionBegin)
+          //   );
+          // } else {
+          //   actions.push(new UpdatePeriodAction(mupId, periodTimeInfo));
+          // }
+          actions.push(new UpdatePeriodAction(mupId, periodTimeInfo));
         }
+      }
+    }
+  }
+  return actions;
+}
+
+function generateUpdateModulesAction(
+  selectionGroupsIds: number[],
+  selectedMupsIds: string[],
+  mupDiffs: { [key: string]: IMupDiff },
+  zeToModuleSelection: { [key: number]: IModuleSelection[] },
+  mupData: IMupData,
+  moduleData: IModuleData
+) {
+  const actions: ITSAction[] = [];
+  console.log("zeToModuleSelection");
+  console.log(zeToModuleSelection);
+  for (let mupId of selectedMupsIds) {
+    const ze = mupData.data[mupId].ze;
+
+    const moduleIdToSelection: { [key: string]: string[] } = {};
+    if (zeToModuleSelection.hasOwnProperty(ze)) {
+      zeToModuleSelection[ze].forEach((rm) => {
+        moduleIdToSelection[rm.id] = rm.selected;
+      });
+    }
+    // console.log("moduleIdToSelection");
+    // console.log(moduleIdToSelection);
+    for (let i = 0; i < selectedMupsIds.length; i++) {
+      const selectionGroupId = selectionGroupsIds[i];
+      if (mupDiffs[mupId].updateSelectedModuleDisciplines[i]) {
+        const ms = Object.keys(moduleData.data).map((moduleId) => {
+          const moduleSelection: IModuleSelection = {
+            id: moduleId,
+            selected: [],
+          };
+
+          if (moduleIdToSelection.hasOwnProperty(moduleId)) {
+            moduleSelection.selected = moduleIdToSelection[moduleId];
+          }
+          return moduleSelection;
+        });
+        actions.push(new UpdateModulesAction(mupId, selectionGroupId, ms));
       }
     }
   }
@@ -256,6 +337,7 @@ export function createActions(
   mupDiffs: { [key: string]: IMupDiff },
   dates: [string, string],
   mupLimits: { [key: string]: number },
+  zeToModuleSelection: { [key: number]: IModuleSelection[] },
   itsContext: IITSContext
 ): ITSAction[] {
   if (selectionGroupsIds.length === 0) {
@@ -277,6 +359,15 @@ export function createActions(
       selectionGroupsIds,
       selectedMupsIds,
       itsContext.dataRepository
+    )
+  );
+
+  actions.push(
+    ...generateDeleteModulesActions(
+      selectionGroupsIds,
+      selectedMupsIds,
+      itsContext.dataRepository.selectionGroupToMupsData,
+      itsContext.dataRepository.moduleData
     )
   );
 
@@ -307,13 +398,22 @@ export function createActions(
     )
   );
 
-  
+  actions.push(
+    ...generateUpdateModulesAction(
+      selectionGroupsIds,
+      selectedMupsIds,
+      mupDiffs,
+      zeToModuleSelection,
+      itsContext.dataRepository.mupData,
+      itsContext.dataRepository.moduleData
+    )
+  );
 
   actions.push(
     ...generateAddLoadsActions(
       selectedMupsIds,
       mupDiffs,
-      courseToPeriodTimeInfo,
+      courseToPeriodTimeInfo
       // itsContext.dataRepository.mupToPeriods
     )
   );
@@ -355,6 +455,12 @@ export function getMupActions(actions: ITSAction[]): {
     } else if (action.actionType === ActionType.UpdatePeriod) {
       const updatePeriodAction = action as UpdatePeriodAction;
       const mupId = updatePeriodAction.mupId;
+
+      if (!res.hasOwnProperty(mupId)) res[mupId] = [];
+      res[mupId].push(action);
+    } else if (action.actionType === ActionType.UpdateModules) {
+      const updateModulesAction = action as UpdateModulesAction;
+      const mupId = updateModulesAction.mupId;
 
       if (!res.hasOwnProperty(mupId)) res[mupId] = [];
       res[mupId].push(action);

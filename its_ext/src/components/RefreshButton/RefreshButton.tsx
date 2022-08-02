@@ -14,7 +14,6 @@ export function RefreshButton(props: IRefreshButtonProps) {
 
   return (
     <div className="load_content_container_small">
-      {props.loading && <CircularProgress className="progress_icon_small" />}
       <Button
         onClick={handleRefreshButton}
         style={{
@@ -25,6 +24,8 @@ export function RefreshButton(props: IRefreshButtonProps) {
       >
         {props.title}
       </Button>
+      {props.loading && <div className="progress_screen"></div>}
+      {props.loading && <CircularProgress className="progress_icon_small" />}
     </div>
   );
 }

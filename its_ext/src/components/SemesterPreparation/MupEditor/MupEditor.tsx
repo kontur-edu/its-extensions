@@ -146,6 +146,8 @@ export function MupEditor(props: IMupEditorProps) {
   // const refreshInProgress = useRef<boolean>(false);
   const [ensureInProgress, setEnsureInProgress] = useState<boolean>(false);
   const currentEnsurePromise = useRef<Promise<any> | null>(null);
+  const [executingActionsInProgress, setExecutingActionsInProgress] =
+    useState<boolean>(false);
 
   const context = useContext(ITSContext)!;
 
@@ -630,11 +632,14 @@ export function MupEditor(props: IMupEditorProps) {
   };
 
   const handleApplyReal = () => {
+    setExecutingActionsInProgress(true);
     executeActions(mupEditorActions, context)
       .then((results) => setMupEditorActionResults(results))
       .then(() => alert("Применение изменений завершено"))
       .then(() => handleRefresh()) // refresh
+      .then(() => setExecutingActionsInProgress(false))
       .catch((err) => {
+        setExecutingActionsInProgress(false);
         if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
           props.onUnauthorized();
           return;
@@ -726,6 +731,7 @@ export function MupEditor(props: IMupEditorProps) {
           actionResults={mupEditorActionResults}
           onNextStep={props.onNextStep}
           onApply={handleApplyRealDebounced}
+          loading={executingActionsInProgress}
         />
       </article>
     </section>

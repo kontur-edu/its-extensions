@@ -13,6 +13,7 @@ import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import DoneIcon from "@mui/icons-material/Done";
 import SystemUpdateAltIcon from "@mui/icons-material/SystemUpdateAlt";
+import CircularProgress from "@mui/material/CircularProgress";
 
 export function ApplyButtonWithActionDisplay(
   props: IApplyButtonWithActionDisplayProps
@@ -171,14 +172,14 @@ export function ApplyButtonWithActionDisplay(
   };
 
   return (
-    <React.Fragment>
-      <div className={style.container}>
-        {props.actions && props.actions.length > 0 && renderActionList()}
-        {renderButtons()}
-        {props.actionResults &&
-          props.actionResults.length > 0 &&
-          renderActionResultsList()}
-      </div>
-    </React.Fragment>
+    <div className={style.container}>
+      {props.actions && props.actions.length > 0 && renderActionList()}
+      {renderButtons()}
+      {props.actionResults &&
+        props.actionResults.length > 0 &&
+        renderActionResultsList()}
+      {props.loading && <div className="progress_screen"></div>}
+      {props.loading && <CircularProgress className="progress_icon_small" />}
+    </div>
   );
 }

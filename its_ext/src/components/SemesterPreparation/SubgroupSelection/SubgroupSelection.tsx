@@ -407,16 +407,18 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
   return (
     <section className="step__container">
       <article>
-        <RefreshButton
-          onClick={refreshDataDebounced}
-          title="Обновить список"
-          loading={ensureInProgress}
-        />
+        
         {competitionGroupIds.length !== 2 &&
           renderCompetitionGroupIsMissingMessage()}
         {renderCompetitionGroupSubgroupMetaLinks()}
         {renderMupsAreDifferent()}
 
+        <h4>Сравение Конкурсных групп:</h4>
+        <RefreshButton
+          onClick={refreshDataDebounced}
+          title="Обновить список"
+          loading={ensureInProgress}
+        />
         <div className="load_content_container">
           {renderTable()}
           {ensureInProgress && <div className="progress_screen"></div>}

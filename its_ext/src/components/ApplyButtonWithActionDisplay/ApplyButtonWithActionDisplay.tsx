@@ -15,6 +15,15 @@ import DoneIcon from "@mui/icons-material/Done";
 import SystemUpdateAltIcon from "@mui/icons-material/SystemUpdateAlt";
 import CircularProgress from "@mui/material/CircularProgress";
 
+function clipString(message: string, length: number) {
+  if (message.length > length) {
+    return message.substring(0, Math.max(0, length - 3)) + "...";
+  }
+  return message;
+}
+
+const MESSAGE_SIZE = 150;
+
 export function ApplyButtonWithActionDisplay(
   props: IApplyButtonWithActionDisplayProps
 ) {
@@ -48,7 +57,7 @@ export function ApplyButtonWithActionDisplay(
         <Collapse in={actionListOpen} timeout="auto" unmountOnExit>
           <ul>
             {props.actions?.map((a: ITSAction, index: number) => (
-              <li key={index}>{a.getMessage()}</li>
+              <li key={index}>{clipString(a.getMessage(), MESSAGE_SIZE)}</li>
             ))}
           </ul>
         </Collapse>
@@ -68,7 +77,7 @@ export function ApplyButtonWithActionDisplay(
             {props.actionResults?.map(
               (logItem: IActionExecutionLogItem, index: number) => (
                 <li key={index}>
-                  {logItem.actionMessage}
+                  {clipString(logItem.actionMessage, MESSAGE_SIZE)}
                   <ul>
                     {logItem.actionResults.map((ar, arIdx) => (
                       <li

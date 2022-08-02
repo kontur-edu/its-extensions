@@ -6,7 +6,6 @@ import { ISemesterPreparationProps } from "./types";
 import { REQUEST_ERROR_UNAUTHORIZED } from "../../../utils/constants";
 
 import { GroupSelect } from "../GroupSelect/GroupSelect";
-import { unionArrays } from "../../../utils/helpers";
 import { ITSContext } from "../../../common/Context";
 import { SubgroupSelection } from "../SubgroupSelection";
 

@@ -22,46 +22,54 @@ export function MupsList(props: IMupsListProps) {
   // console.log("MupsList props.mupUpdates");
   // console.log(props.mupEdits);
 
+  const compareMupIds = (lhsMupId: string, rhsMupId: string) => {
+    const lhsName = props.mupData.data[lhsMupId]?.name ?? "";
+    const rhsName = props.mupData.data[rhsMupId]?.name ?? "";
+    return lhsName.localeCompare(rhsName);
+  };
+
   const renderRows = () => {
-    return Object.keys(props.mupEdits).map((mupId: string) => {
-      const mup = props.mupData.data[mupId];
-      if (!mup) {
-        console.log(`Not found mup for [${mupId}]`);
-      }
-      const mupEdit = props.mupEdits[mupId];
-      return (
-        <tr key={mupId}>
-          <td onClick={handleToggle(mup.id)}>
-            <Checkbox readOnly checked={mupEdit.selected} />
-            {/* <Tooltip title={mup.name} placement="top"> */}
-            <span>{mup.name}</span>
-            {/* </Tooltip> */}
-          </td>
-          <td>
-            <Input
-              type="number"
-              value={mupEdit.limit}
-              onChange={handleLimitChange(mup.id)}
-              className={style.limit__input}
-              disabled={!mupEdit.selected}
-            />
-          </td>
-          <td>
-            <ul className={style.message__list + " warning"}>
-              {mupEdit.messages.map((me, index) => (
-                <li key={index}>{me}</li>
-              ))}
-              {!mupEdit.addLoadsManual ? null : (
-                <li>
-                  Заполните нагрузку{" "}
-                  <OuterLink url={MUP_PERIOD_URL + mupId} title="в ИТС" />
-                </li>
-              )}
-            </ul>
-          </td>
-        </tr>
-      );
-    });
+    return Object.keys(props.mupEdits)
+      .sort(compareMupIds)
+      .map((mupId: string) => {
+        const mup = props.mupData.data[mupId];
+        if (!mup) {
+          console.log(`Not found mup for [${mupId}]`);
+        }
+        const mupEdit = props.mupEdits[mupId];
+        return (
+          <tr key={mupId}>
+            <td onClick={handleToggle(mup.id)}>
+              <Checkbox readOnly checked={mupEdit.selected} />
+              {/* <Tooltip title={mup.name} placement="top"> */}
+              <span>{mup.name}</span>
+              {/* </Tooltip> */}
+            </td>
+            <td>
+              <Input
+                type="number"
+                value={mupEdit.limit}
+                onChange={handleLimitChange(mup.id)}
+                className={style.limit__input}
+                disabled={!mupEdit.selected}
+              />
+            </td>
+            <td>
+              <ul className={style.message__list + " warning"}>
+                {mupEdit.messages.map((me, index) => (
+                  <li key={index}>{me}</li>
+                ))}
+                {!mupEdit.addLoadsManual ? null : (
+                  <li>
+                    Заполните нагрузку{" "}
+                    <OuterLink url={MUP_PERIOD_URL + mupId} title="в ИТС" />
+                  </li>
+                )}
+              </ul>
+            </td>
+          </tr>
+        );
+      });
   };
 
   return (

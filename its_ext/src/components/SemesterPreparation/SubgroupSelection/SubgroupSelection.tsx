@@ -357,10 +357,16 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
     );
   };
 
+  const compareMupIds = (lhsMupId: string, rhsMupId: string) => {
+    const lhsName = context.dataRepository.mupData.data[lhsMupId]?.name ?? "";
+    const rhsName = context.dataRepository.mupData.data[rhsMupId]?.name ?? "";
+    return lhsName.localeCompare(rhsName);
+  };
+
   const renderRows = () => {
     if (!subgroupDiffInfo) return null;
 
-    return mupIds.map((mupId) => {
+    return mupIds.sort(compareMupIds).map((mupId) => {
       const mup = context.dataRepository.mupData.data[mupId];
 
       if (!mupToDifferenceTodoMessages.hasOwnProperty(mup.name)) {

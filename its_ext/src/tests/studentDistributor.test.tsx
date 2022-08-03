@@ -20,11 +20,11 @@ type IMupIdToMupItem = { [key: string]: IMupDistributionItem };
 const mupData: IMupData = {
   ids: ["m1", "m2", "m3", "m4", "m5"],
   data: {
-    m1: { id: "m1", name: "M1", shortName: '', ze: 3, teacherIds: [] },
-    m2: { id: "m2", name: "M2", shortName: '', ze: 6, teacherIds: [] },
-    m3: { id: "m3", name: "M3", shortName: '', ze: 3, teacherIds: [] },
-    m4: { id: "m4", name: "M4", shortName: '', ze: 3, teacherIds: [] },
-    m5: { id: "m5", name: "M5", shortName: '', ze: 3, teacherIds: [] },
+    m1: { id: "m1", name: "M1", shortName: "", ze: 3, teacherIds: [] },
+    m2: { id: "m2", name: "M2", shortName: "", ze: 6, teacherIds: [] },
+    m3: { id: "m3", name: "M3", shortName: "", ze: 3, teacherIds: [] },
+    m4: { id: "m4", name: "M4", shortName: "", ze: 3, teacherIds: [] },
+    m5: { id: "m5", name: "M5", shortName: "", ze: 3, teacherIds: [] },
   },
 };
 

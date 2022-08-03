@@ -182,7 +182,7 @@ export class ITSRepository {
     const res = competitionGroupIds.every((cgId) =>
       this.competitionGroupToSubgroupIds.hasOwnProperty(cgId)
     );
-    console.log(`CheckSubgroupPresent: ${res}`);
+    console.log(`CheckSubgroupPresent (${competitionGroupIds}): ${res}`);
     return res;
   }
 

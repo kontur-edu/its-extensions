@@ -16,8 +16,8 @@ import style from "./CompetitionGroupPreparation.module.css";
 import { ICompetitionGroupPreparationProps } from "./types";
 import { createDebouncedWrapper, prepareMupData } from "../../../utils/helpers";
 import {
+  createPrepareSubgroupsActions,
   createUpdateSubgroupCountActions,
-  createDeleteCreatedSubgroupCountActions,
 } from "../../../competitionGroupPreparation/actionCreator";
 
 import {
@@ -67,9 +67,9 @@ export function CompetitionGroupPreparation(
     number | null
   >(null);
 
-  const [allMupNames, setAllMupNames] = useState<Set<string>>(
-    new Set<string>()
-  );
+  // const [allMupNames, setAllMupNames] = useState<Set<string>>(
+  //   new Set<string>()
+  // );
   const [updateSubgroupCountActions, setUpdateSubgroupCountActions] = useState<
     ITSAction[]
   >([]);
@@ -78,10 +78,11 @@ export function CompetitionGroupPreparation(
     setUpdateSubgroupCountActionResults,
   ] = useState<IActionExecutionLogItem[]>([]);
 
-  // const [updateSubgroupCountActions, setUpdateSubgroupCountActions] = useState<ITSAction[]>([]);
-  // const [updateSubgroupCountActionResults, setUpdateSubgroupCountActionResults] = useState<
-  //   IActionExecutionLogItem[]
-  // >([]);
+  const [prepareSubgroupActions, setPrepareSubgroupActions] = useState<
+    ITSAction[]
+  >([]);
+  const [prepareSubgroupActionResults, setPrepareSubgroupActionResults] =
+    useState<IActionExecutionLogItem[]>([]);
 
   const [ensureInProgress, setEnsureInProgress] = useState<boolean>(false);
   const currentEnsurePromise = useRef<Promise<any> | null>(null);
@@ -127,7 +128,7 @@ export function CompetitionGroupPreparation(
         ? Promise.resolve()
         : repo.UpdateSubgroupMetas(newCompetitionGroupIds);
     const updateSubgroupsPromise = (newCompetitionGroupIds: number[]) =>
-      !refresh && repo.CheckSubgroupPresent(competitionGroupIds)
+      !refresh && repo.CheckSubgroupPresent(newCompetitionGroupIds)
         ? Promise.resolve()
         : repo.UpdateSubgroups(newCompetitionGroupIds);
 
@@ -201,46 +202,65 @@ export function CompetitionGroupPreparation(
       ).forEach((mId) => allMupIds.add(mId));
     }
 
-    const newAllMupNames = new Set<string>(
-      Array.from(allMupIds).map((mId) => repo.mupData.data[mId].name)
-    );
-    setAllMupNames(newAllMupNames);
+    // const newAllMupNames = new Set<string>(
+    //   Array.from(allMupIds).map((mId) => repo.mupData.data[mId].name)
+    // );
+    // setAllMupNames(newAllMupNames);
 
-    return { newSelectedCompetitionGroupId, newAllMupNames };
+    return { newSelectedCompetitionGroupId, allMupIds };
   };
 
   const generateUpdateSubgroupCountActions = (
     cgId: number,
-    newAllMupNames: Set<string>
+    allMupIds: Set<string>
   ) => {
+    const repo = context.dataRepository;
+    const newAllMupNames = new Set<string>(
+      Array.from(allMupIds).map((mId) => repo.mupData.data[mId].name)
+    );
+
     const actions = createUpdateSubgroupCountActions(
       cgId,
       newAllMupNames,
-      context.dataRepository.competitionGroupToSubgroupMetas
+      repo.competitionGroupToSubgroupMetas
     );
     setUpdateSubgroupCountActions(actions);
   };
 
-  const generateAllActions = (cgId: number, newAllMupNames: Set<string>) => {
-    generateUpdateSubgroupCountActions(cgId, newAllMupNames);
+  const generatePrepareSubgroupActions = (
+    cgId: number,
+    allMupIds: Set<string>
+  ) => {
+    const repo = context.dataRepository;
+
+    const mupNameToMupId: { [key: string]: string } = {};
+    allMupIds.forEach((mId) => {
+      const mup = repo.mupData.data[mId];
+      mupNameToMupId[mup.name] = mId;
+    });
+    const actions = createPrepareSubgroupsActions(
+      cgId,
+      mupNameToMupId,
+      repo.mupData,
+      repo.competitionGroupToSubgroupMetas,
+      repo.competitionGroupToSubgroupIds,
+      repo.subgroupData
+    );
+    setPrepareSubgroupActions(actions);
   };
 
-  const handleUpdateSubgroupCountApply = () => {
-    executeActions(updateSubgroupCountActions, context)
-      .then((actionResults) => {
-        setUpdateSubgroupCountActionResults(actionResults);
-      })
-      .then(() => handleRefresh());
-    // TODO: generate all actions
+  const generateAllActions = (cgId: number, allMupIds: Set<string>) => {
+    generateUpdateSubgroupCountActions(cgId, allMupIds);
+    generatePrepareSubgroupActions(cgId, allMupIds);
   };
 
   const handleRefresh = () => {
     ensureData(true)
       .then(() => prepareData())
       .then(
-        ({ newSelectedCompetitionGroupId, newAllMupNames }) =>
+        ({ newSelectedCompetitionGroupId, allMupIds }) =>
           newSelectedCompetitionGroupId !== null &&
-          generateAllActions(newSelectedCompetitionGroupId, newAllMupNames)
+          generateAllActions(newSelectedCompetitionGroupId, allMupIds)
       );
   };
 
@@ -248,9 +268,9 @@ export function CompetitionGroupPreparation(
     ensureData()
       .then(() => prepareData())
       .then(
-        ({ newSelectedCompetitionGroupId, newAllMupNames }) =>
+        ({ newSelectedCompetitionGroupId, allMupIds }) =>
           newSelectedCompetitionGroupId !== null &&
-          generateAllActions(newSelectedCompetitionGroupId, newAllMupNames)
+          generateAllActions(newSelectedCompetitionGroupId, allMupIds)
       );
   }, []);
 
@@ -264,8 +284,30 @@ export function CompetitionGroupPreparation(
     }
   };
 
+  const handleUpdateSubgroupCountApply = () => {
+    executeActions(updateSubgroupCountActions, context)
+      .then((actionResults) => {
+        setUpdateSubgroupCountActionResults(actionResults);
+      })
+      .then(() => handleRefresh());
+    // TODO: generate all actions
+  };
+
   const handleUpdateSubgroupCountApplyDebounced = () => {
     debouncedWrapperForApply(handleUpdateSubgroupCountApply);
+  };
+
+  const handlePrepareSubgroupsApply = () => {
+    executeActions(prepareSubgroupActions, context)
+      .then((actionResults) => {
+        setPrepareSubgroupActionResults(actionResults);
+      })
+      .then(() => handleRefresh());
+    // TODO: generate all actions
+  };
+
+  const handlePrepareSubgroupsApplyDebounced = () => {
+    debouncedWrapperForApply(handlePrepareSubgroupsApply);
   };
 
   const renderSelect = () => {
@@ -339,8 +381,17 @@ export function CompetitionGroupPreparation(
             Создание подгрупп, определение Лимитов и выбор преподавателей для
             подгрупп
           </p>
-          {/* <Button style={{ color: "red" }}>Удалить созданные подгруппы</Button> */}
-          <Button>Создать подгруппы и попробовать выбрать преподавателя</Button>
+          <ApplyButtonWithActionDisplay
+            showErrorWarning={true}
+            showSuccessMessage={true}
+            actions={prepareSubgroupActions}
+            actionResults={prepareSubgroupActionResults}
+            // clicked={true}
+            // onNextStep={onNextStep}
+            onApply={handlePrepareSubgroupsApplyDebounced}
+          >
+            Создать подгруппы и попробовать выбрать преподавателя
+          </ApplyButtonWithActionDisplay>
           <p>
             Отредактируйте Лимиты и выбранных преподавателей созданных подгрупп{" "}
             <OuterLink

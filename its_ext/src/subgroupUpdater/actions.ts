@@ -60,7 +60,11 @@ export class RefreshSubgroupsAction extends ITSAction {
   }
 
   getMessage(): string {
-    const competitionGroupIdsStr = JSON.stringify(this.competitionGroupIds, null, 2);
+    const competitionGroupIdsStr = JSON.stringify(
+      this.competitionGroupIds,
+      null,
+      2
+    );
     return `Запросить обновление данных для Конкурсных групп: ${competitionGroupIdsStr}`;
   }
 

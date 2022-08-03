@@ -320,7 +320,8 @@ export function CompetitionGroupPreparation(
       .then(() => {
         const { newSelectedCompetitionGroupId, allMupIds } = prepareData();
         newSelectedCompetitionGroupId !== null &&
-          generateAllActions(newSelectedCompetitionGroupId, allMupIds)
+          generateAllActions(newSelectedCompetitionGroupId, allMupIds);
+        props.onLoad();
       });
   }, []);
 

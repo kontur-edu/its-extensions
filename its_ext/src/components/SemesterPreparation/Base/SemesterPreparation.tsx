@@ -52,11 +52,13 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
   const [selectionValid, setSelectionValid] = useState<boolean>(false);
   const [selectionGroupsIds, setSelectionGroupsIds] = useState<number[]>([]);
   const [mupEditorLoaded, setMupEditorLoaded] = useState<boolean>(false);
+  const [competitionGroupLoaded, setCompetitionGroupLoaded] = useState<boolean>(false);
   // const [editorDataPrepared, setEditorDataPrepared] = useState<boolean>(false);
   const requestSelectionGroupsInProgress = useRef(false);
 
   const stepTwoRef = useRef<HTMLElement | null>(null);
   const stepThreeRef = useRef<HTMLElement | null>(null);
+  const stepFourRef = useRef<HTMLElement | null>(null);
   const context = useContext(ITSContext)!;
 
   const refreshSelectionGroups = () => {
@@ -94,6 +96,10 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     setMupEditorLoaded(true);
   };
 
+  const handleCompetitionGroupPreparationLoaded = () => {
+    console.log("handleMupEditorLoaded");
+    setCompetitionGroupLoaded(true);
+  };
 
   // selectionGroupMups, SubgroupGroupMetas, Subgroups
   const handleSelectionGroupSelected = (selectionGroupIds: number[]) => {
@@ -112,15 +118,18 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
       setSelectionValid(true);
       setSelectionGroupsIds(selectionGroupIds);
     });
-
   };
 
-  const handleGroupSelectButton = () => {
+  const handleStepTwo = () => {
     stepTwoRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleMupEditorNextStepButton = () => {
+  const handleStepThree = () => {
     stepThreeRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleStepFour = () => {
+    stepFourRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -137,7 +146,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
           selectionGroupIds={selectionGroupsIds}
           // dataIsPrepared={editorDataPrepared}
           onLoad={handleMupEditorLoaded}
-          onNextStep={handleMupEditorNextStepButton}
+          onNextStep={handleStepThree}
           onUnauthorized={props.onUnauthorized}
         />
       </article>
@@ -153,7 +162,8 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
           selectionGroupIds={selectionGroupsIds}
           dataIsPrepared={mupEditorLoaded} // TODO: delete this
           onUnauthorized={props.onUnauthorized}
-          onNextStep={() => {}} // TODO: fix
+          onNextStep={handleStepFour} // TODO: fix
+          onLoad={handleCompetitionGroupPreparationLoaded}
         />
       </article>
     );
@@ -161,10 +171,8 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
 
   const renderStep4 = () => {
     return (
-      <article className="step" ref={stepThreeRef}>
-        <h3 className="step__header">
-          4. Синхронизация конкурсных групп
-        </h3>
+      <article className="step" ref={stepFourRef}>
+        <h3 className="step__header">4. Синхронизация конкурсных групп</h3>
 
         <CompetitionGroupSync
           selectionGroupIds={selectionGroupsIds}
@@ -196,7 +204,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
             <ApplyButtonWithActionDisplay
               showErrorWarning={false}
               showSuccessMessage={false}
-              onNextStep={handleGroupSelectButton}
+              onNextStep={handleStepTwo}
             >
               Применить изменения
             </ApplyButtonWithActionDisplay>
@@ -209,19 +217,17 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
         </div>
       </article>
 
-      {false && selectionValid && selectionGroupsIds.length === 2
+      {selectionValid && selectionGroupsIds.length === 2
         ? renderStep2()
         : null}
 
-      {selectionValid && selectionGroupsIds.length === 2 && true // TODO Delete this
+      {selectionValid && selectionGroupsIds.length === 2 && mupEditorLoaded // TODO Delete this
         ? renderStep3()
         : null}
 
-      {
-      selectionValid &&
-      selectionGroupsIds.length === 2
-      // mupEditorLoaded // TODO Delete this
-        ? renderStep4()
+      {selectionValid && selectionGroupsIds.length === 2 && mupEditorLoaded && competitionGroupLoaded
+        ? // mupEditorLoaded // TODO Delete this
+          renderStep4()
         : null}
     </section>
   );

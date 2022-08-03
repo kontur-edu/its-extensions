@@ -3,4 +3,5 @@ export interface ICompetitionGroupPreparationProps {
   dataIsPrepared: boolean;
   onUnauthorized: () => void;
   onNextStep: () => void;
+  onLoad: () => void;
 }

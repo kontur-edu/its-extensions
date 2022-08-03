@@ -277,7 +277,9 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
               showErrorWarning={false}
               showSuccessMessage={false}
               onNextStep={handleGroupSelectButton}
-            />
+            >
+              Применить изменения
+            </ApplyButtonWithActionDisplay>
           )}
           <p className="next_step__message">
             {selectionValid && selectionGroupsIds.length !== 2

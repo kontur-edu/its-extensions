@@ -732,7 +732,9 @@ export function MupEditor(props: IMupEditorProps) {
           onNextStep={props.onNextStep}
           onApply={handleApplyRealDebounced}
           loading={executingActionsInProgress}
-        />
+        >
+          Применить изменения
+        </ApplyButtonWithActionDisplay>
       </article>
     </section>
   );

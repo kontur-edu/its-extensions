@@ -1,6 +1,6 @@
-import { Refresh } from "@mui/icons-material";
 import { Button } from "@mui/material";
 import React, { useContext, useState, useRef, useEffect } from "react";
+import { DEBOUNCE_MS } from "../../../utils/constants";
 import { ITSContext } from "../../../common/Context";
 import {
   ISelectionGroupData,
@@ -14,12 +14,24 @@ import {
 import { OuterLink } from "../../OuterLink";
 import style from "./CompetitionGroupPreparation.module.css";
 import { ICompetitionGroupPreparationProps } from "./types";
+import { createDebouncedWrapper, prepareMupData } from "../../../utils/helpers";
+import {
+  createUpdateSubgroupCountActions,
+  createDeleteCreatedSubgroupCountActions,
+} from "../../../competitionGroupPreparation/actionCreator";
+
+import {
+  IActionExecutionLogItem,
+  ITSAction,
+  executeActions,
+} from "../../../common/actions";
 
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import { RefreshButton } from "../../RefreshButton";
+import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 
 function extractCompetitionGroupIds(
   selectionGroupIds: number[],
@@ -45,6 +57,8 @@ function getCompetitionGroupName(
   return competitionGroupId;
 }
 
+const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
+
 export function CompetitionGroupPreparation(
   props: ICompetitionGroupPreparationProps
 ) {
@@ -52,6 +66,23 @@ export function CompetitionGroupPreparation(
   const [selectedCompetitionGroupId, setSelectedCompetitionGroupId] = useState<
     number | null
   >(null);
+
+  const [allMupNames, setAllMupNames] = useState<Set<string>>(
+    new Set<string>()
+  );
+  const [updateSubgroupCountActions, setUpdateSubgroupCountActions] = useState<
+    ITSAction[]
+  >([]);
+  const [
+    updateSubgroupCountActionResults,
+    setUpdateSubgroupCountActionResults,
+  ] = useState<IActionExecutionLogItem[]>([]);
+
+  // const [updateSubgroupCountActions, setUpdateSubgroupCountActions] = useState<ITSAction[]>([]);
+  // const [updateSubgroupCountActionResults, setUpdateSubgroupCountActionResults] = useState<
+  //   IActionExecutionLogItem[]
+  // >([]);
+
   const [ensureInProgress, setEnsureInProgress] = useState<boolean>(false);
   const currentEnsurePromise = useRef<Promise<any> | null>(null);
 
@@ -136,22 +167,91 @@ export function CompetitionGroupPreparation(
   };
 
   const prepareData = () => {
+    const repo = context.dataRepository;
     const newCompetitionGroupIds = extractCompetitionGroupIds(
       props.selectionGroupIds,
-      context.dataRepository.selectionGroupData
+      repo.selectionGroupData
     );
-    if (newCompetitionGroupIds.length > 0) {
-      setSelectedCompetitionGroupId(newCompetitionGroupIds[0]);
+    let newSelectedCompetitionGroupId = selectedCompetitionGroupId;
+    if (
+      newSelectedCompetitionGroupId === null &&
+      newCompetitionGroupIds.length > 0
+    ) {
+      newSelectedCompetitionGroupId = newCompetitionGroupIds[0];
     }
+
+    setSelectedCompetitionGroupId(newSelectedCompetitionGroupId);
+    // if (newCompetitionGroupIds.length > 0) {
+    //   setSelectedCompetitionGroupId(newCompetitionGroupIds[0]);
+    // }
     setCompetitionGroupIds(newCompetitionGroupIds);
+
+    const allMupIds = new Set<string>();
+    // if (props.selectionGroupIds > 0) {
+
+    // }
+    for (const selectionGroupId of props.selectionGroupIds) {
+      if (
+        !repo.selectionGroupToMupsData.data.hasOwnProperty(selectionGroupId)
+      ) {
+        continue;
+      }
+      Object.keys(
+        repo.selectionGroupToMupsData.data[selectionGroupId].data
+      ).forEach((mId) => allMupIds.add(mId));
+    }
+
+    const newAllMupNames = new Set<string>(
+      Array.from(allMupIds).map((mId) => repo.mupData.data[mId].name)
+    );
+    setAllMupNames(newAllMupNames);
+
+    return { newSelectedCompetitionGroupId, newAllMupNames };
+  };
+
+  const generateUpdateSubgroupCountActions = (
+    cgId: number,
+    newAllMupNames: Set<string>
+  ) => {
+    const actions = createUpdateSubgroupCountActions(
+      cgId,
+      newAllMupNames,
+      context.dataRepository.competitionGroupToSubgroupMetas
+    );
+    setUpdateSubgroupCountActions(actions);
+  };
+
+  const generateAllActions = (cgId: number, newAllMupNames: Set<string>) => {
+    generateUpdateSubgroupCountActions(cgId, newAllMupNames);
+  };
+
+  const handleUpdateSubgroupCountApply = () => {
+    executeActions(updateSubgroupCountActions, context)
+      .then((actionResults) => {
+        setUpdateSubgroupCountActionResults(actionResults);
+      })
+      .then(() => handleRefresh());
+    // TODO: generate all actions
   };
 
   const handleRefresh = () => {
-    ensureData().then(() => prepareData());
+    ensureData(true)
+      .then(() => prepareData())
+      .then(
+        ({ newSelectedCompetitionGroupId, newAllMupNames }) =>
+          newSelectedCompetitionGroupId !== null &&
+          generateAllActions(newSelectedCompetitionGroupId, newAllMupNames)
+      );
   };
 
   useEffect(() => {
-    ensureData().then(() => prepareData());
+    ensureData()
+      .then(() => prepareData())
+      .then(
+        ({ newSelectedCompetitionGroupId, newAllMupNames }) =>
+          newSelectedCompetitionGroupId !== null &&
+          generateAllActions(newSelectedCompetitionGroupId, newAllMupNames)
+      );
   }, []);
 
   const handleCompetitionGroupChange = (event: SelectChangeEvent) => {
@@ -164,6 +264,37 @@ export function CompetitionGroupPreparation(
     }
   };
 
+  const handleUpdateSubgroupCountApplyDebounced = () => {
+    debouncedWrapperForApply(handleUpdateSubgroupCountApply);
+  };
+
+  const renderSelect = () => {
+    return (
+      <FormControl sx={{ minWidth: 120, marginLeft: "1em" }}>
+        <InputLabel id="competition-group-preparation-select">
+          Конкурсная группа
+        </InputLabel>
+        {selectedCompetitionGroupId !== null && (
+          <Select
+            labelId="competition-group-preparation-select"
+            value={`${selectedCompetitionGroupId}`}
+            label="Конкурсная группа"
+            onChange={handleCompetitionGroupChange}
+          >
+            {competitionGroupIds.map((cgId) => (
+              <MenuItem key={cgId} value={cgId}>
+                {getCompetitionGroupName(
+                  cgId,
+                  context.dataRepository.competitionGroupData
+                )}
+              </MenuItem>
+            ))}
+          </Select>
+        )}
+      </FormControl>
+    );
+  };
+
   return (
     <React.Fragment>
       <h3>
@@ -174,34 +305,22 @@ export function CompetitionGroupPreparation(
       <ol className={style.step_list}>
         <li>
           Выберите эталонную конкурсную группу для настройки
-          <FormControl sx={{ minWidth: 120, marginLeft: "1em" }}>
-            <InputLabel id="competition-group-preparation-select">
-              Конкурсная группа
-            </InputLabel>
-            {selectedCompetitionGroupId !== null && (
-              <Select
-                labelId="competition-group-preparation-select"
-                value={`${selectedCompetitionGroupId}`}
-                label="Конкурсная группа"
-                onChange={handleCompetitionGroupChange}
-              >
-                {competitionGroupIds.map((cgId) => (
-                  <MenuItem key={cgId} value={cgId}>
-                    {getCompetitionGroupName(
-                      cgId,
-                      context.dataRepository.competitionGroupData
-                    )}
-                  </MenuItem>
-                ))}
-              </Select>
-            )}
-          </FormControl>
+          {renderSelect()}
         </li>
         <li>
           <p>Определите количество подгрупп для нагрузок выбранных МУПов</p>
-          <Button>
+
+          <ApplyButtonWithActionDisplay
+            showErrorWarning={true}
+            showSuccessMessage={true}
+            actions={updateSubgroupCountActions}
+            actionResults={updateSubgroupCountActionResults}
+            // clicked={true}
+            // onNextStep={onNextStep}
+            onApply={handleUpdateSubgroupCountApplyDebounced}
+          >
             Установить количество подгрупп в 1 для всех нагрузок МУПов
-          </Button>
+          </ApplyButtonWithActionDisplay>
           <p>
             Отредактируйте количество подгрупп{" "}
             <OuterLink
@@ -216,11 +335,14 @@ export function CompetitionGroupPreparation(
           </p>
         </li>
         <li>
-          <p>Создайте подгруппы и выберите преподавателей</p>
-          <Button style={{ color: "red" }}>Удалить созданные подгруппы</Button>
+          <p>
+            Создание подгрупп, определение Лимитов и выбор преподавателей для
+            подгрупп
+          </p>
+          {/* <Button style={{ color: "red" }}>Удалить созданные подгруппы</Button> */}
           <Button>Создать подгруппы и попробовать выбрать преподавателя</Button>
           <p>
-            Отредактируйте преподавателей{" "}
+            Отредактируйте Лимиты и выбранных преподавателей созданных подгрупп{" "}
             <OuterLink
               url={COMPETITION_GROUP_SUBGROUP_URL + selectedCompetitionGroupId}
             >

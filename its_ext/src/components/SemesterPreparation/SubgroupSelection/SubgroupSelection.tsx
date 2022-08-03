@@ -432,7 +432,9 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
           actions={subgroupSelectionActions}
           actionResults={subgroupSelectionActionsResults}
           onApply={handleApplyRealDebounced}
-        />
+        >
+          Применить изменения
+        </ApplyButtonWithActionDisplay>
       </article>
     </section>
   );

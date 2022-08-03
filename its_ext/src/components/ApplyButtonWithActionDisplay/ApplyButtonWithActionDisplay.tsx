@@ -25,7 +25,7 @@ function clipString(message: string, length: number) {
 const MESSAGE_SIZE = 150;
 
 export function ApplyButtonWithActionDisplay(
-  props: IApplyButtonWithActionDisplayProps
+  props: React.PropsWithChildren<IApplyButtonWithActionDisplayProps>
 ) {
   const [actionListOpen, setActionListOpen] = useState<boolean>(false);
   const [actionResultsListOpen, setActionResultsListOpen] =
@@ -136,6 +136,7 @@ export function ApplyButtonWithActionDisplay(
       <React.Fragment>
         {successMessage}
         {nextStepButton}
+        {!successMessage && !nextStepButton && "Для данного шага не найдено действий"}
       </React.Fragment>
     );
   };
@@ -153,7 +154,7 @@ export function ApplyButtonWithActionDisplay(
           variant="contained"
           style={{ marginRight: "1em" }}
         >
-          Примененить изменения
+          {props.children}
         </Button>
       </React.Fragment>
     );

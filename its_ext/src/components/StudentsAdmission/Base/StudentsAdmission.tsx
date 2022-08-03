@@ -159,7 +159,9 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
             showErrorWarning={false}
             showSuccessMessage={false}
             onNextStep={handleCompetitionGroupSelectButton}
-          />
+          >
+            Применить изменения
+          </ApplyButtonWithActionDisplay>
           <p className="next_step__message">
             {!isGroupSelectionValid() &&
               "Выберите одну или две группы для перехода к следующему шагу"}

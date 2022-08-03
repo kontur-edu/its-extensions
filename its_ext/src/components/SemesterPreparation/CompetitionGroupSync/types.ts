@@ -1,4 +1,4 @@
-export interface ISubgroupSelectionProps {
+export interface ICompetitionGroupSyncProps {
   selectionGroupIds: number[];
   dataIsPrepared: boolean;
   onUnauthorized: () => void;

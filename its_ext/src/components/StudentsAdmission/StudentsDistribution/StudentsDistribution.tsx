@@ -621,7 +621,9 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           actionResults={studentAdmissionActionResults}
           onApply={handleRealApplyDebounced}
           onNextStep={props.onNextStep}
-        />
+        >
+          Применить изменения
+        </ApplyButtonWithActionDisplay>
       </React.Fragment>
     );
   };

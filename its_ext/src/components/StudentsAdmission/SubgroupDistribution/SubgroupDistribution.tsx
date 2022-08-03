@@ -487,7 +487,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
       }
       return (
         <li key={cgId}>
-          <OuterLink url={link} title={competitionGroupName} />
+          <OuterLink url={link}>{competitionGroupName}</OuterLink>
         </li>
       );
     });
@@ -509,7 +509,9 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
           actionResults={subgroupDistributionActionForOneGroupPerLoadResults}
           clicked={firstApplyClicked}
           onApply={handleSubgroupDistributionForOneGroupPerLoadApplyDebounced}
-        />
+        >
+          Применить изменения
+        </ApplyButtonWithActionDisplay>
       </React.Fragment>
     );
   };
@@ -603,7 +605,9 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
           actionResults={subgroupDistributionActionResults}
           clicked={secondApplyClicked}
           onApply={handleSubgroupDistributionRealApplyDebounced}
-        />
+        >
+          Применить изменения
+        </ApplyButtonWithActionDisplay>
       </React.Fragment>
     );
   };

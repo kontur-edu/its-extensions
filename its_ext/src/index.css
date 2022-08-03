@@ -265,5 +265,5 @@ td {
 
 .load_content_container_small {
   position: relative;
-  width: 100%;
+  /* width: 100%; */
 }

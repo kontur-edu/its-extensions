@@ -28,6 +28,7 @@ export interface IMup {
   name: string;
   shortName: string;
   ze: number; // testUnits
+  teacherIds: string[];
 }
 
 export interface ISelectionGroupMup {

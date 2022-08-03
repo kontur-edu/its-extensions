@@ -108,6 +108,7 @@ export class ITSApiService {
         name: obj["title"],
         shortName: obj["shortTitle"],
         ze: obj["testUnits"],
+        teacherIds: obj["teachers"],
       };
       return mup;
     });

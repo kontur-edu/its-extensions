@@ -24,8 +24,6 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
   const stepThreeRef = useRef<HTMLElement | null>(null);
   const stepFourRef = useRef<HTMLElement | null>(null);
 
-
-
   const isGroupSelectionValid = () => {
     return competitionGroupIds.length > 0 && competitionGroupIds.length <= 2;
   };
@@ -161,7 +159,9 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
             showErrorWarning={false}
             showSuccessMessage={false}
             onNextStep={handleCompetitionGroupSelectButton}
-          />
+          >
+            Применить изменения
+          </ApplyButtonWithActionDisplay>
           <p className="next_step__message">
             {!isGroupSelectionValid() &&
               "Выберите одну или две группы для перехода к следующему шагу"}

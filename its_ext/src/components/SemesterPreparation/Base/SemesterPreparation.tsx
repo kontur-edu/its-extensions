@@ -7,7 +7,7 @@ import { REQUEST_ERROR_UNAUTHORIZED } from "../../../utils/constants";
 
 import { GroupSelect } from "../GroupSelect/GroupSelect";
 import { ITSContext } from "../../../common/Context";
-import { SubgroupSelection } from "../SubgroupSelection";
+import { CompetitionGroupSync } from "../CompetitionGroupSync";
 
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 import { BackButton } from "../../BackButton";
@@ -244,10 +244,10 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     return (
       <article className="step" ref={stepThreeRef}>
         <h3 className="step__header">
-          3. Определите количество подгрупп для МУПов и выберите преподавателей
+          4. Синхронизация конкурсных групп
         </h3>
 
-        <SubgroupSelection
+        <CompetitionGroupSync
           selectionGroupIds={selectionGroupsIds}
           dataIsPrepared={mupEditorLoaded} // TODO: delete this
           onUnauthorized={props.onUnauthorized}

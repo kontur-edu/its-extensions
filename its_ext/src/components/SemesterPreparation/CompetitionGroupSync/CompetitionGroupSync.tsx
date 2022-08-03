@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect, useRef } from "react";
 import { ITSContext } from "../../../common/Context";
-import style from "./SubgroupSelection.module.css";
-import { ISubgroupSelectionProps } from "./types";
+import style from "./CompetitionGroupSync.module.css";
+import { ICompetitionGroupSyncProps } from "./types";
 import {
   COMPETITION_GROUP_URL,
   COMPETITION_GROUP_SUBGROUP_META_URL,
@@ -16,21 +16,19 @@ import {
   createActionsByDiffs,
   getMupNameActions,
 } from "../../../subgroupUpdater/actionCreator";
-import {
-  createSubgroupDiffInfo,
-  createSubgroupDiffs,
-  createMupToDifferenceMessages,
-  createTodoMessages,
-} from "../../../subgroupUpdater/subgroupDiffs";
 
 import { createDebouncedWrapper } from "../../../utils/helpers";
 import { executeActions } from "../../../common/actions";
+import { createSyncActions } from "./utils";
 
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 import { OuterLink } from "../../OuterLink";
 
 import { RefreshButton } from "../../RefreshButton";
 import CircularProgress from "@mui/material/CircularProgress";
+import { SimpleSelect } from "../../SimpleSelect/SimpleSelect";
+import { getCompetitionGroupName } from "../CompetitionGroupPreparation/CompetitionGroupPreparation";
+import { SelectChangeEvent } from "@mui/material/Select";
 
 function checkArraysSame(arr1: any[], arr2: any[]) {
   return arr1.sort().join(",") === arr2.sort().join(",");
@@ -38,23 +36,24 @@ function checkArraysSame(arr1: any[], arr2: any[]) {
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
-export function SubgroupSelection(props: ISubgroupSelectionProps) {
+export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
   const [competitionGroupIds, setCompetitionGroupIds] = useState<number[]>([]);
+  const [referenceCompetitionGroupId, setReferenceCompetitionGroupId] =
+    useState<number | null>(null);
   const [mupIds, setMupIds] = useState<string[]>([]);
   const [mupIdsSame, setMupIdsSame] = useState<boolean>(true);
-  const [subgroupDiffInfo, setSubgroupDiffInfo] =
-    useState<ISubgoupDiffInfo | null>(null);
+  // const [subgroupDiffInfo, setSubgroupDiffInfo] =
+  //   useState<ISubgoupDiffInfo | null>(null);
   // const [mupToDiffs, setMupToDiffs] = useState<{
   //   [key: string]: IMupSubgroupDiff;
   // }>({});
   const [mupToDifferenceTodoMessages, setMupToDifferenceTodoMessages] =
-    useState<{ [key: string]: [string[], string[]] }>({});
+    useState<{ [key: string]: string[] }>({});
 
-  const [subgroupSelectionActions, setSubgroupSelectionActions] = useState<
-    ITSAction[]
+  const [syncActions, setSyncActions] = useState<ITSAction[]>([]);
+  const [syncActionResults, setSyncActionResults] = useState<
+    IActionExecutionLogItem[]
   >([]);
-  const [subgroupSelectionActionsResults, setSubgroupSelectionActionsResults] =
-    useState<IActionExecutionLogItem[]>([]);
   const [ensureInProgress, setEnsureInProgress] = useState<boolean>(false);
   const currentEnsurePromise = useRef<Promise<any> | null>(null);
 
@@ -72,7 +71,12 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
     return newCompetitionGroupIds;
   };
 
-  const ensureData = (refresh: boolean) => {
+  
+
+  const ensureData = (
+    refresh: boolean = false,
+    forceRefreshSubgroups: boolean = false
+  ) => {
     console.log("SubgroupSelection: ensureData");
     if (currentEnsurePromise.current !== null) {
       console.log("SubgroupSelection: ensureData is already in progress");
@@ -92,7 +96,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
         ? Promise.resolve()
         : repo.UpdateSelectionGroupToMupsData(props.selectionGroupIds);
     const emulateCheckSubgroupMetas = (newCompetitionGroupIds: number[]) =>
-      !refresh
+      !refresh && !forceRefreshSubgroups
         ? Promise.resolve()
         : Promise.allSettled(
             newCompetitionGroupIds.map((cId) =>
@@ -100,11 +104,15 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
             )
           );
     const updateSubgroupMetasPromise = (newCompetitionGroupIds: number[]) =>
-      !refresh && repo.CheckSubgroupMetasPresent(newCompetitionGroupIds)
+      !refresh &&
+      !forceRefreshSubgroups &&
+      repo.CheckSubgroupMetasPresent(newCompetitionGroupIds)
         ? Promise.resolve()
         : repo.UpdateSubgroupMetas(newCompetitionGroupIds);
     const updateSubgroupsPromise = (newCompetitionGroupIds: number[]) =>
-      !refresh && repo.CheckSubgroupPresent(competitionGroupIds)
+      !refresh &&
+      !forceRefreshSubgroups &&
+      repo.CheckSubgroupPresent(competitionGroupIds)
         ? Promise.resolve()
         : repo.UpdateSubgroups(newCompetitionGroupIds);
 
@@ -143,113 +151,87 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
   };
 
   const prepareData = () => {
+    const repo = context.dataRepository;
+
     const newCompetitionGroupIds = extractCompetitionGroupIds(
       props.selectionGroupIds
     );
+
     setCompetitionGroupIds(newCompetitionGroupIds);
+
+    let newReferenceCompetitionGroupId = referenceCompetitionGroupId;
+    if (
+      referenceCompetitionGroupId === null &&
+      newCompetitionGroupIds.length > 0
+    ) {
+      newReferenceCompetitionGroupId = newCompetitionGroupIds[0];
+      setReferenceCompetitionGroupId(newCompetitionGroupIds[0]);
+    }
 
     const sgMupIds: string[][] = [];
     for (let sgId of props.selectionGroupIds) {
-      sgMupIds.push(
-        context.dataRepository.selectionGroupToMupsData.data[sgId].ids
-      );
+      sgMupIds.push(repo.selectionGroupToMupsData.data[sgId].ids);
     }
     if (!checkArraysSame(sgMupIds[0], sgMupIds[1])) {
       setMupIdsSame(false);
-      // alert(`not setMupIdsSame`);
-      return;
+    } else {
+      setMupIdsSame(true);
     }
 
-    setMupIdsSame(true);
-    setMupIds(sgMupIds[0]);
-    const mupNames: string[] = [];
+    const mupNameToMupId: { [key: string]: string } = {};
+    sgMupIds[0].forEach((mId) => {
+      const mup = repo.mupData.data[mId];
+      mupNameToMupId[mup.name] = mId;
+    });
 
-    for (let mupId of sgMupIds[0]) {
-      const mup = context.dataRepository.mupData.data[mupId];
-      mupNames.push(mup.name);
-    }
-    // console.log("creating subgoupDiffInfo");
-    // console.log("context.dataRepository.competitionGroupToSubgroupMetas");
-    //     console.log(context.dataRepository.competitionGroupToSubgroupMetas);
-    // console.log("context.dataRepository.competitionGroupToSubgroupIds");
-    //     console.log(context.dataRepository.competitionGroupToSubgroupIds);
-    // console.log("context.dataRepository.subgroupData");
-    //     console.log(context.dataRepository.subgroupData);
-    const newSubgoupDiffInfo: ISubgoupDiffInfo = createSubgroupDiffInfo(
+    return {
+      newReferenceCompetitionGroupId,
       newCompetitionGroupIds,
-      context.dataRepository.competitionGroupToSubgroupMetas,
-      context.dataRepository.competitionGroupToSubgroupIds,
-      context.dataRepository.subgroupData
-    );
-    console.log("subgoupDiffInfo");
-    console.log(newSubgoupDiffInfo);
-    setSubgroupDiffInfo(newSubgoupDiffInfo);
+      mupNameToMupId,
+    };
+  };
 
-    const newMupToDiffs: { [key: string]: IMupSubgroupDiff } =
-      createSubgroupDiffs(
-        mupNames,
+  const generateActions = (
+    newReferenceCompetitionGroupId: number,
+    newCompetitionGroupIds: number[],
+    mupNameToMupId: { [key: string]: string }
+  ) => {
+    const repo = context.dataRepository;
+    const newActions = createSyncActions(
+      newReferenceCompetitionGroupId,
+      newCompetitionGroupIds,
+      mupNameToMupId,
+      repo.competitionGroupToSubgroupMetas,
+      repo.competitionGroupToSubgroupIds,
+      repo.subgroupData
+    );
+    setSyncActions(newActions);
+    return newActions;
+  };
+
+  const refreshData = (refreshAll: boolean = true, refreshSubgroups: boolean = false) => {
+    return ensureData(true).then(() => {
+      const {
+        newReferenceCompetitionGroupId,
         newCompetitionGroupIds,
-        newSubgoupDiffInfo,
-        context.dataRepository.subgroupData
-      );
-    console.log("newMupToDiffs");
-    console.log(newMupToDiffs);
-    // setMupToDiffs(newMupToDiffs);
-
-    const newActions = createActionsByDiffs(
-      newCompetitionGroupIds,
-      newMupToDiffs,
-      newSubgoupDiffInfo
-      // context.dataRepository.subgroupData
-    );
-
-    console.log("SubgroupSelection: newActions");
-    console.log(newActions);
-
-    setSubgroupSelectionActions(newActions);
-
-    const mupNameToActions = getMupNameActions(newActions);
-
-    const newMupToDifferenceMessages = createMupToDifferenceMessages(
-      mupNames,
-      newMupToDiffs,
-      // newCompetitionGroupIds,
-      newSubgoupDiffInfo
-    );
-    console.log("newMupToDifferenceMessages");
-    console.log(newMupToDifferenceMessages);
-
-    const mupToDifferenceTodoMessages: {
-      [key: string]: [string[], string[]];
-    } = {};
-    for (const mupName of mupNames) {
-      let mupActions: ITSAction[] = [];
-      if (mupNameToActions.hasOwnProperty(mupName)) {
-        mupActions = mupNameToActions[mupName];
+        mupNameToMupId,
+      } = prepareData();
+      if (newReferenceCompetitionGroupId === null) {
+        console.warn(`newReferenceCompetitionGroupId is null`);
+        return;
       }
-      if (!newMupToDiffs.hasOwnProperty(mupName)) {
-        throw new Error(`${mupName} has no corresponding newMupToDiffs`);
-      }
-      const todoMessages = createTodoMessages(
-        // newMupToDiffs[mupName],
-        mupActions
+      generateActions(
+        newReferenceCompetitionGroupId,
+        newCompetitionGroupIds,
+        mupNameToMupId
       );
-      mupToDifferenceTodoMessages[mupName] = [
-        newMupToDifferenceMessages[mupName],
-        todoMessages,
-      ];
-    }
-
-    setMupToDifferenceTodoMessages(mupToDifferenceTodoMessages);
+    });
   };
 
-  const refreshData = () => {
-    return ensureData(true).then(() => prepareData());
-  };
 
   const refreshDataDebounced = () => {
     debouncedWrapperForApply(() => {
-      refreshData();
+      refreshData(true);
     });
   };
 
@@ -257,11 +239,18 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
     if (props.selectionGroupIds.length !== 2) {
       return;
     }
-    ensureData(false).then(() => {
-      prepareData();
-    });
-    // handleApply();
+    refreshData(false);
   }, [props.dataIsPrepared, props.selectionGroupIds]);
+
+  const handleReferenceCompetitionGroupChange = (event: SelectChangeEvent) => {
+    const newReferenceCompetitionGroupIdStr = event.target.value;
+    if (newReferenceCompetitionGroupIdStr !== null) {
+      const newReferenceCompetitionGroupId = Number(newReferenceCompetitionGroupIdStr);
+
+      isFinite(newReferenceCompetitionGroupId) &&
+      setReferenceCompetitionGroupId(Number(newReferenceCompetitionGroupId));
+    }
+  };
 
   const renderCompetitionGroupIsMissingMessage = () => {
     const selectionGroupNamesWithoutCompetitionGroups: string[] = [];
@@ -294,30 +283,6 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
     );
   };
 
-  const renderCompetitionGroupSubgroupMetaLinks = () => {
-    if (competitionGroupIds.length !== 2) return null;
-    return (
-      <React.Fragment>
-        <h3>Заполните подгруппы для одной Конкурсной группы Групп выбора:</h3>
-        <ul className={style.list}>
-          {props.selectionGroupIds.map((sgId) => {
-            const selectionGroup =
-              context.dataRepository.selectionGroupData.data[sgId];
-            const competitionGroupName = selectionGroup.competitionGroupName;
-            const link =
-              COMPETITION_GROUP_SUBGROUP_META_URL +
-              selectionGroup.competitionGroupId;
-            return (
-              <li key={sgId}>
-                <OuterLink url={link}>{competitionGroupName}</OuterLink>
-              </li>
-            );
-          })}
-        </ul>
-      </React.Fragment>
-    );
-  };
-
   const renderMupsAreDifferent = () => {
     if (mupIdsSame) return null;
     return (
@@ -334,39 +299,61 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
     return lhsName.localeCompare(rhsName);
   };
 
-  const renderRows = () => {
-    if (!subgroupDiffInfo) return null;
-
-    return mupIds.sort(compareMupIds).map((mupId) => {
-      const mup = context.dataRepository.mupData.data[mupId];
-
-      if (!mupToDifferenceTodoMessages.hasOwnProperty(mup.name)) {
-        throw new Error(
-          `${mup.name} has no corresponding mupToDifferenceTodoMessages`
-        );
-      }
-      const diffTodoMessages = mupToDifferenceTodoMessages[mup.name];
-
-      return (
-        <tr key={mupId}>
-          <td>{mup.name}</td>
-          <td>
-            <ul className={style.list}>
-              {diffTodoMessages[0].map((val, index) => (
-                <li key={index}>{val}</li>
-              ))}
-            </ul>
-          </td>
-          <td>
-            <ul className={style.list}>
-              {diffTodoMessages[1].map((val, index) => (
-                <li key={index}>{val}</li>
-              ))}
-            </ul>
-          </td>
-        </tr>
+  const renderSelect = () => {
+    const items = competitionGroupIds.map((cgId) => {
+      const name = getCompetitionGroupName(
+        cgId,
+        context.dataRepository.competitionGroupData
       );
+      return {
+        id: cgId,
+        name: `${name}`,
+      };
     });
+    return (
+      <SimpleSelect
+        label={"Конкурсная группа"}
+        items={items}
+        selectedId={referenceCompetitionGroupId}
+        onChange={handleReferenceCompetitionGroupChange}
+      />
+    );
+  };
+
+  const renderRows = () => {
+    return null;
+    // if (!subgroupDiffInfo) return null;
+
+    // return mupIds.sort(compareMupIds).map((mupId) => {
+    //   const mup = context.dataRepository.mupData.data[mupId];
+
+    //   if (!mupToDifferenceTodoMessages.hasOwnProperty(mup.name)) {
+    //     throw new Error(
+    //       `${mup.name} has no corresponding mupToDifferenceTodoMessages`
+    //     );
+    //   }
+    //   const diffTodoMessages = mupToDifferenceTodoMessages[mup.name];
+
+    //   return (
+    //     <tr key={mupId}>
+    //       <td>{mup.name}</td>
+    //       <td>
+    //         <ul className={style.list}>
+    //           {diffTodoMessages[0].map((val, index) => (
+    //             <li key={index}>{val}</li>
+    //           ))}
+    //         </ul>
+    //       </td>
+    //       <td>
+    //         <ul className={style.list}>
+    //           {diffTodoMessages[1].map((val, index) => (
+    //             <li key={index}>{val}</li>
+    //           ))}
+    //         </ul>
+    //       </td>
+    //     </tr>
+    //   );
+    // });
   };
 
   const renderTable = () => {
@@ -377,7 +364,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
             <tr>
               <th>МУП</th>
               <th>Отличия</th>
-              <th>Действие</th>
+              <th>Действия</th>
             </tr>
           </thead>
           <tbody>{competitionGroupIds.length === 2 && renderRows()}</tbody>
@@ -387,8 +374,8 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
   };
 
   const handleApplyReal = () => {
-    executeActions(subgroupSelectionActions, context)
-      .then((results) => setSubgroupSelectionActionsResults(results))
+    executeActions(syncActions, context)
+      .then((results) => setSyncActionResults(results))
       .then(() => alert("Применение изменений завершено"))
       .then(() => refreshDataDebounced())
       .catch((err) => {
@@ -409,8 +396,9 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
       <article>
         {competitionGroupIds.length !== 2 &&
           renderCompetitionGroupIsMissingMessage()}
-        {renderCompetitionGroupSubgroupMetaLinks()}
         {renderMupsAreDifferent()}
+
+        {renderSelect()}
 
         <h4>Сравение Конкурсных групп:</h4>
         <RefreshButton
@@ -429,8 +417,8 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
         <ApplyButtonWithActionDisplay
           showErrorWarning={true}
           showSuccessMessage={true}
-          actions={subgroupSelectionActions}
-          actionResults={subgroupSelectionActionsResults}
+          actions={syncActions}
+          actionResults={syncActionResults}
           onApply={handleApplyRealDebounced}
         >
           Применить изменения

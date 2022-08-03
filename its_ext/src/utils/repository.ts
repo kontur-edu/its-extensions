@@ -213,7 +213,7 @@ export class ITSRepository {
 
   CheckCompetitionGroupDataPresent(competitionGroupIds: number[]) {
     const res = competitionGroupIds.every((cgId) =>
-      this.competitionGroupData.hasOwnProperty(cgId)
+      this.competitionGroupData.data.hasOwnProperty(cgId)
     );
     console.log(`CheckCompetitionGroupDataPresent: ${res}`);
     return res;

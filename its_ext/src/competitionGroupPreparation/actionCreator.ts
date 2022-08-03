@@ -18,7 +18,7 @@ import {
 
 const DEFAULT_SUBGROUP_META_COUNT = 1;
 
-function generateUpdateSubgroupCountActions(
+function generateUpdateSubgroupCountToDefaultActions(
   competitionGroupId: number,
   selectedMupNamesSet: Set<string>,
   competitionGroupToSubgroupMetas: ICompetitionGroupToSubgroupMetas
@@ -118,7 +118,7 @@ function checkSubgroupsCreated(
   return true;
 }
 
-function generateCreateSubgroupsActions(
+export function generateCreateSubgroupsActions(
   competitionGroupId: number,
   mupNameToMupId: { [key: string]: string },
   competitionGroupToSubgroupMetas: ICompetitionGroupToSubgroupMetas,
@@ -142,7 +142,7 @@ function generateCreateSubgroupsActions(
   return actions;
 }
 
-function generateRefreshSubgroupsActions(competitionGroupId: number) {
+export function generateRefreshSubgroupsActions(competitionGroupId: number) {
   return [new RefreshSubgroupsAction([competitionGroupId])];
 }
 
@@ -152,7 +152,7 @@ interface IMupNameToLoadToTeachers {
   };
 }
 
-function findTeacherIds(
+export function findTeacherIds(
   mupNameToMupId: { [key: string]: string },
   subgroupMetas: ISubgroupMeta[],
   subgroupIds: number[],
@@ -192,7 +192,7 @@ function findTeacherIds(
   return mupNameToLoadToTeachers;
 }
 
-function generateUpdateTeacherActions(
+export function generateUpdateTeacherActions(
   competitionGroupId: number,
   mupNameToMupId: { [key: string]: string },
   mupNameToLoadToTeachers: IMupNameToLoadToTeachers,
@@ -259,7 +259,7 @@ export function createUpdateSubgroupCountActions(
   const actions: ITSAction[] = [];
 
   actions.push(
-    ...generateUpdateSubgroupCountActions(
+    ...generateUpdateSubgroupCountToDefaultActions(
       competitionGroupId,
       selectedMupNamesSet,
       competitionGroupToSubgroupMetas

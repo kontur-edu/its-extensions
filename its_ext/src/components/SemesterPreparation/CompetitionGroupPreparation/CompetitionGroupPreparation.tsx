@@ -33,6 +33,7 @@ import MenuItem from "@mui/material/MenuItem";
 import { RefreshButton } from "../../RefreshButton";
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 import { NextStepButton } from "../../ApplyButtonWithActionDisplay/ApplyButtonWithActionDisplay";
+import { SimpleSelect } from "../../SimpleSelect/SimpleSelect";
 
 function extractCompetitionGroupIds(
   selectionGroupIds: number[],
@@ -48,7 +49,7 @@ function extractCompetitionGroupIds(
   return newCompetitionGroupIds;
 }
 
-function getCompetitionGroupName(
+export function getCompetitionGroupName(
   competitionGroupId: number,
   competitionGroupData: ICompetitionGroupData
 ) {
@@ -183,13 +184,13 @@ export function CompetitionGroupPreparation(
     return ensurePromise;
   };
 
-  const prepareData = () => {
+  const prepareData = (newSelectedCompetitionGroupId: number | null = null) => {
     const repo = context.dataRepository;
     const newCompetitionGroupIds = extractCompetitionGroupIds(
       props.selectionGroupIds,
       repo.selectionGroupData
     );
-    let newSelectedCompetitionGroupId = selectedCompetitionGroupId;
+    newSelectedCompetitionGroupId = newSelectedCompetitionGroupId ?? selectedCompetitionGroupId;
     if (
       newSelectedCompetitionGroupId === null &&
       newCompetitionGroupIds.length > 0
@@ -198,15 +199,11 @@ export function CompetitionGroupPreparation(
     }
 
     setSelectedCompetitionGroupId(newSelectedCompetitionGroupId);
-    // if (newCompetitionGroupIds.length > 0) {
-    //   setSelectedCompetitionGroupId(newCompetitionGroupIds[0]);
-    // }
+
     setCompetitionGroupIds(newCompetitionGroupIds);
 
     const allMupIds = new Set<string>();
-    // if (props.selectionGroupIds > 0) {
 
-    // }
     for (const selectionGroupId of props.selectionGroupIds) {
       if (
         !repo.selectionGroupToMupsData.data.hasOwnProperty(selectionGroupId)
@@ -217,11 +214,6 @@ export function CompetitionGroupPreparation(
         repo.selectionGroupToMupsData.data[selectionGroupId].data
       ).forEach((mId) => allMupIds.add(mId));
     }
-
-    // const newAllMupNames = new Set<string>(
-    //   Array.from(allMupIds).map((mId) => repo.mupData.data[mId].name)
-    // );
-    // setAllMupNames(newAllMupNames);
 
     return { newSelectedCompetitionGroupId, allMupIds };
   };
@@ -292,32 +284,44 @@ export function CompetitionGroupPreparation(
 
   const handleRefresh = () => {
     ensureData(true)
-      .then(() => prepareData())
-      .then(
-        ({ newSelectedCompetitionGroupId, allMupIds }) =>
-          newSelectedCompetitionGroupId !== null &&
+      .then(() => {
+        const { newSelectedCompetitionGroupId, allMupIds } = prepareData();
+        newSelectedCompetitionGroupId !== null &&
           generateAllActions(newSelectedCompetitionGroupId, allMupIds)
-      );
+      });
   };
 
-  const refreshSubgroupsAndRegenerateAcrtions = () => {
+  const handleRefreshDebounced = () => {
+    debouncedWrapperForApply(handleRefresh);
+  }
+
+  const refreshSubgroupsAndRegenerateAcrtions = (selectedCompetitionGroupId: number | null = null) => {
     ensureData(false, true)
-      .then(() => prepareData())
-      .then(
-        ({ newSelectedCompetitionGroupId, allMupIds }) =>
-          newSelectedCompetitionGroupId !== null &&
+      .then(() => {
+        const { newSelectedCompetitionGroupId, allMupIds } = prepareData(selectedCompetitionGroupId);
+        newSelectedCompetitionGroupId !== null &&
           generateAllActions(newSelectedCompetitionGroupId, allMupIds)
-      );
+      });
   };
+  
+  const refreshAfterCompetitionGroupSelectDebounced = (selectedCompetitionGroupId: number | null = null) => {
+    debouncedWrapperForApply(() => {
+      ensureData(false, false)
+      .then(() => {
+        const { newSelectedCompetitionGroupId, allMupIds } = prepareData(selectedCompetitionGroupId);
+        newSelectedCompetitionGroupId !== null &&
+          generateAllActions(newSelectedCompetitionGroupId, allMupIds)
+      });
+    });
+  }
 
   useEffect(() => {
     ensureData()
-      .then(() => prepareData())
-      .then(
-        ({ newSelectedCompetitionGroupId, allMupIds }) =>
-          newSelectedCompetitionGroupId !== null &&
+      .then(() => {
+        const { newSelectedCompetitionGroupId, allMupIds } = prepareData();
+        newSelectedCompetitionGroupId !== null &&
           generateAllActions(newSelectedCompetitionGroupId, allMupIds)
-      );
+      });
   }, []);
 
   const handleCompetitionGroupChange = (event: SelectChangeEvent) => {
@@ -327,6 +331,8 @@ export function CompetitionGroupPreparation(
 
       isFinite(newCompetitionGroupId) &&
         setSelectedCompetitionGroupId(Number(newCompetitionGroupIdStr));
+      
+        refreshAfterCompetitionGroupSelectDebounced(newCompetitionGroupId);
     }
   };
 
@@ -360,29 +366,40 @@ export function CompetitionGroupPreparation(
   };
 
   const renderSelect = () => {
+    const items = competitionGroupIds.map(cgId => {
+      const name = getCompetitionGroupName(
+        cgId,
+        context.dataRepository.competitionGroupData
+      )
+      return {
+        id: cgId,
+        name: `${name}`
+      };
+    })
     return (
-      <FormControl sx={{ minWidth: 120, marginLeft: "1em" }}>
-        <InputLabel id="competition-group-preparation-select">
-          Конкурсная группа
-        </InputLabel>
-        {selectedCompetitionGroupId !== null && (
-          <Select
-            labelId="competition-group-preparation-select"
-            value={`${selectedCompetitionGroupId}`}
-            label="Конкурсная группа"
-            onChange={handleCompetitionGroupChange}
-          >
-            {competitionGroupIds.map((cgId) => (
-              <MenuItem key={cgId} value={cgId}>
-                {getCompetitionGroupName(
-                  cgId,
-                  context.dataRepository.competitionGroupData
-                )}
-              </MenuItem>
-            ))}
-          </Select>
-        )}
-      </FormControl>
+      <SimpleSelect label={"Конкурсная группа"} items={items} selectedId={selectedCompetitionGroupId} onChange={handleCompetitionGroupChange} />
+      // <FormControl sx={{ minWidth: 120, marginLeft: "1em" }}>
+      //   <InputLabel id="competition-group-preparation-select">
+      //     Конкурсная группа
+      //   </InputLabel>
+      //   {selectedCompetitionGroupId !== null && (
+      //     <Select
+      //       labelId="competition-group-preparation-select"
+      //       value={`${selectedCompetitionGroupId}`}
+      //       label="Конкурсная группа"
+      //       onChange={handleCompetitionGroupChange}
+      //     >
+      //       {competitionGroupIds.map((cgId) => (
+      //         <MenuItem key={cgId} value={cgId}>
+      //           {getCompetitionGroupName(
+      //             cgId,
+      //             context.dataRepository.competitionGroupData
+      //           )}
+      //         </MenuItem>
+      //       ))}
+      //     </Select>
+      //   )}
+      // </FormControl>
     );
   };
 
@@ -393,7 +410,7 @@ export function CompetitionGroupPreparation(
         конкурсных групп
       </h3>
       <RefreshButton
-        onClick={handleRefresh}
+        onClick={handleRefreshDebounced}
         loading={ensureInProgress}
         title="Обновить данные"
       />

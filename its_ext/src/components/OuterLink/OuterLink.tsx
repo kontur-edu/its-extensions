@@ -6,8 +6,7 @@ import { IOuterLinkProps } from "./types";
 import Link from "@mui/material/Link";
 import NorthEastIcon from "@mui/icons-material/NorthEast";
 
-export function OuterLink(props: IOuterLinkProps) {
-
+export function OuterLink(props: React.PropsWithChildren<IOuterLinkProps>) {
   return (
     <Link
       href={props.url}
@@ -15,13 +14,14 @@ export function OuterLink(props: IOuterLinkProps) {
       target="_blank"
       style={{
         textDecoration: "none",
-        display: "flex",
+        display: "inline-flex",
         alignItems: "center",
-        fontSize: '1em',
+        fontSize: "1em",
       }}
     >
       <NorthEastIcon />
-      {props.title}
+      {props.children}
+      {/* {props.title} */}
     </Link>
   );
 }

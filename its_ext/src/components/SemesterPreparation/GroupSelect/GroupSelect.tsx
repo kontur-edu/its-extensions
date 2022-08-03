@@ -24,7 +24,7 @@ export function GroupSelect(props: IGroupSelectProps) {
 
     setSelectionGroupsIds(newIds);
     // if (newIds.length === 2) {
-      props.onSelection(newIds);
+    props.onSelection(newIds);
     // }
   };
 
@@ -44,7 +44,7 @@ export function GroupSelect(props: IGroupSelectProps) {
           onClick={handleRefreshSelectionGroups}
           title="Обновить список"
         />
-        <OuterLink url={EDU_SPACE_URL} title="Перейти в ИТС" />
+        <OuterLink url={EDU_SPACE_URL}>Перейти в ИТС</OuterLink>
       </article>
     </section>
   );

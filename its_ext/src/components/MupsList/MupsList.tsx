@@ -91,7 +91,7 @@ export function MupsList(props: IMupsListProps) {
                 {!mupEdit.addLoadsManual ? null : (
                   <li>
                     Заполните нагрузку{" "}
-                    <OuterLink url={MUP_PERIOD_URL + mupId} title="в ИТС" />
+                    <OuterLink url={MUP_PERIOD_URL + mupId}>в ИТС</OuterLink>
                   </li>
                 )}
               </CollapsableList>

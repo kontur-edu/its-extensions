@@ -19,6 +19,7 @@ import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
+import { RefreshButton } from "../../RefreshButton";
 
 function extractCompetitionGroupIds(
   selectionGroupIds: number[],
@@ -145,6 +146,10 @@ export function CompetitionGroupPreparation(
     setCompetitionGroupIds(newCompetitionGroupIds);
   };
 
+  const handleRefresh = () => {
+    ensureData().then(() => prepareData());
+  };
+
   useEffect(() => {
     ensureData().then(() => prepareData());
   }, []);
@@ -165,9 +170,10 @@ export function CompetitionGroupPreparation(
         Подготовьте следующую группу выбора для последующей синхронизации
         конкурсных групп
       </h3>
+      <RefreshButton onClick={handleRefresh} title="Обновить данные" />
       <ol className={style.step_list}>
         <li>
-          Выберите эталонную конкурсную группу
+          Выберите эталонную конкурсную группу для настройки
           <FormControl sx={{ minWidth: 120, marginLeft: "1em" }}>
             <InputLabel id="competition-group-preparation-select">
               Конкурсная группа
@@ -196,7 +202,6 @@ export function CompetitionGroupPreparation(
           <Button>
             Установить количество подгрупп в 1 для всех нагрузок МУПов
           </Button>
-          <Button>Удалить созданные подгруппы</Button>
           <p>
             Отредактируйте количество подгрупп{" "}
             <OuterLink
@@ -204,19 +209,24 @@ export function CompetitionGroupPreparation(
                 COMPETITION_GROUP_SUBGROUP_METAS_URL +
                 selectedCompetitionGroupId
               }
-              title="в ИТС"
-            />
+            >
+              в ИТС
+            </OuterLink>{" "}
+            и обновите данные
           </p>
         </li>
         <li>
           <p>Создайте подгруппы и выберите преподавателей</p>
+          <Button style={{ color: "red" }}>Удалить созданные подгруппы</Button>
           <Button>Создать подгруппы и попробовать выбрать преподавателя</Button>
           <p>
             Отредактируйте преподавателей{" "}
             <OuterLink
               url={COMPETITION_GROUP_SUBGROUP_URL + selectedCompetitionGroupId}
-              title="в ИТС"
-            />
+            >
+              в ИТС
+            </OuterLink>{" "}
+            и обновите данные
           </p>
         </li>
         <li>Синхронизируйте Конкурсные группы на следующем шаге</li>

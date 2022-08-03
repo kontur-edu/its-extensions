@@ -288,7 +288,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
         </ul>
         <p>
           Создайте недостающие Конкрусные группы и укажите Группы выбора{" "}
-          <OuterLink url={COMPETITION_GROUP_URL} title="в ИТС" />
+          <OuterLink url={COMPETITION_GROUP_URL}>в ИТС</OuterLink>
         </p>
       </div>
     );
@@ -309,7 +309,7 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
               selectionGroup.competitionGroupId;
             return (
               <li key={sgId}>
-                <OuterLink url={link} title={competitionGroupName} />
+                <OuterLink url={link}>{competitionGroupName}</OuterLink>
               </li>
             );
           })}
@@ -407,7 +407,6 @@ export function SubgroupSelection(props: ISubgroupSelectionProps) {
   return (
     <section className="step__container">
       <article>
-        
         {competitionGroupIds.length !== 2 &&
           renderCompetitionGroupIsMissingMessage()}
         {renderCompetitionGroupSubgroupMetaLinks()}

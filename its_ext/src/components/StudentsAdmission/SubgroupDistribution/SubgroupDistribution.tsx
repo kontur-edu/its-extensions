@@ -487,7 +487,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
       }
       return (
         <li key={cgId}>
-          <OuterLink url={link} title={competitionGroupName} />
+          <OuterLink url={link}>{competitionGroupName}</OuterLink>
         </li>
       );
     });

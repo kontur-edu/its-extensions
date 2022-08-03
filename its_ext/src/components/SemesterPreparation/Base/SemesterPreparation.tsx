@@ -94,75 +94,6 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     setMupEditorLoaded(true);
   };
 
-  /*
-  const refreshSelectionGroupMups = async (ids: number[]) => {
-    await context.dataRepository.UpdateSelectionGroupToMupsData(ids);
-    let newChosenMups: string[] = [];
-    if (ids.length === 2) {
-      const firstSGId = ids[0];
-      const secondSGId = ids[1];
-      if (
-        context.dataRepository.selectionGroupToMupsData.data.hasOwnProperty(
-          firstSGId
-        ) &&
-        context.dataRepository.selectionGroupToMupsData.data.hasOwnProperty(
-          secondSGId
-        )
-      ) {
-        newChosenMups = unionArrays(
-          context.dataRepository.selectionGroupToMupsData.data[firstSGId].ids,
-          context.dataRepository.selectionGroupToMupsData.data[secondSGId].ids
-        );
-      } else {
-        throw Error("ERROR: Data for chosen SelectionGroups is absent!!!");
-      }
-    }
-    return newChosenMups;
-  };
-
-  const refreshMupData = async () => {
-    await context.dataRepository.UpdateMupData();
-  };
-
-  const refreshPeriods = async (mupIds: string[]) => {
-    await context.dataRepository.UpdatePeriods(mupIds);
-  };
-
-  const refreshSubgroupMetasAndSubgroups = async (
-    selectionGroupIds: number[]
-  ) => {
-    const competitionGroupIds: number[] = [];
-    for (let selectionGroupId of selectionGroupIds) {
-      const selectionGroup =
-        context.dataRepository.selectionGroupData.data[selectionGroupId];
-      const competitionGroupId = selectionGroup.competitionGroupId;
-      if (competitionGroupId !== null && competitionGroupId !== undefined) {
-        competitionGroupIds.push(competitionGroupId);
-      }
-    }
-    return Promise.allSettled([
-      context.dataRepository.UpdateSubgroupMetas(competitionGroupIds),
-      context.dataRepository.UpdateSubgroups(competitionGroupIds),
-    ]);
-  };
-
-  const prepareDataForSelectionGroups = async (selectionGroupIds: number[]) => {
-    const ensureMupDataPromise =
-      context.dataRepository.mupData.ids.length === 0
-        ? refreshMupData()
-        : Promise.resolve();
-    const refreshGroupMupsThenPeriodsPromise = refreshSelectionGroupMups(
-      selectionGroupIds
-    ).then((mupIds) => refreshPeriods(mupIds));
-    // const refreshSubgroupMetasAndSubgroupsPromise =
-    //   refreshSubgroupMetasAndSubgroups(selectionGroupIds);
-    return Promise.all([
-      ensureMupDataPromise,
-      refreshGroupMupsThenPeriodsPromise,
-      // refreshSubgroupMetasAndSubgroupsPromise,
-    ]).then(() => refreshSubgroupMetasAndSubgroups(selectionGroupIds));
-  };
-  */
 
   // selectionGroupMups, SubgroupGroupMetas, Subgroups
   const handleSelectionGroupSelected = (selectionGroupIds: number[]) => {
@@ -182,18 +113,6 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
       setSelectionGroupsIds(selectionGroupIds);
     });
 
-    // request mups for chosen selectionGroups
-    // find union of mupIds in chosen selectionGroups
-    // const groupMupsRefreshPromise = refreshSelectionGroupMups(selectionGroupIds);
-    // prepareDataForSelectionGroups(selectionGroupIds)
-    //   .then(() => setEditorDataPrepared(true))
-    //   .catch((err) => {
-    //     if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-    //       props.onUnauthorized();
-    //       return;
-    //     }
-    //     throw err;
-    //   });
   };
 
   const handleGroupSelectButton = () => {
@@ -298,10 +217,10 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
         ? renderStep3()
         : null}
 
-      {false &&
+      {
       selectionValid &&
-      selectionGroupsIds.length === 2 &&
-      mupEditorLoaded // TODO Delete this
+      selectionGroupsIds.length === 2
+      // mupEditorLoaded // TODO Delete this
         ? renderStep4()
         : null}
     </section>

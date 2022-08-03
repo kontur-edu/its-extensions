@@ -37,7 +37,7 @@ export interface ISubgroupReferenceInfo {
   };
 }
 
-function createSubgroupReferenceInfoFromCompetitionGroup(
+export function createSubgroupReferenceInfoFromCompetitionGroup(
   mupNameToMupId: { [key: string]: string },
   subgroupMetas: ISubgroupMeta[],
   subgroupIds: number[],
@@ -84,12 +84,38 @@ function createSubgroupReferenceInfoFromCompetitionGroup(
   return subgroupReferenceInfo;
 }
 
+export function checkMupsAndLoadsCompatible(
+  subgroupReferenceInfo: ISubgroupReferenceInfo,
+  currentSubgroupInfo: ISubgroupReferenceInfo
+): boolean {
+  for (const mupName in subgroupReferenceInfo) {
+    if (!currentSubgroupInfo.hasOwnProperty(mupName)) {
+      return false;
+    }
+    for (const load in subgroupReferenceInfo[mupName]) {
+      if (!currentSubgroupInfo[mupName].hasOwnProperty(load)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 function generateUpdateSubgroupCountToActions(
   subgroupReferenceInfo: ISubgroupReferenceInfo,
+  // currentSubgroupInfo: ISubgroupReferenceInfo,
   mupNameToMupId: { [key: string]: string },
   subgroupMetas: ISubgroupMeta[]
 ): ITSAction[] {
   const actions: ITSAction[] = [];
+  console.log("-------------------------");
+  console.log("subgroupReferenceInfo");
+  console.log(subgroupReferenceInfo);
+  console.log("mupNameToMupId");
+  console.log(mupNameToMupId);
+  console.log("subgroupMetas");
+  console.log(subgroupMetas);
+  console.log("-------------------------");
 
   for (const meta of subgroupMetas) {
     if (
@@ -117,6 +143,7 @@ function generateUpdateSubgroupCountToActions(
 function generateUpdateSubgroupActions(
   competitionGroupId: number,
   subgroupReferenceInfo: ISubgroupReferenceInfo,
+  currentSubgroupInfo: ISubgroupReferenceInfo,
   mupNameToMupId: { [key: string]: string },
   subgroupMetas: ISubgroupMeta[]
 ): ITSAction[] {
@@ -129,10 +156,20 @@ function generateUpdateSubgroupActions(
       // );
       continue;
     }
-    const referenceInfo =
-      subgroupReferenceInfo[meta.discipline][meta.load];
+    const referenceInfo = subgroupReferenceInfo[meta.discipline][meta.load];
+    const currentInfo = currentSubgroupInfo[meta.discipline][meta.load];
 
-    for (let i = 0; i < meta.count; i++) {
+    for (let i = 0; i < referenceInfo.subgroupInfo.length; i++) {
+      if (
+        i < currentInfo.subgroupInfo.length &&
+        currentInfo.subgroupInfo[i].teacher ===
+          referenceInfo.subgroupInfo[i].teacher &&
+        currentInfo.subgroupInfo[i].limit ===
+          referenceInfo.subgroupInfo[i].limit
+      ) {
+        continue;
+      }
+
       const subgroupInfo: ISubgroupInfo = {
         mupName: meta.discipline,
         load: meta.load,
@@ -152,7 +189,7 @@ function generateUpdateSubgroupActions(
       );
     }
   }
-  
+
   return actions;
 }
 
@@ -160,57 +197,62 @@ export function createSyncActions(
   referenceCompetitionGroupId: number,
   competitionGroupIds: number[],
   mupNameToMupId: { [key: string]: string },
+  competitionGroupIdToInfo: { [key: number]: ISubgroupReferenceInfo },
   competitionGroupToSubgroupMetas: ICompetitionGroupToSubgroupMetas,
   competitionGroupToSubgroupIds: ICompetitionGroupToSubgroupIds,
   subgroupData: ISubgroupData
 ): ITSAction[] {
   const allActions: ITSAction[] = [];
 
-  for (const competitionGroupId of competitionGroupIds) {
-    if (!competitionGroupToSubgroupMetas.hasOwnProperty(competitionGroupId)) {
-      console.warn(
-        `competitionGroupId: ${competitionGroupId} not found in competitionGroupToSubgroupMetas`
-      );
-    }
-    if (!competitionGroupToSubgroupIds.hasOwnProperty(competitionGroupId)) {
-      console.warn(
-        `competitionGroupId: ${competitionGroupId} not found in competitionGroupToSubgroupIds`
-      );
-    }
-  }
+  // for (const competitionGroupId of competitionGroupIds) {
+  //   if (!competitionGroupToSubgroupMetas.hasOwnProperty(competitionGroupId)) {
+  //     console.warn(
+  //       `competitionGroupId: ${competitionGroupId} not found in competitionGroupToSubgroupMetas`
+  //     );
+  //   }
+  //   if (!competitionGroupToSubgroupIds.hasOwnProperty(competitionGroupId)) {
+  //     console.warn(
+  //       `competitionGroupId: ${competitionGroupId} not found in competitionGroupToSubgroupIds`
+  //     );
+  //   }
+  // }
 
-  const subgroupReferenceInfo = createSubgroupReferenceInfoFromCompetitionGroup(
-    mupNameToMupId,
-    competitionGroupToSubgroupMetas[referenceCompetitionGroupId],
-    competitionGroupToSubgroupIds[referenceCompetitionGroupId],
-    subgroupData
-  );
+  const subgroupReferenceInfo =
+    competitionGroupIdToInfo[referenceCompetitionGroupId];
+  // createSubgroupReferenceInfoFromCompetitionGroup(
+  //   mupNameToMupId,
+  //   competitionGroupToSubgroupMetas[referenceCompetitionGroupId],
+  //   competitionGroupToSubgroupIds[referenceCompetitionGroupId],
+  //   subgroupData
+  // );
 
   for (const competitionGroupId of competitionGroupIds) {
     if (competitionGroupId === referenceCompetitionGroupId) {
       continue;
     }
+
+    const currentSubgroupInfo = competitionGroupIdToInfo[competitionGroupId];
+    // createSubgroupReferenceInfoFromCompetitionGroup(
+    //   mupNameToMupId,
+    //   competitionGroupToSubgroupMetas[competitionGroupId],
+    //   competitionGroupToSubgroupIds[competitionGroupId],
+    //   subgroupData
+    // );
     const actions: ITSAction[] = [];
 
     actions.push(
       ...generateUpdateSubgroupCountToActions(
+        // meta is enough
         subgroupReferenceInfo,
+        // currentSubgroupInfo,
         mupNameToMupId,
         competitionGroupToSubgroupMetas[competitionGroupId]
       )
     );
 
-    actions.push(
-      ...generateCreateSubgroupsActions(
-        competitionGroupId,
-        mupNameToMupId,
-        competitionGroupToSubgroupMetas,
-        competitionGroupToSubgroupIds,
-        subgroupData
-      )
-    );
-
     if (actions.length > 0) {
+      actions.push(new CreateSubgroupsAction(competitionGroupId));
+
       actions.push(...generateRefreshSubgroupsActions(competitionGroupId));
     }
 
@@ -218,14 +260,93 @@ export function createSyncActions(
       ...generateUpdateSubgroupActions(
         competitionGroupId,
         subgroupReferenceInfo,
+        currentSubgroupInfo,
         mupNameToMupId,
-        competitionGroupToSubgroupMetas[competitionGroupId],
+        competitionGroupToSubgroupMetas[competitionGroupId]
       )
     );
 
     allActions.push(...actions);
   }
 
-
   return allActions;
+}
+
+export function getDiffMessagesBySubgroupReferenceInfo(
+  newReferenceCompetitionGroupId: number,
+  newCompetitionGroupIds: number[],
+  competitionGroupIdToInfo: { [key: number]: ISubgroupReferenceInfo }
+): { [key: string]: string[] } {
+  const res: { [key: string]: string[] } = {};
+  const referenceInfo =
+    competitionGroupIdToInfo[newReferenceCompetitionGroupId];
+
+  for (const competitionGroupId of newCompetitionGroupIds) {
+    if (newReferenceCompetitionGroupId === competitionGroupId) {
+      continue;
+    }
+
+    const currentInfo = competitionGroupIdToInfo[competitionGroupId];
+
+    for (const mupName in referenceInfo) {
+      res[mupName] = [];
+
+      const differentSubgroupCountMessages: string[] = [];
+      const differentSubgroupLimitMessages: string[] = [];
+      const differentSubgroupTeachersMessages: string[] = [];
+      const notEnoughCreatedSubgroups: string[] = [];
+
+      for (const load in referenceInfo[mupName]) {
+        const mupLoadPart = `"${load}"`;
+        const refLoad = referenceInfo[mupName][load];
+        const curLoad = currentInfo[mupName][load];
+        if (refLoad.count !== curLoad.count) {
+          differentSubgroupCountMessages.push(
+            `${mupLoadPart} (${refLoad.count} <> ${curLoad.count})`
+          );
+        }
+        for (let i = 0; i < refLoad.subgroupInfo.length; i++) {
+          if (i >= curLoad.subgroupInfo.length) {
+            notEnoughCreatedSubgroups.push(`${mupLoadPart}`);
+            break;
+          }
+          const rSub = refLoad.subgroupInfo[i];
+          const cSub = curLoad.subgroupInfo[i];
+          if (rSub.limit !== cSub.limit) {
+            differentSubgroupLimitMessages.push(
+              `${mupLoadPart} подгруппа ${i + 1} (${rSub.limit} <> ${
+                cSub.limit
+              })`
+            );
+          }
+          if (rSub.teacher !== cSub.teacher) {
+            differentSubgroupTeachersMessages.push(
+              `${mupLoadPart} подгруппа ${i + 1} (${rSub.teacher} <> ${
+                cSub.teacher
+              })`
+            );
+          }
+        }
+      }
+
+      if (differentSubgroupCountMessages.length > 0) {
+        const part = differentSubgroupCountMessages.join(", ");
+        res[mupName].push(
+          `Количество подгрупп отличается для следующих нагрузок: ${part}`
+        );
+      }
+      if (differentSubgroupLimitMessages.length > 0) {
+        const part = differentSubgroupLimitMessages.join(", ");
+        res[mupName].push(`Лимит отличается для следующих подгрупп: ${part}`);
+      }
+      if (differentSubgroupTeachersMessages.length > 0) {
+        const part = differentSubgroupTeachersMessages.join(", ");
+        res[mupName].push(
+          `Преподаватели отличается для следующих подгрупп: ${part}`
+        );
+      }
+    }
+  }
+
+  return res;
 }

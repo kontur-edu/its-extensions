@@ -19,7 +19,13 @@ import {
 
 import { createDebouncedWrapper } from "../../../utils/helpers";
 import { executeActions } from "../../../common/actions";
-import { createSyncActions } from "./utils";
+import {
+  createSyncActions,
+  createSubgroupReferenceInfoFromCompetitionGroup,
+  checkMupsAndLoadsCompatible,
+  ISubgroupReferenceInfo,
+  getDiffMessagesBySubgroupReferenceInfo,
+} from "./utils";
 
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 import { OuterLink } from "../../OuterLink";
@@ -40,15 +46,15 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
   const [competitionGroupIds, setCompetitionGroupIds] = useState<number[]>([]);
   const [referenceCompetitionGroupId, setReferenceCompetitionGroupId] =
     useState<number | null>(null);
+
+  const [canBeSync, setCanBeSync] = useState<boolean>(true);
   const [mupIds, setMupIds] = useState<string[]>([]);
-  const [mupIdsSame, setMupIdsSame] = useState<boolean>(true);
-  // const [subgroupDiffInfo, setSubgroupDiffInfo] =
-  //   useState<ISubgoupDiffInfo | null>(null);
-  // const [mupToDiffs, setMupToDiffs] = useState<{
-  //   [key: string]: IMupSubgroupDiff;
-  // }>({});
-  const [mupToDifferenceTodoMessages, setMupToDifferenceTodoMessages] =
-    useState<{ [key: string]: string[] }>({});
+  const [competitionGroupIdToInfo, setCompetitionGroupIdToInfo] = useState<{
+    [key: number]: ISubgroupReferenceInfo;
+  }>({});
+  const [mupToMessages, setMupToMessages] = useState<{
+    [key: string]: [string[], string[]];
+  }>({});
 
   const [syncActions, setSyncActions] = useState<ITSAction[]>([]);
   const [syncActionResults, setSyncActionResults] = useState<
@@ -70,8 +76,6 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
     });
     return newCompetitionGroupIds;
   };
-
-  
 
   const ensureData = (
     refresh: boolean = false,
@@ -150,7 +154,9 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
     return ensurePromise;
   };
 
-  const prepareData = () => {
+  const prepareData = (
+    newReferenceCompetitionGroupId: number | null = null
+  ) => {
     const repo = context.dataRepository;
 
     const newCompetitionGroupIds = extractCompetitionGroupIds(
@@ -159,7 +165,8 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
 
     setCompetitionGroupIds(newCompetitionGroupIds);
 
-    let newReferenceCompetitionGroupId = referenceCompetitionGroupId;
+    newReferenceCompetitionGroupId =
+      newReferenceCompetitionGroupId ?? referenceCompetitionGroupId;
     if (
       referenceCompetitionGroupId === null &&
       newCompetitionGroupIds.length > 0
@@ -168,39 +175,86 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
       setReferenceCompetitionGroupId(newCompetitionGroupIds[0]);
     }
 
-    const sgMupIds: string[][] = [];
-    for (let sgId of props.selectionGroupIds) {
-      sgMupIds.push(repo.selectionGroupToMupsData.data[sgId].ids);
-    }
-    if (!checkArraysSame(sgMupIds[0], sgMupIds[1])) {
-      setMupIdsSame(false);
-    } else {
-      setMupIdsSame(true);
+    const allMupIds = new Set<string>();
+
+    for (const selectionGroupId of props.selectionGroupIds) {
+      if (
+        !repo.selectionGroupToMupsData.data.hasOwnProperty(selectionGroupId)
+      ) {
+        continue;
+      }
+      Object.keys(
+        repo.selectionGroupToMupsData.data[selectionGroupId].data
+      ).forEach((mId) => allMupIds.add(mId));
     }
 
+    setMupIds(Array.from(allMupIds));
+
     const mupNameToMupId: { [key: string]: string } = {};
-    sgMupIds[0].forEach((mId) => {
+    allMupIds.forEach((mId) => {
       const mup = repo.mupData.data[mId];
       mupNameToMupId[mup.name] = mId;
     });
+
+    const competitionGroupIdToInfo: { [key: number]: ISubgroupReferenceInfo } =
+      {};
+    let newCanBeSync = true;
+    if (newReferenceCompetitionGroupId !== null) {
+      const referenceCompetitionGroupInfo =
+        createSubgroupReferenceInfoFromCompetitionGroup(
+          mupNameToMupId,
+          repo.competitionGroupToSubgroupMetas[newReferenceCompetitionGroupId],
+          repo.competitionGroupToSubgroupIds[newReferenceCompetitionGroupId],
+          repo.subgroupData
+        );
+      competitionGroupIdToInfo[newReferenceCompetitionGroupId] =
+        referenceCompetitionGroupInfo;
+
+      for (const competitionGroupId of newCompetitionGroupIds) {
+        if (competitionGroupId === referenceCompetitionGroupId) {
+          continue;
+        }
+        const competitionGroupInfo =
+          createSubgroupReferenceInfoFromCompetitionGroup(
+            mupNameToMupId,
+            repo.competitionGroupToSubgroupMetas[competitionGroupId],
+            repo.competitionGroupToSubgroupIds[competitionGroupId],
+            repo.subgroupData
+          );
+        competitionGroupIdToInfo[competitionGroupId] = competitionGroupInfo;
+        const compatible = checkMupsAndLoadsCompatible(
+          referenceCompetitionGroupInfo,
+          competitionGroupInfo
+        );
+        if (!compatible) {
+          newCanBeSync = false;
+        }
+      }
+    }
+
+    setCanBeSync(newCanBeSync);
 
     return {
       newReferenceCompetitionGroupId,
       newCompetitionGroupIds,
       mupNameToMupId,
+      newCanBeSync,
+      competitionGroupIdToInfo,
     };
   };
 
   const generateActions = (
     newReferenceCompetitionGroupId: number,
     newCompetitionGroupIds: number[],
-    mupNameToMupId: { [key: string]: string }
+    mupNameToMupId: { [key: string]: string },
+    competitionGroupIdToInfo: { [key: number]: ISubgroupReferenceInfo }
   ) => {
     const repo = context.dataRepository;
     const newActions = createSyncActions(
       newReferenceCompetitionGroupId,
       newCompetitionGroupIds,
       mupNameToMupId,
+      competitionGroupIdToInfo,
       repo.competitionGroupToSubgroupMetas,
       repo.competitionGroupToSubgroupIds,
       repo.subgroupData
@@ -209,25 +263,73 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
     return newActions;
   };
 
-  const refreshData = (refreshAll: boolean = true, refreshSubgroups: boolean = false) => {
-    return ensureData(true).then(() => {
+  const prepareMessages = (
+    newReferenceCompetitionGroupId: number,
+    newCompetitionGroupIds: number[],
+    competitionGroupIdToInfo: { [key: number]: ISubgroupReferenceInfo },
+    actions: ITSAction[]
+  ) => {
+    const mupNameToActions = getMupNameActions(actions);
+    const mupNameToDiffMEssages = getDiffMessagesBySubgroupReferenceInfo(
+      newReferenceCompetitionGroupId,
+      newCompetitionGroupIds,
+      competitionGroupIdToInfo
+    );
+    const newMupNameToMessages: { [key: string]: [string[], string[]] } = {};
+    for (const mupName in mupNameToActions) {
+      if (!newMupNameToMessages.hasOwnProperty(mupName)) {
+        newMupNameToMessages[mupName] = [[], []];
+      }
+      newMupNameToMessages[mupName][1] = mupNameToActions[mupName].map((a) =>
+        a.getMessageSimple()
+      );
+    }
+
+    for (const mupName in mupNameToDiffMEssages) {
+      if (!newMupNameToMessages.hasOwnProperty(mupName)) {
+        newMupNameToMessages[mupName] = [[], []];
+      }
+      newMupNameToMessages[mupName][0] = mupNameToDiffMEssages[mupName];
+    }
+    setMupToMessages(newMupNameToMessages);
+    return newMupNameToMessages;
+  };
+
+  const refreshData = (
+    refreshAll: boolean = true,
+    refreshSubgroups: boolean = false
+  ) => {
+    return ensureData(refreshAll, refreshSubgroups).then(() => {
       const {
         newReferenceCompetitionGroupId,
         newCompetitionGroupIds,
         mupNameToMupId,
+        newCanBeSync,
+        competitionGroupIdToInfo,
       } = prepareData();
       if (newReferenceCompetitionGroupId === null) {
         console.warn(`newReferenceCompetitionGroupId is null`);
         return;
       }
-      generateActions(
+      if (!newCanBeSync) {
+        console.warn(`Cannot be synchronized`);
+        return;
+      }
+      setCompetitionGroupIdToInfo(competitionGroupIdToInfo);
+      const actions = generateActions(
         newReferenceCompetitionGroupId,
         newCompetitionGroupIds,
-        mupNameToMupId
+        mupNameToMupId,
+        competitionGroupIdToInfo
+      );
+      prepareMessages(
+        newReferenceCompetitionGroupId,
+        newCompetitionGroupIds,
+        competitionGroupIdToInfo,
+        actions
       );
     });
   };
-
 
   const refreshDataDebounced = () => {
     debouncedWrapperForApply(() => {
@@ -245,10 +347,12 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
   const handleReferenceCompetitionGroupChange = (event: SelectChangeEvent) => {
     const newReferenceCompetitionGroupIdStr = event.target.value;
     if (newReferenceCompetitionGroupIdStr !== null) {
-      const newReferenceCompetitionGroupId = Number(newReferenceCompetitionGroupIdStr);
+      const newReferenceCompetitionGroupId = Number(
+        newReferenceCompetitionGroupIdStr
+      );
 
       isFinite(newReferenceCompetitionGroupId) &&
-      setReferenceCompetitionGroupId(Number(newReferenceCompetitionGroupId));
+        setReferenceCompetitionGroupId(Number(newReferenceCompetitionGroupId));
     }
   };
 
@@ -284,11 +388,11 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
   };
 
   const renderMupsAreDifferent = () => {
-    if (mupIdsSame) return null;
+    if (canBeSync) return null;
     return (
       <h3 className="message_error">
-        Состав МУПов в выбранных группах отличается, настройте МУПы на
-        предыдущем шаге
+        Состав МУПов или нагрузок в выбранных группах отличается, настройте МУПы
+        и периоды на шаге 2
       </h3>
     );
   };
@@ -321,39 +425,44 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
   };
 
   const renderRows = () => {
-    return null;
-    // if (!subgroupDiffInfo) return null;
+    // return null;
+    if (!canBeSync) return null;
 
-    // return mupIds.sort(compareMupIds).map((mupId) => {
-    //   const mup = context.dataRepository.mupData.data[mupId];
+    return mupIds.sort(compareMupIds).map((mupId) => {
+      const mup = context.dataRepository.mupData.data[mupId];
 
-    //   if (!mupToDifferenceTodoMessages.hasOwnProperty(mup.name)) {
-    //     throw new Error(
-    //       `${mup.name} has no corresponding mupToDifferenceTodoMessages`
-    //     );
-    //   }
-    //   const diffTodoMessages = mupToDifferenceTodoMessages[mup.name];
+      // if (!mupToMessages.hasOwnProperty(mup.name)) {
+      //   throw new Error(
+      //     `${mup.name} has no corresponding mupToDifferenceTodoMessages`
+      //   );
 
-    //   return (
-    //     <tr key={mupId}>
-    //       <td>{mup.name}</td>
-    //       <td>
-    //         <ul className={style.list}>
-    //           {diffTodoMessages[0].map((val, index) => (
-    //             <li key={index}>{val}</li>
-    //           ))}
-    //         </ul>
-    //       </td>
-    //       <td>
-    //         <ul className={style.list}>
-    //           {diffTodoMessages[1].map((val, index) => (
-    //             <li key={index}>{val}</li>
-    //           ))}
-    //         </ul>
-    //       </td>
-    //     </tr>
-    //   );
-    // });
+      // }
+      let differences: string[] = [];
+      let todos: string[] = [];
+      if (mupToMessages.hasOwnProperty(mup.name)) {
+        [differences, todos] = mupToMessages[mup.name];
+      }
+
+      return (
+        <tr key={mupId}>
+          <td>{mup.name}</td>
+          <td>
+            <ul className={style.list}>
+              {differences.map((val, index) => (
+                <li key={index}>{val}</li>
+              ))}
+            </ul>
+          </td>
+          <td>
+            <ul className={style.list}>
+              {todos.map((val, index) => (
+                <li key={index}>{val}</li>
+              ))}
+            </ul>
+          </td>
+        </tr>
+      );
+    });
   };
 
   const renderTable = () => {

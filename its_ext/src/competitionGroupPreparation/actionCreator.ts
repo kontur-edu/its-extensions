@@ -123,7 +123,7 @@ export function generateCreateSubgroupsActions(
   mupNameToMupId: { [key: string]: string },
   competitionGroupToSubgroupMetas: ICompetitionGroupToSubgroupMetas,
   competitionGroupToSubgroupIds: ICompetitionGroupToSubgroupIds,
-  subgroupData: ISubgroupData
+  subgroupData: ISubgroupData,
 ): ITSAction[] {
   const actions: ITSAction[] = [];
 

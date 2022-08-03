@@ -7,6 +7,7 @@ import {
   IStudentData,
   ISubgroupData,
   ISubgroupInfo,
+  ISubgroupMeta,
 } from "../common/types";
 import {
   UpdateSubgroupMetaLoadCountAction,
@@ -63,16 +64,8 @@ function checkSubgroupsCreated(
   console.log(competitionGroupToSubgroupMetas);
   console.log("competitionGroupToSubgroupIds");
   console.log(competitionGroupToSubgroupIds);
-  if (!competitionGroupToSubgroupMetas.hasOwnProperty(competitionGroupId)) {
-    console.warn(
-      `competitionGroupId: ${competitionGroupId} not found in competitionGroupToSubgroupMetas`
-    );
-  }
-  if (!competitionGroupToSubgroupIds.hasOwnProperty(competitionGroupId)) {
-    console.warn(
-      `competitionGroupId: ${competitionGroupId} not found in competitionGroupToSubgroupIds`
-    );
-  }
+  console.log("subgroupData");
+  console.log(subgroupData);
 
   const mupNameToLoadToPresent: {
     [key: string]: {
@@ -84,7 +77,9 @@ function checkSubgroupsCreated(
       continue;
     }
 
-    mupNameToLoadToPresent[meta.discipline] = {};
+    if (!mupNameToLoadToPresent.hasOwnProperty(meta.discipline)) {
+      mupNameToLoadToPresent[meta.discipline] = {};
+    }
     mupNameToLoadToPresent[meta.discipline][meta.load] = [];
     for (let i = 0; i < meta.count; i++) {
       mupNameToLoadToPresent[meta.discipline][meta.load].push(false);
@@ -102,9 +97,10 @@ function checkSubgroupsCreated(
     if (!loadToPresent.hasOwnProperty(subgroup.load)) continue;
     if (
       subgroup.number > 0 &&
-      subgroup.number < loadToPresent[subgroup.load].length
+      subgroup.number <= loadToPresent[subgroup.load].length
     ) {
-      loadToPresent[subgroup.load][subgroup.number] = true;
+      const num = subgroup.number - 1;
+      loadToPresent[subgroup.load][num] = true;
     }
   }
 
@@ -150,23 +146,73 @@ function generateRefreshSubgroupsActions(competitionGroupId: number) {
   return [new RefreshSubgroupsAction([competitionGroupId])];
 }
 
+function findTeacherIds(
+  mupNameToMupId: { [key: string]: string },
+  subgroupMetas: ISubgroupMeta[],
+  subgroupIds: number[],
+  subgroupData: ISubgroupData
+) {
+  const mupNameToLoadToTeachers: {
+    [key: string]: {
+      [key: string]: (string | null)[];
+    };
+  } = {};
+  for (const meta of subgroupMetas) {
+    if (!mupNameToMupId.hasOwnProperty(meta.discipline)) {
+      continue;
+    }
+    if (!mupNameToLoadToTeachers.hasOwnProperty(meta.discipline)) {
+      mupNameToLoadToTeachers[meta.discipline] = {};
+    }
+
+    mupNameToLoadToTeachers[meta.discipline][meta.load] = [];
+    for (let i = 0; i < meta.count; i++) {
+      mupNameToLoadToTeachers[meta.discipline][meta.load].push(null);
+    }
+  }
+
+  for (const subgroupId of subgroupIds) {
+    if (subgroupData.data.hasOwnProperty(subgroupId)) {
+      const subgroup = subgroupData.data[subgroupId];
+      if (!mupNameToLoadToTeachers.hasOwnProperty(subgroup.mupName)) continue;
+      const loadToTeachers = mupNameToLoadToTeachers[subgroup.mupName];
+      if (!loadToTeachers.hasOwnProperty(subgroup.load)) continue;
+      if (
+        subgroup.number > 0 &&
+        subgroup.number <= loadToTeachers[subgroup.load].length
+      ) {
+        const num = subgroup.number - 1;
+        loadToTeachers[subgroup.load][num] = subgroup.teacherId;
+      }
+    }
+  }
+
+  return mupNameToLoadToTeachers;
+}
+
 function generateUpdateTeacherActions(
   competitionGroupId: number,
   mupNameToMupId: { [key: string]: string },
   mupData: IMupData,
-  competitionGroupToSubgroupMetas: ICompetitionGroupToSubgroupMetas
+  competitionGroupToSubgroupMetas: ICompetitionGroupToSubgroupMetas,
+  competitionGroupToSubgroupIds: ICompetitionGroupToSubgroupIds,
+  subgroupData: ISubgroupData
 ): ITSAction[] {
   // console.log("mupNameToMupId");
   // console.log(mupNameToMupId);
   const actions: ITSAction[] = [];
 
-  if (!competitionGroupToSubgroupMetas.hasOwnProperty(competitionGroupId)) {
-    console.warn(
-      `Competition group ${competitionGroupId} not found in competitionGroupToSubgroupMetas`
-    );
-  }
-
   const subgroupMetas = competitionGroupToSubgroupMetas[competitionGroupId];
+  const subgroupIds = competitionGroupToSubgroupIds[competitionGroupId];
+
+  const mupNameToLoadToTeachers = findTeacherIds(
+    mupNameToMupId,
+    subgroupMetas,
+    subgroupIds,
+    subgroupData
+  );
+  console.log("mupNameToLoadToTeachers");
+  console.log(mupNameToLoadToTeachers);
 
   for (const meta of subgroupMetas) {
     if (!mupNameToMupId.hasOwnProperty(meta.discipline)) {
@@ -175,6 +221,8 @@ function generateUpdateTeacherActions(
       // );
       continue;
     }
+    const currentTeacherIds =
+      mupNameToLoadToTeachers[meta.discipline][meta.load];
 
     const mupId = mupNameToMupId[meta.discipline];
 
@@ -189,6 +237,7 @@ function generateUpdateTeacherActions(
     }
 
     for (let i = 0; i < meta.count; i++) {
+      if (currentTeacherIds[i]) continue;
       const subgroupInfo: ISubgroupInfo = {
         mupName: meta.discipline,
         load: meta.load,
@@ -236,6 +285,17 @@ export function createPrepareSubgroupsActions(
 ): ITSAction[] {
   const actions: ITSAction[] = [];
 
+  if (!competitionGroupToSubgroupMetas.hasOwnProperty(competitionGroupId)) {
+    console.warn(
+      `competitionGroupId: ${competitionGroupId} not found in competitionGroupToSubgroupMetas`
+    );
+  }
+  if (!competitionGroupToSubgroupIds.hasOwnProperty(competitionGroupId)) {
+    console.warn(
+      `competitionGroupId: ${competitionGroupId} not found in competitionGroupToSubgroupIds`
+    );
+  }
+
   actions.push(
     ...generateCreateSubgroupsActions(
       competitionGroupId,
@@ -255,7 +315,9 @@ export function createPrepareSubgroupsActions(
       competitionGroupId,
       mupNameToMupId,
       mupData,
-      competitionGroupToSubgroupMetas
+      competitionGroupToSubgroupMetas,
+      competitionGroupToSubgroupIds,
+      subgroupData
     )
   );
 

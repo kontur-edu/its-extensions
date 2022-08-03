@@ -89,7 +89,10 @@ export function CompetitionGroupPreparation(
 
   const context = useContext(ITSContext)!;
 
-  const ensureData = (refresh: boolean = false) => {
+  const ensureData = (
+    refresh: boolean = false,
+    forceRefreshSubgroups: boolean = false
+  ) => {
     console.log("CompetitionGroupPreparation: ensureData");
     if (currentEnsurePromise.current !== null) {
       console.log(
@@ -110,7 +113,7 @@ export function CompetitionGroupPreparation(
         ? Promise.resolve()
         : repo.UpdateSelectionGroupToMupsData(props.selectionGroupIds);
     const emulateCheckSubgroupMetas = (newCompetitionGroupIds: number[]) =>
-      !refresh
+      !refresh && !forceRefreshSubgroups
         ? Promise.resolve()
         : Promise.allSettled(
             newCompetitionGroupIds.map((cId) =>
@@ -124,11 +127,15 @@ export function CompetitionGroupPreparation(
         ? Promise.resolve()
         : repo.UpdateCompetitionGroupData();
     const updateSubgroupMetasPromise = (newCompetitionGroupIds: number[]) =>
-      !refresh && repo.CheckSubgroupMetasPresent(newCompetitionGroupIds)
+      !refresh &&
+      !forceRefreshSubgroups &&
+      repo.CheckSubgroupMetasPresent(newCompetitionGroupIds)
         ? Promise.resolve()
         : repo.UpdateSubgroupMetas(newCompetitionGroupIds);
     const updateSubgroupsPromise = (newCompetitionGroupIds: number[]) =>
-      !refresh && repo.CheckSubgroupPresent(newCompetitionGroupIds)
+      !refresh &&
+      !forceRefreshSubgroups &&
+      repo.CheckSubgroupPresent(newCompetitionGroupIds)
         ? Promise.resolve()
         : repo.UpdateSubgroups(newCompetitionGroupIds);
 
@@ -264,6 +271,16 @@ export function CompetitionGroupPreparation(
       );
   };
 
+  const refreshSubgroupsAndRegenerateAcrtions = () => {
+    ensureData(false, true)
+      .then(() => prepareData())
+      .then(
+        ({ newSelectedCompetitionGroupId, allMupIds }) =>
+          newSelectedCompetitionGroupId !== null &&
+          generateAllActions(newSelectedCompetitionGroupId, allMupIds)
+      );
+  };
+
   useEffect(() => {
     ensureData()
       .then(() => prepareData())
@@ -289,7 +306,7 @@ export function CompetitionGroupPreparation(
       .then((actionResults) => {
         setUpdateSubgroupCountActionResults(actionResults);
       })
-      .then(() => handleRefresh());
+      .then(() => refreshSubgroupsAndRegenerateAcrtions());
     // TODO: generate all actions
   };
 
@@ -302,7 +319,7 @@ export function CompetitionGroupPreparation(
       .then((actionResults) => {
         setPrepareSubgroupActionResults(actionResults);
       })
-      .then(() => handleRefresh());
+      .then(() => refreshSubgroupsAndRegenerateAcrtions());
     // TODO: generate all actions
   };
 

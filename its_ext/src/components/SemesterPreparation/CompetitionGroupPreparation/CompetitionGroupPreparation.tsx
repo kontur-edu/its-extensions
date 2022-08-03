@@ -14,7 +14,7 @@ import {
 import { OuterLink } from "../../OuterLink";
 import style from "./CompetitionGroupPreparation.module.css";
 import { ICompetitionGroupPreparationProps } from "./types";
-import { createDebouncedWrapper, prepareMupData } from "../../../utils/helpers";
+import { createDebouncedWrapper } from "../../../utils/helpers";
 import {
   createPrepareSubgroupsActions,
   createUpdateSubgroupCountActions,
@@ -32,6 +32,7 @@ import Select, { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import { RefreshButton } from "../../RefreshButton";
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
+import { NextStepButton } from "../../ApplyButtonWithActionDisplay/ApplyButtonWithActionDisplay";
 
 function extractCompetitionGroupIds(
   selectionGroupIds: number[],
@@ -83,6 +84,14 @@ export function CompetitionGroupPreparation(
   >([]);
   const [prepareSubgroupActionResults, setPrepareSubgroupActionResults] =
     useState<IActionExecutionLogItem[]>([]);
+
+  const [updateSubgroupCountInProgress, setUpdateSubgroupCountInProgress] =
+    useState<boolean>(false);
+  const [prepareSubgroupInProgress, setPrepareSubgroupInProgress] =
+    useState<boolean>(false);
+  const [prepareSubgroupMessages, setPrepareSubgroupMessages] = useState<
+    string[]
+  >([]);
 
   const [ensureInProgress, setEnsureInProgress] = useState<boolean>(false);
   const currentEnsurePromise = useRef<Promise<any> | null>(null);
@@ -245,7 +254,7 @@ export function CompetitionGroupPreparation(
       const mup = repo.mupData.data[mId];
       mupNameToMupId[mup.name] = mId;
     });
-    const actions = createPrepareSubgroupsActions(
+    const { actions, mupNameToLoadToTeachers } = createPrepareSubgroupsActions(
       cgId,
       mupNameToMupId,
       repo.mupData,
@@ -254,6 +263,26 @@ export function CompetitionGroupPreparation(
       repo.subgroupData
     );
     setPrepareSubgroupActions(actions);
+    const messages: string[] = [];
+    if (actions.length === 0) {
+      for (const mupName in mupNameToLoadToTeachers) {
+        const loadsWithMissingTeachers: string[] = [];
+        for (const load in mupNameToLoadToTeachers[mupName]) {
+          if (mupNameToLoadToTeachers[mupName][load].some((p) => !p)) {
+            loadsWithMissingTeachers.push(load);
+          }
+        }
+        if (loadsWithMissingTeachers.length > 0) {
+          const loadsStr = loadsWithMissingTeachers
+            .map((l) => `"${l}"`)
+            .join(", ");
+          messages.push(
+            `МУП: "${mupName}": следующие нагрузки не имеют преподавателя: ${loadsStr}`
+          );
+        }
+      }
+    }
+    setPrepareSubgroupMessages(messages);
   };
 
   const generateAllActions = (cgId: number, allMupIds: Set<string>) => {
@@ -302,12 +331,13 @@ export function CompetitionGroupPreparation(
   };
 
   const handleUpdateSubgroupCountApply = () => {
+    setUpdateSubgroupCountInProgress(true);
     executeActions(updateSubgroupCountActions, context)
       .then((actionResults) => {
         setUpdateSubgroupCountActionResults(actionResults);
       })
-      .then(() => refreshSubgroupsAndRegenerateAcrtions());
-    // TODO: generate all actions
+      .then(() => refreshSubgroupsAndRegenerateAcrtions())
+      .then(() => setUpdateSubgroupCountInProgress(false));
   };
 
   const handleUpdateSubgroupCountApplyDebounced = () => {
@@ -315,12 +345,14 @@ export function CompetitionGroupPreparation(
   };
 
   const handlePrepareSubgroupsApply = () => {
+    setPrepareSubgroupInProgress(true);
+
     executeActions(prepareSubgroupActions, context)
       .then((actionResults) => {
         setPrepareSubgroupActionResults(actionResults);
       })
-      .then(() => refreshSubgroupsAndRegenerateAcrtions());
-    // TODO: generate all actions
+      .then(() => refreshSubgroupsAndRegenerateAcrtions())
+      .then(() => setPrepareSubgroupInProgress(false));
   };
 
   const handlePrepareSubgroupsApplyDebounced = () => {
@@ -360,7 +392,11 @@ export function CompetitionGroupPreparation(
         Подготовьте следующую группу выбора для последующей синхронизации
         конкурсных групп
       </h3>
-      <RefreshButton onClick={handleRefresh} title="Обновить данные" />
+      <RefreshButton
+        onClick={handleRefresh}
+        loading={ensureInProgress}
+        title="Обновить данные"
+      />
       <ol className={style.step_list}>
         <li>
           Выберите эталонную конкурсную группу для настройки
@@ -374,8 +410,9 @@ export function CompetitionGroupPreparation(
             showSuccessMessage={true}
             actions={updateSubgroupCountActions}
             actionResults={updateSubgroupCountActionResults}
-            // clicked={true}
+            // clicked={updateSubgroupCountClicked}
             // onNextStep={onNextStep}
+            loading={updateSubgroupCountInProgress}
             onApply={handleUpdateSubgroupCountApplyDebounced}
           >
             Установить количество подгрупп в 1 для всех нагрузок МУПов
@@ -403,8 +440,9 @@ export function CompetitionGroupPreparation(
             showSuccessMessage={true}
             actions={prepareSubgroupActions}
             actionResults={prepareSubgroupActionResults}
-            // clicked={true}
+            // clicked={prepareSubgroupClicked}
             // onNextStep={onNextStep}
+            loading={prepareSubgroupInProgress}
             onApply={handlePrepareSubgroupsApplyDebounced}
           >
             Создать подгруппы и попробовать выбрать преподавателя
@@ -418,8 +456,18 @@ export function CompetitionGroupPreparation(
             </OuterLink>{" "}
             и обновите данные
           </p>
+          {
+            <ul className="warning">
+              {prepareSubgroupMessages.map((m, i) => (
+                <li key={i}>{m}</li>
+              ))}
+            </ul>
+          }
         </li>
         <li>Синхронизируйте Конкурсные группы на следующем шаге</li>
+        <NextStepButton onClick={props.onNextStep}>
+          К следующему шагу
+        </NextStepButton>
       </ol>
     </React.Fragment>
   );

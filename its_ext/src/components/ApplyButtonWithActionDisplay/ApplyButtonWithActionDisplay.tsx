@@ -24,6 +24,23 @@ function clipString(message: string, length: number) {
 
 const MESSAGE_SIZE = 150;
 
+export interface INextStepButtonProps {
+  onClick: () => void;
+}
+
+export function NextStepButton(props: React.PropsWithChildren<INextStepButtonProps>) {
+  return (
+    <Button
+      onClick={props.onClick}
+      variant="contained"
+      style={{ marginRight: "1em" }}
+      endIcon={<SystemUpdateAltIcon />}
+    >
+      {props.children}
+    </Button>
+  );
+}
+
 export function ApplyButtonWithActionDisplay(
   props: React.PropsWithChildren<IApplyButtonWithActionDisplayProps>
 ) {
@@ -101,14 +118,15 @@ export function ApplyButtonWithActionDisplay(
 
   const renderSuccessButtonWithNextStep = () => {
     const nextStepButton = props.onNextStep && (
-      <Button
-        onClick={props.onNextStep}
-        variant="contained"
-        style={{ marginRight: "1em" }}
-        endIcon={<SystemUpdateAltIcon />}
-      >
-        К следующему шагу
-      </Button>
+      <NextStepButton onClick={props.onNextStep}>К следующему шагу</NextStepButton>
+      // <Button
+      //   onClick={props.onNextStep}
+      //   variant="contained"
+      //   style={{ marginRight: "1em" }}
+      //   endIcon={<SystemUpdateAltIcon />}
+      // >
+      //   К следующему шагу
+      // </Button>
     );
 
     let successMessage: JSX.Element | null = null;
@@ -136,7 +154,9 @@ export function ApplyButtonWithActionDisplay(
       <React.Fragment>
         {successMessage}
         {nextStepButton}
-        {!successMessage && !nextStepButton && "Для данного шага не найдено действий"}
+        {!successMessage &&
+          !nextStepButton &&
+          "Для данного шага не найдено автоматических действий"}
       </React.Fragment>
     );
   };

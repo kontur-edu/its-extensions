@@ -234,6 +234,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
           selectionGroupIds={selectionGroupsIds}
           dataIsPrepared={mupEditorLoaded} // TODO: delete this
           onUnauthorized={props.onUnauthorized}
+          onNextStep={() => {}} // TODO: fix
         />
       </article>
     );

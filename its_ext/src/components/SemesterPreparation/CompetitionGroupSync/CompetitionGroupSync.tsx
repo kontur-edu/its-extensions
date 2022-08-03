@@ -469,6 +469,11 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
     return (
       <section className="table__container">
         <table className="table table_vertical_borders">
+          <colgroup>
+            <col style={{ width: "30%" }} />
+            <col style={{ width: "30%" }} />
+            <col style={{ width: "40%" }} />
+          </colgroup>
           <thead>
             <tr>
               <th>МУП</th>

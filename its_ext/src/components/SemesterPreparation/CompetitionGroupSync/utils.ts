@@ -193,6 +193,41 @@ function generateUpdateSubgroupActions(
   return actions;
 }
 
+export function checkSubgroupsCreated(
+  subgroupReferenceInfo: ISubgroupReferenceInfo,
+  currentSubgroupInfo: ISubgroupReferenceInfo
+) {
+  console.log("subgroupReferenceInfo");
+  console.log(subgroupReferenceInfo);
+  console.log("currentSubgroupInfo");
+  console.log(currentSubgroupInfo);
+  for (const mupName in subgroupReferenceInfo) {
+    for (const load in subgroupReferenceInfo[mupName]) {
+      const refLoad = subgroupReferenceInfo[mupName][load];
+      const curLoad = currentSubgroupInfo[mupName][load];
+      if (refLoad.count > curLoad.subgroupInfo.length) {
+        return false;
+      }
+      for (
+        let i = 0;
+        i < Math.min(refLoad.count, curLoad.subgroupInfo.length);
+        i++
+      ) {
+        const subgroupInfo = curLoad.subgroupInfo[i];
+        console.log("subgroupInfo");
+        console.log(subgroupInfo);
+        if (
+          subgroupInfo.limit === undefined &&
+          subgroupInfo.teacher === undefined
+        ) {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
+}
+
 export function createSyncActions(
   referenceCompetitionGroupId: number,
   competitionGroupIds: number[],
@@ -250,9 +285,15 @@ export function createSyncActions(
       )
     );
 
-    if (actions.length > 0) {
+    const subgroupsCreated = checkSubgroupsCreated(
+      subgroupReferenceInfo,
+      currentSubgroupInfo
+    );
+    if (!subgroupsCreated) {
       actions.push(new CreateSubgroupsAction(competitionGroupId));
+    }
 
+    if (actions.length > 0) {
       actions.push(...generateRefreshSubgroupsActions(competitionGroupId));
     }
 
@@ -321,9 +362,9 @@ export function getDiffMessagesBySubgroupReferenceInfo(
           }
           if (rSub.teacher !== cSub.teacher) {
             differentSubgroupTeachersMessages.push(
-              `${mupLoadPart} подгруппа ${i + 1} (${rSub.teacher} <> ${
-                cSub.teacher
-              })`
+              `${mupLoadPart} подгруппа ${i + 1} (${
+                rSub.teacher ?? "не задан"
+              } <> ${cSub.teacher ?? "не задан"})`
             );
           }
         }

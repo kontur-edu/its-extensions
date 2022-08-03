@@ -406,8 +406,7 @@ export function CompetitionGroupPreparation(
   return (
     <React.Fragment>
       <h3>
-        Подготовьте следующую группу выбора для последующей синхронизации
-        конкурсных групп
+        Подготовьте эталонную конкурсную группу
       </h3>
       <RefreshButton
         onClick={handleRefreshDebounced}

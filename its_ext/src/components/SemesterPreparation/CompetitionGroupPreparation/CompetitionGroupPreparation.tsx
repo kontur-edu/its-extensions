@@ -198,8 +198,12 @@ export function CompetitionGroupPreparation(
     ) {
       newSelectedCompetitionGroupId = newCompetitionGroupIds[0];
     }
-
-    setSelectedCompetitionGroupId(newSelectedCompetitionGroupId);
+    if (selectedCompetitionGroupId !== newSelectedCompetitionGroupId) {
+      setSelectedCompetitionGroupId(newSelectedCompetitionGroupId);
+      if (newSelectedCompetitionGroupId !== null) {
+        props.onReferenceCompetitionGroupChange(newSelectedCompetitionGroupId);
+      }
+    }
 
     setCompetitionGroupIds(newCompetitionGroupIds);
 
@@ -336,10 +340,11 @@ export function CompetitionGroupPreparation(
     if (newCompetitionGroupIdStr !== null) {
       const newCompetitionGroupId = Number(newCompetitionGroupIdStr);
 
-      isFinite(newCompetitionGroupId) &&
+      if (isFinite(newCompetitionGroupId)) {
         setSelectedCompetitionGroupId(Number(newCompetitionGroupIdStr));
-
-      refreshAfterCompetitionGroupSelectDebounced(newCompetitionGroupId);
+        refreshAfterCompetitionGroupSelectDebounced(newCompetitionGroupId);
+        props.onReferenceCompetitionGroupChange(newCompetitionGroupId);
+      }
     }
   };
 
@@ -402,10 +407,10 @@ export function CompetitionGroupPreparation(
     );
   };
 
-  const renderMetaSubrgoupCountSetUp = () => {
+  const renderDefaultMetaSubrgoupCountSetUp = () => {
     return (
       <article>
-        <p>Определите количество подгрупп для нагрузок выбранных МУПов</p>
+        <p>Определите количество подгрупп по умолчанию для нагрузок выбранных МУПов</p>
 
         <ApplyButtonWithActionDisplay
           showErrorWarning={true}
@@ -417,8 +422,15 @@ export function CompetitionGroupPreparation(
           loading={updateSubgroupCountInProgress}
           onApply={handleUpdateSubgroupCountApplyDebounced}
         >
-          Установить количество подгрупп в 1 для всех нагрузок МУПов
+          Установить количество подгрупп в 1, если количество не задано
         </ApplyButtonWithActionDisplay>
+      </article>
+    );
+  };
+
+  const renderManualMetaSubrgoupCountSetUp = () => {
+    return (
+      <article>
         <p className="same_line_with_wrap">
           Отредактируйте количество подгрупп{" "}
           <OuterLink
@@ -432,13 +444,13 @@ export function CompetitionGroupPreparation(
         </p>
       </article>
     );
-  };
+  }
 
   const renderSubgroupSetUp = () => {
     return (
       <article>
         <p>
-          Создание подгрупп, определение Лимитов и выбор преподавателей для
+          Создайте подгруппы, определите Лимиты и выберите преподавателей для
           подгрупп
         </p>
         <ApplyButtonWithActionDisplay
@@ -453,6 +465,13 @@ export function CompetitionGroupPreparation(
         >
           Создать подгруппы и попробовать выбрать преподавателя
         </ApplyButtonWithActionDisplay>
+      </article>
+    );
+  };
+
+  const renderSubgroupManualSetUp = () => {
+    return (
+      <article>
         <p className="same_line_with_wrap">
           Отредактируйте Лимиты и выбранных преподавателей созданных подгрупп{" "}
           <OuterLink
@@ -462,23 +481,27 @@ export function CompetitionGroupPreparation(
           </OuterLink>{" "}
           и обновите данные
         </p>
-        {prepareSubgroupMessages.length > 0 && <article className={style.error_list_container}>
-          <ul className="warning">
-            {prepareSubgroupMessages.map((m, i) => (
-              <li key={i}>{m}</li>
-            ))}
-          </ul>
-        </article>}
+        {prepareSubgroupMessages.length > 0 && (
+          <article className={style.error_list_container}>
+            <ul className="warning">
+              {prepareSubgroupMessages.map((m, i) => (
+                <li key={i}>{m}</li>
+              ))}
+            </ul>
+          </article>
+        )}
       </article>
     );
-  };
+  }
 
   const renderSteps = () => {
     return (
       <ol className="step_list">
         <li>{renderCompetitionGroupSelect()}</li>
-        <li>{renderMetaSubrgoupCountSetUp()}</li>
+        <li>{renderDefaultMetaSubrgoupCountSetUp()}</li>
+        <li>{renderManualMetaSubrgoupCountSetUp()}</li>
         <li>{renderSubgroupSetUp()}</li>
+        <li>{renderSubgroupManualSetUp()}</li>
         <li>Синхронизируйте Конкурсные группы на следующем шаге</li>
       </ol>
     );

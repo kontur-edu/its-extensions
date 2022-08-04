@@ -54,6 +54,8 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
   const [mupEditorLoaded, setMupEditorLoaded] = useState<boolean>(false);
   const [competitionGroupLoaded, setCompetitionGroupLoaded] =
     useState<boolean>(false);
+
+  const [referenceCompetitionGroupId, setReferenceCompetitionGroupId] = useState<number | null>(null);
   // const [editorDataPrepared, setEditorDataPrepared] = useState<boolean>(false);
   const requestSelectionGroupsInProgress = useRef(false);
 
@@ -123,6 +125,10 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     });
   };
 
+  const handleReferenceCompetitionGroupIdChange = (newReferenceCompetitionGroupId: number) => {
+    setReferenceCompetitionGroupId(newReferenceCompetitionGroupId);
+  }
+
   const handleStepTwo = () => {
     stepTwoRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -171,6 +177,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
           onUnauthorized={props.onUnauthorized}
           onNextStep={handleStepFour} // TODO: fix
           onLoad={handleCompetitionGroupPreparationLoaded}
+          onReferenceCompetitionGroupChange={handleReferenceCompetitionGroupIdChange}
         />
       </article>
     );
@@ -185,6 +192,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
           selectionGroupIds={selectionGroupsIds}
           dataIsPrepared={mupEditorLoaded} // TODO: delete this
           onUnauthorized={props.onUnauthorized}
+          referenceCompetitionGroupId={referenceCompetitionGroupId}
         />
       </article>
     );

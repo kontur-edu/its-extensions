@@ -4,4 +4,5 @@ export interface ICompetitionGroupPreparationProps {
   onUnauthorized: () => void;
   onNextStep: () => void;
   onLoad: () => void;
+  onReferenceCompetitionGroupChange: (competitionGroupId: number) => void;
 }

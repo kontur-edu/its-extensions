@@ -239,6 +239,11 @@ export function createSyncActions(
 ): ITSAction[] {
   const allActions: ITSAction[] = [];
 
+  console.log("competitionGroupIdToInfo");
+  console.log(competitionGroupIdToInfo);
+  console.log("competitionGroupIds");
+  console.log(competitionGroupIds);
+
   // for (const competitionGroupId of competitionGroupIds) {
   //   if (!competitionGroupToSubgroupMetas.hasOwnProperty(competitionGroupId)) {
   //     console.warn(

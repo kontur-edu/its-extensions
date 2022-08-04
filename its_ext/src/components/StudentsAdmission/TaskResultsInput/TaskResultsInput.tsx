@@ -251,7 +251,8 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
       .then((newStudentItems) => {
         handleGenerateActionsDebounced(newStudentItems);
         setEnsureDataInProgress(false);
-      });
+      })
+      .finally(() => props.onLoad());
   }, [competitionGroupToAdmissionIds]);
 
   const handleMupChange = (event: SelectChangeEvent) => {

@@ -225,7 +225,8 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   };
 
   useEffect(() => {
-    refreshData().then(() => prepareItemsAndStudentMupDataText());
+    refreshData().then(() => prepareItemsAndStudentMupDataText())
+    .finally(() => props.onLoad());
   }, [props.competitionGroupIds]);
 
   const handleRefresh = () => {

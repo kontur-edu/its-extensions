@@ -394,8 +394,8 @@ export function MupEditor(props: IMupEditorProps) {
       })
       .then((mupIdUnion) => {
         prepareData(mupIdUnion);
-        props.onLoad();
-      });
+      })
+      .finally(() => props.onLoad());
   }, [props.selectionGroupIds]);
 
   const ensurePeriodAndModulesForMup = (mupId: string) => {

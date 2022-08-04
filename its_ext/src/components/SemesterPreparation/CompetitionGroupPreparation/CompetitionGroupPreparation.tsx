@@ -322,12 +322,13 @@ export function CompetitionGroupPreparation(
   };
 
   useEffect(() => {
-    ensureData().then(() => {
-      const { newSelectedCompetitionGroupId, allMupIds } = prepareData();
-      newSelectedCompetitionGroupId !== null &&
-        generateAllActions(newSelectedCompetitionGroupId, allMupIds);
-      props.onLoad();
-    });
+    ensureData()
+      .then(() => {
+        const { newSelectedCompetitionGroupId, allMupIds } = prepareData();
+        newSelectedCompetitionGroupId !== null &&
+          generateAllActions(newSelectedCompetitionGroupId, allMupIds);
+      })
+      .finally(() => props.onLoad());
   }, []);
 
   const handleCompetitionGroupChange = (event: SelectChangeEvent) => {
@@ -461,14 +462,13 @@ export function CompetitionGroupPreparation(
           </OuterLink>{" "}
           и обновите данные
         </p>
-        <p>{
+        {prepareSubgroupMessages.length > 0 && <article className={style.error_list_container}>
           <ul className="warning">
             {prepareSubgroupMessages.map((m, i) => (
               <li key={i}>{m}</li>
             ))}
           </ul>
-        }
-        </p>
+        </article>}
       </article>
     );
   };

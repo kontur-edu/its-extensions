@@ -312,7 +312,8 @@ export function MupEditor(props: IMupEditorProps) {
             ).map((m) => m.connectionId)
           );
         }
-        if (allConnectionIds.length === 0) return Promise.allSettled([Promise.resolve(), Promise.resolve()]);
+        if (allConnectionIds.length === 0)
+          return Promise.allSettled([Promise.resolve(), Promise.resolve()]);
         const updateModuleDataPromise =
           !refresh && repo.CheckModuleDataPresent()
             ? Promise.resolve()
@@ -364,7 +365,12 @@ export function MupEditor(props: IMupEditorProps) {
     );
     setZeToModuleSelection(newZeToModuleSelection);
     setUpDiffsAndDates(newMupDiffs, newMupEdits, initDates);
-    callDebouncedApply(newMupDiffs, newMupEdits, initDates, newZeToModuleSelection);
+    callDebouncedApply(
+      newMupDiffs,
+      newMupEdits,
+      initDates,
+      newZeToModuleSelection
+    );
   };
 
   useEffect(() => {
@@ -645,7 +651,6 @@ export function MupEditor(props: IMupEditorProps) {
   };
 
   const renderTable = () => {
-
     return (
       <div className="load_content_container">
         <MupsList

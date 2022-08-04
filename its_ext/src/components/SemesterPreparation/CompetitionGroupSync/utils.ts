@@ -346,10 +346,16 @@ export function getDiffMessagesBySubgroupReferenceInfo(
             `${mupLoadPart} (${refLoad.count} <> ${curLoad.count})`
           );
         }
+        let someSubgroupsMissing = false;
         for (let i = 0; i < refLoad.subgroupInfo.length; i++) {
-          if (i >= curLoad.subgroupInfo.length) {
-            notEnoughCreatedSubgroups.push(`${mupLoadPart}`);
-            break;
+          if (
+            i >= curLoad.subgroupInfo.length ||
+            curLoad.subgroupInfo[i].limit === undefined
+          ) {
+            // NOTE: limit === undefined if subgroup not exists
+            someSubgroupsMissing = true;
+
+            continue;
           }
           const rSub = refLoad.subgroupInfo[i];
           const cSub = curLoad.subgroupInfo[i];
@@ -368,6 +374,14 @@ export function getDiffMessagesBySubgroupReferenceInfo(
             );
           }
         }
+        if (someSubgroupsMissing) {
+          notEnoughCreatedSubgroups.push(`${mupLoadPart}`);
+        }
+      }
+
+      if (notEnoughCreatedSubgroups.length > 0) {
+        const part = notEnoughCreatedSubgroups.join(", ");
+        res[mupName].push(`Не найдено созданных подгрупп для: ${part}`);
       }
 
       if (differentSubgroupCountMessages.length > 0) {

@@ -11,7 +11,6 @@ import {
 
 import { checkDateIsLess } from "../utils/helpers";
 
-
 function findInitLimits(
   mupId: string,
   selectionGroupIds: number[],
@@ -71,7 +70,7 @@ function checkIfNeedChangeDates(
 }
 
 function checkIfCanBeDeleted(
-  courseToCurrentPeriod: { [key: number]: IPeriod },
+  courseToCurrentPeriod: { [key: number]: IPeriod }
   // dates: [string, string]
 ): boolean {
   let canBeDeleted = true;
@@ -94,23 +93,32 @@ function checkIfCanBeDeleted(
   return canBeDeleted;
 }
 
-
 function checkNeedUpdateForConnectionId(
   connectionId: number,
   referenceModuleDisciplines: IModuleSelection[],
-  selectionGroupModuleIdToSelectedModuleDisciplines: {[key: number]: ISelectedModuleDisciplines},
+  selectionGroupModuleIdToSelectedModuleDisciplines: {
+    [key: number]: ISelectedModuleDisciplines;
+  }
 ) {
-  if (!selectionGroupModuleIdToSelectedModuleDisciplines.hasOwnProperty(connectionId)) {
+  if (
+    !selectionGroupModuleIdToSelectedModuleDisciplines.hasOwnProperty(
+      connectionId
+    )
+  ) {
     return true;
   }
-  
-  const selectedModuleDisciplines = selectionGroupModuleIdToSelectedModuleDisciplines[connectionId];
-  
+
+  const selectedModuleDisciplines =
+    selectionGroupModuleIdToSelectedModuleDisciplines[connectionId];
+
   for (const ms of referenceModuleDisciplines) {
     if (!selectedModuleDisciplines.hasOwnProperty(ms.id)) {
       return true;
     }
-    if(selectedModuleDisciplines[ms.id].sort().join(',') !== ms.selected.sort().join(',')){
+    if (
+      selectedModuleDisciplines[ms.id].sort().join(",") !==
+      ms.selected.sort().join(",")
+    ) {
       return true;
     }
   }
@@ -120,10 +128,12 @@ function checkNeedUpdateForConnectionId(
 function checkIfNeedUpdateModules(
   mupId: string,
   selectionGroupIds: number[],
-  zeToModuleSelections: {[key: number]: IModuleSelection[]},
+  zeToModuleSelections: { [key: number]: IModuleSelection[] },
   mupData: IMupData,
   selectionGroupToMupsData: ISelectionGroupToMupsData,
-  selectionGroupModuleIdToSelectedModuleDisciplines: {[key: number]: ISelectedModuleDisciplines},
+  selectionGroupModuleIdToSelectedModuleDisciplines: {
+    [key: number]: ISelectedModuleDisciplines;
+  }
 ) {
   const ze = mupData.data[mupId].ze;
   if (!zeToModuleSelections.hasOwnProperty(ze)) {
@@ -132,13 +142,14 @@ function checkIfNeedUpdateModules(
   }
   const referenceModuleDisciplines = zeToModuleSelections[ze];
   const res: boolean[] = [];
-  
+
   for (const selectionGroupId of selectionGroupIds) {
     if (!selectionGroupToMupsData.data.hasOwnProperty(selectionGroupId)) {
       res.push(true);
       continue;
     }
-    const selectionGroupMupData = selectionGroupToMupsData.data[selectionGroupId];
+    const selectionGroupMupData =
+      selectionGroupToMupsData.data[selectionGroupId];
     if (!selectionGroupMupData.data.hasOwnProperty(mupId)) {
       res.push(true);
       continue;
@@ -147,25 +158,28 @@ function checkIfNeedUpdateModules(
     const cId = selectionGroupMupData.data[mupId].connectionId;
 
     const needUpdate = checkNeedUpdateForConnectionId(
-      cId, referenceModuleDisciplines, selectionGroupModuleIdToSelectedModuleDisciplines
-    )
+      cId,
+      referenceModuleDisciplines,
+      selectionGroupModuleIdToSelectedModuleDisciplines
+    );
     res.push(needUpdate);
   }
 
   return res;
 }
 
-
 export function createDiffForMup(
   mupId: string,
   selectionGroupIds: number[],
   dates: [string, string],
-  zeToModuleSelections: {[key: number]: IModuleSelection[]},
+  zeToModuleSelections: { [key: number]: IModuleSelection[] },
   mupData: IMupData,
   selectionGroupToMupsData: ISelectionGroupToMupsData,
   selectionGroupData: ISelectionGroupData,
   mupToPeriods: { [key: string]: IPeriod[] },
-  selectionGroupModuleIdToSelectedModuleDisciplines: {[key: number]: ISelectedModuleDisciplines},
+  selectionGroupModuleIdToSelectedModuleDisciplines: {
+    [key: number]: ISelectedModuleDisciplines;
+  }
 ): IMupDiff {
   let periods: IPeriod[] = [];
   if (mupToPeriods.hasOwnProperty(mupId)) {
@@ -219,7 +233,7 @@ export function createDiffForMup(
     zeToModuleSelections,
     mupData,
     selectionGroupToMupsData,
-    selectionGroupModuleIdToSelectedModuleDisciplines,
+    selectionGroupModuleIdToSelectedModuleDisciplines
   );
 
   const mupDiff: IMupDiff = {

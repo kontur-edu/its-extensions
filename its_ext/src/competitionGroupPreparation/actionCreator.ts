@@ -36,17 +36,22 @@ function generateUpdateSubgroupCountToDefaultActions(
   const subgroupMetas = competitionGroupToSubgroupMetas[competitionGroupId];
 
   for (const meta of subgroupMetas) {
-    if (
-      selectedMupNamesSet.has(meta.discipline) &&
-      meta.count !== DEFAULT_SUBGROUP_META_COUNT
-    ) {
-      actions.push(
-        new UpdateSubgroupMetaLoadCountAction(
-          meta.id,
-          DEFAULT_SUBGROUP_META_COUNT,
-          meta.discipline
-        )
-      );
+    if (selectedMupNamesSet.has(meta.discipline)) {
+      if (meta.count === 0) {
+        actions.push(
+          new UpdateSubgroupMetaLoadCountAction(
+            meta.id,
+            DEFAULT_SUBGROUP_META_COUNT,
+            meta.discipline
+          )
+        );
+      }
+    } else {
+      if (meta.count !== 0) {
+        actions.push(
+          new UpdateSubgroupMetaLoadCountAction(meta.id, 0, meta.discipline)
+        );
+      }
     }
   }
 
@@ -123,7 +128,7 @@ export function generateCreateSubgroupsActions(
   mupNameToMupId: { [key: string]: string },
   competitionGroupToSubgroupMetas: ICompetitionGroupToSubgroupMetas,
   competitionGroupToSubgroupIds: ICompetitionGroupToSubgroupIds,
-  subgroupData: ISubgroupData,
+  subgroupData: ISubgroupData
 ): ITSAction[] {
   const actions: ITSAction[] = [];
 

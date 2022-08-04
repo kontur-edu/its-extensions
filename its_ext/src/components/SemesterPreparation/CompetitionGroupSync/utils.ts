@@ -1,4 +1,4 @@
-import { ITSAction } from "../../../common/actions";
+import { ActionType, ITSAction } from "../../../common/actions";
 import {
   ICompetitionGroupToSubgroupMetas,
   ISubgroupData,
@@ -127,6 +127,16 @@ function generateUpdateSubgroupCountToActions(
           )
         );
       }
+    } else {
+      if (meta.count !== 0) {
+        actions.push(
+          new UpdateSubgroupMetaLoadCountAction(
+            meta.id,
+            0,
+            meta.discipline
+          )
+        );
+      }
     }
   }
 
@@ -155,8 +165,8 @@ function generateUpdateSubgroupActions(
     for (let i = 0; i < referenceInfo.subgroupInfo.length; i++) {
       if (
         i < currentInfo.subgroupInfo.length &&
-        currentInfo.subgroupInfo[i].teacher ===
-          referenceInfo.subgroupInfo[i].teacher &&
+        (currentInfo.subgroupInfo[i].teacher ===
+          referenceInfo.subgroupInfo[i].teacher) &&
         currentInfo.subgroupInfo[i].limit ===
           referenceInfo.subgroupInfo[i].limit
       ) {
@@ -169,7 +179,7 @@ function generateUpdateSubgroupActions(
         number: i + 1,
       };
 
-      const teacher = referenceInfo.subgroupInfo[i].teacher;
+      const teacher = referenceInfo.subgroupInfo[i].teacher ?? "";
       const limit = referenceInfo.subgroupInfo[i].limit;
 
       actions.push(
@@ -364,7 +374,7 @@ export function getDiffMessagesBySubgroupReferenceInfo(
               })`
             );
           }
-          if (rSub.teacher !== cSub.teacher && rSub.teacher && cSub.teacher) {
+          if (rSub.teacher !== cSub.teacher) {
             differentSubgroupTeachersMessages.push(
               `${mupLoadPart} подгруппа ${i + 1} (${
                 rSub.teacher ?? "не задан"
@@ -403,11 +413,35 @@ export function getDiffMessagesBySubgroupReferenceInfo(
         //   `Преподаватели отличается для следующих подгрупп: ${part}`
         // );
         res[mupName].push(
-          `Преподаватели отличается`
+          `Преподаватели отличаются или не заданы`
         );
       }
     }
   }
 
+  return res;
+}
+
+
+export function getTodoMessagesByActions(actions: ITSAction[]) {
+  // const loadsToUpdateCounts: string[] = [];
+  const res: string[] = [];
+  let needUpdateMeta = false;
+  let needUpdateSubgroups = false;
+  for (const action of actions) {
+    if (action.actionType === ActionType.UpdateSubgroupMetaLoadCount) {
+      // const updateSubgroupMetaLoadCountAction = action as UpdateSubgroupMetaLoadCountAction;
+      needUpdateMeta = true;
+    } else if (action.actionType === ActionType.UpdateTeacherForSubgroup) {
+      // const updateTeacherForSubgroupAction = action as UpdateTeacherForSubgroupAction;
+      needUpdateSubgroups = true;
+    }
+  }
+  if (needUpdateMeta) {
+    res.push("Синхронизировать количество подгрупп")
+  }
+  if (needUpdateSubgroups) {
+    res.push("Синхронизировать преподавателей и Лимиты")
+  }
   return res;
 }

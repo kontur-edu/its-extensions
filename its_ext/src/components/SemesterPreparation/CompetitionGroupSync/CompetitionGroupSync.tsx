@@ -25,6 +25,7 @@ import {
   checkMupsAndLoadsCompatible,
   ISubgroupReferenceInfo,
   getDiffMessagesBySubgroupReferenceInfo,
+  getTodoMessagesByActions,
 } from "./utils";
 
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
@@ -284,9 +285,10 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
       if (!newMupNameToMessages.hasOwnProperty(mupName)) {
         newMupNameToMessages[mupName] = [[], []];
       }
-      newMupNameToMessages[mupName][1] = mupNameToActions[mupName].map((a) =>
-        a.getMessageSimple()
-      );
+      newMupNameToMessages[mupName][1] = getTodoMessagesByActions(mupNameToActions[mupName]);
+      // newMupNameToMessages[mupName][1] = mupNameToActions[mupName].map((a) =>
+      //   a.getMessageSimple()
+      // );
     }
 
     for (const mupName in mupNameToDiffMEssages) {
@@ -437,6 +439,12 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
       if (mupToMessages.hasOwnProperty(mup.name)) {
         [differences, todos] = mupToMessages[mup.name];
       }
+      // if (differences.length === 0) {
+      //   differences = ["Нет отличий"];
+      // }
+      // if (todos.length === 0) {
+      //   todos = ["Нет действий"];
+      // } 
 
       return (
         <tr key={mupId}>
@@ -446,6 +454,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
               {differences.map((val, index) => (
                 <li key={index}>{val}</li>
               ))}
+              {differences.length === 0 && <li className="message_success">Нет отличий</li>}
             </ul>
           </td>
           <td>
@@ -453,6 +462,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
               {todos.map((val, index) => (
                 <li key={index}>{val}</li>
               ))}
+              {todos.length === 0 && <li className="message_success">Нет действий</li>}
             </ul>
           </td>
         </tr>
@@ -569,7 +579,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
       <article>
         <RefreshButton
           onClick={refreshDataDebounced}
-          title="Обновить днные"
+          title="Обновить данные"
           loading={ensureInProgress}
         />
 

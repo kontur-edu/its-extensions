@@ -410,7 +410,10 @@ export function CompetitionGroupPreparation(
   const renderDefaultMetaSubrgoupCountSetUp = () => {
     return (
       <article>
-        <p>Определите количество подгрупп по умолчанию для нагрузок выбранных МУПов</p>
+        <p>
+          Определите количество подгрупп по умолчанию для нагрузок выбранных
+          МУПов
+        </p>
 
         <ApplyButtonWithActionDisplay
           showErrorWarning={true}
@@ -444,7 +447,7 @@ export function CompetitionGroupPreparation(
         </p>
       </article>
     );
-  }
+  };
 
   const renderSubgroupSetUp = () => {
     return (
@@ -492,7 +495,7 @@ export function CompetitionGroupPreparation(
         )}
       </article>
     );
-  }
+  };
 
   const renderSteps = () => {
     return (
@@ -516,6 +519,11 @@ export function CompetitionGroupPreparation(
           соответствующими Группами выбора{" "}
           <OuterLink url={COMPETITION_GROUP_URL}>в ИТС</OuterLink>. И обновите
           данные.
+        </p>
+        <p className="warning">
+          После привязки конкурсной группы к группе выбора, студенты направлений
+          указанных в образовательном пространстве смогут увидеть дисциплины по
+          выбору в личном кабинете
         </p>
       </div>
     );

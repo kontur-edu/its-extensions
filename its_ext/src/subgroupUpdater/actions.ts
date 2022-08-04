@@ -91,7 +91,7 @@ export class UpdateTeacherForSubgroupAction extends ITSAction {
   getMessage(): string {
     const updates: string[] = [];
     if (this.teacherId !== undefined) {
-      updates.push(`обновить преподавателя: ${this.teacherId}`);
+      updates.push(`обновить преподавателя: "${this.teacherId}"`);
     }
     if (this.limit !== undefined) {
       updates.push(`обновить лимит: ${this.limit}`);

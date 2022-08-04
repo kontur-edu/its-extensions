@@ -143,56 +143,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
 
   const refreshData = () => ensureData(true);
 
-  // const refreshData = () => {
-
-  //   if (context.dataRepository.mupData.ids.length === 0) {
-  //     // update mupData
-  //     ensureMupDataPromise = context.dataRepository.UpdateMupData();
-  //   }
-  //   let ensureSelectionGroupDataPromise = Promise.resolve();
-  //   if (context.dataRepository.selectionGroupData.ids.length === 0) {
-  //     ensureSelectionGroupDataPromise =
-  //       context.dataRepository.UpdateSelectionGroupData();
-  //   }
-  //   const updateAdmissionsPromise = context.dataRepository
-  //     .UpdateAdmissionMetas(props.competitionGroupIds)
-  //     .then(() => {
-  //       const competitionGroupIdToAdmissionIds: { [key: number]: number[] } =
-  //         {};
-  //       for (const competitionGroupId of props.competitionGroupIds) {
-  //         competitionGroupIdToAdmissionIds[competitionGroupId] = [];
-  //         const mupToAdmission =
-  //           context.dataRepository.competitionGroupIdToMupAdmissions[
-  //             competitionGroupId
-  //           ];
-  //         for (const mupId in mupToAdmission) {
-  //           competitionGroupIdToAdmissionIds[competitionGroupId].push(
-  //             mupToAdmission[mupId].admissionsId
-  //           );
-  //         }
-  //       }
-  //       return context.dataRepository.UpdateStudentAdmissionsAndStudentData(
-  //         competitionGroupIdToAdmissionIds
-  //       );
-  //     });
-  //   return Promise.allSettled([
-  //     ensureMupDataPromise,
-  //     ensureSelectionGroupDataPromise,
-  //     updateAdmissionsPromise,
-  //   ])
-  //     .then(() => {
-  //       refreshInProgress.current = false;
-  //     })
-  //     .catch((err) => {
-  //       refreshInProgress.current = false;
-  //       if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-  //         props.onUnauthorized();
-  //         return;
-  //       }
-  //       throw err;
-  //     });
-  // };
-
   const prepareItemsAndStudentMupDataText = () => {
     console.log("context.dataRepository.competitionGroupIdToMupAdmissions");
     console.log(context.dataRepository.competitionGroupIdToMupAdmissions);
@@ -275,11 +225,13 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   };
 
   useEffect(() => {
-    refreshData().then(() => prepareItemsAndStudentMupDataText());
+    refreshData()
+      .then(() => prepareItemsAndStudentMupDataText())
+      .finally(() => props.onLoad());
   }, [props.competitionGroupIds]);
 
   const handleRefresh = () => {
-    refreshData().then(() => prepareItemsAndStudentMupDataText());
+    return refreshData().then(() => prepareItemsAndStudentMupDataText());
   };
 
   const handleRefreshDebounced = () => {
@@ -419,10 +371,12 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     debouncedWrapperForApply(() => {
       // alert("Real apply declined");
       // return;
-      executeActions(studentAdmissionActions, context).then((actionResults) => {
-        setStudentAdmissionActionResults(actionResults);
-        handleRefresh();
-      });
+      executeActions(studentAdmissionActions, context)
+        .then((actionResults) => {
+          setStudentAdmissionActionResults(actionResults);
+          return handleRefresh();
+        })
+        .then(() => generateActions(personalNumberToStudentItems));
     });
   };
 
@@ -621,7 +575,9 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           actionResults={studentAdmissionActionResults}
           onApply={handleRealApplyDebounced}
           onNextStep={props.onNextStep}
-        />
+        >
+          Применить изменения
+        </ApplyButtonWithActionDisplay>
       </React.Fragment>
     );
   };

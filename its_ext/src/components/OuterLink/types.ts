@@ -1,4 +1,4 @@
 export interface IOuterLinkProps {
   url: string;
-  title: string;
+  // title: string;
 }

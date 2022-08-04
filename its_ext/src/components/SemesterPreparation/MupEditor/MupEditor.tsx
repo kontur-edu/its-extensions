@@ -146,6 +146,8 @@ export function MupEditor(props: IMupEditorProps) {
   // const refreshInProgress = useRef<boolean>(false);
   const [ensureInProgress, setEnsureInProgress] = useState<boolean>(false);
   const currentEnsurePromise = useRef<Promise<any> | null>(null);
+  const [executingActionsInProgress, setExecutingActionsInProgress] =
+    useState<boolean>(false);
 
   const context = useContext(ITSContext)!;
 
@@ -291,11 +293,10 @@ export function MupEditor(props: IMupEditorProps) {
           competitionGroupIds.push(cgId);
         }
       });
-      const updateSubgroupsAction = repo.CheckSubgroupPresent(
-        competitionGroupIds
-      )
-        ? Promise.resolve()
-        : context.dataRepository.UpdateSubgroups(competitionGroupIds);
+      const updateSubgroupsAction =
+        !refresh && repo.CheckSubgroupPresent(competitionGroupIds)
+          ? Promise.resolve()
+          : context.dataRepository.UpdateSubgroups(competitionGroupIds);
       return updateSubgroupsAction;
     };
 
@@ -311,7 +312,8 @@ export function MupEditor(props: IMupEditorProps) {
             ).map((m) => m.connectionId)
           );
         }
-        if (allConnectionIds.length === 0) return;
+        if (allConnectionIds.length === 0)
+          return Promise.allSettled([Promise.resolve(), Promise.resolve()]);
         const updateModuleDataPromise =
           !refresh && repo.CheckModuleDataPresent()
             ? Promise.resolve()
@@ -356,14 +358,19 @@ export function MupEditor(props: IMupEditorProps) {
 
   const prepareData = (mupIds: Set<string>) => {
     console.log("prepareData");
-    const referenceModules = findReferenceModules();
+    const newZeToModuleSelection = findReferenceModules();
     const { newMupDiffs, newMupEdits, initDates } = createInitDiffsAndDates(
       mupIds,
-      referenceModules
+      newZeToModuleSelection
     );
-    setZeToModuleSelection(referenceModules);
+    setZeToModuleSelection(newZeToModuleSelection);
     setUpDiffsAndDates(newMupDiffs, newMupEdits, initDates);
-    callDebouncedApply(newMupDiffs, newMupEdits, initDates, referenceModules);
+    callDebouncedApply(
+      newMupDiffs,
+      newMupEdits,
+      initDates,
+      newZeToModuleSelection
+    );
   };
 
   useEffect(() => {
@@ -387,8 +394,8 @@ export function MupEditor(props: IMupEditorProps) {
       })
       .then((mupIdUnion) => {
         prepareData(mupIdUnion);
-        props.onLoad();
-      });
+      })
+      .finally(() => props.onLoad());
   }, [props.selectionGroupIds]);
 
   const ensurePeriodAndModulesForMup = (mupId: string) => {
@@ -441,7 +448,6 @@ export function MupEditor(props: IMupEditorProps) {
       newMupEdits[mupId].selected = !newMupEdits[mupId].selected;
 
       setMupEdits(newMupEdits);
-      // return { mupDiffsToCompareWith, newMupEdits };
 
       callDebouncedApply(
         mupDiffsToCompareWith,
@@ -450,14 +456,6 @@ export function MupEditor(props: IMupEditorProps) {
         zeToModuleSelection
       );
     });
-    // .then(({ mupDiffsToCompareWith, newMupEdits }) => {
-    //   callDebouncedApply(
-    //     mupDiffsToCompareWith,
-    //     newMupEdits,
-    //     [startDate, endDate],
-    //     zeToModuleSelection
-    //   );
-    // });
   };
 
   const handleMupLimitChange = (mupId: string, newLimit: number) => {
@@ -630,11 +628,14 @@ export function MupEditor(props: IMupEditorProps) {
   };
 
   const handleApplyReal = () => {
+    setExecutingActionsInProgress(true);
     executeActions(mupEditorActions, context)
       .then((results) => setMupEditorActionResults(results))
       .then(() => alert("Применение изменений завершено"))
       .then(() => handleRefresh()) // refresh
+      .then(() => setExecutingActionsInProgress(false))
       .catch((err) => {
+        setExecutingActionsInProgress(false);
         if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
           props.onUnauthorized();
           return;
@@ -650,15 +651,6 @@ export function MupEditor(props: IMupEditorProps) {
   };
 
   const renderTable = () => {
-    // return ensureInProgress ? <CircularProgress className={style.progress_icon} style={{width: '100px', height: '100px'}} /> : (
-    //   <MupsList
-    //       mupData={context.dataRepository.mupData}
-    //       mupEdits={mupEdits}
-    //       onMupToggle={handleMupToggle}
-    //       onMupLimitChange={handleMupLimitChange}
-    //     />
-    // );
-
     return (
       <div className="load_content_container">
         <MupsList
@@ -703,7 +695,7 @@ export function MupEditor(props: IMupEditorProps) {
           </label>
         </div>
 
-        <h4>Выберите МУПы и лимиты на количество зачисленных студентов</h4>
+        <h4>Выберите МУПы и Лимиты на количество зачисленных студентов</h4>
 
         <RefreshButton
           onClick={handleRefreshDebounced}
@@ -712,12 +704,6 @@ export function MupEditor(props: IMupEditorProps) {
         />
 
         {renderTable()}
-        {/* <MupsList
-          mupData={context.dataRepository.mupData}
-          mupEdits={mupEdits}
-          onMupToggle={handleMupToggle}
-          onMupLimitChange={handleMupLimitChange}
-        /> */}
 
         <ApplyButtonWithActionDisplay
           showErrorWarning={true}
@@ -726,7 +712,10 @@ export function MupEditor(props: IMupEditorProps) {
           actionResults={mupEditorActionResults}
           onNextStep={props.onNextStep}
           onApply={handleApplyRealDebounced}
-        />
+          loading={executingActionsInProgress}
+        >
+          Применить изменения
+        </ApplyButtonWithActionDisplay>
       </article>
     </section>
   );

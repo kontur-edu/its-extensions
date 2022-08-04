@@ -31,7 +31,6 @@ import { createDebouncedWrapper } from "../../../utils/helpers";
 import Button from "@mui/material/Button";
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 import { RefreshButton } from "../../RefreshButton";
-import CircularProgress from "@mui/material/CircularProgress";
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
@@ -252,7 +251,8 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
       .then((newStudentItems) => {
         handleGenerateActionsDebounced(newStudentItems);
         setEnsureDataInProgress(false);
-      });
+      })
+      .finally(() => props.onLoad());
   }, [competitionGroupToAdmissionIds]);
 
   const handleMupChange = (event: SelectChangeEvent) => {
@@ -486,7 +486,9 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
           clicked={applyClicked}
           onNextStep={props.onNextStep}
           onApply={handleRealApplyDebounced}
-        />
+        >
+          Применить изменения
+        </ApplyButtonWithActionDisplay>
       </React.Fragment>
     );
   };

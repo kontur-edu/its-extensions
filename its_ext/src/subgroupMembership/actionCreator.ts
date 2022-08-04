@@ -78,7 +78,7 @@ function generateUpdateMembershipActions(
       newStudentIds.filter((sId) => !initStudentIdSet.has(sId))
     );
 
-    console.log(`subgroupId: ${subgroupId}`);
+    // console.log(`subgroupId: ${subgroupId}`);
     for (const sId of Array.from(toExclude)) {
       actions.push(new UpdateMembershipAction(sId, subgroupId, false));
     }

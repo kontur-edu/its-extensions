@@ -387,8 +387,10 @@ export function createActions(
     )
   );
 
-  actions.push(...generateRefreshActions(selectionGroupsIds, selectedMupsIds));
-
+  if (actions.length > 0) {
+    actions.push(...generateRefreshActions(selectionGroupsIds, selectedMupsIds));
+  }
+  
   actions.push(
     ...generateUpdateLimitActions(
       selectionGroupsIds,

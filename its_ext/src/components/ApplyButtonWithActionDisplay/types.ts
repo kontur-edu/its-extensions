@@ -8,4 +8,5 @@ export interface IApplyButtonWithActionDisplayProps {
   actionResults?: IActionExecutionLogItem[];
   onNextStep?: () => any;
   onApply?: () => any;
+  loading?: boolean;
 }

@@ -24,7 +24,18 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
   const stepThreeRef = useRef<HTMLElement | null>(null);
   const stepFourRef = useRef<HTMLElement | null>(null);
 
+  const [stepTwoLoaded, setStepTwoLoaded] = useState<boolean>(false);
+  const [stepThreeLoaded, setStepThreeLoaded] = useState<boolean>(false);
 
+  const handleStepTwoLoaded = () => {
+    console.log("handleStepTwoLoaded");
+    setStepTwoLoaded(true);
+  };
+
+  const handleStepThreeLoaded = () => {
+    console.log("handleStepThreeLoaded");
+    setStepThreeLoaded(true);
+  };
 
   const isGroupSelectionValid = () => {
     return competitionGroupIds.length > 0 && competitionGroupIds.length <= 2;
@@ -73,6 +84,8 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
   }, []);
 
   const handleCompetitionGroupsSelect = (newCompetitionGroupIds: number[]) => {
+    setStepTwoLoaded(false);
+    setStepThreeLoaded(false);
     setCompetitionGroupIds(newCompetitionGroupIds);
   };
 
@@ -100,6 +113,7 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
             competitionGroupIds={competitionGroupIds}
             onUnauthorized={props.onUnauthorized}
             onNextStep={handleGoToStudentAdmissions}
+            onLoad={handleStepTwoLoaded}
           />
         </article>
       </React.Fragment>
@@ -116,6 +130,7 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
             onUnauthorized={props.onUnauthorized}
             competitionGroupIds={competitionGroupIds}
             onNextStep={handleGoToSubgroupDistribution}
+            onLoad={handleStepThreeLoaded}
           />
         </article>
       </React.Fragment>
@@ -161,7 +176,9 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
             showErrorWarning={false}
             showSuccessMessage={false}
             onNextStep={handleCompetitionGroupSelectButton}
-          />
+          >
+            Выбрать
+          </ApplyButtonWithActionDisplay>
           <p className="next_step__message">
             {!isGroupSelectionValid() &&
               "Выберите одну или две группы для перехода к следующему шагу"}
@@ -171,9 +188,14 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
 
       {isGroupSelectionValid() && renderTaskResultsInput()}
 
-      {isGroupSelectionValid() && renderStudentsAutoAdmission()}
+      {isGroupSelectionValid() &&
+        stepTwoLoaded &&
+        renderStudentsAutoAdmission()}
 
-      {isGroupSelectionValid() && renderSubgroupDistribution()}
+      {isGroupSelectionValid() &&
+        stepTwoLoaded &&
+        stepThreeLoaded &&
+        renderSubgroupDistribution()}
     </section>
   );
 }

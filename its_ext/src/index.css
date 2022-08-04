@@ -137,6 +137,11 @@ h4 {
   color: rgb(0, 197, 0);
 }
 
+.no_offsets {
+  margin: 0;
+  padding: 0;
+}
+
 .message_success__container {
   border-radius: 4px;
   background-color: #d7f8ae;
@@ -245,7 +250,7 @@ td {
   right: 0;
   margin-left: auto;
   margin-right: auto;
-  margin-top: 8rem;
+  margin-top: 6rem;
 }
 
 .progress_icon_small {
@@ -266,4 +271,19 @@ td {
 .load_content_container_small {
   position: relative;
   /* width: 100%; */
+}
+
+.same_line_with_wrap {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  vertical-align: middle;
+}
+
+.step_list {
+  padding: 0;
+  margin: 0;
+  margin-bottom: 1em;
+  padding-left: 1em;
+  margin-bottom: 1em;
 }

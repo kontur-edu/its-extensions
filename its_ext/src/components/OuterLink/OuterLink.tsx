@@ -17,6 +17,7 @@ export function OuterLink(props: React.PropsWithChildren<IOuterLinkProps>) {
         display: "inline-flex",
         alignItems: "center",
         fontSize: "1em",
+        margin: "0 0.4em"
       }}
     >
       <NorthEastIcon />

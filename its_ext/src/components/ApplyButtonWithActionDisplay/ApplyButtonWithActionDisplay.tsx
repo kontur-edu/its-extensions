@@ -28,12 +28,14 @@ export interface INextStepButtonProps {
   onClick: () => void;
 }
 
-export function NextStepButton(props: React.PropsWithChildren<INextStepButtonProps>) {
+export function NextStepButton(
+  props: React.PropsWithChildren<INextStepButtonProps>
+) {
   return (
     <Button
       onClick={props.onClick}
       variant="contained"
-      style={{ marginRight: "1em" }}
+      style={{ marginRight: "1em", alignSelf: "flex-start" }}
       endIcon={<SystemUpdateAltIcon />}
     >
       {props.children}
@@ -118,7 +120,9 @@ export function ApplyButtonWithActionDisplay(
 
   const renderSuccessButtonWithNextStep = () => {
     const nextStepButton = props.onNextStep && (
-      <NextStepButton onClick={props.onNextStep}>К следующему шагу</NextStepButton>
+      <NextStepButton onClick={props.onNextStep}>
+        К следующему шагу
+      </NextStepButton>
       // <Button
       //   onClick={props.onNextStep}
       //   variant="contained"
@@ -154,9 +158,11 @@ export function ApplyButtonWithActionDisplay(
       <React.Fragment>
         {successMessage}
         {nextStepButton}
-        {!successMessage &&
-          !nextStepButton &&
-          "Для данного шага не найдено автоматических действий"}
+        {!successMessage && !nextStepButton && (
+          <p className="message_success no_offsets">
+            Для данного шага не найдено автоматических действий
+          </p>
+        )}
       </React.Fragment>
     );
   };

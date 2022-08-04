@@ -389,7 +389,6 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
   };
 
   const renderMupsAreDifferent = () => {
-    if (canBeSync) return null;
     return (
       <h3 className="message_error">
         Состав МУПов или нагрузок в выбранных группах отличается, настройте МУПы
@@ -404,40 +403,36 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
     return lhsName.localeCompare(rhsName);
   };
 
-  const renderSelect = () => {
-    const items = competitionGroupIds.map((cgId) => {
-      const name = getCompetitionGroupName(
-        cgId,
-        context.dataRepository.competitionGroupData
-      );
-      return {
-        id: cgId,
-        name: `${name}`,
-      };
-    });
-    return (
-      <SimpleSelect
-        label={"Конкурсная группа"}
-        items={items}
-        selectedId={referenceCompetitionGroupId}
-        onChange={handleReferenceCompetitionGroupChange}
-      />
-    );
-  };
+  // const renderSelect = () => {
+  //   const items = competitionGroupIds.map((cgId) => {
+  //     const name = getCompetitionGroupName(
+  //       cgId,
+  //       context.dataRepository.competitionGroupData
+  //     );
+  //     return {
+  //       id: cgId,
+  //       name: `${name}`,
+  //     };
+  //   });
+  //   return (
+  //     <article className="same_line_with_wrap">
+  //       <p>Выберите эталонную конкурсную группу для синхронизации</p>
+  //       <SimpleSelect
+  //         label={"Конкурсная группа"}
+  //         items={items}
+  //         selectedId={referenceCompetitionGroupId}
+  //         onChange={handleReferenceCompetitionGroupChange}
+  //       />
+  //     </article>
+  //   );
+  // };
 
   const renderRows = () => {
-    // return null;
     if (!canBeSync) return null;
 
     return mupIds.sort(compareMupIds).map((mupId) => {
       const mup = context.dataRepository.mupData.data[mupId];
 
-      // if (!mupToMessages.hasOwnProperty(mup.name)) {
-      //   throw new Error(
-      //     `${mup.name} has no corresponding mupToDifferenceTodoMessages`
-      //   );
-
-      // }
       let differences: string[] = [];
       let todos: string[] = [];
       if (mupToMessages.hasOwnProperty(mup.name)) {
@@ -506,15 +501,35 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
     debouncedWrapperForApply(handleApplyReal);
   };
 
-  const renderContnet = () => {
+  const renderReferenceCompetitionGroupSelect = () => {
+    const items = competitionGroupIds.map((cgId) => {
+      const name = getCompetitionGroupName(
+        cgId,
+        context.dataRepository.competitionGroupData
+      );
+      return {
+        id: cgId,
+        name: `${name}`,
+      };
+    });
     return (
-      <React.Fragment>
-        {renderMupsAreDifferent()}
+      <article className="same_line_with_wrap">
+        <p>Выберите эталонную конкурсную группу для синхронизации</p>
+        <SimpleSelect
+          label={"Конкурсная группа"}
+          items={items}
+          selectedId={referenceCompetitionGroupId}
+          onChange={handleReferenceCompetitionGroupChange}
+        />
+      </article>
+    );
+  }
 
-        {renderSelect()}
-
-        <h4>Сравение Конкурсных групп:</h4>
-
+  const renderCompetitionGroupSync = () => {
+    return (
+      <article>
+        <p>Сравните оставшуюся Конкурсную группу с выбранной эталонной и синхронизируйте группы</p>
+        <p>Таблица с отличиями Конкурсных групп и действиями для синхронизации:</p>
         <div className="load_content_container">
           {renderTable()}
           {ensureInProgress && <div className="progress_screen"></div>}
@@ -530,8 +545,22 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
           actionResults={syncActionResults}
           onApply={handleApplyRealDebounced}
         >
-          Применить изменения
+          Синхронизировать конкурсные группы
         </ApplyButtonWithActionDisplay>
+      </article>
+    );
+  }
+
+  const renderContnet = () => {
+    return (
+      <React.Fragment>
+        {!canBeSync && renderMupsAreDifferent()}
+
+        <ol className="step_list">
+          <li>{renderReferenceCompetitionGroupSelect()}</li>
+          <li>{renderCompetitionGroupSync()}</li>
+        </ol>
+  
       </React.Fragment>
     );
   };

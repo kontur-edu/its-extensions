@@ -114,6 +114,8 @@ export function createMupIdToMupItemByStudentItems(
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions,
   admissionIdToMupId: { [key: number]: string }
 ): { [key: string]: IMupDistributionItem } {
+  console.log("competitionGroupIdToMupAdmissions");
+  console.log(competitionGroupIdToMupAdmissions);
   const mupIdToMupItem: { [key: string]: IMupDistributionItem } = {};
   for (const competitionId of competitionGroupIds) {
     const mupIdToAdmission = competitionGroupIdToMupAdmissions[competitionId];
@@ -332,17 +334,14 @@ export interface IStudentsDistributionData {
   }; // mupId -> mupName
 }
 
-
 export function getAvailableAdmissionIds(
   competitionGroupIds: number[],
-  competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions,
+  competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions
 ) {
   const availableAdmissionIds = new Set<number>();
   for (const competitionGroupId of competitionGroupIds) {
     const mupToAdmissionMeta =
-      competitionGroupIdToMupAdmissions[
-        competitionGroupId
-      ];
+      competitionGroupIdToMupAdmissions[competitionGroupId];
     for (const mupId in mupToAdmissionMeta) {
       availableAdmissionIds.add(mupToAdmissionMeta[mupId].admissionsId);
     }

@@ -140,7 +140,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
   const renderStep2 = () => {
     return (
       <article className="step" ref={stepTwoRef}>
-        <h3 className="step__header">2. Лимиты МУПов и даты выбора</h3>
+        <h3 className="step__header">2. Назначьте даты выбора, состав МУПов и их Лимиты</h3>
 
         <MupEditor
           selectionGroupIds={selectionGroupsIds}
@@ -156,7 +156,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
   const renderStep3 = () => {
     return (
       <article className="step" ref={stepThreeRef}>
-        <h3 className="step__header">3. Подготовьте Конкурсную группу</h3>
+        <h3 className="step__header">3. Подготовьте эталонную Конкурсную группу</h3>
 
         <CompetitionGroupPreparation
           selectionGroupIds={selectionGroupsIds}

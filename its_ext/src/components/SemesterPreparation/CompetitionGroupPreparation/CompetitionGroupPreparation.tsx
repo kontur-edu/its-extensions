@@ -392,79 +392,94 @@ export function CompetitionGroupPreparation(
     );
   };
 
+  const renderCompetitionGroupSelect = () => {
+    return (
+      <article className="same_line_with_wrap">
+        <p>Выберите эталонную конкурсную группу для настройки</p>
+        {renderSelect()}
+      </article>
+    );
+  };
+
+  const renderMetaSubrgoupCountSetUp = () => {
+    return (
+      <article>
+        <p>Определите количество подгрупп для нагрузок выбранных МУПов</p>
+
+        <ApplyButtonWithActionDisplay
+          showErrorWarning={true}
+          showSuccessMessage={true}
+          actions={updateSubgroupCountActions}
+          actionResults={updateSubgroupCountActionResults}
+          // clicked={updateSubgroupCountClicked}
+          // onNextStep={onNextStep}
+          loading={updateSubgroupCountInProgress}
+          onApply={handleUpdateSubgroupCountApplyDebounced}
+        >
+          Установить количество подгрупп в 1 для всех нагрузок МУПов
+        </ApplyButtonWithActionDisplay>
+        <p className="same_line_with_wrap">
+          Отредактируйте количество подгрупп{" "}
+          <OuterLink
+            url={
+              COMPETITION_GROUP_SUBGROUP_METAS_URL + selectedCompetitionGroupId
+            }
+          >
+            в ИТС
+          </OuterLink>{" "}
+          и обновите данные
+        </p>
+      </article>
+    );
+  };
+
+  const renderSubgroupSetUp = () => {
+    return (
+      <article>
+        <p>
+          Создание подгрупп, определение Лимитов и выбор преподавателей для
+          подгрупп
+        </p>
+        <ApplyButtonWithActionDisplay
+          showErrorWarning={true}
+          showSuccessMessage={true}
+          actions={prepareSubgroupActions}
+          actionResults={prepareSubgroupActionResults}
+          // clicked={prepareSubgroupClicked}
+          // onNextStep={onNextStep}
+          loading={prepareSubgroupInProgress}
+          onApply={handlePrepareSubgroupsApplyDebounced}
+        >
+          Создать подгруппы и попробовать выбрать преподавателя
+        </ApplyButtonWithActionDisplay>
+        <p className="same_line_with_wrap">
+          Отредактируйте Лимиты и выбранных преподавателей созданных подгрупп{" "}
+          <OuterLink
+            url={COMPETITION_GROUP_SUBGROUP_URL + selectedCompetitionGroupId}
+          >
+            в ИТС
+          </OuterLink>{" "}
+          и обновите данные
+        </p>
+        <p>{
+          <ul className="warning">
+            {prepareSubgroupMessages.map((m, i) => (
+              <li key={i}>{m}</li>
+            ))}
+          </ul>
+        }
+        </p>
+      </article>
+    );
+  };
+
   const renderSteps = () => {
     return (
-      <ol className={style.step_list}>
-        <li>
-          Выберите эталонную конкурсную группу для настройки
-          {renderSelect()}
-        </li>
-        <li>
-          <p>Определите количество подгрупп для нагрузок выбранных МУПов</p>
-
-          <ApplyButtonWithActionDisplay
-            showErrorWarning={true}
-            showSuccessMessage={true}
-            actions={updateSubgroupCountActions}
-            actionResults={updateSubgroupCountActionResults}
-            // clicked={updateSubgroupCountClicked}
-            // onNextStep={onNextStep}
-            loading={updateSubgroupCountInProgress}
-            onApply={handleUpdateSubgroupCountApplyDebounced}
-          >
-            Установить количество подгрупп в 1 для всех нагрузок МУПов
-          </ApplyButtonWithActionDisplay>
-          <p>
-            Отредактируйте количество подгрупп{" "}
-            <OuterLink
-              url={
-                COMPETITION_GROUP_SUBGROUP_METAS_URL +
-                selectedCompetitionGroupId
-              }
-            >
-              в ИТС
-            </OuterLink>{" "}
-            и обновите данные
-          </p>
-        </li>
-        <li>
-          <p>
-            Создание подгрупп, определение Лимитов и выбор преподавателей для
-            подгрупп
-          </p>
-          <ApplyButtonWithActionDisplay
-            showErrorWarning={true}
-            showSuccessMessage={true}
-            actions={prepareSubgroupActions}
-            actionResults={prepareSubgroupActionResults}
-            // clicked={prepareSubgroupClicked}
-            // onNextStep={onNextStep}
-            loading={prepareSubgroupInProgress}
-            onApply={handlePrepareSubgroupsApplyDebounced}
-          >
-            Создать подгруппы и попробовать выбрать преподавателя
-          </ApplyButtonWithActionDisplay>
-          <p>
-            Отредактируйте Лимиты и выбранных преподавателей созданных подгрупп{" "}
-            <OuterLink
-              url={COMPETITION_GROUP_SUBGROUP_URL + selectedCompetitionGroupId}
-            >
-              в ИТС
-            </OuterLink>{" "}
-            и обновите данные
-          </p>
-          {
-            <ul className="warning">
-              {prepareSubgroupMessages.map((m, i) => (
-                <li key={i}>{m}</li>
-              ))}
-            </ul>
-          }
-        </li>
+      <ol className="step_list">
+        <li>{renderCompetitionGroupSelect()}</li>
+        <li>{renderMetaSubrgoupCountSetUp()}</li>
+        <li>{renderSubgroupSetUp()}</li>
         <li>Синхронизируйте Конкурсные группы на следующем шаге</li>
-        <NextStepButton onClick={props.onNextStep}>
-          К следующему шагу
-        </NextStepButton>
       </ol>
     );
   };
@@ -485,7 +500,6 @@ export function CompetitionGroupPreparation(
 
   return (
     <React.Fragment>
-      <h3>Подготовьте эталонную конкурсную группу</h3>
       <RefreshButton
         onClick={handleRefreshDebounced}
         loading={ensureInProgress}
@@ -493,6 +507,9 @@ export function CompetitionGroupPreparation(
       />
       {competitionGroupIds.length === 0 && renderCompetitionGroupsNotFound()}
       {competitionGroupIds.length > 0 && renderSteps()}
+      <NextStepButton onClick={props.onNextStep}>
+        К следующему шагу
+      </NextStepButton>
     </React.Fragment>
   );
 }

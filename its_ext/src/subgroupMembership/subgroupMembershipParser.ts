@@ -274,11 +274,12 @@ export function validateSubgroupMembership(
 }
 
 function prepareMupToLoadToSubgroupMembership(
+  mupNames: string[],
   competitionGroupIds: number[],
   subgoupDiffInfo: ISubgoupDiffInfo
 ) {
   const res: MupToLoadToSubgroupMembership = {};
-  for (const mupName in subgoupDiffInfo.subgroupDiffs) {
+  for (const mupName of mupNames) {
     res[mupName] = {};
     const cgIdToMeta = subgoupDiffInfo.metaDiffs[mupName];
     for (const competitionGroupId of competitionGroupIds) {
@@ -310,6 +311,7 @@ function prepareMupToLoadToSubgroupMembership(
 // }
 
 export function createMupToLoadToSubgroupMembership(
+  mupNames: string[],
   competitionGroupIds: number[],
   subgoupDiffInfo: ISubgoupDiffInfo,
   subgroupIdToStudentSubgroupMembership: {
@@ -317,11 +319,14 @@ export function createMupToLoadToSubgroupMembership(
   },
   studentIdToPersonalNumber: { [key: string]: string } = {}
 ): MupToLoadToSubgroupMembership {
+  console.log("mupNames");
+  console.log(mupNames);
   const res = prepareMupToLoadToSubgroupMembership(
+    mupNames,
     competitionGroupIds,
     subgoupDiffInfo
   );
-  for (const mupName in subgoupDiffInfo.subgroupDiffs) {
+  for (const mupName of mupNames) {
     for (const competitionGroupId of competitionGroupIds) {
       if (
         !subgoupDiffInfo.subgroupDiffs[mupName].hasOwnProperty(

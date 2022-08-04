@@ -300,8 +300,17 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
       JSON.stringify(newStudentDistributionData, null, 2)
     );
 
+    const availableMupIds = new Set<string>();
+    availableAdmissionIds.forEach((aId) =>
+      availableMupIds.add(context.dataRepository.admissionIdToMupId[aId])
+    );
+    const mupNames: string[] = [];
+    availableMupIds.forEach((mId) =>
+      mupNames.push(context.dataRepository.mupData.data[mId].name)
+    );
     try {
       const mupToLoadToSubgroupMembership = createMupToLoadToSubgroupMembership(
+        mupNames,
         props.competitionGroupIds,
         newSubgroupDiffInfo,
         context.dataRepository.subgroupIdToStudentSubgroupMembership,

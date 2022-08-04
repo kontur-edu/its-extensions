@@ -93,8 +93,10 @@ export function CompetitionGroupPreparation(
   const [ensureInProgress, setEnsureInProgress] = useState<boolean>(false);
   const currentEnsurePromise = useRef<Promise<any> | null>(null);
 
-  const [applyDefaultClicked, setApplyDefaultClicked] = useState<boolean>(false);
-  const [applySubgroupsClicked, setApplySubgroupsClicked] = useState<boolean>(false);
+  const [applyDefaultClicked, setApplyDefaultClicked] =
+    useState<boolean>(false);
+  const [applySubgroupsClicked, setApplySubgroupsClicked] =
+    useState<boolean>(false);
 
   const context = useContext(ITSContext)!;
 
@@ -250,7 +252,7 @@ export function CompetitionGroupPreparation(
       const mup = repo.mupData.data[mId];
       mupNameToMupId[mup.name] = mId;
     });
-    const { actions, mupNameToLoadToTeachers } = createPrepareSubgroupsActions(
+    const { actions, subgroupReferenceInfo } = createPrepareSubgroupsActions(
       cgId,
       mupNameToMupId,
       repo.mupData,
@@ -261,11 +263,22 @@ export function CompetitionGroupPreparation(
     setPrepareSubgroupActions(actions);
     const messages: string[] = [];
     if (actions.length === 0) {
-      for (const mupName in mupNameToLoadToTeachers) {
+      for (const mupName in subgroupReferenceInfo) {
         const loadsWithMissingTeachers: string[] = [];
-        for (const load in mupNameToLoadToTeachers[mupName]) {
-          if (mupNameToLoadToTeachers[mupName][load].some((p) => !p)) {
+        const createdSubgroupsAreWrong: string[] = [];
+        for (const load in subgroupReferenceInfo[mupName]) {
+          if (
+            subgroupReferenceInfo[mupName][load].subgroupInfo.some(
+              (si) => !si.teacher
+            )
+          ) {
             loadsWithMissingTeachers.push(load);
+          }
+          if (
+            subgroupReferenceInfo[mupName][load].subgroupInfo.length !=
+            subgroupReferenceInfo[mupName][load].count
+          ) {
+            createdSubgroupsAreWrong.push(load);
           }
         }
         if (loadsWithMissingTeachers.length > 0) {
@@ -274,6 +287,14 @@ export function CompetitionGroupPreparation(
             .join(", ");
           messages.push(
             `МУП: "${mupName}": следующие нагрузки не имеют преподавателя: ${loadsStr}`
+          );
+        }
+        if (createdSubgroupsAreWrong.length > 0) {
+          const loadsStr = createdSubgroupsAreWrong
+            .map((l) => `"${l}"`)
+            .join(", ");
+          messages.push(
+            `МУП: "${mupName}": следующие нагрузки имеют созданные группы не соответствующие количеству: ${loadsStr} (удалите лишние подгруппы и создайте их заново)`
           );
         }
       }
@@ -339,7 +360,7 @@ export function CompetitionGroupPreparation(
     if (newCompetitionGroupIdStr !== null) {
       setApplyDefaultClicked(false);
       setApplySubgroupsClicked(false);
-  
+
       const newCompetitionGroupId = Number(newCompetitionGroupIdStr);
 
       if (isFinite(newCompetitionGroupId)) {

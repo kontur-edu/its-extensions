@@ -10,6 +10,10 @@ import {
   ISubgroupMeta,
 } from "../common/types";
 import {
+  createSubgroupReferenceInfoFromCompetitionGroup,
+  ISubgroupReferenceInfo,
+} from "../components/SemesterPreparation/CompetitionGroupSync/utils";
+import {
   UpdateSubgroupMetaLoadCountAction,
   UpdateTeacherForSubgroupAction,
   CreateSubgroupsAction,
@@ -151,56 +155,11 @@ export function generateRefreshSubgroupsActions(competitionGroupId: number) {
   return [new RefreshSubgroupsAction([competitionGroupId])];
 }
 
-interface IMupNameToLoadToTeachers {
-  [key: string]: {
-    [key: string]: (string | null)[];
-  };
-}
-
-export function findTeacherIds(
-  mupNameToMupId: { [key: string]: string },
-  subgroupMetas: ISubgroupMeta[],
-  subgroupIds: number[],
-  subgroupData: ISubgroupData
-) {
-  const mupNameToLoadToTeachers: IMupNameToLoadToTeachers = {};
-  for (const meta of subgroupMetas) {
-    if (!mupNameToMupId.hasOwnProperty(meta.discipline)) {
-      continue;
-    }
-    if (!mupNameToLoadToTeachers.hasOwnProperty(meta.discipline)) {
-      mupNameToLoadToTeachers[meta.discipline] = {};
-    }
-
-    mupNameToLoadToTeachers[meta.discipline][meta.load] = [];
-    for (let i = 0; i < meta.count; i++) {
-      mupNameToLoadToTeachers[meta.discipline][meta.load].push(null);
-    }
-  }
-
-  for (const subgroupId of subgroupIds) {
-    if (subgroupData.data.hasOwnProperty(subgroupId)) {
-      const subgroup = subgroupData.data[subgroupId];
-      if (!mupNameToLoadToTeachers.hasOwnProperty(subgroup.mupName)) continue;
-      const loadToTeachers = mupNameToLoadToTeachers[subgroup.mupName];
-      if (!loadToTeachers.hasOwnProperty(subgroup.load)) continue;
-      if (
-        subgroup.number > 0 &&
-        subgroup.number <= loadToTeachers[subgroup.load].length
-      ) {
-        const num = subgroup.number - 1;
-        loadToTeachers[subgroup.load][num] = subgroup.teacherId;
-      }
-    }
-  }
-
-  return mupNameToLoadToTeachers;
-}
 
 export function generateUpdateTeacherActions(
   competitionGroupId: number,
   mupNameToMupId: { [key: string]: string },
-  mupNameToLoadToTeachers: IMupNameToLoadToTeachers,
+  subgroupReferenceInfo: ISubgroupReferenceInfo,
   mupData: IMupData,
   competitionGroupToSubgroupMetas: ICompetitionGroupToSubgroupMetas
 ): ITSAction[] {
@@ -210,8 +169,8 @@ export function generateUpdateTeacherActions(
 
   const subgroupMetas = competitionGroupToSubgroupMetas[competitionGroupId];
 
-  console.log("mupNameToLoadToTeachers");
-  console.log(mupNameToLoadToTeachers);
+  console.log("subgroupReferenceInfo");
+  console.log(subgroupReferenceInfo);
 
   for (const meta of subgroupMetas) {
     if (!mupNameToMupId.hasOwnProperty(meta.discipline)) {
@@ -220,8 +179,9 @@ export function generateUpdateTeacherActions(
       // );
       continue;
     }
-    const currentTeacherIds =
-      mupNameToLoadToTeachers[meta.discipline][meta.load];
+    const currentTeacherIds = subgroupReferenceInfo[meta.discipline][
+      meta.load
+    ].subgroupInfo.map((si) => si.teacher);
 
     const mupId = mupNameToMupId[meta.discipline];
 
@@ -281,7 +241,7 @@ export function createPrepareSubgroupsActions(
   competitionGroupToSubgroupMetas: ICompetitionGroupToSubgroupMetas,
   competitionGroupToSubgroupIds: ICompetitionGroupToSubgroupIds,
   subgroupData: ISubgroupData
-): { actions: ITSAction[]; mupNameToLoadToTeachers: IMupNameToLoadToTeachers } {
+): { actions: ITSAction[]; subgroupReferenceInfo: ISubgroupReferenceInfo } {
   const actions: ITSAction[] = [];
 
   if (!competitionGroupToSubgroupMetas.hasOwnProperty(competitionGroupId)) {
@@ -295,7 +255,13 @@ export function createPrepareSubgroupsActions(
     );
   }
 
-  const mupNameToLoadToTeachers = findTeacherIds(
+  // const mupNameToLoadToTeachers = findTeacherIds(
+  //   mupNameToMupId,
+  //   competitionGroupToSubgroupMetas[competitionGroupId],
+  //   competitionGroupToSubgroupIds[competitionGroupId],
+  //   subgroupData
+  // );
+  const subgroupReferenceInfo = createSubgroupReferenceInfoFromCompetitionGroup(
     mupNameToMupId,
     competitionGroupToSubgroupMetas[competitionGroupId],
     competitionGroupToSubgroupIds[competitionGroupId],
@@ -320,11 +286,11 @@ export function createPrepareSubgroupsActions(
     ...generateUpdateTeacherActions(
       competitionGroupId,
       mupNameToMupId,
-      mupNameToLoadToTeachers,
+      subgroupReferenceInfo,
       mupData,
       competitionGroupToSubgroupMetas
     )
   );
 
-  return { actions, mupNameToLoadToTeachers };
+  return { actions, subgroupReferenceInfo };
 }

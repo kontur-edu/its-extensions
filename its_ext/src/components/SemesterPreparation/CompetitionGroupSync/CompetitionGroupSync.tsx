@@ -261,7 +261,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
       newCompetitionGroupIds,
       mupNameToMupId,
       competitionGroupIdToInfo,
-      repo.competitionGroupToSubgroupMetas,
+      repo.competitionGroupToSubgroupMetas
       // repo.competitionGroupToSubgroupIds,
       // repo.subgroupData
     );
@@ -286,7 +286,9 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
       if (!newMupNameToMessages.hasOwnProperty(mupName)) {
         newMupNameToMessages[mupName] = [[], []];
       }
-      newMupNameToMessages[mupName][1] = getTodoMessagesByActions(mupNameToActions[mupName]);
+      newMupNameToMessages[mupName][1] = getTodoMessagesByActions(
+        mupNameToActions[mupName]
+      );
       // newMupNameToMessages[mupName][1] = mupNameToActions[mupName].map((a) =>
       //   a.getMessageSimple()
       // );
@@ -345,13 +347,13 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
     });
   };
 
-
-  const refreshDataForNewReferenceCompetitionGroupDebounced = (competitionGroupId: number) => {
+  const refreshDataForNewReferenceCompetitionGroupDebounced = (
+    competitionGroupId: number
+  ) => {
     debouncedWrapperForApply(() => {
       refreshData(false, false, competitionGroupId);
     });
   };
-
 
   useEffect(() => {
     if (props.selectionGroupIds.length !== 2) {
@@ -361,23 +363,30 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
   }, [props.dataIsPrepared, props.selectionGroupIds]);
 
   useEffect(() => {
-    console.warn(`NEW referenceCompetitionGroupId: ${props.referenceCompetitionGroupId}`);
+    console.warn(
+      `NEW referenceCompetitionGroupId: ${props.referenceCompetitionGroupId}`
+    );
     if (props.referenceCompetitionGroupId !== null) {
       setReferenceCompetitionGroupId(props.referenceCompetitionGroupId);
-      refreshDataForNewReferenceCompetitionGroupDebounced(props.referenceCompetitionGroupId);
+      refreshDataForNewReferenceCompetitionGroupDebounced(
+        props.referenceCompetitionGroupId
+      );
     }
   }, [props.referenceCompetitionGroupId]);
 
   const handleReferenceCompetitionGroupChange = (event: SelectChangeEvent) => {
     const newReferenceCompetitionGroupIdStr = event.target.value;
     if (newReferenceCompetitionGroupIdStr !== null) {
+      setApplyClicked(false);
       const newReferenceCompetitionGroupId = Number(
         newReferenceCompetitionGroupIdStr
       );
-      
+
       if (isFinite(newReferenceCompetitionGroupId)) {
         setReferenceCompetitionGroupId(Number(newReferenceCompetitionGroupId));
-        refreshDataForNewReferenceCompetitionGroupDebounced(newReferenceCompetitionGroupId);
+        refreshDataForNewReferenceCompetitionGroupDebounced(
+          newReferenceCompetitionGroupId
+        );
       }
     }
   };
@@ -445,7 +454,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
       // }
       // if (todos.length === 0) {
       //   todos = ["Нет действий"];
-      // } 
+      // }
 
       return (
         <tr key={mupId}>
@@ -455,7 +464,9 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
               {differences.map((val, index) => (
                 <li key={index}>{val}</li>
               ))}
-              {differences.length === 0 && <li className="message_success">Нет отличий</li>}
+              {differences.length === 0 && (
+                <li className="message_success">Нет отличий</li>
+              )}
             </ul>
           </td>
           <td>
@@ -463,7 +474,9 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
               {todos.map((val, index) => (
                 <li key={index}>{val}</li>
               ))}
-              {todos.length === 0 && <li className="message_success">Нет действий</li>}
+              {todos.length === 0 && (
+                <li className="message_success">Нет действий</li>
+              )}
             </ul>
           </td>
         </tr>
@@ -494,6 +507,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
   };
 
   const handleApplyReal = () => {
+    setApplyClicked(true);
     executeActions(syncActions, context)
       .then((results) => setSyncActionResults(results))
       .then(() => alert("Применение изменений завершено"))
@@ -533,13 +547,18 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
         />
       </article>
     );
-  }
+  };
 
   const renderCompetitionGroupSync = () => {
     return (
       <article>
-        <p>Сравните оставшуюся Конкурсную группу с выбранной эталонной и синхронизируйте группы</p>
-        <p>Таблица с отличиями Конкурсных групп и действиями для синхронизации:</p>
+        <p>
+          Сравните оставшуюся Конкурсную группу с выбранной эталонной и
+          синхронизируйте группы
+        </p>
+        <p>
+          Таблица с отличиями Конкурсных групп и действиями для синхронизации:
+        </p>
         <div className="load_content_container">
           {renderTable()}
           {ensureInProgress && <div className="progress_screen"></div>}
@@ -560,7 +579,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
         </ApplyButtonWithActionDisplay>
       </article>
     );
-  }
+  };
 
   const renderContnet = () => {
     return (
@@ -571,7 +590,6 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
           <li>{renderReferenceCompetitionGroupSelect()}</li>
           <li>{renderCompetitionGroupSync()}</li>
         </ol>
-  
       </React.Fragment>
     );
   };

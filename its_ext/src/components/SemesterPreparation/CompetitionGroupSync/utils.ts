@@ -189,6 +189,9 @@ function generateUpdateSubgroupActions(
     const currentInfo = currentSubgroupInfo[meta.discipline][meta.load];
 
     for (let i = 0; i < referenceInfo.subgroupInfo.length; i++) {
+      if (i >= currentInfo.subgroupInfo.length && i >= referenceInfo.count) {
+        break;
+      }
       if (
         i < currentInfo.subgroupInfo.length &&
         (currentInfo.subgroupInfo[i].teacher ===

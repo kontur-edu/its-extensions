@@ -293,11 +293,10 @@ export function MupEditor(props: IMupEditorProps) {
           competitionGroupIds.push(cgId);
         }
       });
-      const updateSubgroupsAction = repo.CheckSubgroupPresent(
-        competitionGroupIds
-      )
-        ? Promise.resolve()
-        : context.dataRepository.UpdateSubgroups(competitionGroupIds);
+      const updateSubgroupsAction =
+        !refresh && repo.CheckSubgroupPresent(competitionGroupIds)
+          ? Promise.resolve()
+          : context.dataRepository.UpdateSubgroups(competitionGroupIds);
       return updateSubgroupsAction;
     };
 
@@ -313,7 +312,7 @@ export function MupEditor(props: IMupEditorProps) {
             ).map((m) => m.connectionId)
           );
         }
-        if (allConnectionIds.length === 0) return;
+        if (allConnectionIds.length === 0) return Promise.allSettled([Promise.resolve(), Promise.resolve()]);
         const updateModuleDataPromise =
           !refresh && repo.CheckModuleDataPresent()
             ? Promise.resolve()
@@ -358,14 +357,14 @@ export function MupEditor(props: IMupEditorProps) {
 
   const prepareData = (mupIds: Set<string>) => {
     console.log("prepareData");
-    const referenceModules = findReferenceModules();
+    const newZeToModuleSelection = findReferenceModules();
     const { newMupDiffs, newMupEdits, initDates } = createInitDiffsAndDates(
       mupIds,
-      referenceModules
+      newZeToModuleSelection
     );
-    setZeToModuleSelection(referenceModules);
+    setZeToModuleSelection(newZeToModuleSelection);
     setUpDiffsAndDates(newMupDiffs, newMupEdits, initDates);
-    callDebouncedApply(newMupDiffs, newMupEdits, initDates, referenceModules);
+    callDebouncedApply(newMupDiffs, newMupEdits, initDates, newZeToModuleSelection);
   };
 
   useEffect(() => {
@@ -443,7 +442,6 @@ export function MupEditor(props: IMupEditorProps) {
       newMupEdits[mupId].selected = !newMupEdits[mupId].selected;
 
       setMupEdits(newMupEdits);
-      // return { mupDiffsToCompareWith, newMupEdits };
 
       callDebouncedApply(
         mupDiffsToCompareWith,
@@ -452,14 +450,6 @@ export function MupEditor(props: IMupEditorProps) {
         zeToModuleSelection
       );
     });
-    // .then(({ mupDiffsToCompareWith, newMupEdits }) => {
-    //   callDebouncedApply(
-    //     mupDiffsToCompareWith,
-    //     newMupEdits,
-    //     [startDate, endDate],
-    //     zeToModuleSelection
-    //   );
-    // });
   };
 
   const handleMupLimitChange = (mupId: string, newLimit: number) => {
@@ -655,14 +645,6 @@ export function MupEditor(props: IMupEditorProps) {
   };
 
   const renderTable = () => {
-    // return ensureInProgress ? <CircularProgress className={style.progress_icon} style={{width: '100px', height: '100px'}} /> : (
-    //   <MupsList
-    //       mupData={context.dataRepository.mupData}
-    //       mupEdits={mupEdits}
-    //       onMupToggle={handleMupToggle}
-    //       onMupLimitChange={handleMupLimitChange}
-    //     />
-    // );
 
     return (
       <div className="load_content_container">
@@ -717,12 +699,6 @@ export function MupEditor(props: IMupEditorProps) {
         />
 
         {renderTable()}
-        {/* <MupsList
-          mupData={context.dataRepository.mupData}
-          mupEdits={mupEdits}
-          onMupToggle={handleMupToggle}
-          onMupLimitChange={handleMupLimitChange}
-        /> */}
 
         <ApplyButtonWithActionDisplay
           showErrorWarning={true}

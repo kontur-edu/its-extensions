@@ -69,12 +69,12 @@ function checkSubgroupsCreated(
   competitionGroupToSubgroupIds: ICompetitionGroupToSubgroupIds,
   subgroupData: ISubgroupData
 ) {
-  console.log("competitionGroupToSubgroupMetas");
-  console.log(competitionGroupToSubgroupMetas);
-  console.log("competitionGroupToSubgroupIds");
-  console.log(competitionGroupToSubgroupIds);
-  console.log("subgroupData");
-  console.log(subgroupData);
+  // console.log("competitionGroupToSubgroupMetas");
+  // console.log(competitionGroupToSubgroupMetas);
+  // console.log("competitionGroupToSubgroupIds");
+  // console.log(competitionGroupToSubgroupIds);
+  // console.log("subgroupData");
+  // console.log(subgroupData);
 
   const mupNameToLoadToPresent: {
     [key: string]: {
@@ -95,8 +95,8 @@ function checkSubgroupsCreated(
     }
   }
 
-  console.log("mupNameToLoadToPresent: before");
-  console.log(mupNameToLoadToPresent);
+  // console.log("mupNameToLoadToPresent: before");
+  // console.log(mupNameToLoadToPresent);
 
   for (const subgroupId of competitionGroupToSubgroupIds[competitionGroupId]) {
     if (!subgroupData.data.hasOwnProperty(subgroupId)) continue;
@@ -113,8 +113,8 @@ function checkSubgroupsCreated(
     }
   }
 
-  console.log("mupNameToLoadToPresent: after");
-  console.log(mupNameToLoadToPresent);
+  // console.log("mupNameToLoadToPresent: after");
+  // console.log(mupNameToLoadToPresent);
 
   for (const mupName in mupNameToLoadToPresent) {
     for (const load in mupNameToLoadToPresent[mupName]) {
@@ -169,8 +169,8 @@ export function generateUpdateTeacherActions(
 
   const subgroupMetas = competitionGroupToSubgroupMetas[competitionGroupId];
 
-  console.log("subgroupReferenceInfo");
-  console.log(subgroupReferenceInfo);
+  // console.log("subgroupReferenceInfo");
+  // console.log(subgroupReferenceInfo);
 
   for (const meta of subgroupMetas) {
     if (!mupNameToMupId.hasOwnProperty(meta.discipline)) {

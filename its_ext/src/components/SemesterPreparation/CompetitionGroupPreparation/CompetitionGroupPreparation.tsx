@@ -221,6 +221,9 @@ export function CompetitionGroupPreparation(
       ).forEach((mId) => allMupIds.add(mId));
     }
 
+    // console.log("allMupIds");
+    // console.log(allMupIds);
+
     return { newSelectedCompetitionGroupId, allMupIds };
   };
 
@@ -232,6 +235,8 @@ export function CompetitionGroupPreparation(
     const newAllMupNames = new Set<string>(
       Array.from(allMupIds).map((mId) => repo.mupData.data[mId].name)
     );
+    // console.log("newAllMupNames");
+    // console.log(newAllMupNames);
 
     const actions = createUpdateSubgroupCountActions(
       cgId,
@@ -275,7 +280,7 @@ export function CompetitionGroupPreparation(
             loadsWithMissingTeachers.push(load);
           }
           if (
-            subgroupReferenceInfo[mupName][load].subgroupInfo.length !=
+            subgroupReferenceInfo[mupName][load].subgroupInfo.length !==
             subgroupReferenceInfo[mupName][load].count
           ) {
             createdSubgroupsAreWrong.push(load);

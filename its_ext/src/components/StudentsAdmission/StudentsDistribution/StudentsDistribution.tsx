@@ -225,12 +225,13 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   };
 
   useEffect(() => {
-    refreshData().then(() => prepareItemsAndStudentMupDataText())
-    .finally(() => props.onLoad());
+    refreshData()
+      .then(() => prepareItemsAndStudentMupDataText())
+      .finally(() => props.onLoad());
   }, [props.competitionGroupIds]);
 
   const handleRefresh = () => {
-    refreshData().then(() => prepareItemsAndStudentMupDataText());
+    return refreshData().then(() => prepareItemsAndStudentMupDataText());
   };
 
   const handleRefreshDebounced = () => {
@@ -370,10 +371,12 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     debouncedWrapperForApply(() => {
       // alert("Real apply declined");
       // return;
-      executeActions(studentAdmissionActions, context).then((actionResults) => {
-        setStudentAdmissionActionResults(actionResults);
-        handleRefresh();
-      });
+      executeActions(studentAdmissionActions, context)
+        .then((actionResults) => {
+          setStudentAdmissionActionResults(actionResults);
+          return handleRefresh();
+        })
+        .then(() => generateActions(personalNumberToStudentItems));
     });
   };
 

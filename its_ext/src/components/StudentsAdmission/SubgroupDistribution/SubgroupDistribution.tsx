@@ -528,13 +528,6 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
   const renderContent = () => {
     return (
       <React.Fragment>
-        {/* <div className="load_content_container_small">
-          {ensureDataInProgress && <CircularProgress className="progress_icon_small" />}
-          <RefreshButton
-            onClick={handleRefreshDataDebounced}
-            title="Обновить данные"
-          />
-        </div> */}
         <RefreshButton
           onClick={handleRefreshDataDebounced}
           title="Обновить данные"

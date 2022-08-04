@@ -63,6 +63,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
   >([]);
   const [ensureInProgress, setEnsureInProgress] = useState<boolean>(false);
   const currentEnsurePromise = useRef<Promise<any> | null>(null);
+  const [applyClicked, setApplyClicked] = useState<boolean>(false);
 
   const context = useContext(ITSContext)!;
 
@@ -553,6 +554,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
           actions={syncActions}
           actionResults={syncActionResults}
           onApply={handleApplyRealDebounced}
+          clicked={applyClicked}
         >
           Синхронизировать конкурсные группы
         </ApplyButtonWithActionDisplay>

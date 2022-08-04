@@ -40,7 +40,7 @@ function generateUpdateSubgroupCountToDefaultActions(
       if (meta.count === 0) {
         actions.push(
           new UpdateSubgroupMetaLoadCountAction(
-            meta.id,
+            meta,
             DEFAULT_SUBGROUP_META_COUNT,
             meta.discipline
           )
@@ -49,7 +49,7 @@ function generateUpdateSubgroupCountToDefaultActions(
     } else {
       if (meta.count !== 0) {
         actions.push(
-          new UpdateSubgroupMetaLoadCountAction(meta.id, 0, meta.discipline)
+          new UpdateSubgroupMetaLoadCountAction(meta, 0, meta.discipline)
         );
       }
     }

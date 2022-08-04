@@ -25,11 +25,7 @@ import {
   ITSAction,
   executeActions,
 } from "../../../common/actions";
-
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
+import { SelectChangeEvent } from "@mui/material/Select";
 import { RefreshButton } from "../../RefreshButton";
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 import { NextStepButton } from "../../ApplyButtonWithActionDisplay/ApplyButtonWithActionDisplay";
@@ -96,6 +92,9 @@ export function CompetitionGroupPreparation(
 
   const [ensureInProgress, setEnsureInProgress] = useState<boolean>(false);
   const currentEnsurePromise = useRef<Promise<any> | null>(null);
+
+  const [applyDefaultClicked, setApplyDefaultClicked] = useState<boolean>(false);
+  const [applySubgroupsClicked, setApplySubgroupsClicked] = useState<boolean>(false);
 
   const context = useContext(ITSContext)!;
 
@@ -338,6 +337,9 @@ export function CompetitionGroupPreparation(
   const handleCompetitionGroupChange = (event: SelectChangeEvent) => {
     const newCompetitionGroupIdStr = event.target.value;
     if (newCompetitionGroupIdStr !== null) {
+      setApplyDefaultClicked(false);
+      setApplySubgroupsClicked(false);
+  
       const newCompetitionGroupId = Number(newCompetitionGroupIdStr);
 
       if (isFinite(newCompetitionGroupId)) {
@@ -349,6 +351,7 @@ export function CompetitionGroupPreparation(
   };
 
   const handleUpdateSubgroupCountApply = () => {
+    setApplyDefaultClicked(true);
     setUpdateSubgroupCountInProgress(true);
     executeActions(updateSubgroupCountActions, context)
       .then((actionResults) => {
@@ -363,6 +366,7 @@ export function CompetitionGroupPreparation(
   };
 
   const handlePrepareSubgroupsApply = () => {
+    setApplySubgroupsClicked(true);
     setPrepareSubgroupInProgress(true);
 
     executeActions(prepareSubgroupActions, context)
@@ -420,12 +424,12 @@ export function CompetitionGroupPreparation(
           showSuccessMessage={true}
           actions={updateSubgroupCountActions}
           actionResults={updateSubgroupCountActionResults}
-          // clicked={updateSubgroupCountClicked}
+          clicked={applyDefaultClicked}
           // onNextStep={onNextStep}
           loading={updateSubgroupCountInProgress}
           onApply={handleUpdateSubgroupCountApplyDebounced}
         >
-          Установить количество подгрупп в 1, если количество не задано
+          Установить количество подгрупп в 1, если не задано
         </ApplyButtonWithActionDisplay>
       </article>
     );
@@ -461,7 +465,7 @@ export function CompetitionGroupPreparation(
           showSuccessMessage={true}
           actions={prepareSubgroupActions}
           actionResults={prepareSubgroupActionResults}
-          // clicked={prepareSubgroupClicked}
+          clicked={applySubgroupsClicked}
           // onNextStep={onNextStep}
           loading={prepareSubgroupInProgress}
           onApply={handlePrepareSubgroupsApplyDebounced}

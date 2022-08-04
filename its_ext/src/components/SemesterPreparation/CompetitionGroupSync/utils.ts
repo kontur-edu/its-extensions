@@ -30,6 +30,19 @@ export interface ISubgroupReferenceInfo {
   };
 }
 
+
+function insertReferenceSubgroupItem(index: number, item: ISubgroupReferenceInfoItem, items: ISubgroupReferenceInfoItem[]) {
+  console.log(`insertReferenceSubgroupItem: idx: ${index} length: ${items.length}`);
+  if (index >= items.length) {
+    for (let i = items.length; i < index + 1; i++) {
+      items.push({});
+    }
+  }
+  items[index] = item;
+  console.log("items");
+  console.log(items);
+}
+
 export function createSubgroupReferenceInfoFromCompetitionGroup(
   mupNameToMupId: { [key: string]: string },
   subgroupMetas: ISubgroupMeta[],
@@ -49,9 +62,9 @@ export function createSubgroupReferenceInfoFromCompetitionGroup(
       subgroupInfo: [],
       count: meta.count,
     };
-    for (let i = 0; i < meta.count; i++) {
-      subgroupReferenceInfo[meta.discipline][meta.load].subgroupInfo.push({});
-    }
+    // for (let i = 0; i < meta.count; i++) {
+    //   subgroupReferenceInfo[meta.discipline][meta.load].subgroupInfo.push({});
+    // }
   }
 
   for (const subgroupId of subgroupIds) {
@@ -61,15 +74,28 @@ export function createSubgroupReferenceInfoFromCompetitionGroup(
       const loadToInfo = subgroupReferenceInfo[subgroup.mupName];
       if (!loadToInfo.hasOwnProperty(subgroup.load)) continue;
       if (
-        subgroup.number > 0 &&
-        subgroup.number <= loadToInfo[subgroup.load].subgroupInfo.length
+        subgroup.number > 0 
+        // &&
+        // subgroup.number <= loadToInfo[subgroup.load].subgroupInfo.length
       ) {
-        const num = subgroup.number - 1;
-        const info = loadToInfo[subgroup.load].subgroupInfo[num];
+        
+        const sItem: ISubgroupReferenceInfoItem = {
+          limit: subgroup.limit
+        };
         if (subgroup.teacherId) {
-          info.teacher = subgroup.teacherId;
+          sItem.teacher = subgroup.teacherId;
         }
-        info.limit = subgroup.limit;
+
+        const num = subgroup.number - 1;
+        if (num > 100) {
+          throw new Error(`Subgroup number is too large: ${subgroup.number}`);
+        }
+        insertReferenceSubgroupItem(num, sItem, loadToInfo[subgroup.load].subgroupInfo);
+        // const info = loadToInfo[subgroup.load].subgroupInfo[num];
+        // if (subgroup.teacherId) {
+        //   info.teacher = subgroup.teacherId;
+        // }
+        // info.limit = subgroup.limit;
       }
     }
   }
@@ -121,7 +147,7 @@ function generateUpdateSubgroupCountToActions(
       if (meta.count !== referenceCount) {
         actions.push(
           new UpdateSubgroupMetaLoadCountAction(
-            meta.id,
+            meta,
             referenceCount,
             meta.discipline
           )
@@ -131,7 +157,7 @@ function generateUpdateSubgroupCountToActions(
       if (meta.count !== 0) {
         actions.push(
           new UpdateSubgroupMetaLoadCountAction(
-            meta.id,
+            meta,
             0,
             meta.discipline
           )
@@ -346,12 +372,15 @@ export function getDiffMessagesBySubgroupReferenceInfo(
       const notEnoughCreatedSubgroups: string[] = [];
 
       for (const load in referenceInfo[mupName]) {
-        const mupLoadPart = `"${load}"`;
         const refLoad = referenceInfo[mupName][load];
         const curLoad = currentInfo[mupName][load];
+        console.log("refLoad");
+        console.log(refLoad);
+        console.log("curLoad");
+        console.log(curLoad);
         if (refLoad.count !== curLoad.count) {
           differentSubgroupCountMessages.push(
-            `${mupLoadPart} (${refLoad.count} <> ${curLoad.count})`
+            `${load} (${refLoad.count} <> ${curLoad.count})`
           );
         }
         let someSubgroupsMissing = false;
@@ -369,28 +398,22 @@ export function getDiffMessagesBySubgroupReferenceInfo(
           const cSub = curLoad.subgroupInfo[i];
           if (rSub.limit !== cSub.limit) {
             differentSubgroupLimitMessages.push(
-              `${mupLoadPart} подгруппа ${i + 1} (${rSub.limit} <> ${
+              `${load} подгруппа ${i + 1} (${rSub.limit} <> ${
                 cSub.limit
               })`
             );
           }
           if (rSub.teacher !== cSub.teacher) {
             differentSubgroupTeachersMessages.push(
-              `${mupLoadPart} подгруппа ${i + 1} (${
+              `${load} подгруппа ${i + 1} (${
                 rSub.teacher ?? "не задан"
               } <> ${cSub.teacher ?? "не задан"})`
             );
           }
         }
         if (someSubgroupsMissing) {
-          notEnoughCreatedSubgroups.push(`${mupLoadPart}`);
+          notEnoughCreatedSubgroups.push(`${load}`);
         }
-      }
-
-      if (notEnoughCreatedSubgroups.length > 0) {
-        // const part = notEnoughCreatedSubgroups.join(", ");
-        // res[mupName].push(`Не найдено созданных подгрупп для: ${part}`);
-        res[mupName].push(`Нет некоторых подгрупп`);
       }
 
       if (differentSubgroupCountMessages.length > 0) {
@@ -402,11 +425,19 @@ export function getDiffMessagesBySubgroupReferenceInfo(
           `Количество подгрупп отличается`
         );
       }
+
+      if (notEnoughCreatedSubgroups.length > 0) {
+        // const part = notEnoughCreatedSubgroups.join(", ");
+        // res[mupName].push(`Не найдено созданных подгрупп для: ${part}`);
+        res[mupName].push(`Нет некоторых подгрупп`);
+      }
+
       if (differentSubgroupLimitMessages.length > 0) {
         // const part = differentSubgroupLimitMessages.join(", ");
         // res[mupName].push(`Лимит отличается для следующих подгрупп: ${part}`);
         res[mupName].push(`Лимиты отличается`);
       }
+
       if (differentSubgroupTeachersMessages.length > 0) {
         // const part = differentSubgroupTeachersMessages.join(", ");
         // res[mupName].push(
@@ -441,7 +472,7 @@ export function getTodoMessagesByActions(actions: ITSAction[]) {
     res.push("Синхронизировать количество подгрупп")
   }
   if (needUpdateSubgroups) {
-    res.push("Синхронизировать преподавателей и Лимиты")
+    res.push("Синхронизировать подгруппы (их преподавателей и Лимиты)")
   }
   return res;
 }

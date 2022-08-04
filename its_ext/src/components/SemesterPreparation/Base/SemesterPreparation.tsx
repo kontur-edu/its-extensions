@@ -54,6 +54,9 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
   const [mupEditorLoaded, setMupEditorLoaded] = useState<boolean>(false);
   const [competitionGroupLoaded, setCompetitionGroupLoaded] =
     useState<boolean>(false);
+
+  const [referenceCompetitionGroupId, setReferenceCompetitionGroupId] =
+    useState<number | null>(null);
   // const [editorDataPrepared, setEditorDataPrepared] = useState<boolean>(false);
   const requestSelectionGroupsInProgress = useRef(false);
 
@@ -123,6 +126,12 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     });
   };
 
+  const handleReferenceCompetitionGroupIdChange = (
+    newReferenceCompetitionGroupId: number
+  ) => {
+    setReferenceCompetitionGroupId(newReferenceCompetitionGroupId);
+  };
+
   const handleStepTwo = () => {
     stepTwoRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -171,6 +180,9 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
           onUnauthorized={props.onUnauthorized}
           onNextStep={handleStepFour} // TODO: fix
           onLoad={handleCompetitionGroupPreparationLoaded}
+          onReferenceCompetitionGroupChange={
+            handleReferenceCompetitionGroupIdChange
+          }
         />
       </article>
     );
@@ -185,6 +197,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
           selectionGroupIds={selectionGroupsIds}
           dataIsPrepared={mupEditorLoaded} // TODO: delete this
           onUnauthorized={props.onUnauthorized}
+          referenceCompetitionGroupId={referenceCompetitionGroupId}
         />
       </article>
     );
@@ -217,26 +230,25 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
             </ApplyButtonWithActionDisplay>
           )}
           <p className="next_step__message">
-            {selectionValid && selectionGroupsIds.length !== 2
-              ? "Выберите две группы для перехода к следующему шагу"
-              : null}
+            {selectionValid &&
+              selectionGroupsIds.length !== 2 &&
+              "Выберите две группы для перехода к следующему шагу"}
           </p>
         </div>
       </article>
 
-      {selectionValid && selectionGroupsIds.length === 2 ? renderStep2() : null}
-
-      {selectionValid && selectionGroupsIds.length === 2 && mupEditorLoaded // TODO Delete this
-        ? renderStep3()
-        : null}
+      {selectionValid && selectionGroupsIds.length === 2 && renderStep2()}
 
       {selectionValid &&
-      selectionGroupsIds.length === 2 &&
-      mupEditorLoaded &&
-      competitionGroupLoaded
-        ? // mupEditorLoaded // TODO Delete this
-          renderStep4()
-        : null}
+        selectionGroupsIds.length === 2 &&
+        mupEditorLoaded && // TODO Delete this
+        renderStep3()}
+
+      {selectionValid &&
+        selectionGroupsIds.length === 2 &&
+        mupEditorLoaded &&
+        competitionGroupLoaded &&
+        renderStep4()}
     </section>
   );
 }

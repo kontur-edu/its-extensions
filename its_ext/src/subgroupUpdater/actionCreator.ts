@@ -128,12 +128,12 @@ export function createUpdateSubgroupMetaLoadCountBySubgroupDiff(
         if (sm1.count !== maxCount) {
           // change c1
           actions.push(
-            new UpdateSubgroupMetaLoadCountAction(sm1.id, maxCount, mupName)
+            new UpdateSubgroupMetaLoadCountAction(sm1, maxCount, mupName)
           );
         } else if (sm2.count !== maxCount) {
           // change c2
           actions.push(
-            new UpdateSubgroupMetaLoadCountAction(sm2.id, maxCount, mupName)
+            new UpdateSubgroupMetaLoadCountAction(sm2, maxCount, mupName)
           );
         }
       }

@@ -88,7 +88,7 @@ export function ApplyButtonWithActionDisplay(
     return (
       <React.Fragment>
         <Button onClick={handleActionResultsListOpen}>
-          Результаты выполнения действий{" "}
+          Результаты последнего применения изменений{" "}
           {actionResultsListOpen ? <ExpandLess /> : <ExpandMore />}
         </Button>
         <Collapse in={actionResultsListOpen} timeout="auto" unmountOnExit>
@@ -211,7 +211,7 @@ export function ApplyButtonWithActionDisplay(
     <div className={style.container}>
       {props.actions && props.actions.length > 0 && renderActionList()}
       {renderButtons()}
-      {props.actionResults &&
+      {wasApply && props.actionResults &&
         props.actionResults.length > 0 &&
         renderActionResultsList()}
       {props.loading && <div className="progress_screen"></div>}

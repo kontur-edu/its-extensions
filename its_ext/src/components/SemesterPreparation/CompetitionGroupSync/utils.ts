@@ -1,8 +1,6 @@
-import { ITSAction } from "../../../common/actions";
+import { ActionType, ITSAction } from "../../../common/actions";
 import {
-  ICompetitionGroupToSubgroupIds,
   ICompetitionGroupToSubgroupMetas,
-  IMupData,
   ISubgroupData,
   ISubgroupInfo,
   ISubgroupMeta,
@@ -11,15 +9,10 @@ import {
   UpdateSubgroupMetaLoadCountAction,
   UpdateTeacherForSubgroupAction,
   CreateSubgroupsAction,
-  RefreshSubgroupsAction,
 } from "../../../subgroupUpdater/actions";
 import {
-  findTeacherIds,
-  generateUpdateTeacherActions,
-  generateCreateSubgroupsActions,
   generateRefreshSubgroupsActions,
 } from "../../../competitionGroupPreparation/actionCreator";
-import { AddReactionSharp } from "@mui/icons-material";
 
 export interface ISubgroupReferenceInfoItem {
   teacher?: string;
@@ -35,6 +28,19 @@ export interface ISubgroupReferenceInfo {
       count: number;
     };
   };
+}
+
+
+function insertReferenceSubgroupItem(index: number, item: ISubgroupReferenceInfoItem, items: ISubgroupReferenceInfoItem[]) {
+  console.log(`insertReferenceSubgroupItem: idx: ${index} length: ${items.length}`);
+  if (index >= items.length) {
+    for (let i = items.length; i < index + 1; i++) {
+      items.push({});
+    }
+  }
+  items[index] = item;
+  console.log("items");
+  console.log(items);
 }
 
 export function createSubgroupReferenceInfoFromCompetitionGroup(
@@ -56,9 +62,9 @@ export function createSubgroupReferenceInfoFromCompetitionGroup(
       subgroupInfo: [],
       count: meta.count,
     };
-    for (let i = 0; i < meta.count; i++) {
-      subgroupReferenceInfo[meta.discipline][meta.load].subgroupInfo.push({});
-    }
+    // for (let i = 0; i < meta.count; i++) {
+    //   subgroupReferenceInfo[meta.discipline][meta.load].subgroupInfo.push({});
+    // }
   }
 
   for (const subgroupId of subgroupIds) {
@@ -68,15 +74,28 @@ export function createSubgroupReferenceInfoFromCompetitionGroup(
       const loadToInfo = subgroupReferenceInfo[subgroup.mupName];
       if (!loadToInfo.hasOwnProperty(subgroup.load)) continue;
       if (
-        subgroup.number > 0 &&
-        subgroup.number <= loadToInfo[subgroup.load].subgroupInfo.length
+        subgroup.number > 0 
+        // &&
+        // subgroup.number <= loadToInfo[subgroup.load].subgroupInfo.length
       ) {
-        const num = subgroup.number - 1;
-        const info = loadToInfo[subgroup.load].subgroupInfo[num];
+        
+        const sItem: ISubgroupReferenceInfoItem = {
+          limit: subgroup.limit
+        };
         if (subgroup.teacherId) {
-          info.teacher = subgroup.teacherId;
+          sItem.teacher = subgroup.teacherId;
         }
-        info.limit = subgroup.limit;
+
+        const num = subgroup.number - 1;
+        if (num > 100) {
+          throw new Error(`Subgroup number is too large: ${subgroup.number}`);
+        }
+        insertReferenceSubgroupItem(num, sItem, loadToInfo[subgroup.load].subgroupInfo);
+        // const info = loadToInfo[subgroup.load].subgroupInfo[num];
+        // if (subgroup.teacherId) {
+        //   info.teacher = subgroup.teacherId;
+        // }
+        // info.limit = subgroup.limit;
       }
     }
   }
@@ -128,8 +147,18 @@ function generateUpdateSubgroupCountToActions(
       if (meta.count !== referenceCount) {
         actions.push(
           new UpdateSubgroupMetaLoadCountAction(
-            meta.id,
+            meta,
             referenceCount,
+            meta.discipline
+          )
+        );
+      }
+    } else {
+      if (meta.count !== 0) {
+        actions.push(
+          new UpdateSubgroupMetaLoadCountAction(
+            meta,
+            0,
             meta.discipline
           )
         );
@@ -160,10 +189,13 @@ function generateUpdateSubgroupActions(
     const currentInfo = currentSubgroupInfo[meta.discipline][meta.load];
 
     for (let i = 0; i < referenceInfo.subgroupInfo.length; i++) {
+      if (i >= currentInfo.subgroupInfo.length && i >= referenceInfo.count) {
+        break;
+      }
       if (
         i < currentInfo.subgroupInfo.length &&
-        currentInfo.subgroupInfo[i].teacher ===
-          referenceInfo.subgroupInfo[i].teacher &&
+        (currentInfo.subgroupInfo[i].teacher ===
+          referenceInfo.subgroupInfo[i].teacher) &&
         currentInfo.subgroupInfo[i].limit ===
           referenceInfo.subgroupInfo[i].limit
       ) {
@@ -176,7 +208,7 @@ function generateUpdateSubgroupActions(
         number: i + 1,
       };
 
-      const teacher = referenceInfo.subgroupInfo[i].teacher;
+      const teacher = referenceInfo.subgroupInfo[i].teacher ?? "";
       const limit = referenceInfo.subgroupInfo[i].limit;
 
       actions.push(
@@ -234,10 +266,15 @@ export function createSyncActions(
   mupNameToMupId: { [key: string]: string },
   competitionGroupIdToInfo: { [key: number]: ISubgroupReferenceInfo },
   competitionGroupToSubgroupMetas: ICompetitionGroupToSubgroupMetas,
-  competitionGroupToSubgroupIds: ICompetitionGroupToSubgroupIds,
-  subgroupData: ISubgroupData
+  // competitionGroupToSubgroupIds: ICompetitionGroupToSubgroupIds,
+  // subgroupData: ISubgroupData
 ): ITSAction[] {
   const allActions: ITSAction[] = [];
+
+  console.log("competitionGroupIdToInfo");
+  console.log(competitionGroupIdToInfo);
+  console.log("competitionGroupIds");
+  console.log(competitionGroupIds);
 
   // for (const competitionGroupId of competitionGroupIds) {
   //   if (!competitionGroupToSubgroupMetas.hasOwnProperty(competitionGroupId)) {
@@ -338,12 +375,15 @@ export function getDiffMessagesBySubgroupReferenceInfo(
       const notEnoughCreatedSubgroups: string[] = [];
 
       for (const load in referenceInfo[mupName]) {
-        const mupLoadPart = `"${load}"`;
         const refLoad = referenceInfo[mupName][load];
         const curLoad = currentInfo[mupName][load];
+        console.log("refLoad");
+        console.log(refLoad);
+        console.log("curLoad");
+        console.log(curLoad);
         if (refLoad.count !== curLoad.count) {
           differentSubgroupCountMessages.push(
-            `${mupLoadPart} (${refLoad.count} <> ${curLoad.count})`
+            `${load} (${refLoad.count} <> ${curLoad.count})`
           );
         }
         let someSubgroupsMissing = false;
@@ -361,47 +401,81 @@ export function getDiffMessagesBySubgroupReferenceInfo(
           const cSub = curLoad.subgroupInfo[i];
           if (rSub.limit !== cSub.limit) {
             differentSubgroupLimitMessages.push(
-              `${mupLoadPart} подгруппа ${i + 1} (${rSub.limit} <> ${
+              `${load} подгруппа ${i + 1} (${rSub.limit} <> ${
                 cSub.limit
               })`
             );
           }
           if (rSub.teacher !== cSub.teacher) {
             differentSubgroupTeachersMessages.push(
-              `${mupLoadPart} подгруппа ${i + 1} (${
+              `${load} подгруппа ${i + 1} (${
                 rSub.teacher ?? "не задан"
               } <> ${cSub.teacher ?? "не задан"})`
             );
           }
         }
         if (someSubgroupsMissing) {
-          notEnoughCreatedSubgroups.push(`${mupLoadPart}`);
+          notEnoughCreatedSubgroups.push(`${load}`);
         }
       }
 
-      if (notEnoughCreatedSubgroups.length > 0) {
-        const part = notEnoughCreatedSubgroups.join(", ");
-        res[mupName].push(`Не найдено созданных подгрупп для: ${part}`);
-      }
-
       if (differentSubgroupCountMessages.length > 0) {
-        const part = differentSubgroupCountMessages.join(", ");
+        // const part = differentSubgroupCountMessages.join(", ");
+        // res[mupName].push(
+        //   `Количество подгрупп отличается для следующих нагрузок: ${part}`
+        // );
         res[mupName].push(
-          `Количество подгрупп отличается для следующих нагрузок: ${part}`
+          `Количество подгрупп отличается`
         );
       }
-      if (differentSubgroupLimitMessages.length > 0) {
-        const part = differentSubgroupLimitMessages.join(", ");
-        res[mupName].push(`Лимит отличается для следующих подгрупп: ${part}`);
+
+      if (notEnoughCreatedSubgroups.length > 0) {
+        // const part = notEnoughCreatedSubgroups.join(", ");
+        // res[mupName].push(`Не найдено созданных подгрупп для: ${part}`);
+        res[mupName].push(`Нет некоторых подгрупп`);
       }
+
+      if (differentSubgroupLimitMessages.length > 0) {
+        // const part = differentSubgroupLimitMessages.join(", ");
+        // res[mupName].push(`Лимит отличается для следующих подгрупп: ${part}`);
+        res[mupName].push(`Лимиты отличается`);
+      }
+
       if (differentSubgroupTeachersMessages.length > 0) {
-        const part = differentSubgroupTeachersMessages.join(", ");
+        // const part = differentSubgroupTeachersMessages.join(", ");
+        // res[mupName].push(
+        //   `Преподаватели отличается для следующих подгрупп: ${part}`
+        // );
         res[mupName].push(
-          `Преподаватели отличается для следующих подгрупп: ${part}`
+          `Преподаватели отличаются или не заданы`
         );
       }
     }
   }
 
+  return res;
+}
+
+
+export function getTodoMessagesByActions(actions: ITSAction[]) {
+  // const loadsToUpdateCounts: string[] = [];
+  const res: string[] = [];
+  let needUpdateMeta = false;
+  let needUpdateSubgroups = false;
+  for (const action of actions) {
+    if (action.actionType === ActionType.UpdateSubgroupMetaLoadCount) {
+      // const updateSubgroupMetaLoadCountAction = action as UpdateSubgroupMetaLoadCountAction;
+      needUpdateMeta = true;
+    } else if (action.actionType === ActionType.UpdateTeacherForSubgroup) {
+      // const updateTeacherForSubgroupAction = action as UpdateTeacherForSubgroupAction;
+      needUpdateSubgroups = true;
+    }
+  }
+  if (needUpdateMeta) {
+    res.push("Синхронизировать количество подгрупп")
+  }
+  if (needUpdateSubgroups) {
+    res.push("Синхронизировать подгруппы (их преподавателей и Лимиты)")
+  }
   return res;
 }

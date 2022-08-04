@@ -25,6 +25,7 @@ import {
   checkMupsAndLoadsCompatible,
   ISubgroupReferenceInfo,
   getDiffMessagesBySubgroupReferenceInfo,
+  getTodoMessagesByActions,
 } from "./utils";
 
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
@@ -36,9 +37,9 @@ import { SimpleSelect } from "../../SimpleSelect/SimpleSelect";
 import { getCompetitionGroupName } from "../CompetitionGroupPreparation/CompetitionGroupPreparation";
 import { SelectChangeEvent } from "@mui/material/Select";
 
-function checkArraysSame(arr1: any[], arr2: any[]) {
-  return arr1.sort().join(",") === arr2.sort().join(",");
-}
+// function checkArraysSame(arr1: any[], arr2: any[]) {
+//   return arr1.sort().join(",") === arr2.sort().join(",");
+// }
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
@@ -62,6 +63,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
   >([]);
   const [ensureInProgress, setEnsureInProgress] = useState<boolean>(false);
   const currentEnsurePromise = useRef<Promise<any> | null>(null);
+  const [applyClicked, setApplyClicked] = useState<boolean>(false);
 
   const context = useContext(ITSContext)!;
 
@@ -157,6 +159,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
   const prepareData = (
     newReferenceCompetitionGroupId: number | null = null
   ) => {
+    console.warn(`prepareData: ${newReferenceCompetitionGroupId}`);
     const repo = context.dataRepository;
 
     const newCompetitionGroupIds = extractCompetitionGroupIds(
@@ -168,11 +171,14 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
     newReferenceCompetitionGroupId =
       newReferenceCompetitionGroupId ?? referenceCompetitionGroupId;
     if (
-      referenceCompetitionGroupId === null &&
+      newReferenceCompetitionGroupId === null &&
       newCompetitionGroupIds.length > 0
     ) {
       newReferenceCompetitionGroupId = newCompetitionGroupIds[0];
-      setReferenceCompetitionGroupId(newCompetitionGroupIds[0]);
+    }
+
+    if (referenceCompetitionGroupId !== newReferenceCompetitionGroupId) {
+      setReferenceCompetitionGroupId(newReferenceCompetitionGroupId);
     }
 
     const allMupIds = new Set<string>();
@@ -211,7 +217,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
         referenceCompetitionGroupInfo;
 
       for (const competitionGroupId of newCompetitionGroupIds) {
-        if (competitionGroupId === referenceCompetitionGroupId) {
+        if (competitionGroupId === newReferenceCompetitionGroupId) {
           continue;
         }
         const competitionGroupInfo =
@@ -255,9 +261,9 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
       newCompetitionGroupIds,
       mupNameToMupId,
       competitionGroupIdToInfo,
-      repo.competitionGroupToSubgroupMetas,
-      repo.competitionGroupToSubgroupIds,
-      repo.subgroupData
+      repo.competitionGroupToSubgroupMetas
+      // repo.competitionGroupToSubgroupIds,
+      // repo.subgroupData
     );
     setSyncActions(newActions);
     return newActions;
@@ -280,9 +286,12 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
       if (!newMupNameToMessages.hasOwnProperty(mupName)) {
         newMupNameToMessages[mupName] = [[], []];
       }
-      newMupNameToMessages[mupName][1] = mupNameToActions[mupName].map((a) =>
-        a.getMessageSimple()
+      newMupNameToMessages[mupName][1] = getTodoMessagesByActions(
+        mupNameToActions[mupName]
       );
+      // newMupNameToMessages[mupName][1] = mupNameToActions[mupName].map((a) =>
+      //   a.getMessageSimple()
+      // );
     }
 
     for (const mupName in mupNameToDiffMEssages) {
@@ -297,7 +306,8 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
 
   const refreshData = (
     refreshAll: boolean = true,
-    refreshSubgroups: boolean = false
+    refreshSubgroups: boolean = false,
+    competitionGroupId: number | null = null
   ) => {
     return ensureData(refreshAll, refreshSubgroups).then(() => {
       const {
@@ -306,7 +316,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
         mupNameToMupId,
         newCanBeSync,
         competitionGroupIdToInfo,
-      } = prepareData();
+      } = prepareData(competitionGroupId);
       if (newReferenceCompetitionGroupId === null) {
         console.warn(`newReferenceCompetitionGroupId is null`);
         return;
@@ -331,9 +341,17 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
     });
   };
 
-  const refreshDataDebounced = () => {
+  const refreshDataDebounced = (forceRefresh: boolean = true) => {
     debouncedWrapperForApply(() => {
-      refreshData(true);
+      refreshData(forceRefresh);
+    });
+  };
+
+  const refreshDataForNewReferenceCompetitionGroupDebounced = (
+    competitionGroupId: number
+  ) => {
+    debouncedWrapperForApply(() => {
+      refreshData(false, false, competitionGroupId);
     });
   };
 
@@ -344,15 +362,32 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
     refreshData(false);
   }, [props.dataIsPrepared, props.selectionGroupIds]);
 
+  useEffect(() => {
+    console.warn(
+      `NEW referenceCompetitionGroupId: ${props.referenceCompetitionGroupId}`
+    );
+    if (props.referenceCompetitionGroupId !== null) {
+      setReferenceCompetitionGroupId(props.referenceCompetitionGroupId);
+      refreshDataForNewReferenceCompetitionGroupDebounced(
+        props.referenceCompetitionGroupId
+      );
+    }
+  }, [props.referenceCompetitionGroupId]);
+
   const handleReferenceCompetitionGroupChange = (event: SelectChangeEvent) => {
     const newReferenceCompetitionGroupIdStr = event.target.value;
     if (newReferenceCompetitionGroupIdStr !== null) {
+      setApplyClicked(false);
       const newReferenceCompetitionGroupId = Number(
         newReferenceCompetitionGroupIdStr
       );
 
-      isFinite(newReferenceCompetitionGroupId) &&
+      if (isFinite(newReferenceCompetitionGroupId)) {
         setReferenceCompetitionGroupId(Number(newReferenceCompetitionGroupId));
+        refreshDataForNewReferenceCompetitionGroupDebounced(
+          newReferenceCompetitionGroupId
+        );
+      }
     }
   };
 
@@ -379,7 +414,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
             )
           )}
         </ul>
-        <p>
+        <p className="same_line_with_wrap">
           Создайте недостающие Конкрусные группы и укажите Группы выбора{" "}
           <OuterLink url={COMPETITION_GROUP_URL}>в ИТС</OuterLink>. И обновите
           данные.
@@ -403,30 +438,6 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
     return lhsName.localeCompare(rhsName);
   };
 
-  // const renderSelect = () => {
-  //   const items = competitionGroupIds.map((cgId) => {
-  //     const name = getCompetitionGroupName(
-  //       cgId,
-  //       context.dataRepository.competitionGroupData
-  //     );
-  //     return {
-  //       id: cgId,
-  //       name: `${name}`,
-  //     };
-  //   });
-  //   return (
-  //     <article className="same_line_with_wrap">
-  //       <p>Выберите эталонную конкурсную группу для синхронизации</p>
-  //       <SimpleSelect
-  //         label={"Конкурсная группа"}
-  //         items={items}
-  //         selectedId={referenceCompetitionGroupId}
-  //         onChange={handleReferenceCompetitionGroupChange}
-  //       />
-  //     </article>
-  //   );
-  // };
-
   const renderRows = () => {
     if (!canBeSync) return null;
 
@@ -438,6 +449,12 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
       if (mupToMessages.hasOwnProperty(mup.name)) {
         [differences, todos] = mupToMessages[mup.name];
       }
+      // if (differences.length === 0) {
+      //   differences = ["Нет отличий"];
+      // }
+      // if (todos.length === 0) {
+      //   todos = ["Нет действий"];
+      // }
 
       return (
         <tr key={mupId}>
@@ -447,6 +464,9 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
               {differences.map((val, index) => (
                 <li key={index}>{val}</li>
               ))}
+              {differences.length === 0 && (
+                <li className="message_success">Нет отличий</li>
+              )}
             </ul>
           </td>
           <td>
@@ -454,6 +474,9 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
               {todos.map((val, index) => (
                 <li key={index}>{val}</li>
               ))}
+              {todos.length === 0 && (
+                <li className="message_success">Нет действий</li>
+              )}
             </ul>
           </td>
         </tr>
@@ -484,6 +507,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
   };
 
   const handleApplyReal = () => {
+    setApplyClicked(true);
     executeActions(syncActions, context)
       .then((results) => setSyncActionResults(results))
       .then(() => alert("Применение изменений завершено"))
@@ -523,13 +547,18 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
         />
       </article>
     );
-  }
+  };
 
   const renderCompetitionGroupSync = () => {
     return (
       <article>
-        <p>Сравните оставшуюся Конкурсную группу с выбранной эталонной и синхронизируйте группы</p>
-        <p>Таблица с отличиями Конкурсных групп и действиями для синхронизации:</p>
+        <p>
+          Сравните оставшуюся Конкурсную группу с выбранной эталонной и
+          синхронизируйте группы
+        </p>
+        <p>
+          Таблица с отличиями Конкурсных групп и действиями для синхронизации:
+        </p>
         <div className="load_content_container">
           {renderTable()}
           {ensureInProgress && <div className="progress_screen"></div>}
@@ -544,12 +573,13 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
           actions={syncActions}
           actionResults={syncActionResults}
           onApply={handleApplyRealDebounced}
+          clicked={applyClicked}
         >
           Синхронизировать конкурсные группы
         </ApplyButtonWithActionDisplay>
       </article>
     );
-  }
+  };
 
   const renderContnet = () => {
     return (
@@ -560,7 +590,6 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
           <li>{renderReferenceCompetitionGroupSelect()}</li>
           <li>{renderCompetitionGroupSync()}</li>
         </ol>
-  
       </React.Fragment>
     );
   };
@@ -570,7 +599,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
       <article>
         <RefreshButton
           onClick={refreshDataDebounced}
-          title="Обновить днные"
+          title="Обновить данные"
           loading={ensureInProgress}
         />
 

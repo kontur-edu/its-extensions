@@ -25,11 +25,7 @@ import {
   ITSAction,
   executeActions,
 } from "../../../common/actions";
-
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
+import { SelectChangeEvent } from "@mui/material/Select";
 import { RefreshButton } from "../../RefreshButton";
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 import { NextStepButton } from "../../ApplyButtonWithActionDisplay/ApplyButtonWithActionDisplay";
@@ -96,6 +92,11 @@ export function CompetitionGroupPreparation(
 
   const [ensureInProgress, setEnsureInProgress] = useState<boolean>(false);
   const currentEnsurePromise = useRef<Promise<any> | null>(null);
+
+  const [applyDefaultClicked, setApplyDefaultClicked] =
+    useState<boolean>(false);
+  const [applySubgroupsClicked, setApplySubgroupsClicked] =
+    useState<boolean>(false);
 
   const context = useContext(ITSContext)!;
 
@@ -198,8 +199,12 @@ export function CompetitionGroupPreparation(
     ) {
       newSelectedCompetitionGroupId = newCompetitionGroupIds[0];
     }
-
-    setSelectedCompetitionGroupId(newSelectedCompetitionGroupId);
+    if (selectedCompetitionGroupId !== newSelectedCompetitionGroupId) {
+      setSelectedCompetitionGroupId(newSelectedCompetitionGroupId);
+      if (newSelectedCompetitionGroupId !== null) {
+        props.onReferenceCompetitionGroupChange(newSelectedCompetitionGroupId);
+      }
+    }
 
     setCompetitionGroupIds(newCompetitionGroupIds);
 
@@ -216,6 +221,9 @@ export function CompetitionGroupPreparation(
       ).forEach((mId) => allMupIds.add(mId));
     }
 
+    // console.log("allMupIds");
+    // console.log(allMupIds);
+
     return { newSelectedCompetitionGroupId, allMupIds };
   };
 
@@ -227,6 +235,8 @@ export function CompetitionGroupPreparation(
     const newAllMupNames = new Set<string>(
       Array.from(allMupIds).map((mId) => repo.mupData.data[mId].name)
     );
+    // console.log("newAllMupNames");
+    // console.log(newAllMupNames);
 
     const actions = createUpdateSubgroupCountActions(
       cgId,
@@ -247,7 +257,7 @@ export function CompetitionGroupPreparation(
       const mup = repo.mupData.data[mId];
       mupNameToMupId[mup.name] = mId;
     });
-    const { actions, mupNameToLoadToTeachers } = createPrepareSubgroupsActions(
+    const { actions, subgroupReferenceInfo } = createPrepareSubgroupsActions(
       cgId,
       mupNameToMupId,
       repo.mupData,
@@ -258,11 +268,22 @@ export function CompetitionGroupPreparation(
     setPrepareSubgroupActions(actions);
     const messages: string[] = [];
     if (actions.length === 0) {
-      for (const mupName in mupNameToLoadToTeachers) {
+      for (const mupName in subgroupReferenceInfo) {
         const loadsWithMissingTeachers: string[] = [];
-        for (const load in mupNameToLoadToTeachers[mupName]) {
-          if (mupNameToLoadToTeachers[mupName][load].some((p) => !p)) {
+        const createdSubgroupsAreWrong: string[] = [];
+        for (const load in subgroupReferenceInfo[mupName]) {
+          if (
+            subgroupReferenceInfo[mupName][load].subgroupInfo.some(
+              (si) => !si.teacher
+            )
+          ) {
             loadsWithMissingTeachers.push(load);
+          }
+          if (
+            subgroupReferenceInfo[mupName][load].subgroupInfo.length !==
+            subgroupReferenceInfo[mupName][load].count
+          ) {
+            createdSubgroupsAreWrong.push(load);
           }
         }
         if (loadsWithMissingTeachers.length > 0) {
@@ -271,6 +292,14 @@ export function CompetitionGroupPreparation(
             .join(", ");
           messages.push(
             `МУП: "${mupName}": следующие нагрузки не имеют преподавателя: ${loadsStr}`
+          );
+        }
+        if (createdSubgroupsAreWrong.length > 0) {
+          const loadsStr = createdSubgroupsAreWrong
+            .map((l) => `"${l}"`)
+            .join(", ");
+          messages.push(
+            `МУП: "${mupName}": следующие нагрузки имеют созданные группы не соответствующие количеству: ${loadsStr} (удалите лишние подгруппы и создайте их заново)`
           );
         }
       }
@@ -334,16 +363,21 @@ export function CompetitionGroupPreparation(
   const handleCompetitionGroupChange = (event: SelectChangeEvent) => {
     const newCompetitionGroupIdStr = event.target.value;
     if (newCompetitionGroupIdStr !== null) {
+      setApplyDefaultClicked(false);
+      setApplySubgroupsClicked(false);
+
       const newCompetitionGroupId = Number(newCompetitionGroupIdStr);
 
-      isFinite(newCompetitionGroupId) &&
+      if (isFinite(newCompetitionGroupId)) {
         setSelectedCompetitionGroupId(Number(newCompetitionGroupIdStr));
-
-      refreshAfterCompetitionGroupSelectDebounced(newCompetitionGroupId);
+        refreshAfterCompetitionGroupSelectDebounced(newCompetitionGroupId);
+        props.onReferenceCompetitionGroupChange(newCompetitionGroupId);
+      }
     }
   };
 
   const handleUpdateSubgroupCountApply = () => {
+    setApplyDefaultClicked(true);
     setUpdateSubgroupCountInProgress(true);
     executeActions(updateSubgroupCountActions, context)
       .then((actionResults) => {
@@ -358,6 +392,7 @@ export function CompetitionGroupPreparation(
   };
 
   const handlePrepareSubgroupsApply = () => {
+    setApplySubgroupsClicked(true);
     setPrepareSubgroupInProgress(true);
 
     executeActions(prepareSubgroupActions, context)
@@ -402,23 +437,33 @@ export function CompetitionGroupPreparation(
     );
   };
 
-  const renderMetaSubrgoupCountSetUp = () => {
+  const renderDefaultMetaSubrgoupCountSetUp = () => {
     return (
       <article>
-        <p>Определите количество подгрупп для нагрузок выбранных МУПов</p>
+        <p>
+          Определите количество подгрупп по умолчанию для нагрузок выбранных
+          МУПов
+        </p>
 
         <ApplyButtonWithActionDisplay
           showErrorWarning={true}
           showSuccessMessage={true}
           actions={updateSubgroupCountActions}
           actionResults={updateSubgroupCountActionResults}
-          // clicked={updateSubgroupCountClicked}
+          clicked={applyDefaultClicked}
           // onNextStep={onNextStep}
           loading={updateSubgroupCountInProgress}
           onApply={handleUpdateSubgroupCountApplyDebounced}
         >
-          Установить количество подгрупп в 1 для всех нагрузок МУПов
+          Установить количество подгрупп в 1, если не задано
         </ApplyButtonWithActionDisplay>
+      </article>
+    );
+  };
+
+  const renderManualMetaSubrgoupCountSetUp = () => {
+    return (
+      <article>
         <p className="same_line_with_wrap">
           Отредактируйте количество подгрупп{" "}
           <OuterLink
@@ -438,7 +483,7 @@ export function CompetitionGroupPreparation(
     return (
       <article>
         <p>
-          Создание подгрупп, определение Лимитов и выбор преподавателей для
+          Создайте подгруппы, определите Лимиты и выберите преподавателей для
           подгрупп
         </p>
         <ApplyButtonWithActionDisplay
@@ -446,13 +491,20 @@ export function CompetitionGroupPreparation(
           showSuccessMessage={true}
           actions={prepareSubgroupActions}
           actionResults={prepareSubgroupActionResults}
-          // clicked={prepareSubgroupClicked}
+          clicked={applySubgroupsClicked}
           // onNextStep={onNextStep}
           loading={prepareSubgroupInProgress}
           onApply={handlePrepareSubgroupsApplyDebounced}
         >
           Создать подгруппы и попробовать выбрать преподавателя
         </ApplyButtonWithActionDisplay>
+      </article>
+    );
+  };
+
+  const renderSubgroupManualSetUp = () => {
+    return (
+      <article>
         <p className="same_line_with_wrap">
           Отредактируйте Лимиты и выбранных преподавателей созданных подгрупп{" "}
           <OuterLink
@@ -462,13 +514,15 @@ export function CompetitionGroupPreparation(
           </OuterLink>{" "}
           и обновите данные
         </p>
-        {prepareSubgroupMessages.length > 0 && <article className={style.error_list_container}>
-          <ul className="warning">
-            {prepareSubgroupMessages.map((m, i) => (
-              <li key={i}>{m}</li>
-            ))}
-          </ul>
-        </article>}
+        {prepareSubgroupMessages.length > 0 && (
+          <article className={style.error_list_container}>
+            <ul className="warning">
+              {prepareSubgroupMessages.map((m, i) => (
+                <li key={i}>{m}</li>
+              ))}
+            </ul>
+          </article>
+        )}
       </article>
     );
   };
@@ -477,8 +531,10 @@ export function CompetitionGroupPreparation(
     return (
       <ol className="step_list">
         <li>{renderCompetitionGroupSelect()}</li>
-        <li>{renderMetaSubrgoupCountSetUp()}</li>
+        <li>{renderDefaultMetaSubrgoupCountSetUp()}</li>
+        <li>{renderManualMetaSubrgoupCountSetUp()}</li>
         <li>{renderSubgroupSetUp()}</li>
+        <li>{renderSubgroupManualSetUp()}</li>
         <li>Синхронизируйте Конкурсные группы на следующем шаге</li>
       </ol>
     );
@@ -493,6 +549,11 @@ export function CompetitionGroupPreparation(
           соответствующими Группами выбора{" "}
           <OuterLink url={COMPETITION_GROUP_URL}>в ИТС</OuterLink>. И обновите
           данные.
+        </p>
+        <p className="warning">
+          После привязки конкурсной группы к группе выбора, студенты направлений
+          указанных в образовательном пространстве смогут увидеть дисциплины по
+          выбору в личном кабинете
         </p>
       </div>
     );

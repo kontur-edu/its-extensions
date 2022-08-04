@@ -1,5 +1,5 @@
 import { IITSContext } from "../common/Context";
-import { ISubgroup, ISubgroupInfo } from "../common/types";
+import { ISubgroup, ISubgroupInfo, ISubgroupMeta } from "../common/types";
 import { ActionType, ITSAction } from "../common/actions";
 import { IActionResponse } from "../utils/ITSApiService";
 
@@ -29,7 +29,8 @@ export class CreateSubgroupsAction extends ITSAction {
 
 export class UpdateSubgroupMetaLoadCountAction extends ITSAction {
   constructor(
-    public subgroupMetaId: number,
+    // public subgroupMetaId: number,
+    public meta: ISubgroupMeta,
     public newCount: number,
     public mupName: string
   ) {
@@ -37,7 +38,7 @@ export class UpdateSubgroupMetaLoadCountAction extends ITSAction {
   }
 
   getMessage(): string {
-    return `Обновить количество подгрупп на ${this.newCount} для нагрузки c id: ${this.subgroupMetaId}`;
+    return `Обновить количество подгрупп на ${this.newCount} для МУПа: "${this.meta.discipline}" нагрузки "${this.meta.load}"`;
   }
 
   getMessageSimple(): string {
@@ -47,7 +48,7 @@ export class UpdateSubgroupMetaLoadCountAction extends ITSAction {
   async execute(context: IITSContext): Promise<IActionResponse[]> {
     return [
       await context.apiService.UpdateSubgroupMetaLoadCount(
-        this.subgroupMetaId,
+        this.meta.id,
         this.newCount
       ),
     ];
@@ -89,10 +90,15 @@ export class UpdateTeacherForSubgroupAction extends ITSAction {
   }
 
   getMessage(): string {
-    const updateTeacherMessage = this.teacherId !== undefined ? `обновить преподавателя: ${this.teacherId}` : '';
-    const updateLimitMessage = this.limit !== undefined ? `обновить лимит: ${this.limit}` : '';
-    const updates = [updateTeacherMessage, updateLimitMessage].join(', ');
-    return `Обновить подгруппу: ${updates} для МУПа: ${this.subgroupInfo.mupName}
+    const updates: string[] = [];
+    if (this.teacherId !== undefined) {
+      updates.push(`обновить преподавателя: "${this.teacherId}"`);
+    }
+    if (this.limit !== undefined) {
+      updates.push(`обновить лимит: ${this.limit}`);
+    }
+    const updatesStr = updates.join(', ');
+    return `Обновить подгруппу: ${updatesStr} для МУПа: ${this.subgroupInfo.mupName}
         нагрузки: ${this.subgroupInfo.load} с номером: ${this.subgroupInfo.number}
         (Конкурсная группа с id:${this.competitionGroupId})`;
   }

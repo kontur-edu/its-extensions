@@ -157,6 +157,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
   const prepareData = (
     newReferenceCompetitionGroupId: number | null = null
   ) => {
+    console.warn(`prepareData: ${newReferenceCompetitionGroupId}`);
     const repo = context.dataRepository;
 
     const newCompetitionGroupIds = extractCompetitionGroupIds(
@@ -168,11 +169,14 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
     newReferenceCompetitionGroupId =
       newReferenceCompetitionGroupId ?? referenceCompetitionGroupId;
     if (
-      referenceCompetitionGroupId === null &&
+      newReferenceCompetitionGroupId === null &&
       newCompetitionGroupIds.length > 0
     ) {
       newReferenceCompetitionGroupId = newCompetitionGroupIds[0];
-      setReferenceCompetitionGroupId(newCompetitionGroupIds[0]);
+    }
+
+    if (referenceCompetitionGroupId !== newReferenceCompetitionGroupId) {
+      setReferenceCompetitionGroupId(newReferenceCompetitionGroupId);
     }
 
     const allMupIds = new Set<string>();
@@ -256,8 +260,8 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
       mupNameToMupId,
       competitionGroupIdToInfo,
       repo.competitionGroupToSubgroupMetas,
-      repo.competitionGroupToSubgroupIds,
-      repo.subgroupData
+      // repo.competitionGroupToSubgroupIds,
+      // repo.subgroupData
     );
     setSyncActions(newActions);
     return newActions;
@@ -370,7 +374,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
       
       if (isFinite(newReferenceCompetitionGroupId)) {
         setReferenceCompetitionGroupId(Number(newReferenceCompetitionGroupId));
-        refreshDataDebounced(false);
+        refreshDataForNewReferenceCompetitionGroupDebounced(newReferenceCompetitionGroupId);
       }
     }
   };

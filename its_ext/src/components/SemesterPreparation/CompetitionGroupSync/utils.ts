@@ -1,8 +1,6 @@
 import { ITSAction } from "../../../common/actions";
 import {
-  ICompetitionGroupToSubgroupIds,
   ICompetitionGroupToSubgroupMetas,
-  IMupData,
   ISubgroupData,
   ISubgroupInfo,
   ISubgroupMeta,
@@ -11,15 +9,10 @@ import {
   UpdateSubgroupMetaLoadCountAction,
   UpdateTeacherForSubgroupAction,
   CreateSubgroupsAction,
-  RefreshSubgroupsAction,
 } from "../../../subgroupUpdater/actions";
 import {
-  findTeacherIds,
-  generateUpdateTeacherActions,
-  generateCreateSubgroupsActions,
   generateRefreshSubgroupsActions,
 } from "../../../competitionGroupPreparation/actionCreator";
-import { AddReactionSharp } from "@mui/icons-material";
 
 export interface ISubgroupReferenceInfoItem {
   teacher?: string;
@@ -234,8 +227,8 @@ export function createSyncActions(
   mupNameToMupId: { [key: string]: string },
   competitionGroupIdToInfo: { [key: number]: ISubgroupReferenceInfo },
   competitionGroupToSubgroupMetas: ICompetitionGroupToSubgroupMetas,
-  competitionGroupToSubgroupIds: ICompetitionGroupToSubgroupIds,
-  subgroupData: ISubgroupData
+  // competitionGroupToSubgroupIds: ICompetitionGroupToSubgroupIds,
+  // subgroupData: ISubgroupData
 ): ITSAction[] {
   const allActions: ITSAction[] = [];
 
@@ -371,7 +364,7 @@ export function getDiffMessagesBySubgroupReferenceInfo(
               })`
             );
           }
-          if (rSub.teacher !== cSub.teacher) {
+          if (rSub.teacher !== cSub.teacher && rSub.teacher && cSub.teacher) {
             differentSubgroupTeachersMessages.push(
               `${mupLoadPart} подгруппа ${i + 1} (${
                 rSub.teacher ?? "не задан"
@@ -385,24 +378,32 @@ export function getDiffMessagesBySubgroupReferenceInfo(
       }
 
       if (notEnoughCreatedSubgroups.length > 0) {
-        const part = notEnoughCreatedSubgroups.join(", ");
-        res[mupName].push(`Не найдено созданных подгрупп для: ${part}`);
+        // const part = notEnoughCreatedSubgroups.join(", ");
+        // res[mupName].push(`Не найдено созданных подгрупп для: ${part}`);
+        res[mupName].push(`Нет некоторых подгрупп`);
       }
 
       if (differentSubgroupCountMessages.length > 0) {
-        const part = differentSubgroupCountMessages.join(", ");
+        // const part = differentSubgroupCountMessages.join(", ");
+        // res[mupName].push(
+        //   `Количество подгрупп отличается для следующих нагрузок: ${part}`
+        // );
         res[mupName].push(
-          `Количество подгрупп отличается для следующих нагрузок: ${part}`
+          `Количество подгрупп отличается`
         );
       }
       if (differentSubgroupLimitMessages.length > 0) {
-        const part = differentSubgroupLimitMessages.join(", ");
-        res[mupName].push(`Лимит отличается для следующих подгрупп: ${part}`);
+        // const part = differentSubgroupLimitMessages.join(", ");
+        // res[mupName].push(`Лимит отличается для следующих подгрупп: ${part}`);
+        res[mupName].push(`Лимиты отличается`);
       }
       if (differentSubgroupTeachersMessages.length > 0) {
-        const part = differentSubgroupTeachersMessages.join(", ");
+        // const part = differentSubgroupTeachersMessages.join(", ");
+        // res[mupName].push(
+        //   `Преподаватели отличается для следующих подгрупп: ${part}`
+        // );
         res[mupName].push(
-          `Преподаватели отличается для следующих подгрупп: ${part}`
+          `Преподаватели отличается`
         );
       }
     }

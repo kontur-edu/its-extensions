@@ -381,7 +381,8 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
         </ul>
         <p>
           Создайте недостающие Конкрусные группы и укажите Группы выбора{" "}
-          <OuterLink url={COMPETITION_GROUP_URL}>в ИТС</OuterLink>
+          <OuterLink url={COMPETITION_GROUP_URL}>в ИТС</OuterLink>. И обновите
+          данные.
         </p>
       </div>
     );
@@ -505,21 +506,15 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
     debouncedWrapperForApply(handleApplyReal);
   };
 
-  return (
-    <section className="step__container">
-      <article>
-        {competitionGroupIds.length !== 2 &&
-          renderCompetitionGroupIsMissingMessage()}
+  const renderContnet = () => {
+    return (
+      <React.Fragment>
         {renderMupsAreDifferent()}
 
         {renderSelect()}
 
         <h4>Сравение Конкурсных групп:</h4>
-        <RefreshButton
-          onClick={refreshDataDebounced}
-          title="Обновить список"
-          loading={ensureInProgress}
-        />
+
         <div className="load_content_container">
           {renderTable()}
           {ensureInProgress && <div className="progress_screen"></div>}
@@ -537,6 +532,23 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
         >
           Применить изменения
         </ApplyButtonWithActionDisplay>
+      </React.Fragment>
+    );
+  };
+
+  return (
+    <section className="step__container">
+      <article>
+        <RefreshButton
+          onClick={refreshDataDebounced}
+          title="Обновить днные"
+          loading={ensureInProgress}
+        />
+
+        {competitionGroupIds.length !== 2 &&
+          renderCompetitionGroupIsMissingMessage()}
+
+        {competitionGroupIds.length === 2 && renderContnet()}
       </article>
     </section>
   );

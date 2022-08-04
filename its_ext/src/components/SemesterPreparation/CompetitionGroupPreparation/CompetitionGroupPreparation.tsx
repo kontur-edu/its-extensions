@@ -1,6 +1,6 @@
 import { Button } from "@mui/material";
 import React, { useContext, useState, useRef, useEffect } from "react";
-import { DEBOUNCE_MS } from "../../../utils/constants";
+import { COMPETITION_GROUP_URL, DEBOUNCE_MS } from "../../../utils/constants";
 import { ITSContext } from "../../../common/Context";
 import {
   ISelectionGroupData,
@@ -190,7 +190,8 @@ export function CompetitionGroupPreparation(
       props.selectionGroupIds,
       repo.selectionGroupData
     );
-    newSelectedCompetitionGroupId = newSelectedCompetitionGroupId ?? selectedCompetitionGroupId;
+    newSelectedCompetitionGroupId =
+      newSelectedCompetitionGroupId ?? selectedCompetitionGroupId;
     if (
       newSelectedCompetitionGroupId === null &&
       newCompetitionGroupIds.length > 0
@@ -283,46 +284,50 @@ export function CompetitionGroupPreparation(
   };
 
   const handleRefresh = () => {
-    ensureData(true)
-      .then(() => {
-        const { newSelectedCompetitionGroupId, allMupIds } = prepareData();
-        newSelectedCompetitionGroupId !== null &&
-          generateAllActions(newSelectedCompetitionGroupId, allMupIds)
-      });
+    ensureData(true).then(() => {
+      const { newSelectedCompetitionGroupId, allMupIds } = prepareData();
+      newSelectedCompetitionGroupId !== null &&
+        generateAllActions(newSelectedCompetitionGroupId, allMupIds);
+    });
   };
 
   const handleRefreshDebounced = () => {
     debouncedWrapperForApply(handleRefresh);
-  }
-
-  const refreshSubgroupsAndRegenerateAcrtions = (selectedCompetitionGroupId: number | null = null) => {
-    ensureData(false, true)
-      .then(() => {
-        const { newSelectedCompetitionGroupId, allMupIds } = prepareData(selectedCompetitionGroupId);
-        newSelectedCompetitionGroupId !== null &&
-          generateAllActions(newSelectedCompetitionGroupId, allMupIds)
-      });
   };
-  
-  const refreshAfterCompetitionGroupSelectDebounced = (selectedCompetitionGroupId: number | null = null) => {
-    debouncedWrapperForApply(() => {
-      ensureData(false, false)
-      .then(() => {
-        const { newSelectedCompetitionGroupId, allMupIds } = prepareData(selectedCompetitionGroupId);
-        newSelectedCompetitionGroupId !== null &&
-          generateAllActions(newSelectedCompetitionGroupId, allMupIds)
-      });
-    });
-  }
 
-  useEffect(() => {
-    ensureData()
-      .then(() => {
-        const { newSelectedCompetitionGroupId, allMupIds } = prepareData();
+  const refreshSubgroupsAndRegenerateAcrtions = (
+    selectedCompetitionGroupId: number | null = null
+  ) => {
+    ensureData(false, true).then(() => {
+      const { newSelectedCompetitionGroupId, allMupIds } = prepareData(
+        selectedCompetitionGroupId
+      );
+      newSelectedCompetitionGroupId !== null &&
+        generateAllActions(newSelectedCompetitionGroupId, allMupIds);
+    });
+  };
+
+  const refreshAfterCompetitionGroupSelectDebounced = (
+    selectedCompetitionGroupId: number | null = null
+  ) => {
+    debouncedWrapperForApply(() => {
+      ensureData(false, false).then(() => {
+        const { newSelectedCompetitionGroupId, allMupIds } = prepareData(
+          selectedCompetitionGroupId
+        );
         newSelectedCompetitionGroupId !== null &&
           generateAllActions(newSelectedCompetitionGroupId, allMupIds);
-        props.onLoad();
       });
+    });
+  };
+
+  useEffect(() => {
+    ensureData().then(() => {
+      const { newSelectedCompetitionGroupId, allMupIds } = prepareData();
+      newSelectedCompetitionGroupId !== null &&
+        generateAllActions(newSelectedCompetitionGroupId, allMupIds);
+      props.onLoad();
+    });
   }, []);
 
   const handleCompetitionGroupChange = (event: SelectChangeEvent) => {
@@ -332,8 +337,8 @@ export function CompetitionGroupPreparation(
 
       isFinite(newCompetitionGroupId) &&
         setSelectedCompetitionGroupId(Number(newCompetitionGroupIdStr));
-      
-        refreshAfterCompetitionGroupSelectDebounced(newCompetitionGroupId);
+
+      refreshAfterCompetitionGroupSelectDebounced(newCompetitionGroupId);
     }
   };
 
@@ -367,53 +372,28 @@ export function CompetitionGroupPreparation(
   };
 
   const renderSelect = () => {
-    const items = competitionGroupIds.map(cgId => {
+    const items = competitionGroupIds.map((cgId) => {
       const name = getCompetitionGroupName(
         cgId,
         context.dataRepository.competitionGroupData
-      )
+      );
       return {
         id: cgId,
-        name: `${name}`
+        name: `${name}`,
       };
-    })
+    });
     return (
-      <SimpleSelect label={"Конкурсная группа"} items={items} selectedId={selectedCompetitionGroupId} onChange={handleCompetitionGroupChange} />
-      // <FormControl sx={{ minWidth: 120, marginLeft: "1em" }}>
-      //   <InputLabel id="competition-group-preparation-select">
-      //     Конкурсная группа
-      //   </InputLabel>
-      //   {selectedCompetitionGroupId !== null && (
-      //     <Select
-      //       labelId="competition-group-preparation-select"
-      //       value={`${selectedCompetitionGroupId}`}
-      //       label="Конкурсная группа"
-      //       onChange={handleCompetitionGroupChange}
-      //     >
-      //       {competitionGroupIds.map((cgId) => (
-      //         <MenuItem key={cgId} value={cgId}>
-      //           {getCompetitionGroupName(
-      //             cgId,
-      //             context.dataRepository.competitionGroupData
-      //           )}
-      //         </MenuItem>
-      //       ))}
-      //     </Select>
-      //   )}
-      // </FormControl>
+      <SimpleSelect
+        label={"Конкурсная группа"}
+        items={items}
+        selectedId={selectedCompetitionGroupId}
+        onChange={handleCompetitionGroupChange}
+      />
     );
   };
 
-  return (
-    <React.Fragment>
-      <h3>
-        Подготовьте эталонную конкурсную группу
-      </h3>
-      <RefreshButton
-        onClick={handleRefreshDebounced}
-        loading={ensureInProgress}
-        title="Обновить данные"
-      />
+  const renderSteps = () => {
+    return (
       <ol className={style.step_list}>
         <li>
           Выберите эталонную конкурсную группу для настройки
@@ -486,6 +466,33 @@ export function CompetitionGroupPreparation(
           К следующему шагу
         </NextStepButton>
       </ol>
+    );
+  };
+
+  const renderCompetitionGroupsNotFound = () => {
+    return (
+      <div className="message_error">
+        <p>Конкурсные группы не найдены</p>
+        <p>
+          Создайте Конкрусные группы для каждой Группы выбора и свяжите их с
+          соответствующими Группами выбора{" "}
+          <OuterLink url={COMPETITION_GROUP_URL}>в ИТС</OuterLink>. И обновите
+          данные.
+        </p>
+      </div>
+    );
+  };
+
+  return (
+    <React.Fragment>
+      <h3>Подготовьте эталонную конкурсную группу</h3>
+      <RefreshButton
+        onClick={handleRefreshDebounced}
+        loading={ensureInProgress}
+        title="Обновить данные"
+      />
+      {competitionGroupIds.length === 0 && renderCompetitionGroupsNotFound()}
+      {competitionGroupIds.length > 0 && renderSteps()}
     </React.Fragment>
   );
 }

@@ -695,7 +695,7 @@ export function MupEditor(props: IMupEditorProps) {
           </label>
         </div>
 
-        <h4>Выберите МУПы и лимиты на количество зачисленных студентов</h4>
+        <h4>Выберите МУПы и Лимиты на количество зачисленных студентов</h4>
 
         <RefreshButton
           onClick={handleRefreshDebounced}

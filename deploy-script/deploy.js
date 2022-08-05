@@ -41,6 +41,7 @@ async function deploy() {
   const apigatewaySpecFilename = env.API_GATEWAY_SPEC_TEMPLATE;
   const functionName = env.FUNCTION_NAME;
   const gatewayName = env.API_GATEWAY_NAME;
+  const functionSrcDir = env.FUNCTION_SRC_DIR;
   const created = tryCreateBuckets(s3Client, bucketName);
   // const buckets = await getBuckets(s3Client, bucketName);
   let function_id = await getFunctionId(functionName);
@@ -93,12 +94,10 @@ async function deploy() {
     await deleteFile(preparedSpecFilename);
   }
 
-  const ptr = await zipFiles(FUNC_ZIP_FNAME, "../proxy-function", [
+  const ptr = await zipFiles(FUNC_ZIP_FNAME, functionSrcDir, [
     "function.js",
     "package.json",
   ]);
-  console.log("ptr");
-  console.log(ptr);
 
   await createFunctionVersion(functionName, FUNC_ZIP_FNAME);
 

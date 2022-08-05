@@ -52,7 +52,7 @@ export const SAFE_API_VALIDATOR_CONFIG: IApiValidatorConfig = {
     ],
   },
   restrictedUrls: new Set<string>([
-    "https://its.urfu.ru/MUPItsSubgroup/Create",
+    // "https://its.urfu.ru/MUPItsSubgroup/Create",
   ]),
   allowdMethods: new Set<string>(["GET", "POST", "DELETE"]),
 };

@@ -4,7 +4,9 @@ import {
   CSRF_TOKEN_INPUT_NAME,
   REQUEST_ERROR_UNAUTHORIZED,
   REQUEST_ERROR_REQUEST_FAILED,
+  SAFE_MODE_ENABLED_MESSAGE,
 } from "./constants";
+import { ApiValidator } from "./apiValidator";
 
 export type FormBodyObj = { [key: string]: string | number | string[] };
 
@@ -12,6 +14,7 @@ export class RequestService {
   constructor(
     public proxyUrl: string,
     public loginUrl: string,
+    public apiValidator: ApiValidator,
     private onConnectionRefused?: () => any
   ) {}
 
@@ -42,7 +45,18 @@ export class RequestService {
     return result;
   }
 
-  async SendRequest(url: string, options: any) {
+  async SendRequest(url: string, options: any, bodyObj?: FormBodyObj) {
+    
+    if (options.method === "GET" || bodyObj) {
+      let clearedUrl = url;
+      if (clearedUrl.startsWith(this.proxyUrl)) {
+        clearedUrl = clearedUrl.replace(this.proxyUrl + "/", '');
+      }
+      if (!this.apiValidator.validate(options.method, clearedUrl, bodyObj)) {
+        throw new Error(SAFE_MODE_ENABLED_MESSAGE);
+      }
+    }
+
     let response: any = null;
     try {
       response = await fetch(url, options);
@@ -283,7 +297,7 @@ export class RequestService {
       withCredentials: true,
     };
 
-    let result = await this.SendRequest(urlWithProxy, options);
+    let result = await this.SendRequest(urlWithProxy, options, data);
     console.log(`Result`);
     console.log(result);
     return result;
@@ -307,7 +321,11 @@ export class RequestService {
       withCredentials: true,
     };
 
-    let resultRaw = await this.SendRequest(urlWithProxy, options);
+    let resultRaw = await this.SendRequest(
+      urlWithProxy,
+      options,
+      JSON.parse(data)
+    );
     return resultRaw;
   }
 }

@@ -17,15 +17,7 @@ import {
   IModuleSelection,
 } from "../common/types";
 
-import {
-  EDU_SPACES_MAX_COUNT,
-  MUPS_MAX_COUNT,
-  LIMIT_PER_PAGE,
-  PERIOD_MAX_COUNT,
-  COMPETITION_GROUP_MAX_COUNT,
-  STUDENT_ADMISSIONS_MAX_COUNT,
-  SAFE_MODE_ENABLED_MESSAGE,
-} from "./constants";
+import { LIMIT_PER_PAGE, SAFE_MODE_ENABLED_MESSAGE } from "./constants";
 import { reformatItsDate } from "./helpers";
 
 export interface IActionResponse {
@@ -169,7 +161,6 @@ export class ITSApiService {
     selectionGroup: ISelectionGroup,
     mupIds: string[]
   ): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/EduSpace/UpdateSelectionGroup";
     const competitionGroupId = selectionGroup.competitionGroupId ?? "";
@@ -184,19 +175,6 @@ export class ITSApiService {
     };
     console.log("UpdateSelectionGroups");
     console.log(data);
-    if (data.EduSpaceId !== 14) {
-      const message = `Not test EduSpace id: ${data.EduSpaceId}`;
-      alert(message);
-      return { success: false, message };
-    }
-    // if (
-    //   selectionGroup.name !== "TestGroup1" &&
-    //   selectionGroup.name !== "TestGroup2"
-    // ) {
-    //   const message = `Not test selection group ${selectionGroup.id} ${selectionGroup.name}`;
-    //   alert(message);
-    //   return { success: false, message };
-    // }
     const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
 
@@ -207,7 +185,6 @@ export class ITSApiService {
     periodId: number,
     load: IMupLoad
   ): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/MUP/AddTmer";
 
@@ -215,12 +192,6 @@ export class ITSApiService {
       id: periodId,
       kmer: load.kmer,
     };
-
-    // if (periodId < 102) {
-    //   const message = `Not test Period periodId: ${periodId}`;
-    //   alert(message);
-    //   return { success: false, message };
-    // }
 
     const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
@@ -233,7 +204,6 @@ export class ITSApiService {
     periodId: number,
     load: IMupLoad
   ): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/MUP/DeleteTmer";
 
@@ -242,11 +212,6 @@ export class ITSApiService {
       kmer: load.kmer,
     };
 
-    // if (periodId < 102) {
-    //   const message = `Not test Period periodId: ${periodId}`;
-    //   alert(message);
-    //   return { success: false, message };
-    // }
 
     const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
@@ -255,7 +220,6 @@ export class ITSApiService {
   }
 
   async CreatePeriod(mupId: string, period: IPeriod): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/MUP/CreatePeriod";
 
@@ -269,10 +233,6 @@ export class ITSApiService {
       SelectionDeadline: period.selectionDeadline,
     };
 
-    // const message = `Tried to create period: ${JSON.stringify(data)}`;
-    // alert(message);
-    // return { success: false, message };
-
     const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
 
@@ -280,7 +240,6 @@ export class ITSApiService {
   }
 
   async UpdatePeriod(mupId: string, period: IPeriod): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/MUP/UpdatePeriod";
 
@@ -294,13 +253,6 @@ export class ITSApiService {
       SelectionDeadline: period.selectionDeadline,
     };
 
-    // if (period.id < 102) {
-    //   const message = `Tried to update not test period: ${JSON.stringify(
-    //     data
-    //   )}`;
-    //   alert(message);
-    //   return { success: false, message };
-    // }
 
     const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
@@ -313,7 +265,6 @@ export class ITSApiService {
     connectionId: number,
     limit: number
   ): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/EduSpace/UpdateLimit";
 
@@ -322,11 +273,6 @@ export class ITSApiService {
       limit: limit,
     };
 
-    // if (connectionId < 124) {
-    //   const message = `Tried to update limit for not test connectionId: ${connectionId}`;
-    //   alert(message);
-    //   return { success: false, message };
-    // }
 
     const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
@@ -372,7 +318,6 @@ export class ITSApiService {
     subgroupMetaId: number,
     groupCount: number
   ): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = `https://its.urfu.ru/MUPItsSubgroupMeta/Edit`;
 
@@ -381,11 +326,6 @@ export class ITSApiService {
       groupCount: groupCount,
     };
 
-    // if (subgroupMetaId < 419) {
-    //   const message = `Tried to update not test Subgroup Meta id: ${subgroupMetaId}`;
-    //   alert(message);
-    //   return { success: false, message };
-    // }
 
     const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
@@ -415,7 +355,6 @@ export class ITSApiService {
   }
 
   async UpdateSubgroup(subgroup: ISubgroup): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/MUPItsSubgroup/Edit";
 
@@ -427,11 +366,6 @@ export class ITSApiService {
       Description: subgroup.description,
     };
 
-    // if (subgroup.id < 470) {
-    //   const message = `Tried to update not test Subgroup id: ${subgroup.id}`;
-    //   alert(message);
-    //   return { success: false, message };
-    // }
 
     const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
@@ -439,17 +373,9 @@ export class ITSApiService {
   }
 
   async DeleteSubgroup(subgroupIds: number[]): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/MUPItsSubgroup/Delete";
     const data = JSON.stringify(subgroupIds);
-    // for (let id of subgroupIds) {
-    //   if (id < 474) {
-    //     const message = `Tried to delete not test Subgroup: ${id}`;
-    //     alert(message);
-    //     return { success: false, message };
-    //   }
-    // }
 
     const response = await this.requestService.SendJson(url, data, "DELETE");
     const result = { success: response.success, message: response.data };
@@ -462,15 +388,7 @@ export class ITSApiService {
   }
 
   async CreateSubgroups(competitionGroupId: number): Promise<IActionResponse> {
-    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
-
     const url = `https://its.urfu.ru/MUPItsSubgroup/Create?competitionGroupId=${competitionGroupId}`;
-
-    // if (competitionGroupId < 24) {
-    //   const message = `Tried to create subgroups for not test Competition group: ${competitionGroupId}`;
-    //   alert(message);
-    //   return { success: false, message };
-    // }
 
     const response = await this.requestService.GetJson(url);
     const result = addSummary(response, url);
@@ -542,7 +460,6 @@ export class ITSApiService {
     admissionId: number,
     testResult: number
   ) {
-    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/MUPItsAdmission/EditTestResults";
 
@@ -551,12 +468,6 @@ export class ITSApiService {
       id: admissionId,
       resultValue: testResult,
     };
-
-    // if (admissionId < 146) {
-    //   const message = `Tried to update not test Admission id: ${admissionId}`;
-    //   alert(message);
-    //   return { success: false, message };
-    // }
 
     const result = await this.requestService.PostFormData(url, data);
     return result;
@@ -567,7 +478,6 @@ export class ITSApiService {
     admissionId: number,
     status: number
   ) {
-    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url =
       "https://its.urfu.ru/MUPItsAdmission/SetCompetitionGroupAdmissionStatus";
@@ -578,11 +488,6 @@ export class ITSApiService {
       status: status,
     };
 
-    // if (admissionId < 146) {
-    //   const message = `Tried to update not test Admission id: ${admissionId}`;
-    //   alert(message);
-    //   return { success: false, message };
-    // }
 
     const result = await this.requestService.PostFormData(url, data);
     return result;
@@ -608,7 +513,6 @@ export class ITSApiService {
     studentId: string,
     included: boolean
   ) {
-    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/MUPItsSubgroup/StudentMembership";
 
@@ -617,12 +521,6 @@ export class ITSApiService {
       studentId: studentId,
       include: included ? "true" : "false",
     };
-
-    // if (subgroupId < 594) {
-    //   const message = `Tried to update not test Subgroup id: ${subgroupId}`;
-    //   alert(message);
-    //   return { success: false, message };
-    // }
 
     const result = await this.requestService.PostFormData(url, data);
     return result;
@@ -656,7 +554,6 @@ export class ITSApiService {
     connectionId: number,
     moduleSelections: IModuleSelection[]
   ) {
-    if (this.safeMode) throw new Error(SAFE_MODE_ENABLED_MESSAGE);
 
     const url = "https://its.urfu.ru/EduSpace/UpdateDisciplineConnection";
 
@@ -668,12 +565,6 @@ export class ITSApiService {
       id: connectionId,
       moduleDisciplines: JSON.stringify(moduleDisciplines),
     };
-
-    // if (connectionId < 124) {
-    //   const message = `Tried to update not test Connection id: ${connectionId}`;
-    //   alert(message);
-    //   return { success: false, message };
-    // }
 
     const result = await this.requestService.PostFormData(url, data);
     return result;

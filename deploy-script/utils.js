@@ -7,10 +7,9 @@ export const defaultParams = {
   function_id: "placeholder",
   bucket_name: "placeholder",
 };
-console.log(child_process);
 
 function escapeRegExp(string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 export async function prepareApiGatewaySpec(fname, params) {
@@ -67,7 +66,7 @@ function execCommand(command) {
   return new Promise((resolve, reject) => {
     child_process.exec(command, (error, stdout, stderr) => {
       console.log(`command: ${command}`);
-      console.log({ error, stdout, stderr });
+      //   console.log({ error, stdout, stderr });
       resolve({ error, stdout, stderr });
     });
   });
@@ -78,10 +77,10 @@ async function execCommandAndGetField(command, key) {
   let re = new RegExp(`${key}:\\s+([\\w\\.-]+)\\n`, "i");
   const m = res.stdout.match(re);
   if (m && m.length > 1) {
-    console.log(`key: ${key}, val: ${m[1]}`);
+    // console.log(`key: ${key}, val: ${m[1]}`);
     return m[1];
   }
-  console.log(`key: ${key}, val: null`);
+  //   console.log(`key: ${key}, val: null`);
   return null;
 }
 

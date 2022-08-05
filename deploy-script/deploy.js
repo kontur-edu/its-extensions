@@ -71,8 +71,8 @@ async function deploy() {
   };
 
   const existingSpec = await getApiGateWaySpec(gatewayName);
-  console.log("existingSpec");
-  console.log(existingSpec);
+  // console.log("existingSpec");
+  // console.log(existingSpec);
   let specIsCorrect = true;
   for (const key in apiGatewayParams) {
     if (!existingSpec.includes(apiGatewayParams[key])) {
@@ -107,4 +107,9 @@ async function deploy() {
   console.log("\n\nПодготовка завершена");
 }
 
-deploy();
+try {
+  deploy();
+} catch (err) {
+  console.log("\n\nВо время выполнения возникли ошибки:");
+  console.log(err);
+}

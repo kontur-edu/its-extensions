@@ -1,0 +1,38 @@
+openapi: 3.0.0
+info:
+  title: Sample API
+  version: 1.0.0
+servers:
+- url: {{server_url}}
+paths:
+  /proxy/{requestUrl+}:
+    x-yc-apigateway-any-method:
+      x-yc-apigateway-integration:
+        type: cloud_functions
+        function_id: {{function_id}}
+        tag: $latest
+      parameters:
+      - explode: false
+        in: path
+        name: requestUrl
+        required: true
+        schema:
+          type: string
+        style: simple
+      summary: proxy
+  /{file+}:
+    get:
+      x-yc-apigateway-integration:
+        type: object_storage
+        bucket: {{bucket_name}}
+        object: '{file}'
+        error_object: index.html
+      parameters:
+      - explode: false
+        in: path
+        name: file
+        required: true
+        schema:
+          type: string
+        style: simple
+      summary: Serve static file from Yandex Cloud Object Storage

@@ -20,6 +20,7 @@ import {
 import {
   EDU_SPACES_MAX_COUNT,
   MUPS_MAX_COUNT,
+  LIMIT_PER_PAGE,
   PERIOD_MAX_COUNT,
   COMPETITION_GROUP_MAX_COUNT,
   STUDENT_ADMISSIONS_MAX_COUNT,
@@ -56,7 +57,7 @@ export class ITSApiService {
   async GetSelectionGroupsForEduSpace(
     eduSpaceId: number
   ): Promise<ISelectionGroup[]> {
-    const url = `https://its.urfu.ru/EduSpace/SelectionGroups?id=${eduSpaceId}&page=1&start=0&limit=${EDU_SPACES_MAX_COUNT}`;
+    const url = `https://its.urfu.ru/EduSpace/SelectionGroups?id=${eduSpaceId}&page=1&start=0&limit=${LIMIT_PER_PAGE}`;
     const res = await this.requestService.GetJson(url);
     return res.map((obj: any) => {
       const selectionGroup: ISelectionGroup = {
@@ -100,7 +101,7 @@ export class ITSApiService {
   }
 
   async GetAllMups(): Promise<IMup[]> {
-    const url = `https://its.urfu.ru/MUP/Index?page=1&start=0&limit=${MUPS_MAX_COUNT}`;
+    const url = `https://its.urfu.ru/MUP/Index?page=1&start=0&limit=${LIMIT_PER_PAGE}`;
     const res = await this.requestService.GetJson(url);
     return res.map((obj: any) => {
       const mup: IMup = {
@@ -117,7 +118,7 @@ export class ITSApiService {
   async GetSelectionGroupMups(
     selectionGroupId: number
   ): Promise<ISelectionGroupMup[]> {
-    const url = `https://its.urfu.ru/EduSpace/SelectionGroupContent?id=${selectionGroupId}&page=1&start=0&limit=${MUPS_MAX_COUNT}`;
+    const url = `https://its.urfu.ru/EduSpace/SelectionGroupContent?id=${selectionGroupId}&page=1&start=0&limit=${LIMIT_PER_PAGE}`;
     const res = await this.requestService.GetJson(url);
     return res.map((obj: any) => {
       return {
@@ -129,7 +130,7 @@ export class ITSApiService {
   }
 
   async GetPeriods(mupId: string): Promise<IPeriod[]> {
-    const url = `https://its.urfu.ru/MUP/Periods/${mupId}?page=1&start=0&limit=${PERIOD_MAX_COUNT}`;
+    const url = `https://its.urfu.ru/MUP/Periods/${mupId}?page=1&start=0&limit=${LIMIT_PER_PAGE}`;
     const res = await this.requestService.GetJson(url);
     console.log("GetPeriods");
     console.log(res);
@@ -188,14 +189,14 @@ export class ITSApiService {
       alert(message);
       return { success: false, message };
     }
-    if (
-      selectionGroup.name !== "TestGroup1" &&
-      selectionGroup.name !== "TestGroup2"
-    ) {
-      const message = `Not test selection group ${selectionGroup.id} ${selectionGroup.name}`;
-      alert(message);
-      return { success: false, message };
-    }
+    // if (
+    //   selectionGroup.name !== "TestGroup1" &&
+    //   selectionGroup.name !== "TestGroup2"
+    // ) {
+    //   const message = `Not test selection group ${selectionGroup.id} ${selectionGroup.name}`;
+    //   alert(message);
+    //   return { success: false, message };
+    // }
     const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
 
@@ -215,11 +216,11 @@ export class ITSApiService {
       kmer: load.kmer,
     };
 
-    if (periodId < 102) {
-      const message = `Not test Period periodId: ${periodId}`;
-      alert(message);
-      return { success: false, message };
-    }
+    // if (periodId < 102) {
+    //   const message = `Not test Period periodId: ${periodId}`;
+    //   alert(message);
+    //   return { success: false, message };
+    // }
 
     const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
@@ -241,11 +242,11 @@ export class ITSApiService {
       kmer: load.kmer,
     };
 
-    if (periodId < 102) {
-      const message = `Not test Period periodId: ${periodId}`;
-      alert(message);
-      return { success: false, message };
-    }
+    // if (periodId < 102) {
+    //   const message = `Not test Period periodId: ${periodId}`;
+    //   alert(message);
+    //   return { success: false, message };
+    // }
 
     const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
@@ -293,13 +294,13 @@ export class ITSApiService {
       SelectionDeadline: period.selectionDeadline,
     };
 
-    if (period.id < 102) {
-      const message = `Tried to update not test period: ${JSON.stringify(
-        data
-      )}`;
-      alert(message);
-      return { success: false, message };
-    }
+    // if (period.id < 102) {
+    //   const message = `Tried to update not test period: ${JSON.stringify(
+    //     data
+    //   )}`;
+    //   alert(message);
+    //   return { success: false, message };
+    // }
 
     const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
@@ -321,11 +322,11 @@ export class ITSApiService {
       limit: limit,
     };
 
-    if (connectionId < 124) {
-      const message = `Tried to update limit for not test connectionId: ${connectionId}`;
-      alert(message);
-      return { success: false, message };
-    }
+    // if (connectionId < 124) {
+    //   const message = `Tried to update limit for not test connectionId: ${connectionId}`;
+    //   alert(message);
+    //   return { success: false, message };
+    // }
 
     const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
@@ -353,7 +354,7 @@ export class ITSApiService {
   }
 
   async GetSubgroupMetas(competitionGroupId: number): Promise<ISubgroupMeta[]> {
-    const url = `https://its.urfu.ru/MUPItsSubgroupMeta/Index?competitionGroupId=${competitionGroupId}`;
+    const url = `https://its.urfu.ru/MUPItsSubgroupMeta/Index?competitionGroupId=${competitionGroupId}&page=1&start=0&limit=${LIMIT_PER_PAGE}`;
     const res = await this.requestService.GetJson(url);
 
     return res.map((obj: any) => {
@@ -380,11 +381,11 @@ export class ITSApiService {
       groupCount: groupCount,
     };
 
-    if (subgroupMetaId < 419) {
-      const message = `Tried to update not test Subgroup Meta id: ${subgroupMetaId}`;
-      alert(message);
-      return { success: false, message };
-    }
+    // if (subgroupMetaId < 419) {
+    //   const message = `Tried to update not test Subgroup Meta id: ${subgroupMetaId}`;
+    //   alert(message);
+    //   return { success: false, message };
+    // }
 
     const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
@@ -393,7 +394,7 @@ export class ITSApiService {
   }
 
   async GetSubgroups(competitionGroupId: number): Promise<ISubgroup[]> {
-    const url = `https://its.urfu.ru/MUPItsSubgroup?competitionGroupId=${competitionGroupId}`;
+    const url = `https://its.urfu.ru/MUPItsSubgroup?competitionGroupId=${competitionGroupId}&page=1&start=0&limit=${LIMIT_PER_PAGE}`;
     const res = await this.requestService.GetJson(url);
     console.log(res);
     return res.map((obj: any) => {
@@ -426,11 +427,11 @@ export class ITSApiService {
       Description: subgroup.description,
     };
 
-    if (subgroup.id < 470) {
-      const message = `Tried to update not test Subgroup id: ${subgroup.id}`;
-      alert(message);
-      return { success: false, message };
-    }
+    // if (subgroup.id < 470) {
+    //   const message = `Tried to update not test Subgroup id: ${subgroup.id}`;
+    //   alert(message);
+    //   return { success: false, message };
+    // }
 
     const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
@@ -442,13 +443,13 @@ export class ITSApiService {
 
     const url = "https://its.urfu.ru/MUPItsSubgroup/Delete";
     const data = JSON.stringify(subgroupIds);
-    for (let id of subgroupIds) {
-      if (id < 474) {
-        const message = `Tried to delete not test Subgroup: ${id}`;
-        alert(message);
-        return { success: false, message };
-      }
-    }
+    // for (let id of subgroupIds) {
+    //   if (id < 474) {
+    //     const message = `Tried to delete not test Subgroup: ${id}`;
+    //     alert(message);
+    //     return { success: false, message };
+    //   }
+    // }
 
     const response = await this.requestService.SendJson(url, data, "DELETE");
     const result = { success: response.success, message: response.data };
@@ -465,11 +466,11 @@ export class ITSApiService {
 
     const url = `https://its.urfu.ru/MUPItsSubgroup/Create?competitionGroupId=${competitionGroupId}`;
 
-    if (competitionGroupId < 24) {
-      const message = `Tried to create subgroups for not test Competition group: ${competitionGroupId}`;
-      alert(message);
-      return { success: false, message };
-    }
+    // if (competitionGroupId < 24) {
+    //   const message = `Tried to create subgroups for not test Competition group: ${competitionGroupId}`;
+    //   alert(message);
+    //   return { success: false, message };
+    // }
 
     const response = await this.requestService.GetJson(url);
     const result = addSummary(response, url);
@@ -478,7 +479,7 @@ export class ITSApiService {
   }
 
   async GetCompetitionGroups(): Promise<ICompetitionGroup[]> {
-    const url = `https://its.urfu.ru/MUPItsCompetitionGroups?page=1&start=0&limit=${COMPETITION_GROUP_MAX_COUNT}`;
+    const url = `https://its.urfu.ru/MUPItsCompetitionGroups?page=1&start=0&limit=${LIMIT_PER_PAGE}`;
     const res = await this.requestService.GetJson(url);
     console.log(res);
     return res.map((obj: any) => {
@@ -500,7 +501,7 @@ export class ITSApiService {
   async GetStudentAdmissionMetas(
     competitionGroupId: number
   ): Promise<IAdmissionMeta[]> {
-    const url = `https://its.urfu.ru/MUPItsAdmission/Index/${competitionGroupId}?page=1&start=0&limit=${MUPS_MAX_COUNT}`;
+    const url = `https://its.urfu.ru/MUPItsAdmission/Index/${competitionGroupId}?page=1&start=0&limit=${LIMIT_PER_PAGE}`;
     const res = await this.requestService.GetJson(url);
     return res.map((obj: any) => {
       const admissionMeta: IAdmissionMeta = {
@@ -516,7 +517,7 @@ export class ITSApiService {
   async GetStudentsForAdmission(
     admissionId: number
   ): Promise<IStudentAdmissionRaw[]> {
-    const url = `https://its.urfu.ru/MUPItsAdmission/Students/${admissionId}?page=1&start=0&limit=${STUDENT_ADMISSIONS_MAX_COUNT}`;
+    const url = `https://its.urfu.ru/MUPItsAdmission/Students/${admissionId}?page=1&start=0&limit=${LIMIT_PER_PAGE}`;
     const res = await this.requestService.GetJson(url);
     return res.map((obj: any) => {
       const admissionMeta: IStudentAdmissionRaw = {
@@ -551,11 +552,11 @@ export class ITSApiService {
       resultValue: testResult,
     };
 
-    if (admissionId < 146) {
-      const message = `Tried to update not test Admission id: ${admissionId}`;
-      alert(message);
-      return { success: false, message };
-    }
+    // if (admissionId < 146) {
+    //   const message = `Tried to update not test Admission id: ${admissionId}`;
+    //   alert(message);
+    //   return { success: false, message };
+    // }
 
     const result = await this.requestService.PostFormData(url, data);
     return result;
@@ -577,11 +578,11 @@ export class ITSApiService {
       status: status,
     };
 
-    if (admissionId < 146) {
-      const message = `Tried to update not test Admission id: ${admissionId}`;
-      alert(message);
-      return { success: false, message };
-    }
+    // if (admissionId < 146) {
+    //   const message = `Tried to update not test Admission id: ${admissionId}`;
+    //   alert(message);
+    //   return { success: false, message };
+    // }
 
     const result = await this.requestService.PostFormData(url, data);
     return result;
@@ -590,7 +591,7 @@ export class ITSApiService {
   async GetSubgroupMembershipInfo(
     subgroupId: number
   ): Promise<IStudentSubgroupMembership[]> {
-    const url = `https://its.urfu.ru/MUPItsSubgroup/Students?id=${subgroupId}`;
+    const url = `https://its.urfu.ru/MUPItsSubgroup/Students?id=${subgroupId}&page=1&start=0&limit=${LIMIT_PER_PAGE}`;
     const res = await this.requestService.GetJson(url);
 
     return res.map((obj: any) => {
@@ -617,11 +618,11 @@ export class ITSApiService {
       include: included ? "true" : "false",
     };
 
-    if (subgroupId < 594) {
-      const message = `Tried to update not test Subgroup id: ${subgroupId}`;
-      alert(message);
-      return { success: false, message };
-    }
+    // if (subgroupId < 594) {
+    //   const message = `Tried to update not test Subgroup id: ${subgroupId}`;
+    //   alert(message);
+    //   return { success: false, message };
+    // }
 
     const result = await this.requestService.PostFormData(url, data);
     return result;
@@ -630,7 +631,7 @@ export class ITSApiService {
   async GetSelectionGroupMupModules(
     connectionId: number
   ): Promise<IModuleWithSelection[]> {
-    const url = `https://its.urfu.ru/EduSpace/ModulesForMUP?id=${connectionId}`;
+    const url = `https://its.urfu.ru/EduSpace/ModulesForMUP?id=${connectionId}&page=1&start=0&limit=${LIMIT_PER_PAGE}`;
     const res = await this.requestService.GetJson(url);
     return res.map((obj: any) => {
       const disciplines = obj["disciplines"].map((dObj: any) => {
@@ -668,11 +669,11 @@ export class ITSApiService {
       moduleDisciplines: JSON.stringify(moduleDisciplines),
     };
 
-    if (connectionId < 124) {
-      const message = `Tried to update not test Connection id: ${connectionId}`;
-      alert(message);
-      return { success: false, message };
-    }
+    // if (connectionId < 124) {
+    //   const message = `Tried to update not test Connection id: ${connectionId}`;
+    //   alert(message);
+    //   return { success: false, message };
+    // }
 
     const result = await this.requestService.PostFormData(url, data);
     return result;

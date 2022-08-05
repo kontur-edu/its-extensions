@@ -455,7 +455,8 @@ export function CompetitionGroupPreparation(
           loading={updateSubgroupCountInProgress}
           onApply={handleUpdateSubgroupCountApplyDebounced}
         >
-          Установить количество подгрупп в 1, если не задано
+          Установить количество подгрупп в 1, если не задано (и в 0, если не
+          входит в состав Группы выбора)
         </ApplyButtonWithActionDisplay>
       </article>
     );

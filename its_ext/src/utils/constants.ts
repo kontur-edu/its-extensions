@@ -24,6 +24,7 @@ export const REQUEST_ERROR_CONNECTION_REFUSED =
 export const SAFE_MODE_ENABLED_MESSAGE = "Включен защищенный режим";
 
 export const MUPS_MAX_COUNT = 300;
+export const LIMIT_PER_PAGE = 600;
 
 export const EDU_SPACES_MAX_COUNT = 300;
 

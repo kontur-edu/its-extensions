@@ -64,6 +64,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
   const [ensureInProgress, setEnsureInProgress] = useState<boolean>(false);
   const currentEnsurePromise = useRef<Promise<any> | null>(null);
   const [applyClicked, setApplyClicked] = useState<boolean>(false);
+  const [syncInProgress, setSyncInProgress] = useState<boolean>(false);
 
   const context = useContext(ITSContext)!;
 
@@ -508,6 +509,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
 
   const handleApplyReal = () => {
     setApplyClicked(true);
+    setSyncInProgress(true);
     executeActions(syncActions, context)
       .then((results) => setSyncActionResults(results))
       .then(() => alert("Применение изменений завершено"))
@@ -518,7 +520,8 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
           return;
         }
         throw err;
-      });
+      })
+      .finally(() => setSyncInProgress(false));
   };
 
   const handleApplyRealDebounced = () => {
@@ -574,6 +577,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
           actionResults={syncActionResults}
           onApply={handleApplyRealDebounced}
           clicked={applyClicked}
+          loading={syncInProgress}
         >
           Синхронизировать конкурсные группы
         </ApplyButtonWithActionDisplay>

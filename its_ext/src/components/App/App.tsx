@@ -8,9 +8,15 @@ import { PROXY_URL, LOGIN_URL } from "../../utils/constants";
 import { RequestService } from "../../utils/requestService";
 import { ITSApiService } from "../../utils/ITSApiService";
 import { ITSRepository } from "../../utils/repository";
+import { ApiValidator, SAFE_API_VALIDATOR_CONFIG, ALLOW_ALL_API_VALIDATOR_CONFIG } from "../../utils/apiValidator";
 
-const requestService = new RequestService(PROXY_URL, LOGIN_URL);
-const apiService = new ITSApiService(requestService, true);
+const apiValidatorConfig = 
+  SAFE_API_VALIDATOR_CONFIG;
+  // ALLOW_ALL_API_VALIDATOR_CONFIG;
+
+const apiValidator = new ApiValidator(apiValidatorConfig);
+const requestService = new RequestService(PROXY_URL, LOGIN_URL, apiValidator);
+const apiService = new ITSApiService(requestService, false);
 const dataRepository = new ITSRepository(apiService);
 
 function App() {

@@ -1,7 +1,14 @@
 const NotionPageToHtml = require("notion-page-to-html");
 const fetch = require("node-fetch");
 
+const NOTION_BASE = "https://fiiturfu.notion.site/";
+
+const REQUEST_TYPE_HTML = "html";
+const REQUEST_TYPE_PAGE = "page";
+const REQUEST_TYPE_COLLECTION = "collection";
+
 async function postData(url, obj) {
+  // console.log(`postData: ${url}, obj:`, obj);
   const options = {
     method: "POST",
     headers: {
@@ -39,6 +46,7 @@ function formatId(idRaw) {
 }
 
 function getUrlParts(url) {
+  // console.log(`getUrlParts: ${url}`);
   const matches = url.match(
     /^(?:(http[s]?|ftp):\/)?\/?([^:\/\s]+)((?:\/[\-\w]+)*\/?)([\w\-\.]+[^#?\s]+)?(.*)?(#[\w\-]+)?$/i
   );
@@ -48,15 +56,28 @@ function getUrlParts(url) {
 
   const base = `${matches[1]}://${matches[2]}`;
   const id = matches[3].replace(/\//g, "");
+
+  const queryParams = {};
+  if (matches[5]) {
+    const queryStr = matches[5].replace("?", "");
+    const queryParts = queryStr.split("&");
+    for (const part of queryParts) {
+      const kvParts = part.split("=");
+      if (kvParts.length === 2);
+      queryParams[kvParts[0]] = kvParts[1];
+    }
+  }
   return {
     base,
     id,
+    queryParams,
   };
 }
 
 const LOAD_CACHED_PAGE_CHUNK_PART = "api/v3/loadCachedPageChunk";
 
 async function getNotionCachedDataFromPage(url) {
+  // console.log(`getNotionCachedDataFromPage ${url}`);
   const parts = getUrlParts(url);
   const id = formatId(parts.id);
   const reqUrl = parts.base + "/" + LOAD_CACHED_PAGE_CHUNK_PART;
@@ -69,13 +90,66 @@ async function getNotionCachedDataFromPage(url) {
   };
 
   const res = await postData(reqUrl, reqBody);
+  // console.log(res);
   return res;
 }
 
-async function handleNotionRaw(url) {
-  const notionResp = await getNotionCachedDataFromPage(url);
+const QUERY_COLLECTION_PART = "api/v3/queryCollection?src=reset";
+async function getNotionQueryCollection(url) {
+  // console.log(`getNotionQueryCollection: ${url}`);
+  let urlParts = getUrlParts(url);
+  let urlBase = urlParts.base;
+  const queryParams = urlParts.queryParams;
+  if (!urlBase.endsWith("/")) {
+    urlBase += "/";
+  }
+  const reqUrl = urlBase + QUERY_COLLECTION_PART;
+  const spaceId = queryParams.spaceId;
+  const collectionId = queryParams.collectionId;
+  const collectionViewId = queryParams.collectionViewId;
+  const reqBody = {
+    collection: {
+      id: collectionId,
+      spaceId: spaceId,
+    },
+    collectionView: {
+      id: collectionViewId,
+      spaceId: spaceId,
+    },
+    loader: {
+      type: "reducer",
+      reducers: {
+        "results:multi_select:all": {
+          type: "results",
+          filter: {
+            operator: "and",
+            filters: [],
+          },
+          limit: 300,
+        },
+      },
+      sort: [],
+      searchQuery: "",
+      userTimeZone: "Asia/Yekaterinburg",
+    },
+  };
+
+  // console.log(reqBody);
+  const res = await postData(reqUrl, reqBody);
+  // console.log(res);
+  return res;
+}
+
+async function handleNotionRaw(url, type) {
+  // console.log(`handleNotionRaw: ${url}`);
+  let notionResp = { data: {}, status: 404 };
+  if (type === REQUEST_TYPE_PAGE) {
+    notionResp = await getNotionCachedDataFromPage(url);
+  } else if (type === REQUEST_TYPE_COLLECTION) {
+    notionResp = await getNotionQueryCollection(url);
+  }
   const result = {
-    statusCode: 200,
+    statusCode: notionResp.status,
     headers: { "Content-Type": "application/json" },
     body: notionResp.data,
   };
@@ -88,9 +162,11 @@ function prepareHtml(html, notionBase) {
 }
 
 async function handleNotion(url, notionBase) {
+  // console.log(`handleNotion: ${url}`);
   const { title, icon, cover, html } = await NotionPageToHtml.convert(url);
 
   const htmlPrepared = prepareHtml(html, notionBase);
+  // console.log(`length = ${htmlPrepared.length}`);
   const result = {
     statusCode: 200,
     headers: { "Content-Type": "text/html; charset=UTF-8" },
@@ -101,19 +177,27 @@ async function handleNotion(url, notionBase) {
 }
 
 module.exports.handler = async function (event, context) {
-  console.log(`handler: event.url: ${event.url}`);
-  let requestingRawData = false;
+  // console.log(`handler: event.url: ${event.url}`);
+  let requestType = REQUEST_TYPE_HTML;
   let pageUrl = event.url;
-  if (pageUrl.startsWith("/notion/raw/")) {
-    requestingRawData = true;
-    pageUrl = pageUrl.replace("/notion/raw/", "");
+  if (pageUrl.startsWith(`/notion/${REQUEST_TYPE_PAGE}/`)) {
+    requestType = REQUEST_TYPE_PAGE;
+    pageUrl = pageUrl.replace(`/notion/${REQUEST_TYPE_PAGE}/`, "");
+  } else if (pageUrl.startsWith(`/notion/${REQUEST_TYPE_COLLECTION}/`)) {
+    requestType = REQUEST_TYPE_COLLECTION;
+    pageUrl = pageUrl.replace(`/notion/${REQUEST_TYPE_COLLECTION}/`, "");
   } else if (pageUrl.startsWith("/notion/")) {
     pageUrl = pageUrl.replace("/notion/", "");
   }
   const urlParts = getUrlParts(pageUrl);
+  // console.log('urlParts');
+  // console.log(urlParts);
   const pageUrlCleared = `${urlParts.base}/${urlParts.id}`;
-  if (requestingRawData) {
-    const response = await handleNotionRaw(pageUrlCleared);
+  if (
+    requestType === REQUEST_TYPE_PAGE ||
+    requestType === REQUEST_TYPE_COLLECTION
+  ) {
+    const response = await handleNotionRaw(pageUrl, requestType);
     return response;
   }
 

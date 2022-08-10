@@ -1,4 +1,3 @@
-
 const SETTINGS = {
   [NOTION_MAIN_PAGE_KEY]: NOTION_MAIN_PAGE_VALUE,
   [PROXY_URL_KEY]: PROXY_URL_VALUE,
@@ -172,7 +171,7 @@ function onLoad() {
     })
     .then(() => console.log(SETTINGS))
     .then(() => {
-      return prepareMupNameToNotionPageId(
+      return prepareMupNameToNotionPage(
         SETTINGS[NOTION_MAIN_PAGE_KEY],
         SETTINGS[PROXY_URL_KEY]
       );

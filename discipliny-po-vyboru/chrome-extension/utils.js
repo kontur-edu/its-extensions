@@ -8,12 +8,12 @@ function findTitle(html) {
   return null;
 }
 
-async function getNotionRaw(url, proxyUrl) {
+async function getNotionRaw(url, proxyUrl, type = "page") {
   let reqUrl = proxyUrl;
   if (!proxyUrl.endsWith("/")) {
     reqUrl += "/";
   }
-  reqUrl += "raw/";
+  reqUrl += `${type}/`;
   reqUrl = reqUrl + url;
   const resp = await fetch(reqUrl);
   const result = {
@@ -57,41 +57,6 @@ function extractTablePageIds(notionData) {
   return pageIds;
 }
 
-function extractPageTitle(notionData) {
-  if (!notionData.hasOwnProperty("recordMap")) {
-    return [];
-  }
-  const recordMap = notionData["recordMap"];
-  if (!recordMap.hasOwnProperty("block")) {
-    return [];
-  }
-  const block = recordMap["block"];
-  for (const viewId in block) {
-    const view = block[viewId];
-    if (!view.hasOwnProperty("value")) {
-      continue;
-    }
-    const viewValue = view["value"];
-    if (viewValue["type"] !== "page") {
-      continue;
-    }
-    if (!viewValue.hasOwnProperty("properties")) {
-      continue;
-    }
-    const properties = viewValue["properties"];
-    if (properties.hasOwnProperty("title")) {
-      let title = properties["title"];
-      if (Array.isArray(title) && title.length > 0) {
-        title = title[0];
-      }
-      if (Array.isArray(title) && title.length > 0) {
-        title = title[0];
-      }
-      return title;
-    }
-  }
-}
-
 function paginate(arr, size) {
   return arr.reduce((acc, val, i) => {
     let idx = Math.floor(i / size);
@@ -102,37 +67,8 @@ function paginate(arr, size) {
   }, []);
 }
 
-async function fillMupNameToNotionPageId(
-  urls,
-  proxyUrl,
-  mupNameToNotionPageId
-) {
-  const promises = urls.map((url) => {
-    return getNotionRaw(url, proxyUrl);
-  });
-
-  const results = await Promise.allSettled(promises);
-
-  for (let i = 0; i < promises.length; i++) {
-    const res = results[i];
-    if (res.status === "fulfilled") {
-      const response = res.value;
-      if (
-        response.status === 200 &&
-        response.data &&
-        response.data.recordMap &&
-        Object.keys(response.data.recordMap).length > 0
-      ) {
-        const mupName = extractPageTitle(response.data);
-        if (mupName) {
-          mupNameToNotionPageId[mupName] = urls[i];
-        }
-      }
-    }
-  }
-}
-
 function getUrlParts(url) {
+  // console.log(`getUrlParts: ${url}`);
   const matches = url.match(
     /^(?:(http[s]?|ftp):\/)?\/?([^:\/\s]+)((?:\/[\-\w]+)*\/?)([\w\-\.]+[^#?\s]+)?(.*)?(#[\w\-]+)?$/i
   );
@@ -142,13 +78,113 @@ function getUrlParts(url) {
 
   const base = `${matches[1]}://${matches[2]}`;
   const id = matches[3].replace(/\//g, "");
+
+  const queryParams = {};
+  if (matches[5]) {
+    const queryStr = matches[5].replace("?", "");
+    const queryParts = queryStr.split("&");
+    for (const part of queryParts) {
+      const kvParts = part.split("=");
+      if (kvParts.length === 2);
+      queryParams[kvParts[0]] = kvParts[1];
+    }
+  }
   return {
     base,
     id,
+    queryParams,
   };
 }
 
-async function prepareMupNameToNotionPageId(mainPage, proxyUrl) {
+function extractCollectionIds(notionData) {
+  const pageIds = {
+    spaceId: null,
+    collectionId: null,
+    collectionViewId: null,
+  };
+  if (!notionData.hasOwnProperty("recordMap")) {
+    return [];
+  }
+  const recordMap = notionData["recordMap"];
+  if (
+    !recordMap.hasOwnProperty("collection_view") ||
+    !recordMap.hasOwnProperty("collection")
+  ) {
+    return [];
+  }
+  const collectionView = recordMap["collection_view"];
+  for (const viewId in collectionView) {
+    const view = collectionView[viewId];
+    if (!view.hasOwnProperty("value")) {
+      continue;
+    }
+    const viewValue = view["value"];
+    console.log("viewValue");
+    console.log(viewValue);
+    if (viewValue["type"] !== "table") {
+      continue;
+    }
+    pageIds.spaceId = viewValue["space_id"];
+    pageIds.collectionViewId = viewId;
+  }
+
+  const collection = recordMap["collection"];
+  const collectionIds = Object.keys(collection);
+  if (collectionIds.length > 0) {
+    pageIds.collectionId = collectionIds[0];
+  }
+  return pageIds;
+}
+
+function extractCollectionBlockData(notionData) {
+  const res = [];
+  if (!notionData.hasOwnProperty("recordMap")) {
+    return [];
+  }
+  const recordMap = notionData["recordMap"];
+  if (
+    !recordMap.hasOwnProperty("block") ||
+    !recordMap.hasOwnProperty("block")
+  ) {
+    return [];
+  }
+  const blocks = recordMap["block"];
+  for (const blockId in blocks) {
+    const item = {
+      name: null,
+      id: null,
+    };
+    const block = blocks[blockId];
+    if (block.hasOwnProperty("value") && block.value.type === "page") {
+      const blockValue = block["value"];
+      item.id = blockValue.id;
+      if (
+        blockValue.hasOwnProperty("properties") &&
+        blockValue.properties.hasOwnProperty("title")
+      ) {
+        item.name = blockValue.properties.title[0][0];
+      }
+
+      res.push(item);
+    }
+  }
+  return res;
+}
+
+function formatQueryParams(params) {
+  const parts = [];
+  Object.keys(params).forEach((pk) => parts.push(`${pk}=${params[pk]}`));
+  return parts.join("&");
+}
+
+function createNotionPageUrl(pageBase, id) {
+  if (!pageBase.endsWith("/")) {
+    pageBase += "/";
+  }
+  return pageBase + id.replace(/\-/g, "");
+}
+
+async function prepareMupNameToNotionPage(mainPage, proxyUrl) {
   const parts = getUrlParts(mainPage);
   let notionBase = parts.base;
   if (!notionBase.endsWith("/")) {
@@ -156,33 +192,31 @@ async function prepareMupNameToNotionPageId(mainPage, proxyUrl) {
   }
 
   console.log(
-    `prepareMupNameToNotionPageId: ${notionBase}, ${mainPage}, ${proxyUrl}`
+    `prepareMupNameToNotionPage: ${notionBase}, ${mainPage}, ${proxyUrl}`
   );
-  const mainPageResp = await getNotionRaw(mainPage, proxyUrl);
+  const mainPageResp = await getNotionRaw(mainPage, proxyUrl, "page");
   if (mainPageResp.status !== 200 || !mainPageResp.data) {
     return null;
   }
-  const pageIds = extractTablePageIds(mainPageResp.data);
-  console.log(`pageIds: `, pageIds);
-  const urls = pageIds.map((pId) => {
-    return notionBase + pId.replace(/\-/g, "");
-  });
+  const collectionIds = extractCollectionIds(mainPageResp.data);
+  console.log(`collectionIds: `, collectionIds);
+  const queryParams = formatQueryParams(collectionIds);
+  console.log(`queryParams: `, queryParams);
+  let mainPageWithParams = mainPage;
+  mainPageWithParams += mainPage.includes("?") ? "&" : "?";
+  mainPage += queryParams;
 
-  const mupNameToNotionPageId = {};
-
-  for (const urlsPage of paginate(urls, 10)) {
-    await fillMupNameToNotionPageId(urlsPage, proxyUrl, mupNameToNotionPageId);
+  const collectionResp = await getNotionRaw(mainPage, proxyUrl, "collection");
+  if (collectionResp.status !== 200 || !collectionResp.data) {
+    return null;
   }
-  // const mupNameToNotionPageId = {};
-  // for (const url of urls) {
-  //   const response = await getNotionRaw(url, proxyUrl);
-  //   if (response.status === 200 && response.data && response.data.recordMap && Object.keys(response.data.recordMap).length > 0) {
-  //     const mupName = extractPageTitle(response.data);
-  //     if (mupName) {
-  //       mupNameToNotionPageId[mupName] = url;
-  //     }
-  //   }
-  // }
+  const pageItems = extractCollectionBlockData(collectionResp.data);
 
-  return mupNameToNotionPageId;
+  const mupNameToNotionPage = {};
+
+  for (const item of pageItems) {
+    const url = createNotionPageUrl(notionBase, item.id);
+    mupNameToNotionPage[item.name] = url;
+  }
+  return mupNameToNotionPage;
 }

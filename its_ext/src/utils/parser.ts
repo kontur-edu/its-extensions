@@ -2,24 +2,19 @@ import { CSRF_TOKEN_INPUT_NAME } from "./constants";
 
 export function findCsrfTokens(page: string) {
   const tokens: string[] = [];
-  let lastStringIndexOfTokenInput = 0;
-  while (true) {
-    const currentStringIndexOfTokenInput = page.indexOf(
-      CSRF_TOKEN_INPUT_NAME,
-      lastStringIndexOfTokenInput
-    );
-    if (currentStringIndexOfTokenInput === -1) {
-      break;
+  const html = document.createElement("html");
+  html.innerHTML = page;
+  const inputElements = html.getElementsByTagName("input");
+  for (let i = 0; i < inputElements.length; i++) {
+    const inputElement = inputElements[i];
+    if (inputElement.getAttribute("name") === CSRF_TOKEN_INPUT_NAME) {
+      const token = inputElement.getAttribute("value");
+      if (token) {
+        tokens.push(token);
+      }
     }
-    const valueArg = `value="`;
-    const tokenStart =
-      page.indexOf(valueArg, lastStringIndexOfTokenInput) + valueArg.length;
-    const tokenEnd = page.indexOf(`"`, tokenStart);
-    lastStringIndexOfTokenInput = tokenEnd;
-
-    const token = page.substring(tokenStart, tokenEnd);
-    tokens.push(token);
   }
+
   return tokens;
 }
 

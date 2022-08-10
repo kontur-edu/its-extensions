@@ -8,13 +8,13 @@ const SETTINGS = {
 // const NOTION_BASE = "https://fiiturfu.notion.site/";
 const mupNameToItems = {};
 
-let mupNameToNotionPage = {};
+// let mupNameToNotionPage = {};
 
 function timeout(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function waitForMups() {
+async function waitForMups(mupNameToNotionInfo) {
   console.warn("waitForMups: loop");
 
   const locations = getMupCardLocations();
@@ -24,7 +24,7 @@ async function waitForMups() {
     prepareItems(locations, mupNameToItems);
     console.log("mupNameToItems");
     console.log(mupNameToItems);
-    await placeButtonsAndFrames(mupNameToItems, mupNameToNotionPage);
+    await placeButtonsAndFrames(mupNameToItems, mupNameToNotionInfo);
   } else {
     await timeout(1000);
     waitForMups();
@@ -72,62 +72,148 @@ function prepareItems(locations, itemsToFill) {
   }
 }
 
-function getUrlByMupName(mupName, mupNameToNotionPage) {
-  if (mupNameToNotionPage.hasOwnProperty(mupName)) {
-    return mupNameToNotionPage[mupName];
+function getUrlByMupName(mupName, mupNameToNotionInfo) {
+  if (mupNameToNotionInfo.hasOwnProperty(mupName)) {
+    return mupNameToNotionInfo[mupName].url;
   }
 
-  for (const mupNameFromNotion of Object.keys(mupNameToNotionPage).sort()) {
+  for (const mupNameFromNotion of Object.keys(mupNameToNotionInfo).sort()) {
     if (mupNameFromNotion.startsWith(mupName)) {
-      return mupNameToNotionPage[mupNameFromNotion];
+      return mupNameToNotionInfo[mupNameFromNotion].url;
     }
   }
 
   return null;
 }
 
-async function placeButtonsAndFrames(items, mupNameToNotionPage) {
+function getTagsByMupName(mupName, mupNameToNotionInfo) {
+  if (mupNameToNotionInfo.hasOwnProperty(mupName)) {
+    return mupNameToNotionInfo[mupName].properties;
+  }
+
+  for (const mupNameFromNotion of Object.keys(mupNameToNotionInfo).sort()) {
+    if (mupNameFromNotion.startsWith(mupName)) {
+      return mupNameToNotionInfo[mupNameFromNotion].properties;
+    }
+  }
+
+  return null;
+}
+
+const allowedTagParts = ["преподаватель", "отбор", "тестовое"];
+function checkTagName(name) {
+  for (const tagPart of allowedTagParts) {
+    if (name.includes(tagPart)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function addTags(item, tags) {
+  const divElement = document.createElement("div");
+  divElement.classList.add("ext_tag_holder");
+  let count = 0;
+  for (const tagName in tags) {
+    const nameLower = tagName.toLocaleLowerCase();
+    if (!checkTagName(nameLower)) continue;
+    count++;
+    const tagValue = tags[tagName];
+    const tagElement = document.createElement("span");
+    tagElement.classList.add("load-title-tag", "el-tag");
+
+    if (nameLower.startsWith("тест") || nameLower.startsWith("отбор")) {
+      if (tagValue.toLocaleLowerCase().startsWith("неогр")) {
+        tagElement.classList.add("el-tag--success");
+      } else {
+        tagElement.classList.add("el-tag--danger");
+      }
+    } else {
+      tagElement.classList.add("el-tag--warning");
+    }
+    tagElement.textContent = `${tagName}: ${tagValue}`;
+    divElement.appendChild(tagElement);
+  }
+  if (count > 0) {
+    item.descriptionElement.appendChild(divElement);
+  }
+}
+
+function addLink(item, url) {
+  const linkElement = document.createElement("a");
+  linkElement.href = url;
+  linkElement.setAttribute("target", "_blank");
+  linkElement.setAttribute("rel", "noopener noreferrer");
+  linkElement.textContent = "Источник";
+  item.descriptionElement.appendChild(linkElement);
+}
+
+function addButton(item) {
+  const button = document.createElement("button");
+  button.innerText = "Подробная информация";
+  button.style = "margin-right: 1em";
+  button.classList.add(
+    "el-button",
+    "el-button--primary",
+    "el-button--small",
+    "is-plain"
+  );
+
+  item.descriptionElement.appendChild(button);
+  item.button = button;
+}
+
+function addFrame(item, url) {
+  const iframe = document.createElement("iframe");
+  iframe.name = item.mupName;
+
+  iframe.src = url;
+  iframe.src = SETTINGS[PROXY_URL_KEY] + url;
+  iframe.style = "width: 100%; min-height: 400px";
+  iframe.classList.add("its_ext_display_none");
+  item.descriptionElement.appendChild(iframe);
+  item.frame = iframe;
+}
+
+function addBr(item) {
+  const brElement = document.createElement("br");
+  item.descriptionElement.appendChild(brElement);
+}
+
+function addMarkup(item, mupNameToNotionInfo) {
+  if (!item.descriptionElement) {
+    return;
+  }
+  const url = getUrlByMupName(item.mupName, mupNameToNotionInfo);
+  const tags = getTagsByMupName(item.mupName, mupNameToNotionInfo);
+
+  addBr(item);
+  addTags(item, tags);
+  if (url) {
+    addBr(item);
+
+    addButton(item);
+    addLink(item, url);
+
+    addFrame(item, url);
+
+    item.button.addEventListener("click", () => {
+      console.log("button click");
+      if (item.frame) {
+        item.frame.classList.toggle("its_ext_display_none");
+      } else {
+        console.log("frame not set");
+      }
+    });
+  } else {
+    console.warn(`Page not found for ${item.mupName}`);
+  }
+}
+
+async function placeButtonsAndFrames(items, mupNameToNotionInfo) {
   for (const mupName in items) {
     const item = items[mupName];
-    if (item.descriptionElement) {
-      const url = getUrlByMupName(item.mupName, mupNameToNotionPage);
-      if (url) {
-        const button = document.createElement("button");
-        button.innerText = "Подробная информация";
-        button.style = "margin: 0.5em";
-        button.classList.add(
-          "el-button",
-          "el-button--primary",
-          "el-button--small",
-          "is-plain"
-        );
-
-        item.descriptionElement.appendChild(button);
-
-        item.button = button;
-
-        const iframe = document.createElement("iframe");
-        iframe.name = item.mupName;
-
-        iframe.src = url;
-        iframe.src = SETTINGS[PROXY_URL_KEY] + url;
-        iframe.style = "width: 100%; min-height: 400px";
-        iframe.classList.add("its_ext_display_none");
-        item.descriptionElement.appendChild(iframe);
-        item.frame = iframe;
-
-        button.addEventListener("click", () => {
-          console.log("button click");
-          if (item.frame) {
-            item.frame.classList.toggle("its_ext_display_none");
-          } else {
-            console.log("frame not set");
-          }
-        });
-      } else {
-        console.warn(`Page not found for ${item.mupName}`);
-      }
-    }
+    addMarkup(item, mupNameToNotionInfo);
   }
 }
 
@@ -171,20 +257,16 @@ function onLoad() {
     })
     .then(() => console.log(SETTINGS))
     .then(() => {
-      return prepareMupNameToNotionPage(
+      return prepareMupNameToNotionInfo(
         SETTINGS[NOTION_MAIN_PAGE_KEY],
         SETTINGS[PROXY_URL_KEY]
       );
     })
-    .then((mupNameToNotionUrl) => {
-      console.log("mupNameToNotionUrl");
-      console.log(mupNameToNotionUrl);
-      for (const mupName in mupNameToNotionUrl) {
-        mupNameToNotionPage[mupName] = mupNameToNotionUrl[mupName];
-      }
-      // alert(mupNameToNotionPage);
+    .then((mupNameToNotionInfo) => {
+      console.log("mupNameToNotionInfo");
+      console.log(mupNameToNotionInfo);
 
-      return waitForMups();
+      return waitForMups(mupNameToNotionInfo);
     })
     .catch((err) => {
       console.error("Error: ", err);

@@ -1,7 +1,6 @@
 const NotionPageToHtml = require("notion-page-to-html");
 const fetch = require("node-fetch");
 
-
 const REQUEST_TYPE_HTML = "html";
 const REQUEST_TYPE_PAGE = "page";
 const REQUEST_TYPE_COLLECTION = "collection";
@@ -148,12 +147,21 @@ async function handleNotionRaw(url, type) {
   return result;
 }
 
-function prepareHtml(html, notionBase) {
+function removeTitle(html) {
+  return html.replace(`<header>`, `<header style="display: none">`);
+}
+
+function fixLinks(html, notionBase) {
   let absolutePathStart = notionBase;
   if (!absolutePathStart.endsWith("/")) {
     absolutePathStart += "/";
   }
   return html.replace(/href="\//g, `href="${absolutePathStart}`);
+}
+
+function prepareHtml(html, notionBase) {
+  html = removeTitle(html);
+  return fixLinks(html, notionBase);
 }
 
 async function handleNotion(url, notionBase) {

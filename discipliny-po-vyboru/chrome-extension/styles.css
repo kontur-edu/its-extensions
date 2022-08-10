@@ -26,7 +26,6 @@
   flex-grow: 1;
   background-color: white;
   cursor: pointer;
-  /* margin: 0.2em 0; */
 }
 
 .button:hover {
@@ -48,4 +47,9 @@
 
 #message-holder {
   font-size: 2em;
+}
+
+.ext_tag_holder {
+  display: flex;
+  gap: 0.5em;
 }

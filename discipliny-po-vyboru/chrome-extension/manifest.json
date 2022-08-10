@@ -1,0 +1,21 @@
+{
+  "name": "ITS MUP Description",
+  "description": "Shows descriptions of MUPs by name select",
+  "version": "1.0",
+  "manifest_version": 3,
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["storage", "scripting", "activeTab", "tabs"],
+  "action": {
+    "default_popup": "settings.html"
+  },
+  "content_scripts" : [{
+    "matches": ["https://istudent.urfu.ru/s/discipliny-po-vyboru/"],
+    "js": ["constants.js", "utils.js","script.js"],
+    "css": ["styles.css"]
+  }],
+  "externally_connectable": {
+    "matches": ["https://istudent.urfu.ru/s/discipliny-po-vyboru/"]
+  }
+}

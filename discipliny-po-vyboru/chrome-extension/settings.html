@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <h2 class="header">Настройки discipliny-po-vyboru extensions</h2>
+    <form class="form">
+      <label for="notion-base-url-input">
+        URL страницы Notion со списком курсов</label
+      >
+      <div class="control_group">
+        <input class="input" id="notion-base-url-input" type="text" />
+      </div>
+      <label for="proxy-url-input"> URL proxy</label>
+      <div class="control_group">
+        <input class="input" id="proxy-url-input" type="text" />
+      </div>
+
+      <div class="control_group">
+        <button class="button" id="apply-btn">Сохранить</button>
+        <button class="button" id="default-btn">
+          Установить значения по умолчанию
+        </button>
+      </div>
+    </form>
+    <div id="message-holder"></div>
+    <script src="constants.js"></script>
+    <script src="settings.js"></script>
+  </body>
+</html>

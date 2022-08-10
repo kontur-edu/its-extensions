@@ -12,12 +12,12 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://istudent.urfu.ru/s/discipliny-po-vyboru/"],
+      "matches": ["https://istudent.urfu.ru/s/discipliny-po-vyboru/*"],
       "js": ["constants.js", "utils.js", "script.js"],
       "css": ["styles.css"]
     }
   ],
   "externally_connectable": {
-    "matches": ["https://istudent.urfu.ru/s/discipliny-po-vyboru/"]
+    "matches": ["https://istudent.urfu.ru/s/discipliny-po-vyboru/*"]
   }
 }

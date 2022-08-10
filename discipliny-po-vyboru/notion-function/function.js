@@ -1,14 +1,12 @@
 const NotionPageToHtml = require("notion-page-to-html");
 const fetch = require("node-fetch");
 
-const NOTION_BASE = "https://fiiturfu.notion.site/";
 
 const REQUEST_TYPE_HTML = "html";
 const REQUEST_TYPE_PAGE = "page";
 const REQUEST_TYPE_COLLECTION = "collection";
 
 async function postData(url, obj) {
-  // console.log(`postData: ${url}, obj:`, obj);
   const options = {
     method: "POST",
     headers: {
@@ -46,7 +44,6 @@ function formatId(idRaw) {
 }
 
 function getUrlParts(url) {
-  // console.log(`getUrlParts: ${url}`);
   const matches = url.match(
     /^(?:(http[s]?|ftp):\/)?\/?([^:\/\s]+)((?:\/[\-\w]+)*\/?)([\w\-\.]+[^#?\s]+)?(.*)?(#[\w\-]+)?$/i
   );
@@ -77,7 +74,6 @@ function getUrlParts(url) {
 const LOAD_CACHED_PAGE_CHUNK_PART = "api/v3/loadCachedPageChunk";
 
 async function getNotionCachedDataFromPage(url) {
-  // console.log(`getNotionCachedDataFromPage ${url}`);
   const parts = getUrlParts(url);
   const id = formatId(parts.id);
   const reqUrl = parts.base + "/" + LOAD_CACHED_PAGE_CHUNK_PART;
@@ -90,13 +86,11 @@ async function getNotionCachedDataFromPage(url) {
   };
 
   const res = await postData(reqUrl, reqBody);
-  // console.log(res);
   return res;
 }
 
 const QUERY_COLLECTION_PART = "api/v3/queryCollection?src=reset";
 async function getNotionQueryCollection(url) {
-  // console.log(`getNotionQueryCollection: ${url}`);
   let urlParts = getUrlParts(url);
   let urlBase = urlParts.base;
   const queryParams = urlParts.queryParams;
@@ -134,14 +128,11 @@ async function getNotionQueryCollection(url) {
     },
   };
 
-  // console.log(reqBody);
   const res = await postData(reqUrl, reqBody);
-  // console.log(res);
   return res;
 }
 
 async function handleNotionRaw(url, type) {
-  // console.log(`handleNotionRaw: ${url}`);
   let notionResp = { data: {}, status: 404 };
   if (type === REQUEST_TYPE_PAGE) {
     notionResp = await getNotionCachedDataFromPage(url);
@@ -158,15 +149,17 @@ async function handleNotionRaw(url, type) {
 }
 
 function prepareHtml(html, notionBase) {
-  return html.replace(/href="\//g, `href="${notionBase}`);
+  let absolutePathStart = notionBase;
+  if (!absolutePathStart.endsWith("/")) {
+    absolutePathStart += "/";
+  }
+  return html.replace(/href="\//g, `href="${absolutePathStart}`);
 }
 
 async function handleNotion(url, notionBase) {
-  // console.log(`handleNotion: ${url}`);
   const { title, icon, cover, html } = await NotionPageToHtml.convert(url);
 
   const htmlPrepared = prepareHtml(html, notionBase);
-  // console.log(`length = ${htmlPrepared.length}`);
   const result = {
     statusCode: 200,
     headers: { "Content-Type": "text/html; charset=UTF-8" },
@@ -177,7 +170,6 @@ async function handleNotion(url, notionBase) {
 }
 
 module.exports.handler = async function (event, context) {
-  // console.log(`handler: event.url: ${event.url}`);
   let requestType = REQUEST_TYPE_HTML;
   let pageUrl = event.url;
   if (pageUrl.startsWith(`/notion/${REQUEST_TYPE_PAGE}/`)) {
@@ -190,8 +182,6 @@ module.exports.handler = async function (event, context) {
     pageUrl = pageUrl.replace("/notion/", "");
   }
   const urlParts = getUrlParts(pageUrl);
-  // console.log('urlParts');
-  // console.log(urlParts);
   const pageUrlCleared = `${urlParts.base}/${urlParts.id}`;
   if (
     requestType === REQUEST_TYPE_PAGE ||

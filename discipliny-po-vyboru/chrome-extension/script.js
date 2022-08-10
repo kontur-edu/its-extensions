@@ -18,12 +18,12 @@ async function waitForMups(mupNameToNotionInfo) {
   console.warn("waitForMups: loop");
 
   const locations = getMupCardLocations();
-  console.log("locations");
-  console.log(locations);
+  // console.log("locations");
+  // console.log(locations);
   if (locations.length > 0 && locations.every((i) => i.descriptionElement)) {
     prepareItems(locations, mupNameToItems);
-    console.log("mupNameToItems");
-    console.log(mupNameToItems);
+    // console.log("mupNameToItems");
+    // console.log(mupNameToItems);
     await placeButtonsAndFrames(mupNameToItems, mupNameToNotionInfo);
   } else {
     await timeout(1000);
@@ -198,11 +198,11 @@ function addMarkup(item, mupNameToNotionInfo) {
     addFrame(item, url);
 
     item.button.addEventListener("click", () => {
-      console.log("button click");
+      // console.log("button click");
       if (item.frame) {
         item.frame.classList.toggle("its_ext_display_none");
       } else {
-        console.log("frame not set");
+        // console.log("frame not set");
       }
     });
   } else {
@@ -241,21 +241,21 @@ function onLoad() {
       return Promise.allSettled([
         getSettingsPromise(PROXY_URL_KEY).then((resp) => {
           const url = resp.value;
-          console.log(`${PROXY_URL_KEY}: ${url}`);
+          // console.log(`${PROXY_URL_KEY}: ${url}`);
           if (url) {
             SETTINGS[PROXY_URL_KEY] = url;
           }
         }),
         getSettingsPromise(NOTION_MAIN_PAGE_KEY).then((resp) => {
           const url = resp.value;
-          console.log(`${NOTION_MAIN_PAGE_KEY}: ${url}`);
+          // console.log(`${NOTION_MAIN_PAGE_KEY}: ${url}`);
           if (url) {
             SETTINGS[NOTION_MAIN_PAGE_KEY] = url;
           }
         }),
       ]);
     })
-    .then(() => console.log(SETTINGS))
+    // .then(() => console.log(SETTINGS))
     .then(() => {
       return prepareMupNameToNotionInfo(
         SETTINGS[NOTION_MAIN_PAGE_KEY],
@@ -263,8 +263,8 @@ function onLoad() {
       );
     })
     .then((mupNameToNotionInfo) => {
-      console.log("mupNameToNotionInfo");
-      console.log(mupNameToNotionInfo);
+      // console.log("mupNameToNotionInfo");
+      // console.log(mupNameToNotionInfo);
 
       return waitForMups(mupNameToNotionInfo);
     })

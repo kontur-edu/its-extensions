@@ -2,18 +2,17 @@ import { CSRF_TOKEN_INPUT_NAME } from "./constants";
 
 export function findCsrfTokens(page: string) {
   const tokens: string[] = [];
-  const html = document.createElement("html");
-  html.innerHTML = page;
-  const inputElements = html.getElementsByTagName("input");
-  for (let i = 0; i < inputElements.length; i++) {
-    const inputElement = inputElements[i];
-    if (inputElement.getAttribute("name") === CSRF_TOKEN_INPUT_NAME) {
-      const token = inputElement.getAttribute("value");
-      if (token) {
-        tokens.push(token);
-      }
+  const htmlPage = new DOMParser().parseFromString(page, "text/html");
+  const elementsWithCsrfToken = htmlPage.getElementsByName(CSRF_TOKEN_INPUT_NAME);
+  
+  for (let i = 0; i < elementsWithCsrfToken.length; i++) {
+    const elementWithCsrfToken = elementsWithCsrfToken[i];
+    const token = elementWithCsrfToken.getAttribute("value");
+    if (token) {
+      tokens.push(token);
     }
   }
+
 
   return tokens;
 }

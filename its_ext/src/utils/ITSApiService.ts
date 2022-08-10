@@ -17,7 +17,7 @@ import {
   IModuleSelection,
 } from "../common/types";
 
-import { LIMIT_PER_PAGE, SAFE_MODE_ENABLED_MESSAGE } from "./constants";
+import { LIMIT_PER_PAGE } from "./constants";
 import { reformatItsDate } from "./helpers";
 
 export interface IActionResponse {

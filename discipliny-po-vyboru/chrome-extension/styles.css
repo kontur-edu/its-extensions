@@ -1,0 +1,55 @@
+.its_ext_display_none {
+  display: none;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  width: 600px;
+
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 18px;
+}
+
+.control_group {
+  width: 100%;
+  display: flex;
+  gap: 0.4em;
+  margin: 0.2em 0;
+}
+
+.input {
+  flex-grow: 3;
+}
+
+.button {
+  flex-grow: 1;
+  background-color: white;
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: #eee;
+}
+
+.success {
+  color: rgb(52, 160, 48);
+}
+
+.error {
+  color: rgb(160, 48, 48);
+}
+
+.header {
+  text-align: center;
+  font-weight: 500;
+}
+
+#message-holder {
+  font-size: 2em;
+}
+
+.ext_tag_holder {
+  display: flex;
+  gap: 0.5em;
+}

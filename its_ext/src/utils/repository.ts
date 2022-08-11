@@ -29,6 +29,7 @@ import {
   prepareSelectionGroupMupData,
   prepareSelectionGroupToMupsData,
   prepareCompetitionGroupData,
+  createPromisesAndWaitAllPaginated,
 } from "../utils/helpers";
 
 export class ITSRepository {
@@ -97,10 +98,14 @@ export class ITSRepository {
     const selectionGroupIdToSelectionGroupMups: {
       [key: number]: ISelectionGroupMupData;
     } = {};
-    const requests = selectionGroupIds.map((selectionGroupId) =>
-      this.api.GetSelectionGroupMups(selectionGroupId)
+    // const requests = selectionGroupIds.map((selectionGroupId) =>
+    //   this.api.GetSelectionGroupMups(selectionGroupId)
+    // );
+    // const responses = await Promise.allSettled(requests);
+    const responses = await createPromisesAndWaitAllPaginated(
+      selectionGroupIds,
+      (selectionGroupId) => this.api.GetSelectionGroupMups(selectionGroupId)
     );
-    const responses = await Promise.allSettled(requests);
     for (let i = 0; i < selectionGroupIds.length; i++) {
       const resp = responses[i];
       const selectionGroupId = selectionGroupIds[i];
@@ -128,8 +133,11 @@ export class ITSRepository {
 
   async UpdatePeriods(mupIds: string[]) {
     console.log(`ITSRepository: UpdatePeriods ${mupIds}`);
-    const requests = mupIds.map((mupId) => this.api.GetPeriods(mupId));
-    const responses = await Promise.allSettled(requests);
+    // const requests = mupIds.map((mupId) => this.api.GetPeriods(mupId));
+    // const responses = await Promise.allSettled(requests);
+    const responses = await createPromisesAndWaitAllPaginated(mupIds, (mupId) =>
+      this.api.GetPeriods(mupId)
+    );
     for (let i = 0; i < mupIds.length; i++) {
       const mupId = mupIds[i];
       const resp = responses[i];
@@ -161,10 +169,14 @@ export class ITSRepository {
 
   async UpdateSubgroupMetas(competitionGroupIds: number[]) {
     console.log(`ITSRepository: UpdateSubgroupMetas`);
-    const requests = competitionGroupIds.map((competitionGroupId) =>
-      this.api.GetSubgroupMetas(competitionGroupId)
+    // const requests = competitionGroupIds.map((competitionGroupId) =>
+    //   this.api.GetSubgroupMetas(competitionGroupId)
+    // );
+    // const responses = await Promise.allSettled(requests);
+    const responses = await createPromisesAndWaitAllPaginated(
+      competitionGroupIds,
+      (competitionGroupId) => this.api.GetSubgroupMetas(competitionGroupId)
     );
-    const responses = await Promise.allSettled(requests);
     for (let i = 0; i < competitionGroupIds.length; i++) {
       const competitionGroupId = competitionGroupIds[i];
       const resp = responses[i];
@@ -188,10 +200,14 @@ export class ITSRepository {
 
   async UpdateSubgroups(competitionGroupIds: number[]) {
     console.log(`ITSRepository: UpdateSubgoups`);
-    const requests = competitionGroupIds.map((competitionGroupId) =>
-      this.api.GetSubgroups(competitionGroupId)
+    // const requests = competitionGroupIds.map((competitionGroupId) =>
+    //   this.api.GetSubgroups(competitionGroupId)
+    // );
+    // const responses = await Promise.allSettled(requests);
+    const responses = await createPromisesAndWaitAllPaginated(
+      competitionGroupIds,
+      (competitionGroupId) => this.api.GetSubgroups(competitionGroupId)
     );
-    const responses = await Promise.allSettled(requests);
     for (let i = 0; i < competitionGroupIds.length; i++) {
       const competitionGroupId = competitionGroupIds[i];
       const resp = responses[i];
@@ -235,10 +251,14 @@ export class ITSRepository {
 
   async UpdateAdmissionMetas(competitionGroupIds: number[]) {
     console.log(`ITSRepository: UpdateAdmissionMetas`);
-    const requests = competitionGroupIds.map((cgId) =>
-      this.api.GetStudentAdmissionMetas(cgId)
+    // const requests = competitionGroupIds.map((cgId) =>
+    //   this.api.GetStudentAdmissionMetas(cgId)
+    // );
+    // const responses = await Promise.allSettled(requests);
+    const responses = await createPromisesAndWaitAllPaginated(
+      competitionGroupIds,
+      (cgId) => this.api.GetStudentAdmissionMetas(cgId)
     );
-    const responses = await Promise.allSettled(requests);
     for (let i = 0; i < competitionGroupIds.length; i++) {
       const resp = responses[i];
       const competitionGroupId = competitionGroupIds[i];
@@ -328,10 +348,14 @@ export class ITSRepository {
     for (let competitionGroupIdStr in competitionGroupIdToAdmissionIds) {
       const competitionGroupId = Number(competitionGroupIdStr);
       const admissionIds = competitionGroupIdToAdmissionIds[competitionGroupId];
-      const requests = admissionIds.map((aId) =>
-        this.api.GetStudentsForAdmission(aId)
+      // const requests = admissionIds.map((aId) =>
+      //   this.api.GetStudentsForAdmission(aId)
+      // );
+      // const responses = await Promise.allSettled(requests);
+      const responses = await createPromisesAndWaitAllPaginated(
+        admissionIds,
+        (aId) => this.api.GetStudentsForAdmission(aId)
       );
-      const responses = await Promise.allSettled(requests);
       for (let i = 0; i < admissionIds.length; i++) {
         const resp = responses[i];
         const admissionId = admissionIds[i];
@@ -356,10 +380,14 @@ export class ITSRepository {
 
   async UpdateSubgroupMembership(subgroupIds: number[]) {
     console.log(`ITSRepository: UpdateSubgroupMembership`);
-    const requests = subgroupIds.map((sId) =>
-      this.api.GetSubgroupMembershipInfo(sId)
+    // const requests = subgroupIds.map((sId) =>
+    //   this.api.GetSubgroupMembershipInfo(sId)
+    // );
+    // const responses = await Promise.allSettled(requests);
+    const responses = await createPromisesAndWaitAllPaginated(
+      subgroupIds,
+      (sId) => this.api.GetSubgroupMembershipInfo(sId)
     );
-    const responses = await Promise.allSettled(requests);
     for (let i = 0; i < subgroupIds.length; i++) {
       const resp = responses[i];
       const subgroupId = subgroupIds[i];
@@ -411,10 +439,14 @@ export class ITSRepository {
 
   async UpdateSelectionGroupMupModuleDisciplines(connectionIds: number[]) {
     console.log(`ITSRepository: UpdateSelectionGroupMupModuleDisciplines`);
-    const requests = connectionIds.map((cId) =>
-      this.api.GetSelectionGroupMupModules(cId)
+    // const requests = connectionIds.map((cId) =>
+    //   this.api.GetSelectionGroupMupModules(cId)
+    // );
+    // const responses = await Promise.allSettled(requests);
+    const responses = await createPromisesAndWaitAllPaginated(
+      connectionIds,
+      (cId) => this.api.GetSelectionGroupMupModules(cId)
     );
-    const responses = await Promise.allSettled(requests);
     for (let i = 0; i < connectionIds.length; i++) {
       const resp = responses[i];
       const connectionId = connectionIds[i];

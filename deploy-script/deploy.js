@@ -7,7 +7,7 @@ import {
   zipFiles,
   getFunctionId,
   createFunction,
-  makeFunctionPublick,
+  makeFunctionPublic,
   getApiGateWayDomain,
   createApiGateway,
   updateApiGatewaySpec,
@@ -49,7 +49,7 @@ async function deploy() {
   if (!function_id) {
     console.log("function not found, creating...");
     function_id = await createFunction(functionName);
-    await makeFunctionPublick(functionName);
+    await makeFunctionPublic(functionName);
   }
 
   let domain = await getApiGateWayDomain(gatewayName);

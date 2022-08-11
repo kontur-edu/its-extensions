@@ -165,3 +165,28 @@ export function downloadFileFromText(
 
   document.body.removeChild(element);
 }
+
+export function paginate(arr: Array<any>, size: number) {
+  return arr.reduce((acc, val, i) => {
+    let idx = Math.floor(i / size);
+    let page = acc[idx] || (acc[idx] = []);
+    page.push(val);
+    return acc;
+  }, []);
+}
+
+export async function createPromisesAndWaitAllPaginated<T>(
+  arr: Array<T>,
+  func: (v: T) => Promise<any>,
+  size: number = 50
+) {
+  // console.warn("createPromisesAndWaitAllPaginated");
+  const pages = paginate(arr, size);
+  const pagesSettled: PromiseSettledResult<any>[][] = [];
+  for (const page of pages) {
+    // console.warn("--------------> ");
+    const pageSettled = await Promise.allSettled(page.map(func));
+    pagesSettled.push(pageSettled);
+  }
+  return pagesSettled.flat();
+}

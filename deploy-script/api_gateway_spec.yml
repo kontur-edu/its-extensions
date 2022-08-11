@@ -25,8 +25,8 @@ paths:
       x-yc-apigateway-integration:
         type: object_storage
         bucket: {{bucket_name}}
-        object: '{file}'
-        error_object: index.html
+        object: website/{file}
+        error_object: website/index.html
       parameters:
       - explode: false
         in: path

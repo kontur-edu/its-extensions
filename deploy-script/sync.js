@@ -50,6 +50,7 @@ async function putObjects(filenames, srcDir, bucket, destDir) {
       Key: bucketPath,
       Body: content,
       ContentType: mime.lookup(bucketPath),
+      ACL: 'public-read',
     };
     await s3Client.send(new PutObjectCommand(params));
   }

@@ -1,4 +1,4 @@
-# ITS Extensions
+# discipliny-po-vyboru Extensions
 
 ## Deploy
 

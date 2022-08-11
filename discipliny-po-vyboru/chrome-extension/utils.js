@@ -169,9 +169,13 @@ async function prepareMupNameToNotionInfo(mainPage, proxyUrl) {
   // console.log(`queryParams: `, queryParams);
   let mainPageWithParams = mainPage;
   mainPageWithParams += mainPage.includes("?") ? "&" : "?";
-  mainPage += queryParams;
+  mainPageWithParams += queryParams;
 
-  const collectionResp = await getNotionRaw(mainPage, proxyUrl, "collection");
+  const collectionResp = await getNotionRaw(
+    mainPageWithParams,
+    proxyUrl,
+    "collection"
+  );
   if (collectionResp.status !== 200 || !collectionResp.data) {
     return null;
   }
@@ -233,8 +237,8 @@ function parseCollectionData(notionData) {
         const propValue = blockValue.properties[propName]
           .flat(Infinity)
           .join("");
-          console.log("propValue");
-          console.log(propValue);
+        console.log("propValue");
+        console.log(propValue);
         blockInfo.properties[propName] = propValue;
       }
       if (blockInfo.properties.hasOwnProperty("title")) {
@@ -268,11 +272,6 @@ function parseCollectionData(notionData) {
 }
 
 function createMupNameToInfo(collectionData, pageBase) {
-  // const info = {
-  //   block,
-  //   url: ""
-  // };
-
   const res = {};
 
   const blocks = collectionData.blocks;

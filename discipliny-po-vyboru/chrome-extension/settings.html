@@ -4,29 +4,43 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <link rel="stylesheet" href="./styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+      crossorigin="anonymous"
+    />
   </head>
   <body>
-    <h2 class="header">Настройки discipliny-po-vyboru extensions</h2>
+    <h2 class="p-2 text-center bg-light">discipliny-po-vyboru extensions</h2>
     <form class="form">
-      <label for="notion-base-url-input">
-        URL страницы Notion со списком курсов</label
-      >
-      <div class="control_group">
-        <input class="input" id="notion-base-url-input" type="text" />
-      </div>
-      <label for="proxy-url-input"> URL proxy</label>
-      <div class="control_group">
-        <input class="input" id="proxy-url-input" type="text" />
+      <div class="form-group">
+        <label class="form-label" for="notion-base-url-input">
+          URL адрес страницы Notion с таблицей курсов</label
+        >
+        <input class="form-control" id="notion-base-url-input" type="text" />
       </div>
 
-      <div class="control_group">
-        <button class="button" id="apply-btn">Сохранить</button>
-        <button class="button" id="default-btn">
+      <div lass="form-group">
+        <label class="form-label" for="proxy-url-input">URL адрес прокси</label>
+        <input class="form-control" id="proxy-url-input" type="text" />
+      </div>
+
+      <div class="form-group button-group">
+        <button
+          class="save-button btn btn-outline-primary btn-sm mt-2"
+          id="apply-btn"
+        >
+          Сохранить
+        </button>
+        <button class="btn btn-outline-secondary btn-sm mt-2" id="default-btn">
           Установить значения по умолчанию
         </button>
       </div>
+
+      <div id="message-holder" class="p-2" role="alert"></div>
     </form>
-    <div id="message-holder"></div>
+
     <script src="constants.js"></script>
     <script src="settings.js"></script>
   </body>

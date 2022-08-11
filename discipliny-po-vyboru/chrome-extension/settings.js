@@ -9,6 +9,14 @@ const messageHolder = document.getElementById("message-holder");
 applyButton.addEventListener("click", handleNotionBaseApply);
 defaultButton.addEventListener("click", handleDefaultApply);
 
+notionUrlInput.addEventListener("change", () => {
+  messageHolder.innerText = "";
+});
+
+proxyUrlInput.addEventListener("change", () => {
+  messageHolder.innerText = "";
+});
+
 function setSettingsPromise(key, value) {
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage({ type: "set", key, value }, async (resp) => {
@@ -57,11 +65,11 @@ function setUpValuesFromStorage() {
 
 function setMessage(message, success) {
   if (success) {
-    messageHolder.classList.add("success");
-    messageHolder.classList.remove("error");
+    messageHolder.classList.add("text-success");
+    messageHolder.classList.remove("text-danger");
   } else {
-    messageHolder.classList.remove("success");
-    messageHolder.classList.add("error");
+    messageHolder.classList.remove("text-success");
+    messageHolder.classList.add("text-danger");
   }
   messageHolder.innerText = message;
 }

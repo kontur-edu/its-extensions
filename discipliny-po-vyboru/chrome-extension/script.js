@@ -2,13 +2,7 @@ const SETTINGS = {
   [NOTION_MAIN_PAGE_KEY]: NOTION_MAIN_PAGE_VALUE,
   [PROXY_URL_KEY]: PROXY_URL_VALUE,
 };
-// const PROXY_URL = "https://d5dfhr6m42a5gefn5qmb.apigw.yandexcloud.net/notion/";
-// const DEFAULT_NOTION_MAIN_PAGE =
-//   "https://fiiturfu.notion.site/423725f4115046c9bc29df894a87dbe1?v=5051b6fbb5d34ad38aa681202d595071";
-// const NOTION_BASE = "https://fiiturfu.notion.site/";
 const mupNameToItems = {};
-
-// let mupNameToNotionPage = {};
 
 function timeout(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -100,9 +94,8 @@ function getTagsByMupName(mupName, mupNameToNotionInfo) {
   return null;
 }
 
-const allowedTagParts = ["преподаватель", "отбор", "тестовое", "регламент"];
 function checkTagName(name) {
-  for (const tagPart of allowedTagParts) {
+  for (const tagPart of ALLOWED_TAG_PARTS) {
     if (name.includes(tagPart)) {
       return true;
     }

@@ -119,8 +119,8 @@ function extractCollectionIds(notionData) {
       continue;
     }
     const viewValue = view["value"];
-    console.log("viewValue");
-    console.log(viewValue);
+    // console.log("viewValue");
+    // console.log(viewValue);
     if (viewValue["type"] !== "table") {
       continue;
     }
@@ -156,17 +156,17 @@ async function prepareMupNameToNotionInfo(mainPage, proxyUrl) {
     notionBase += "/";
   }
 
-  console.log(
-    `prepareMupNameToNotionPage: ${notionBase}, ${mainPage}, ${proxyUrl}`
-  );
+  // console.log(
+  //   `prepareMupNameToNotionPage: ${notionBase}, ${mainPage}, ${proxyUrl}`
+  // );
   const mainPageResp = await getNotionRaw(mainPage, proxyUrl, "page");
   if (mainPageResp.status !== 200 || !mainPageResp.data) {
     return null;
   }
   const collectionIds = extractCollectionIds(mainPageResp.data);
-  console.log(`collectionIds: `, collectionIds);
+  // console.log(`collectionIds: `, collectionIds);
   const queryParams = formatQueryParams(collectionIds);
-  console.log(`queryParams: `, queryParams);
+  // console.log(`queryParams: `, queryParams);
   let mainPageWithParams = mainPage;
   mainPageWithParams += mainPage.includes("?") ? "&" : "?";
   mainPage += queryParams;
@@ -175,6 +175,7 @@ async function prepareMupNameToNotionInfo(mainPage, proxyUrl) {
   if (collectionResp.status !== 200 || !collectionResp.data) {
     return null;
   }
+  // const pageItems = extractCollectionBlockData(collectionResp.data);
   const collectionData = parseCollectionData(collectionResp.data);
 
   const mupNameToInfo = createMupNameToInfo(collectionData, notionBase);
@@ -227,7 +228,14 @@ function parseCollectionData(notionData) {
     };
     if (blockValue.hasOwnProperty("properties")) {
       for (const propName in blockValue.properties) {
-        blockInfo.properties[propName] = blockValue.properties[propName][0][0]; // FIXME:
+        console.log("blockValue.properties");
+        console.log(blockValue.properties[propName]);
+        const propValue = blockValue.properties[propName]
+          .flat(Infinity)
+          .join("");
+          console.log("propValue");
+          console.log(propValue);
+        blockInfo.properties[propName] = propValue;
       }
       if (blockInfo.properties.hasOwnProperty("title")) {
         blockInfo.name = blockInfo.properties.title;

@@ -31,5 +31,5 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 });
 
 chrome.runtime.onInstalled.addListener(() => {
-  console.log(`Extension Loaded`);
+  // console.log(`Extension Loaded`);
 });

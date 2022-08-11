@@ -214,7 +214,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
           );
         const updateSubgroupMembershipPromise = hasSubgroupMemberships
           ? Promise.resolve()
-          : context.dataRepository.UpdateSubgroupMembership(allSubgroupIds);
+          : context.dataRepository.UpdateSubgroupMembershipWithRetries(allSubgroupIds);
 
         const competitionGroupIdToAdmissionIds: { [key: number]: number[] } =
           {};

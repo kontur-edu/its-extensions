@@ -190,3 +190,15 @@ export async function createPromisesAndWaitAllPaginated<T>(
   }
   return pagesSettled.flat();
 }
+
+
+export function waitPromise(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export function getNextDelay(ms: number) {
+  if (ms === 0) {
+    return 1000;
+  }
+  return ms * 2;
+}

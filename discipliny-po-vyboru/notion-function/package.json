@@ -1,17 +1,17 @@
 {
-    "name": "notion_function",
-    "version": "1.0.0",
-    "description": "",
-    "main": "function.js",
-    "scripts": {
-      "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
-    "dependencies": {
-      "node-fetch": "^2.6.7",
-      "notion-page-to-html": "^1.2.0"
-    }
+  "name": "proxy_server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "function.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.12",
+    "node-fetch": "^2.6.7",
+    "notion-page-to-html": "^1.2.0"
   }
-  
+}

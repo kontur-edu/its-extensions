@@ -1,5 +1,6 @@
 const NotionPageToHtml = require("notion-page-to-html");
 const fetch = require("node-fetch");
+const cheerio = require("cheerio");
 
 const REQUEST_TYPE_HTML = "html";
 const REQUEST_TYPE_PAGE = "page";
@@ -147,21 +148,23 @@ async function handleNotionRaw(url, type) {
   return result;
 }
 
-function removeTitle(html) {
-  return html.replace(`<header>`, `<header style="display: none">`);
-}
-
-function fixLinks(html, notionBase) {
-  let absolutePathStart = notionBase;
-  if (!absolutePathStart.endsWith("/")) {
-    absolutePathStart += "/";
-  }
-  return html.replace(/href="\//g, `href="${absolutePathStart}`);
-}
-
 function prepareHtml(html, notionBase) {
-  html = removeTitle(html);
-  return fixLinks(html, notionBase);
+  if (!notionBase.startsWith("/")) {
+    notionBase += "/";
+  }
+  const htmlPage = cheerio.load(html);
+  const pageTitles = htmlPage(".page-title");
+  if (pageTitles.length > 0) {
+    pageTitles.parent().remove();
+  }
+  htmlPage("[href]").each(function () {
+    const initLink = htmlPage(this).attr("href");
+    if (initLink.startsWith("/")) {
+      const newLinkVal = notionBase + initLink.substring(1, initLink.length);
+      htmlPage(this).attr("href", newLinkVal);
+    }
+  });
+  return htmlPage.html();
 }
 
 async function handleNotion(url, notionBase) {

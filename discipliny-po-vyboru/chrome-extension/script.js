@@ -2,21 +2,13 @@ const SETTINGS = {
   [NOTION_MAIN_PAGE_KEY]: NOTION_MAIN_PAGE_VALUE,
   [PROXY_URL_KEY]: PROXY_URL_VALUE,
 };
-// const PROXY_URL = "https://d5dfhr6m42a5gefn5qmb.apigw.yandexcloud.net/notion/";
-// const DEFAULT_NOTION_MAIN_PAGE =
-//   "https://fiiturfu.notion.site/423725f4115046c9bc29df894a87dbe1?v=5051b6fbb5d34ad38aa681202d595071";
-// const NOTION_BASE = "https://fiiturfu.notion.site/";
 const mupNameToItems = {};
-
-// let mupNameToNotionPage = {};
 
 function timeout(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function waitForMups(mupNameToNotionInfo) {
-  console.warn("waitForMups: loop");
-
   const locations = getMupCardLocations();
   // console.log("locations");
   // console.log(locations);
@@ -27,7 +19,7 @@ async function waitForMups(mupNameToNotionInfo) {
     await placeButtonsAndFrames(mupNameToItems, mupNameToNotionInfo);
   } else {
     await timeout(1000);
-    waitForMups();
+    waitForMups(mupNameToNotionInfo);
   }
 }
 
@@ -100,14 +92,19 @@ function getTagsByMupName(mupName, mupNameToNotionInfo) {
   return null;
 }
 
-const allowedTagParts = ["преподаватель", "отбор", "тестовое"];
 function checkTagName(name) {
-  for (const tagPart of allowedTagParts) {
+  for (const tagPart of ALLOWED_TAG_PARTS) {
     if (name.includes(tagPart)) {
       return true;
     }
   }
   return false;
+}
+
+function checkIsUrl(str) {
+  return /^(?:(http[s]?|ftp):\/)\/?([^:\/\s]+)((?:\/[\-\w]+)*\/?)([\w\-\.]+[^#?\s]+)?(.*)?(#[\w\-]+)?$/i.test(
+    str
+  );
 }
 
 function addTags(item, tags) {
@@ -119,7 +116,9 @@ function addTags(item, tags) {
     if (!checkTagName(nameLower)) continue;
     count++;
     const tagValue = tags[tagName];
-    const tagElement = document.createElement("span");
+    const isLink = checkIsUrl(tagValue);
+    const htmlTagName = isLink ? "a" : "span";
+    const tagElement = document.createElement(htmlTagName);
     tagElement.classList.add("load-title-tag", "el-tag");
 
     if (nameLower.startsWith("тест") || nameLower.startsWith("отбор")) {
@@ -131,7 +130,14 @@ function addTags(item, tags) {
     } else {
       tagElement.classList.add("el-tag--warning");
     }
-    tagElement.textContent = `${tagName}: ${tagValue}`;
+    if (isLink) {
+      tagElement.href = tagValue;
+      tagElement.setAttribute("target", "_blank");
+      tagElement.setAttribute("rel", "noopener noreferrer");
+      tagElement.textContent = `${tagName}`;
+    } else {
+      tagElement.textContent = `${tagName}: ${tagValue}`;
+    }
     divElement.appendChild(tagElement);
   }
   if (count > 0) {
@@ -169,8 +175,7 @@ function addFrame(item, url) {
 
   iframe.src = url;
   iframe.src = SETTINGS[PROXY_URL_KEY] + url;
-  iframe.style = "width: 100%; min-height: 400px";
-  iframe.classList.add("its_ext_display_none");
+  iframe.classList.add("its_ext_display_none", "its_ext_iframe");
   item.descriptionElement.appendChild(iframe);
   item.frame = iframe;
 }
@@ -265,10 +270,16 @@ function onLoad() {
     .then((mupNameToNotionInfo) => {
       // console.log("mupNameToNotionInfo");
       // console.log(mupNameToNotionInfo);
-
+      if (!mupNameToNotionInfo) {
+        alert(
+          "Не получилось подготовить данные, проверьте настройки расширения Дисциплин по выбору"
+        );
+        return;
+      }
       return waitForMups(mupNameToNotionInfo);
     })
     .catch((err) => {
+      alert("При подготовке данных расширения произошла ошибка: " + err);
       console.error("Error: ", err);
     });
 }

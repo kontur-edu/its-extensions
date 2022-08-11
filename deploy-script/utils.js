@@ -13,7 +13,7 @@ function escapeRegExp(string) {
 }
 
 export async function prepareApiGatewaySpec(fname, params) {
-  console.log(`prepareApiGatewaySpec: ${fname} ${params}`);
+  console.log(`prepareApiGatewaySpec: ${fname} params: `, params);
   let data = await fs.promises.readFile(fname, "utf8");
 
   for (const key in params) {
@@ -92,6 +92,14 @@ export async function getFunctionId(fname) {
 export async function createFunction(fname) {
   console.log(`createFunction: ${fname}`);
   return execCommandAndGetField(`yc serverless function create ${fname}`, "id");
+}
+
+export async function makeFunctionPublick(fname) {
+  console.log(`makeFunctionPublick: ${fname}`);
+  return execCommandAndGetField(
+    `yc serverless function allow-unauthenticated-invoke ${fname}`,
+    ""
+  );
 }
 
 export async function getApiGateWayDomain(apiGatewayName) {

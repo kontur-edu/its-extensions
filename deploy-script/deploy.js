@@ -7,6 +7,7 @@ import {
   zipFiles,
   getFunctionId,
   createFunction,
+  makeFunctionPublick,
   getApiGateWayDomain,
   createApiGateway,
   updateApiGatewaySpec,
@@ -48,6 +49,7 @@ async function deploy() {
   if (!function_id) {
     console.log("function not found, creating...");
     function_id = await createFunction(functionName);
+    await makeFunctionPublick(functionName);
   }
 
   let domain = await getApiGateWayDomain(gatewayName);
@@ -56,13 +58,13 @@ async function deploy() {
     console.log("api-gateway not found, creating...");
     needSpecUpdate = true;
 
-    const tmpSpecFileName = await prepareApiGatewaySpec(
+    const { preparedSpecFilename, content } = await prepareApiGatewaySpec(
       apigatewaySpecFilename,
       { ...defaultParams, function_id: function_id, bucket_name: bucketName }
     );
 
-    domain = await createApiGateway(gatewayName, tmpSpecFileName);
-    await deleteFile(tmpSpecFileName);
+    domain = await createApiGateway(gatewayName, preparedSpecFilename);
+    await deleteFile(preparedSpecFilename);
   }
 
   const apiGatewayParams = {
@@ -106,9 +108,13 @@ async function deploy() {
   console.log("\n\nПодготовка завершена");
 }
 
-try {
-  deploy();
-} catch (err) {
-  console.log("\n\nВо время выполнения возникли ошибки:");
-  console.log(err);
+async function run() {
+  try {
+    await deploy();
+  } catch (err) {
+    console.log("\n\nВо время выполнения возникли ошибки:");
+    console.log(err);
+  }
 }
+
+run();

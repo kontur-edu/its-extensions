@@ -54,3 +54,8 @@
   flex-wrap: wrap;
   gap: 0.5em;
 }
+
+.its_ext_iframe {
+  width: 100%;
+  height: 600px;
+}

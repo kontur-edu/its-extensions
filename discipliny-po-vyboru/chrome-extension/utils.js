@@ -231,12 +231,12 @@ function parseCollectionData(notionData) {
     };
     if (blockValue.hasOwnProperty("properties")) {
       for (const propName in blockValue.properties) {
-        console.log("blockValue.properties");
-        console.log(blockValue.properties[propName]);
+        // console.log("blockValue.properties");
+        // console.log(blockValue.properties[propName]);
         const propValues = blockValue.properties[propName].flat(Infinity);
         const propValue = propValues.length > 0 ? propValues[0] : "";
-        console.log("propValue");
-        console.log(propValue);
+        // console.log("propValue");
+        // console.log(propValue);
         blockInfo.properties[propName] = propValue;
       }
       if (blockInfo.properties.hasOwnProperty("title")) {

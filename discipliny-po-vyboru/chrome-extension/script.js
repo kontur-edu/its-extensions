@@ -9,8 +9,6 @@ function timeout(ms) {
 }
 
 async function waitForMups(mupNameToNotionInfo) {
-  // console.warn("waitForMups: loop");
-
   const locations = getMupCardLocations();
   // console.log("locations");
   // console.log(locations);
@@ -273,7 +271,9 @@ function onLoad() {
       // console.log("mupNameToNotionInfo");
       // console.log(mupNameToNotionInfo);
       if (!mupNameToNotionInfo) {
-        alert("Не получилось подготовить данные, проверьте настройки расширения Дисциплин по выбору");
+        alert(
+          "Не получилось подготовить данные, проверьте настройки расширения Дисциплин по выбору"
+        );
         return;
       }
       return waitForMups(mupNameToNotionInfo);

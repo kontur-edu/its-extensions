@@ -9,7 +9,7 @@ function timeout(ms) {
 }
 
 async function waitForMups(mupNameToNotionInfo) {
-  console.warn("waitForMups: loop");
+  // console.warn("waitForMups: loop");
 
   const locations = getMupCardLocations();
   // console.log("locations");
@@ -272,10 +272,14 @@ function onLoad() {
     .then((mupNameToNotionInfo) => {
       // console.log("mupNameToNotionInfo");
       // console.log(mupNameToNotionInfo);
-
+      if (!mupNameToNotionInfo) {
+        alert("Не получилось подготовить данные, проверьте настройки расширения Дисциплин по выбору");
+        return;
+      }
       return waitForMups(mupNameToNotionInfo);
     })
     .catch((err) => {
+      alert("При подготовке данных расширения произошла ошибка: " + err);
       console.error("Error: ", err);
     });
 }

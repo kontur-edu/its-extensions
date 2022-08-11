@@ -179,7 +179,6 @@ async function prepareMupNameToNotionInfo(mainPage, proxyUrl) {
   if (collectionResp.status !== 200 || !collectionResp.data) {
     return null;
   }
-  // const pageItems = extractCollectionBlockData(collectionResp.data);
   const collectionData = parseCollectionData(collectionResp.data);
 
   const mupNameToInfo = createMupNameToInfo(collectionData, notionBase);
@@ -234,9 +233,8 @@ function parseCollectionData(notionData) {
       for (const propName in blockValue.properties) {
         console.log("blockValue.properties");
         console.log(blockValue.properties[propName]);
-        const propValue = blockValue.properties[propName]
-          .flat(Infinity)
-          .join("");
+        const propValues = blockValue.properties[propName].flat(Infinity);
+        const propValue = propValues.length > 0 ? propValues[0] : "";
         console.log("propValue");
         console.log(propValue);
         blockInfo.properties[propName] = propValue;

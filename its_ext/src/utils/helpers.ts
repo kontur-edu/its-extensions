@@ -9,6 +9,7 @@ import {
   ICompetitionGroup,
   ICompetitionGroupData,
 } from "../common/types";
+import { MAX_ASYNC_REQUEST_PER_BATCH } from "./constants";
 
 export function prepareSelectionGroupData(
   selectionGroups: ISelectionGroup[]
@@ -178,7 +179,7 @@ export function paginate(arr: Array<any>, size: number) {
 export async function createPromisesAndWaitAllPaginated<T>(
   arr: Array<T>,
   func: (v: T) => Promise<any>,
-  size: number = 10
+  size: number = MAX_ASYNC_REQUEST_PER_BATCH
 ) {
   // console.warn("createPromisesAndWaitAllPaginated");
   const pages = paginate(arr, size);

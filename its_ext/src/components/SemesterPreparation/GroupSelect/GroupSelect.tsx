@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SelectionList } from "../../SelectionList";
 import style from "./GroupSelect.module.css";
 import { IGroupSelectProps } from "./types";
@@ -27,6 +27,12 @@ export function GroupSelect(props: IGroupSelectProps) {
     props.onSelection(newIds);
     // }
   };
+
+  useEffect(() => {
+    return () => {
+      console.warn("GroupSelect UNMOUNTED");
+    }
+  }, []);
 
   return (
     <section className="step__container">

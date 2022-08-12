@@ -101,12 +101,12 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
   };
 
   const handleMupEditorLoaded = () => {
-    console.log("handleMupEditorLoaded");
+    console.warn("handleMupEditorLoaded");
     setMupEditorLoaded(true);
   };
 
   const handleCompetitionGroupPreparationLoaded = () => {
-    console.log("handleMupEditorLoaded");
+    console.warn("handleMupEditorLoaded");
     setCompetitionGroupLoaded(true);
   };
 

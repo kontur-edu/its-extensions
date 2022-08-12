@@ -343,6 +343,12 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
   };
 
   useEffect(() => {
+    return () => {
+      console.warn("SubgroupDistribution UNMOUNTED");
+    }
+  }, []);
+
+  useEffect(() => {
     ensureData()
       .then(() => {
         if (subgroupDiffInfo) {

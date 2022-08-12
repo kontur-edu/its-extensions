@@ -205,7 +205,13 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   };
 
   useEffect(() => {
-    refreshAdmissionInfo();
+    return () => {
+      console.warn("TaskResultInput UNMOUNTED");
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshAdmissionInfo().finally(() => props.onLoad());
   }, [props.competitionGroupIds]);
 
   useEffect(() => {
@@ -218,6 +224,13 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     Object.values(competitionGroupToAdmissionIds).forEach((aIds) =>
       admissionIds.push(...aIds)
     );
+
+    console.log("admissionIds");
+    console.log(admissionIds);
+    if (admissionIds.length === 0) {
+      setEnsureDataInProgress(false);
+      return;
+    }
 
     // for (const admissionId of admissionIds) {
     //   if (!repo.admissionInfo.hasOwnProperty(admissionId)) {
@@ -252,7 +265,11 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
         handleGenerateActionsDebounced(newStudentItems);
         setEnsureDataInProgress(false);
       })
-      .finally(() => props.onLoad());
+      // .finally(() => {
+      //   console.log("competitionGroupToAdmissionIds");
+      //   console.log(competitionGroupToAdmissionIds);
+      //   props.onLoad();
+      // });
   }, [competitionGroupToAdmissionIds]);
 
   const handleMupChange = (event: SelectChangeEvent) => {

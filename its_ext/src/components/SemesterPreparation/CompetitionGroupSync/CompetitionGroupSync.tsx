@@ -357,6 +357,12 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
   };
 
   useEffect(() => {
+    return () => {
+      console.warn("CompetitionGroupSync UNMOUNTED");
+    }
+  }, []);
+
+  useEffect(() => {
     if (props.selectionGroupIds.length !== 2) {
       return;
     }

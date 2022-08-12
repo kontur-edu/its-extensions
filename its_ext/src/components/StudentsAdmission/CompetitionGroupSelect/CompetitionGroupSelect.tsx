@@ -24,6 +24,12 @@ export function CompetitionGroupSelect(props: ICompetitionGroupSelectProps) {
     props.onSelectionValid(newIds);
   };
 
+  useEffect(() => {
+    return () => {
+      console.warn("CompetitionGroupSelect UNMOUNTED");
+    }
+  }, []);
+
   useEffect(() => {}, [props.competitionGroupsItems]);
 
   const renderRows = () => {

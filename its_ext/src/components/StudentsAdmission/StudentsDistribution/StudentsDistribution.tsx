@@ -225,6 +225,12 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   };
 
   useEffect(() => {
+    return () => {
+      console.warn("StudentDistribution UNMOUNTED");
+    }
+  }, []);
+
+  useEffect(() => {
     refreshData()
       .then(() => prepareItemsAndStudentMupDataText())
       .finally(() => props.onLoad());

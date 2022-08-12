@@ -343,15 +343,15 @@ export function MupEditor(props: IMupEditorProps) {
         currentEnsurePromise.current = null;
         setEnsureInProgress(false);
       })
-      .catch((err) => {
-        currentEnsurePromise.current = null;
-        setEnsureInProgress(false);
-        if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-          props.onUnauthorized();
-          return;
-        }
-        throw err;
-      });
+      // .catch((err) => {
+      //   currentEnsurePromise.current = null;
+      //   setEnsureInProgress(false);
+      //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+      //     props.onUnauthorized();
+      //     return;
+      //   }
+      //   throw err;
+      // });
     currentEnsurePromise.current = ensureDataPromise;
     return ensureDataPromise;
   };
@@ -640,14 +640,14 @@ export function MupEditor(props: IMupEditorProps) {
       .then(() => alert("Применение изменений завершено"))
       .then(() => handleRefresh()) // refresh
       .then(() => setExecutingActionsInProgress(false))
-      .catch((err) => {
-        setExecutingActionsInProgress(false);
-        if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-          props.onUnauthorized();
-          return;
-        }
-        throw err;
-      });
+      // .catch((err) => {
+      //   setExecutingActionsInProgress(false);
+      //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+      //     props.onUnauthorized();
+      //     return;
+      //   }
+      //   throw err;
+      // });
   };
 
   const handleApplyRealDebounced = () => {

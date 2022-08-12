@@ -76,14 +76,14 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
           });
         setCompetitionGroupItems(newCompetitionGroupItems);
       })
-      .catch((err) => {
-        competitionGroupRefreshInProgress.current = false;
-        if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-          props.onUnauthorized();
-          return;
-        }
-        throw err;
-      });
+      // .catch((err) => {
+      //   competitionGroupRefreshInProgress.current = false;
+      //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+      //     props.onUnauthorized();
+      //     return;
+      //   }
+      //   throw err;
+      // });
   };
 
   useEffect(() => {

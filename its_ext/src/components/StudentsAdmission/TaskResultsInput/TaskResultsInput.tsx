@@ -212,13 +212,13 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
 
   useEffect(() => {
     refreshAdmissionInfo()
-    .catch((err) =>{
-      setEnsureDataInProgress(false);
-      console.warn(`catch: ${err.message}`);
-      if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-        props.onUnauthorized();
-      }
-    })
+    // .catch((err) =>{
+    //   setEnsureDataInProgress(false);
+    //   console.warn(`catch: ${err.message}`);
+    //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+    //     props.onUnauthorized();
+    //   }
+    // })
     .finally(() => props.onLoad());
   }, [props.competitionGroupIds]);
 
@@ -272,13 +272,14 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
       .then((newStudentItems) => {
         handleGenerateActionsDebounced(newStudentItems);
         setEnsureDataInProgress(false);
-      }).catch((err) =>{
-        setEnsureDataInProgress(false);
-        console.warn(`catch: ${err.message}`);
-        if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-          props.onUnauthorized();
-        }
       })
+      // .catch((err) =>{
+      //   setEnsureDataInProgress(false);
+      //   console.warn(`catch: ${err.message}`);
+      //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+      //     props.onUnauthorized();
+      //   }
+      // })
       // .finally(() => {
       //   console.log("competitionGroupToAdmissionIds");
       //   console.log(competitionGroupToAdmissionIds);

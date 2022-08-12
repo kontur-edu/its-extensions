@@ -130,16 +130,16 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         currentEnsurePromise.current = null;
         setEnsureInProgress(false);
       })
-      .catch((err) => {
-        currentEnsurePromise.current = null;
-        setEnsureInProgress(false);
-        console.warn(`catch: ${err.message}`);
-        if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-          props.onUnauthorized();
-          return;
-        }
-        throw err;
-      });
+      // .catch((err) => {
+      //   currentEnsurePromise.current = null;
+      //   setEnsureInProgress(false);
+      //   console.warn(`catch: ${err.message}`);
+      //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+      //     props.onUnauthorized();
+      //     return;
+      //   }
+      //   throw err;
+      // });
   };
 
   const refreshData = () => ensureData(true);

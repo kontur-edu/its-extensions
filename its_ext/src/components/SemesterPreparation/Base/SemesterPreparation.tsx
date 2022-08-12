@@ -58,14 +58,14 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
             })
           );
         })
-        .catch((err) => {
-          requestSelectionGroupsInProgress.current = false;
-          if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-            props.onUnauthorized();
-            return;
-          }
-          throw err;
-        });
+        // .catch((err) => {
+        //   requestSelectionGroupsInProgress.current = false;
+        //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+        //     props.onUnauthorized();
+        //     return;
+        //   }
+        //   throw err;
+        // });
     }
   };
 

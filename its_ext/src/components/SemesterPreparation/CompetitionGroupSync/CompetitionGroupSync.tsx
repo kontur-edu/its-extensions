@@ -139,15 +139,15 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
         currentEnsurePromise.current = null;
         setEnsureInProgress(false);
       })
-      .catch((err) => {
-        currentEnsurePromise.current = null;
-        setEnsureInProgress(false);
-        if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-          props.onUnauthorized();
-          return;
-        }
-        throw err;
-      });
+      // .catch((err) => {
+      //   currentEnsurePromise.current = null;
+      //   setEnsureInProgress(false);
+      //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+      //     props.onUnauthorized();
+      //     return;
+      //   }
+      //   throw err;
+      // });
 
     currentEnsurePromise.current = ensurePromise;
     return ensurePromise;
@@ -510,13 +510,13 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
       .then((results) => setSyncActionResults(results))
       .then(() => alert("Применение изменений завершено"))
       .then(() => refreshDataDebounced())
-      .catch((err) => {
-        if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-          props.onUnauthorized();
-          return;
-        }
-        throw err;
-      })
+      // .catch((err) => {
+      //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+      //     props.onUnauthorized();
+      //     return;
+      //   }
+      //   throw err;
+      // })
       .finally(() => setSyncInProgress(false));
   };
 

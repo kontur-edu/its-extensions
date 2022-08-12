@@ -1,4 +1,5 @@
 import React from "react";
+// eslint-disable-next-line
 import style from "./CopyOrDownload.module.css";
 import { ICopyOrDownloadProps } from "./types";
 

@@ -6,30 +6,6 @@ import Input from "@mui/material/Input";
 import { MUP_PERIOD_URL } from "../../utils/constants";
 import { OuterLink } from "../OuterLink";
 import { CollapsableList } from "../CollapsableList";
-// import Tooltip from '@mui/material/Tooltip';
-// import Collapse from "@mui/material/Collapse";
-// interface ICollapsableListProps {
-//   title: string;
-//   haveItems: boolean;
-// }
-
-// function CollapsableList(
-//   props: React.PropsWithChildren<ICollapsableListProps>
-// ) {
-//   const [listOpen, setListOpen] = useState<boolean>(false);
-//   const handleListToggle = () => {
-//     setListOpen(!listOpen);
-//   };
-//   return (
-//     <ul onClick={handleListToggle} className={style.message__list + " warning"}>
-//       {!listOpen && props.haveItems && <li>{props.title}</li>}
-
-//       <Collapse in={listOpen} timeout="auto" unmountOnExit>
-//         {props.children}
-//       </Collapse>
-//     </ul>
-//   );
-// }
 
 export function MupsList(props: IMupsListProps) {
   const handleLimitChange =
@@ -43,9 +19,6 @@ export function MupsList(props: IMupsListProps) {
       props.onMupToggle(mupId);
     };
 
-  // console.log("MupsList props.mupUpdates");
-  // console.log(props.mupEdits);
-
   const compareMupIds = (lhsMupId: string, rhsMupId: string) => {
     const lhsName = props.mupData.data[lhsMupId]?.name ?? "";
     const rhsName = props.mupData.data[rhsMupId]?.name ?? "";
@@ -58,7 +31,8 @@ export function MupsList(props: IMupsListProps) {
       .map((mupId: string) => {
         const mup = props.mupData.data[mupId];
         if (!mup) {
-          console.log(`Not found mup for [${mupId}]`);
+          console.warn(`MupsList: mup not founf for id: [${mupId}]`);
+          return null;
         }
         const mupEdit = props.mupEdits[mupId];
         const haveMessages =
@@ -67,9 +41,7 @@ export function MupsList(props: IMupsListProps) {
           <tr key={mupId}>
             <td onClick={handleToggle(mup.id)}>
               <Checkbox readOnly checked={mupEdit.selected} />
-              {/* <Tooltip title={mup.name} placement="top"> */}
               <span>{mup.name}</span>
-              {/* </Tooltip> */}
             </td>
             <td>
               <Input
@@ -95,29 +67,6 @@ export function MupsList(props: IMupsListProps) {
                   </li>
                 )}
               </CollapsableList>
-              {/* <ul className={style.message__list + " warning"}> */}
-              {/* <li
-              <Collapse in={actionListOpen} timeout="auto" unmountOnExit>
-                  {mupEdit.messages.filter((v, i) => i > 0).map((me, index) => (
-                  <li key={index}>{me}</li>
-                ))}
-                {!mupEdit.addLoadsManual ? null : (
-                  <li>
-                    Заполните нагрузку{" "}
-                    <OuterLink url={MUP_PERIOD_URL + mupId} title="в ИТС" />
-                  </li>
-                )}
-              </Collapse> */}
-              {/* {mupEdit.messages.map((me, index) => (
-                  <li key={index}>{me}</li>
-                ))}
-                {!mupEdit.addLoadsManual ? null : (
-                  <li>
-                    Заполните нагрузку{" "}
-                    <OuterLink url={MUP_PERIOD_URL + mupId} title="в ИТС" />
-                  </li>
-                )} */}
-              {/* </ul> */}
             </td>
           </tr>
         );
@@ -134,7 +83,6 @@ export function MupsList(props: IMupsListProps) {
         </colgroup>
         <thead>
           <tr>
-            {/* <th></th> */}
             <th>МУП</th>
             <th>Количество студентов</th>
             <th>Действия</th>

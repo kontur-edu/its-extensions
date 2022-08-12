@@ -16,7 +16,6 @@ function compareByRating(lhs: IStudent, rhs: IStudent) {
 }
 
 export interface IStudentAdmissionDistributionItem {
-  // admissions: IStudentAdmission[];
   currentZ: number;
   admissionIds: number[];
   selectedAdmissionIds: number[];
@@ -27,7 +26,6 @@ export interface IMupDistributionItem {
   limit: number;
   count: number;
   valid?: boolean;
-  // testResultRequired: boolean;
 }
 
 export interface IDistributionResult {
@@ -109,8 +107,6 @@ export function createMupIdToMupItemByStudentItems(
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions,
   admissionIdToMupId: { [key: number]: string }
 ): { [key: string]: IMupDistributionItem } {
-  // console.log("competitionGroupIdToMupAdmissions");
-  // console.log(competitionGroupIdToMupAdmissions);
   const mupIdToMupItem: { [key: string]: IMupDistributionItem } = {};
   for (const competitionId of competitionGroupIds) {
     const mupIdToAdmission = competitionGroupIdToMupAdmissions[competitionId];
@@ -126,7 +122,6 @@ export function createMupIdToMupItemByStudentItems(
       } else {
         if (mupIdToMupItem[mupId].limit !== admission.limit) {
           mupIdToMupItem[mupId].valid = false;
-          // throw new Error(`Mup limit not equal (${mupIdToMupItem[mupId].limit} ${admission.limit})`);
         }
       }
     }
@@ -182,10 +177,6 @@ export function tryDistributeMupsByStudentRatingAndAdmissionPriority(
   admissionIdToMupId: { [key: number]: string },
   admissionInfo: AdmissionInfo
 ) {
-  console.log(
-    `tryDistributeMupsByStudentRatingAndAdmissionPriority: personalNumberToStudentItem`
-  );
-  console.log(personalNumberToStudentItem);
   for (const personalNumber of personalNumbersSortedByRating) {
     const sItem = personalNumberToStudentItem[personalNumber];
     const zeLimit = competitionGroupIdToZELimit[sItem.competitionGroupId];
@@ -231,9 +222,6 @@ export function addRandomMupsForStudentIfNeeded(
   mupData: IMupData,
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions
 ) {
-  console.log("addRandomMupsForStudentIfNeeded");
-  // console.log("mupIdToMupItem");
-  // console.log(mupIdToMupItem);
   for (const personalNumber of personalNumbersOfActiveStudentsSortedByRating) {
     const sItem = personalNumberToStudentItem[personalNumber];
     const zeLimit = competitionGroupIdToZELimit[sItem.competitionGroupId];
@@ -255,7 +243,7 @@ export function addRandomMupsForStudentIfNeeded(
           }
         }
         if (mupIsSelected) {
-          console.log(`MupID is selected: ${mupId}`);
+          // console.log(`MupID is selected: ${mupId}`);
           continue;
         }
 
@@ -375,7 +363,7 @@ export function createStudentsDistributionData(
 
   for (const admissionId of availableAdmissionIds) {
     const mupId = admissionIdToMupId[admissionId];
-    result.mupIdToMupName[mupId] = mupData.data[mupId].shortName; // FIXME: use short name
+    result.mupIdToMupName[mupId] = mupData.data[mupId].shortName;
   }
   return result;
 }
@@ -397,9 +385,6 @@ export function prepareStudentAndMupItems(
     [key: string]: IMupDistributionItem;
   };
 } {
-  console.log("prepareStudentAndMupItems");
-  // console.log("studentPersonalNumberToMupIds");
-  // console.log(studentPersonalNumberToMupIds);
   const personalNumberToStudentItems = createPersonalNumberToStudentItem(
     competitionGroupIds,
     competitionGroupIdToMupAdmissions,

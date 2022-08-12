@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import style from "./ApplyButtonWithActionDisplay.module.css";
 import { IApplyButtonWithActionDisplayProps } from "./types";
 import {
@@ -49,7 +49,6 @@ export function ApplyButtonWithActionDisplay(
   const [actionListOpen, setActionListOpen] = useState<boolean>(false);
   const [actionResultsListOpen, setActionResultsListOpen] =
     useState<boolean>(false);
-  // const wasApply = useRef<boolean>(false);
   const [wasApply, setWasApply] = useState<boolean>(false);
 
   useEffect(() => {
@@ -67,7 +66,6 @@ export function ApplyButtonWithActionDisplay(
   };
 
   const renderActionList = () => {
-    // style={{alignSelf: 'flex-start'}}
     return (
       <React.Fragment>
         <Button onClick={handleActionListOpen}>
@@ -123,14 +121,6 @@ export function ApplyButtonWithActionDisplay(
       <NextStepButton onClick={props.onNextStep}>
         К следующему шагу
       </NextStepButton>
-      // <Button
-      //   onClick={props.onNextStep}
-      //   variant="contained"
-      //   style={{ marginRight: "1em" }}
-      //   endIcon={<SystemUpdateAltIcon />}
-      // >
-      //   К следующему шагу
-      // </Button>
     );
 
     let successMessage: JSX.Element | null = null;
@@ -211,7 +201,8 @@ export function ApplyButtonWithActionDisplay(
     <div className={style.container}>
       {props.actions && props.actions.length > 0 && renderActionList()}
       {renderButtons()}
-      {wasApply && props.actionResults &&
+      {wasApply &&
+        props.actionResults &&
         props.actionResults.length > 0 &&
         renderActionResultsList()}
       {props.loading && <div className="progress_screen"></div>}

@@ -1,13 +1,10 @@
 import { ITSAction } from "../common/actions";
 import {
-  AdmissionInfo,
   ICompetitionGroupToSubgroupIds,
   ICompetitionGroupToSubgroupMetas,
   IMupData,
-  IStudentData,
   ISubgroupData,
   ISubgroupInfo,
-  ISubgroupMeta,
 } from "../common/types";
 import {
   createSubgroupReferenceInfoFromCompetitionGroup,
@@ -28,10 +25,6 @@ function generateUpdateSubgroupCountToDefaultActions(
   competitionGroupToSubgroupMetas: ICompetitionGroupToSubgroupMetas
 ): ITSAction[] {
   const actions: ITSAction[] = [];
-  // console.log("competitionGroupToSubgroupMetas");
-  // console.log(competitionGroupToSubgroupMetas);
-  // console.log("selectedMupNamesSet");
-  // console.log(Array.from(selectedMupNamesSet));
   if (!competitionGroupToSubgroupMetas.hasOwnProperty(competitionGroupId)) {
     console.warn(
       `Competition group ${competitionGroupId} not found in competitionGroupToSubgroupMetas`
@@ -69,13 +62,6 @@ function checkSubgroupsCreated(
   competitionGroupToSubgroupIds: ICompetitionGroupToSubgroupIds,
   subgroupData: ISubgroupData
 ) {
-  // console.log("competitionGroupToSubgroupMetas");
-  // console.log(competitionGroupToSubgroupMetas);
-  // console.log("competitionGroupToSubgroupIds");
-  // console.log(competitionGroupToSubgroupIds);
-  // console.log("subgroupData");
-  // console.log(subgroupData);
-
   const mupNameToLoadToPresent: {
     [key: string]: {
       [key: string]: boolean[];
@@ -95,9 +81,6 @@ function checkSubgroupsCreated(
     }
   }
 
-  // console.log("mupNameToLoadToPresent: before");
-  // console.log(mupNameToLoadToPresent);
-
   for (const subgroupId of competitionGroupToSubgroupIds[competitionGroupId]) {
     if (!subgroupData.data.hasOwnProperty(subgroupId)) continue;
     const subgroup = subgroupData.data[subgroupId];
@@ -112,9 +95,6 @@ function checkSubgroupsCreated(
       loadToPresent[subgroup.load][num] = true;
     }
   }
-
-  // console.log("mupNameToLoadToPresent: after");
-  // console.log(mupNameToLoadToPresent);
 
   for (const mupName in mupNameToLoadToPresent) {
     for (const load in mupNameToLoadToPresent[mupName]) {
@@ -155,7 +135,6 @@ export function generateRefreshSubgroupsActions(competitionGroupId: number) {
   return [new RefreshSubgroupsAction([competitionGroupId])];
 }
 
-
 export function generateUpdateTeacherActions(
   competitionGroupId: number,
   mupNameToMupId: { [key: string]: string },
@@ -163,20 +142,12 @@ export function generateUpdateTeacherActions(
   mupData: IMupData,
   competitionGroupToSubgroupMetas: ICompetitionGroupToSubgroupMetas
 ): ITSAction[] {
-  // console.log("mupNameToMupId");
-  // console.log(mupNameToMupId);
   const actions: ITSAction[] = [];
 
   const subgroupMetas = competitionGroupToSubgroupMetas[competitionGroupId];
 
-  // console.log("subgroupReferenceInfo");
-  // console.log(subgroupReferenceInfo);
-
   for (const meta of subgroupMetas) {
     if (!mupNameToMupId.hasOwnProperty(meta.discipline)) {
-      // console.warn(
-      //   `Mup name ${meta.discipline} not found in mupNameToMupId`
-      // );
       continue;
     }
     const currentTeacherIds = subgroupReferenceInfo[meta.discipline][
@@ -255,12 +226,6 @@ export function createPrepareSubgroupsActions(
     );
   }
 
-  // const mupNameToLoadToTeachers = findTeacherIds(
-  //   mupNameToMupId,
-  //   competitionGroupToSubgroupMetas[competitionGroupId],
-  //   competitionGroupToSubgroupIds[competitionGroupId],
-  //   subgroupData
-  // );
   const subgroupReferenceInfo = createSubgroupReferenceInfoFromCompetitionGroup(
     mupNameToMupId,
     competitionGroupToSubgroupMetas[competitionGroupId],

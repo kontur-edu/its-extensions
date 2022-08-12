@@ -4,17 +4,8 @@ import {
   ISubgroupMeta,
   IStudentData,
   IMupData,
-  SubgroupDiffs,
   IStudentSubgroupMembership,
 } from "../common/types";
-
-// {
-// 	"Моделирование динамических процессов: дифференциальные уравнения, анализ и приложения": {
-// 		"практические занятия": [
-// 			["123123"]
-// 		]
-// 	}
-// }
 
 export function parseSubgroupMembershipFromText(
   text: string
@@ -285,8 +276,6 @@ function prepareMupToLoadToSubgroupMembership(
     for (const competitionGroupId of competitionGroupIds) {
       for (const load in cgIdToMeta[competitionGroupId]) {
         const meta = cgIdToMeta[competitionGroupId][load];
-        // console.log("meta");
-        // console.log(meta);
         if (res[mupName].hasOwnProperty(load)) {
           if (res[mupName][load].length !== meta.count) {
             throw Error(
@@ -306,10 +295,6 @@ function prepareMupToLoadToSubgroupMembership(
   return res;
 }
 
-// function getIncludedStudentPersonalNumbers() {
-
-// }
-
 export function createMupToLoadToSubgroupMembership(
   mupNames: string[],
   competitionGroupIds: number[],
@@ -319,8 +304,6 @@ export function createMupToLoadToSubgroupMembership(
   },
   studentIdToPersonalNumber: { [key: string]: string } = {}
 ): MupToLoadToSubgroupMembership {
-  // console.log("mupNames");
-  // console.log(mupNames);
   const res = prepareMupToLoadToSubgroupMembership(
     mupNames,
     competitionGroupIds,

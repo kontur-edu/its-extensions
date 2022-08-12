@@ -12,7 +12,6 @@ import { ITSContext } from "../../../common/Context";
 import {
   COMPETITION_GROUP_SUBGROUP_URL,
   DEBOUNCE_MS,
-  REQUEST_ERROR_UNAUTHORIZED,
 } from "../../../utils/constants";
 import { createDebouncedWrapper } from "../../../utils/helpers";
 
@@ -126,12 +125,11 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
       substitutedMupToLoadToSubgroupMembership,
       subgroupDiffInfo,
       context.dataRepository.studentData
-      // context.dataRepository.mupData
     );
 
     setSubgroupDistributionTextInputMessages(messages);
-    console.log("validateStudentAdmissions");
-    console.log({ success, messages });
+    // console.log("validateStudentAdmissions");
+    // console.log({ success, messages });
 
     if (success) {
       setMupToLoadToSubgroupMembership(
@@ -267,9 +265,6 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
       context.dataRepository.subgroupData
     );
 
-    console.log("prepareData newSubgroupDiffInfo");
-    console.log(newSubgroupDiffInfo);
-
     setSubgroupDiffInfo(newSubgroupDiffInfo);
 
     const studentAndMupItems = prepareStudentAndMupItems(
@@ -280,9 +275,6 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
       context.dataRepository.admissionIdToMupId,
       context.dataRepository.studentData
     );
-
-    // console.log("studentAndMupItems");
-    // console.log(studentAndMupItems);
 
     const availableAdmissionIds = getAvailableAdmissionIds(
       props.competitionGroupIds,
@@ -317,8 +309,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
         context.dataRepository.subgroupIdToStudentSubgroupMembership,
         context.dataRepository.studentIdToPersonalNumber
       );
-      // console.log("mupToLoadToSubgroupMembership");
-      // console.log(mupToLoadToSubgroupMembership);
+
       const newSubgroupDistributionTextOutput = JSON.stringify(
         mupToLoadToSubgroupMembership,
         null,
@@ -345,7 +336,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
 
   useEffect(() => {
     return () => {
-      console.warn("SubgroupDistribution UNMOUNTED");
+      // console.warn("SubgroupDistribution UNMOUNTED");
     };
   }, []);
 
@@ -360,6 +351,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
       .then((newSubgroupDiffInfo) => {
         generateActionsForOneGroupPerLoadDistribution(newSubgroupDiffInfo);
       });
+    // eslint-disable-next-line
   }, [props.competitionGroupIds]);
 
   const generateActionsForOneGroupPerLoadDistribution = (
@@ -388,9 +380,9 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     newMupToLoadToSubgroupMembership: MupToLoadToSubgroupMembership,
     newSubgroupDiffInfo: ISubgoupDiffInfo
   ) => {
-    console.log("generateActionsForSubgroupDistribution");
+    // console.log("generateActionsForSubgroupDistribution");
     if (!newSubgroupDiffInfo) {
-      console.log(`subgroupDiffInfo is null`);
+      // console.log(`subgroupDiffInfo is null`);
       return;
     }
 
@@ -434,8 +426,6 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
       alert(`Настоящее применение изменений`);
       setFirstApplyClicked(false);
       setSecondApplyClicked(true);
-      // alert(`Safe mode`);
-      // return;
       executeActions(subgroupDistributionActions, context)
         .then((actionResults) => {
           setSubgroupDistributionActionResults(actionResults);
@@ -465,8 +455,6 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
       alert(`Настоящее применение изменений`);
       setFirstApplyClicked(true);
       setSecondApplyClicked(false);
-      // alert(`Safe mode`);
-      // return;
       executeActions(subgroupDistributionForOneGroupPerLoadActions, context)
         .then((actionResults) => {
           setSubgroupDistributionActionForOneGroupPerLoadResults(actionResults);

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+// eslint-disable-next-line
 import style from "./CompetitionGroupSelect.module.css";
 import { ICompetitionGroupSelectProps } from "./types";
 import Checkbox from "@mui/material/Checkbox";
@@ -26,8 +27,8 @@ export function CompetitionGroupSelect(props: ICompetitionGroupSelectProps) {
 
   useEffect(() => {
     return () => {
-      console.warn("CompetitionGroupSelect UNMOUNTED");
-    }
+      // console.warn("CompetitionGroupSelect UNMOUNTED");
+    };
   }, []);
 
   useEffect(() => {}, [props.competitionGroupsItems]);
@@ -57,7 +58,10 @@ export function CompetitionGroupSelect(props: ICompetitionGroupSelectProps) {
   return (
     <section className="step__container">
       <article>
-        <RefreshButton onClick={handleRefreshCompetitionGroups} title="Обновить список"/>
+        <RefreshButton
+          onClick={handleRefreshCompetitionGroups}
+          title="Обновить список"
+        />
         <section className="table__container">
           <table className="table">
             <thead>

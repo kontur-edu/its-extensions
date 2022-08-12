@@ -98,7 +98,7 @@ export class ITSRepository {
     const selectionGroupIdToSelectionGroupMups: {
       [key: number]: ISelectionGroupMupData;
     } = {};
-    
+
     const responses = await createPromisesAndWaitAllPaginated(
       selectionGroupIds,
       (selectionGroupId) => this.api.GetSelectionGroupMups(selectionGroupId)
@@ -148,7 +148,6 @@ export class ITSRepository {
     }
     console.log("/ UpdatePeriods");
   }
-
 
   async EnsurePeriodInfoFor(mupId: string) {
     console.log(`ITSRepository: EnsurePeriodInfoFor ${mupId}`);

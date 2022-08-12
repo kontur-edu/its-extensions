@@ -65,8 +65,6 @@ export function getSurnameToKeys(
 ): { [key: string]: string[] } {
   const res: { [key: string]: string[] } = {};
   for (const personalNumber of personalNumbers) {
-    // console.log("personalNumber");
-    // console.log(personalNumber);
     const student = studentData.data[personalNumber];
     const surnameLower = student.surname.toLowerCase();
     if (!res.hasOwnProperty(surnameLower)) {

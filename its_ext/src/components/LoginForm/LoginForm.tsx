@@ -4,7 +4,6 @@ import style from "./LoginForm.module.css";
 import { ILoginFormProps } from "./types";
 
 import TextField from "@mui/material/TextField";
-import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 
 export function LoginForm(props: ILoginFormProps) {

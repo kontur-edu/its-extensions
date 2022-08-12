@@ -73,7 +73,7 @@ export class RequestService {
         this.onConnectionRefused?.();
         // throw new Error(REQUEST_ERROR_CONNECTION_REFUSED);
       }
-      console.warn(`fetchWithRetry: retry ${currentTry}`);
+      // console.warn(`fetchWithRetry: retry ${currentTry}`);
     }
     return response;
   }
@@ -133,12 +133,7 @@ export class RequestService {
     const jsonBody = await this.SendRequest(urlWithProxy, optionsLoginPage);
 
     const pageString = jsonBody["data"];
-    // console.log("pageString");
-    // console.log(pageString);
     const tokens: string[] = findCsrfTokens(pageString);
-    // console.log("tokens");
-    // console.log(tokens);
-    // console.log(`tokens found: ${tokens.length}`);
     if (tokens.length === 0) {
       alert(
         `ERROR::RequestService::Authenticate: Incorrect count of CSRF tokens found ${tokens.length}`
@@ -156,7 +151,6 @@ export class RequestService {
 
     const headers = {
       "Content-Type": "application/x-www-form-urlencoded",
-      // "x-origin": "https://its.urfu.ru/Account/Login",
       Accept: "*/*",
       "x-redirect": "manual",
     };
@@ -167,7 +161,7 @@ export class RequestService {
       body: formData,
       credentials: "include",
       withCredentials: true,
-      redirect: "manual", // not worked
+      redirect: "manual",
     };
 
     // submit form
@@ -208,20 +202,16 @@ export class RequestService {
       this.onConnectionRefused?.();
       return { success: false };
     }
-    console.log("resp");
-    console.log(resp);
+    // console.log("resp");
+    // console.log(resp);
     let body = null;
     try {
       body = await resp.json();
     } catch (err) {
       return { success: false };
     }
-    console.log("body");
-    console.log(body);
-    // if (body) {
-    //   return { success: true, data: body };
-    // }
-
+    // console.log("body");
+    // console.log(body);
     return { success: true, data: body };
   }
 
@@ -267,8 +257,8 @@ export class RequestService {
     } catch (err) {
       return false;
     }
-    console.log("bodyPost");
-    console.log(bodyPost);
+    // console.log("bodyPost");
+    // console.log(bodyPost);
     if (!bodyPost.hasOwnProperty("location")) {
       return false;
     }
@@ -291,7 +281,7 @@ export class RequestService {
   }
 
   async GetJson(url: string): Promise<any> {
-    console.log(`GetJson ${url}`);
+    // console.log(`GetJson ${url}`);
 
     const urlWithProxy = `${this.proxyUrl}/${url}`;
     const headers = {
@@ -321,13 +311,12 @@ export class RequestService {
   }
 
   async PostFormData(url: string, data: FormBodyObj) {
-    console.log(`PostFormData: ${url}`);
+    // console.log(`PostFormData: ${url}`);
 
     const urlWithProxy = `${this.proxyUrl}/${url}`;
     const headers = {
       "Content-Type": "application/x-www-form-urlencoded",
       "x-redirect": "manual",
-      // "X-KL-Ajax-Request": "Ajax_Request",
       Accept: "*/*",
     };
     const formData = RequestService.formatFormData(data);
@@ -341,13 +330,13 @@ export class RequestService {
     };
 
     let result = await this.SendRequest(urlWithProxy, options, data);
-    console.log(`Result`);
-    console.log(result);
+    // console.log(`Result`);
+    // console.log(result);
     return result;
   }
 
   async SendJson(url: string, data: any, method: string = "POST") {
-    console.log(`SendJson: ${url}`);
+    // console.log(`SendJson: ${url}`);
 
     const urlWithProxy = `${this.proxyUrl}/${url}`;
     const headers = {

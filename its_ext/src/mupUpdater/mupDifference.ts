@@ -71,7 +71,6 @@ function checkIfNeedChangeDates(
 
 function checkIfCanBeDeleted(
   courseToCurrentPeriod: { [key: number]: IPeriod }
-  // dates: [string, string]
 ): boolean {
   let canBeDeleted = true;
 
@@ -137,7 +136,7 @@ function checkIfNeedUpdateModules(
 ) {
   const ze = mupData.data[mupId].ze;
   if (!zeToModuleSelections.hasOwnProperty(ze)) {
-    console.log(`ze: ${ze} not found in zeToModuleSelections`);
+    // console.log(`ze: ${ze} not found in zeToModuleSelections`);
     return selectionGroupIds.map(() => false);
   }
   const referenceModuleDisciplines = zeToModuleSelections[ze];
@@ -238,7 +237,6 @@ export function createDiffForMup(
 
   const mupDiff: IMupDiff = {
     presentInGroups: presentInGroups,
-    // addLoadsManual: loads.length === 0,
     someLoads: loads,
     courseToCurrentPeriod: courseToCurrentPeriod,
     changeDates: needToChangeDates,
@@ -269,6 +267,6 @@ export function updateMupDiffDateInfo(
       }
     }
   }
-  console.log(needToChangeDates ? "CHANGE DATE" : "NOT CHANGE DATE");
+  // console.log(needToChangeDates ? "CHANGE DATE" : "NOT CHANGE DATE");
   mupDiff.changeDates = needToChangeDates;
 }

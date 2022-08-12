@@ -1,4 +1,3 @@
-import React from "react";
 import {
   IMupData,
   AdmissionInfo,
@@ -103,11 +102,6 @@ describe("fillDistributionByStudentRatingAndAdmissionPriority", () => {
       admissionIdToMupId,
       admissionInfo
     );
-    // console.log(Array.from(mupIdsWithTestResultRequired));
-    // console.log(admissionInfo);
-    // console.log(admissionIdToMupId);
-    // console.log(personalNumberToStudentItem);
-    // console.log(mupIdToMupItem);
 
     expect(personalNumberToStudentItem["s1"].currentZ).toBe(9);
     expect(personalNumberToStudentItem["s2"].currentZ).toBe(9);
@@ -266,7 +260,7 @@ describe("addRandomMupsForStudentIfNeeded", () => {
       competitionGroupIdToMupAdmissions
     );
 
-    console.log(personalNumberToStudentItem);
+    // console.log(personalNumberToStudentItem);
 
     expect(personalNumberToStudentItem["s1"].currentZ).toBe(6);
     expect(

@@ -122,10 +122,9 @@ export class ITSApiService {
   }
 
   async GetPeriods(mupId: string): Promise<IPeriod[]> {
+    console.log(`GetPeriods: ${mupId}`);
     const url = `https://its.urfu.ru/MUP/Periods/${mupId}?page=1&start=0&limit=${LIMIT_PER_PAGE}`;
     const res = await this.requestService.GetJson(url);
-    console.log("GetPeriods");
-    console.log(res);
     return res.map((obj: any) => {
       const loads: IMupLoad[] = obj["Tmers"].map((tmer: any) => {
         return {
@@ -173,7 +172,7 @@ export class ITSApiService {
       MUPItsIds: mupIds,
     };
     console.log("UpdateSelectionGroups");
-    console.log(data);
+    // console.log(data);
     const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
 
@@ -323,9 +322,9 @@ export class ITSApiService {
   }
 
   async GetSubgroups(competitionGroupId: number): Promise<ISubgroup[]> {
+    console.log(`GetSubgroups: ${competitionGroupId}`);
     const url = `https://its.urfu.ru/MUPItsSubgroup?competitionGroupId=${competitionGroupId}&page=1&start=0&limit=${LIMIT_PER_PAGE}`;
     const res = await this.requestService.GetJson(url);
-    console.log(res);
     return res.map((obj: any) => {
       const subgroup: ISubgroup = {
         id: obj["Id"],
@@ -344,6 +343,7 @@ export class ITSApiService {
   }
 
   async UpdateSubgroup(subgroup: ISubgroup): Promise<IActionResponse> {
+    console.log(`UpdateSubgroup: ${subgroup.id}`);
     const url = "https://its.urfu.ru/MUPItsSubgroup/Edit";
 
     const data = {
@@ -360,6 +360,7 @@ export class ITSApiService {
   }
 
   async DeleteSubgroup(subgroupIds: number[]): Promise<IActionResponse> {
+    console.log(`DeleteSubgroup: ${subgroupIds}`);
     const url = "https://its.urfu.ru/MUPItsSubgroup/Delete";
     const data = JSON.stringify(subgroupIds);
 
@@ -374,6 +375,7 @@ export class ITSApiService {
   }
 
   async CreateSubgroups(competitionGroupId: number): Promise<IActionResponse> {
+    console.log(`CreateSubgroups: ${competitionGroupId}`);
     const url = `https://its.urfu.ru/MUPItsSubgroup/Create?competitionGroupId=${competitionGroupId}`;
 
     const response = await this.requestService.GetJson(url);
@@ -383,9 +385,9 @@ export class ITSApiService {
   }
 
   async GetCompetitionGroups(): Promise<ICompetitionGroup[]> {
+    console.log(`GetCompetitionGroups`);
     const url = `https://its.urfu.ru/MUPItsCompetitionGroups?page=1&start=0&limit=${LIMIT_PER_PAGE}`;
     const res = await this.requestService.GetJson(url);
-    console.log(res);
     return res.map((obj: any) => {
       const competitionGroup: ICompetitionGroup = {
         id: obj["Id"],
@@ -405,6 +407,7 @@ export class ITSApiService {
   async GetStudentAdmissionMetas(
     competitionGroupId: number
   ): Promise<IAdmissionMeta[]> {
+    console.log(`GetStudentAdmissionMetas: ${competitionGroupId}`);
     const url = `https://its.urfu.ru/MUPItsAdmission/Index/${competitionGroupId}?page=1&start=0&limit=${LIMIT_PER_PAGE}`;
     const res = await this.requestService.GetJson(url);
     return res.map((obj: any) => {
@@ -421,6 +424,7 @@ export class ITSApiService {
   async GetStudentsForAdmission(
     admissionId: number
   ): Promise<IStudentAdmissionRaw[]> {
+    console.log(`GetStudentsForAdmission: ${admissionId}`);
     const url = `https://its.urfu.ru/MUPItsAdmission/Students/${admissionId}?page=1&start=0&limit=${LIMIT_PER_PAGE}`;
     const res = await this.requestService.GetJson(url);
     return res.map((obj: any) => {
@@ -446,6 +450,7 @@ export class ITSApiService {
     admissionId: number,
     testResult: number
   ) {
+    console.log(`UpdateStudentTestResults: ${studentId}, ${admissionId}, ${testResult}`);
     const url = "https://its.urfu.ru/MUPItsAdmission/EditTestResults";
 
     const data = {
@@ -463,6 +468,7 @@ export class ITSApiService {
     admissionId: number,
     status: number
   ) {
+    console.log(`UpdateStudentAdmissionStatus: ${studentId}, ${admissionId}, ${status}`);
     const url =
       "https://its.urfu.ru/MUPItsAdmission/SetCompetitionGroupAdmissionStatus";
 
@@ -479,6 +485,7 @@ export class ITSApiService {
   async GetSubgroupMembershipInfo(
     subgroupId: number
   ): Promise<IStudentSubgroupMembership[]> {
+    console.log(`GetSubgroupMembershipInfo: ${subgroupId}`);
     const url = `https://its.urfu.ru/MUPItsSubgroup/Students?id=${subgroupId}&page=1&start=0&limit=${LIMIT_PER_PAGE}`;
     const res = await this.requestService.GetJson(url);
 
@@ -496,6 +503,7 @@ export class ITSApiService {
     studentId: string,
     included: boolean
   ) {
+    console.log(`UpdateStudentSubgroupMembership: ${subgroupId}, ${studentId}, ${included}`);
     const url = "https://its.urfu.ru/MUPItsSubgroup/StudentMembership";
 
     const data = {
@@ -511,6 +519,7 @@ export class ITSApiService {
   async GetSelectionGroupMupModules(
     connectionId: number
   ): Promise<IModuleWithSelection[]> {
+    console.log(`GetSelectionGroupMupModules: ${connectionId}`);
     const url = `https://its.urfu.ru/EduSpace/ModulesForMUP?id=${connectionId}&page=1&start=0&limit=${LIMIT_PER_PAGE}`;
     const res = await this.requestService.GetJson(url);
     return res.map((obj: any) => {
@@ -536,6 +545,7 @@ export class ITSApiService {
     connectionId: number,
     moduleSelections: IModuleSelection[]
   ) {
+    console.log(`UpdateSelectionGroupMupModules: ${connectionId}, moduleSelections: `, moduleSelections);
     const url = "https://its.urfu.ru/EduSpace/UpdateDisciplineConnection";
 
     const moduleDisciplines = moduleSelections.map((ms) => {

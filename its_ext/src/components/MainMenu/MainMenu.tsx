@@ -32,9 +32,10 @@ export function MainMenuButton(
 export function MainMenu(props: IMainMenuProps) {
   const navigate = useNavigate();
 
-  const handleStudent = () => {
-    navigate("/student");
-  };
+  // TODO: deside if it is needed
+  // const handleStudent = () => {
+  //   navigate("/student");
+  // };
   const handleSemesterPreparation = () => {
     navigate("/semesterPreparation");
   };
@@ -45,6 +46,7 @@ export function MainMenu(props: IMainMenuProps) {
     <section className={style.menu}>
       <h2 className={style.menu__header}>Индивидуальная траектория студента</h2>
       <div className={style.menu__container}>
+        {/* TODO: deside if it is needed */}
         {/* <MainMenuButton onClick={handleStudent}>Студент</MainMenuButton> */}
         <MainMenuButton onClick={handleSemesterPreparation}>
           Подготовка семестра

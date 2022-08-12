@@ -54,8 +54,6 @@ export async function executeActions(
     } catch(err) {
       actionResults.push({success: false, message: err as string})
     }
-    // console.log("actionResults");
-    // console.log(actionResults);
     const actionExecutionLogItem: IActionExecutionLogItem = {
       actionMessage: action.getMessage(),
       actionResults: [],

@@ -9,10 +9,7 @@ import {
   IModuleSelection,
 } from "../../../common/types";
 
-import {
-  DEBOUNCE_MS,
-  REQUEST_ERROR_UNAUTHORIZED,
-} from "../../../utils/constants";
+import { DEBOUNCE_MS } from "../../../utils/constants";
 
 import {
   createDiffForMup,
@@ -37,35 +34,9 @@ import { IActionExecutionLogItem } from "../../../common/actions";
 
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 
-// import Button from "@mui/material/Button";
-// import RefreshIcon from "@mui/icons-material/Refresh";
 import { RefreshButton } from "../../RefreshButton";
 import CircularProgress from "@mui/material/CircularProgress";
-// Получение данных:
-// Запросить все Группы выбора
-// Запросить МУПы с Лимитами для выбранных Групп выбора
-// Найти объединение выбранных МУПов из Групп выбора
-// Запросить все Периоды для МУПов из объединения
-// Отобрать периоды с годом и типом семестра (весна/осень) таким же как и в первой из выбранных групп выбора (для определения дат)
-// Понадобится любой период с заполненными нагрузками, чтобы скопировать нагрузки
-// Вставить дату из первого попавшегося периода
-// Определить МУПы с пустыми нагрузками (Tmers)
-// Определить какие МУПы есть только в одной из групп
-// Определить какие МУПы не имеют подходящего периода
-// Проверить, есть ли отличия дат среди выбранных периодов
 
-// Ошибки:
-// Нет МУПа в группе -> Добавить МУП в группу ("Примените изменения")
-// Лимит не совпадает -> Установить нужный Лимит ("Примените изменения")
-// Подходящего периода нет -> создать период с датами и (если есть) вставить нагрузки из любого другого периода ("Примените изменения")
-// Нет другого периода с заполненными нагрузками -> дать ссылку на ИТС для заполнения нагрузки, созданному периоду (ссылка)
-// Даты (начала/конца выбора) не совпадают -> изменить даты в отобранных периодах ("Примените изменения")
-
-// По кнопке "Применить изменения":
-// 1) Добавление МУПов в группы
-// 2) Обновление Лимитов
-// 3) Создание нужных периодов
-// 4) Обновление дат в периодах
 const findInitDates = (initDiffs: {
   [key: string]: IMupDiff;
 }): [string, string] => {
@@ -93,8 +64,6 @@ function findModuleSelection(
   ze: number,
   moduleData: IModuleData
 ) {
-  // console.log("moduleData");
-  // console.log(moduleData);
   let semesterNumbers: number[] = [5, 7];
   if (semesterName !== "Осенний") {
     semesterNumbers = [6, 8];
@@ -102,15 +71,10 @@ function findModuleSelection(
   const res: IModuleSelection[] = [];
   for (const moduleId in moduleData.data) {
     const module = moduleData.data[moduleId];
-    // специальные курсы 7 семестра <-> специальные курсы 7
     for (const course of semesterNumbers) {
-      // console.log(`${module.name.toLocaleLowerCase()} <-> специальные курсы ${course}`);
-      // console.log(`ze ${ze}`);
       if (
         module.name.toLocaleLowerCase().includes(`специальные курсы ${course}`)
       ) {
-        // console.log("Found");
-        // console.log(module);
         const moduleSelection: IModuleSelection = {
           id: module.id,
           selected: module.disciplines
@@ -123,8 +87,6 @@ function findModuleSelection(
       }
     }
   }
-  // console.log("res");
-  // console.log(res);
   return res;
 }
 
@@ -143,7 +105,6 @@ export function MupEditor(props: IMupEditorProps) {
   const [zeToModuleSelection, setZeToModuleSelection] = useState<{
     [key: number]: IModuleSelection[];
   }>({});
-  // const refreshInProgress = useRef<boolean>(false);
   const [ensureInProgress, setEnsureInProgress] = useState<boolean>(false);
   const currentEnsurePromise = useRef<Promise<any> | null>(null);
   const [executingActionsInProgress, setExecutingActionsInProgress] =
@@ -161,7 +122,6 @@ export function MupEditor(props: IMupEditorProps) {
     setMupDiffs(newMupDiffs);
 
     setStartDate(dateFormatted);
-    // console.log(`new start date: ${dateFormatted}`);
     callDebouncedApply(
       newMupDiffs,
       mupEdits,
@@ -180,7 +140,6 @@ export function MupEditor(props: IMupEditorProps) {
     setMupDiffs(newMupDiffs);
 
     setEndDate(dateFormatted);
-    // console.log(`new end date: ${dateFormatted}`);
     callDebouncedApply(
       newMupDiffs,
       mupEdits,
@@ -226,11 +185,6 @@ export function MupEditor(props: IMupEditorProps) {
         messages: [],
       };
 
-      if (mupDiff) {
-        // console.log("initMupDiff");
-        // console.log(mupDiff);
-      }
-
       newMupEdits[mupId] = mupEdit;
     });
 
@@ -256,11 +210,9 @@ export function MupEditor(props: IMupEditorProps) {
   };
 
   const ensureData = (mupIds: string[], refresh: boolean) => {
-    console.log(`ensureData mupIds: ${mupIds.length} refresh: ${refresh}`);
-    // console.log("selectionGroupIds");
-    // console.log(props.selectionGroupIds);
+    // console.log(`ensureData mupIds: ${mupIds.length} refresh: ${refresh}`);
     if (currentEnsurePromise.current !== null) {
-      console.log("refreshInProgress is already in progress");
+      // console.log("refreshInProgress is already in progress");
       return currentEnsurePromise.current;
     }
     setEnsureInProgress(true);
@@ -342,22 +294,22 @@ export function MupEditor(props: IMupEditorProps) {
       .then(() => {
         currentEnsurePromise.current = null;
         setEnsureInProgress(false);
-      })
-      // .catch((err) => {
-      //   currentEnsurePromise.current = null;
-      //   setEnsureInProgress(false);
-      //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-      //     props.onUnauthorized();
-      //     return;
-      //   }
-      //   throw err;
-      // });
+      });
+    // .catch((err) => {
+    //   currentEnsurePromise.current = null;
+    //   setEnsureInProgress(false);
+    //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+    //     props.onUnauthorized();
+    //     return;
+    //   }
+    //   throw err;
+    // });
     currentEnsurePromise.current = ensureDataPromise;
     return ensureDataPromise;
   };
 
   const prepareData = (mupIds: Set<string>) => {
-    console.log("prepareData");
+    // console.log("prepareData");
     const newZeToModuleSelection = findReferenceModules();
     const { newMupDiffs, newMupEdits, initDates } = createInitDiffsAndDates(
       mupIds,
@@ -375,8 +327,8 @@ export function MupEditor(props: IMupEditorProps) {
 
   useEffect(() => {
     return () => {
-      console.warn("MupEditor UNMOUNTED");
-    }
+      // console.warn("MupEditor UNMOUNTED");
+    };
   }, []);
 
   useEffect(() => {
@@ -402,6 +354,7 @@ export function MupEditor(props: IMupEditorProps) {
         prepareData(mupIdUnion);
       })
       .finally(() => props.onLoad());
+    // eslint-disable-next-line
   }, [props.selectionGroupIds]);
 
   const ensurePeriodAndModulesForMup = (mupId: string) => {
@@ -426,9 +379,8 @@ export function MupEditor(props: IMupEditorProps) {
   };
 
   const handleMupToggle = (mupId: string) => {
-    console.log(`handleMupToggle: ${mupId}`);
+    // console.log(`handleMupToggle: ${mupId}`);
     const repo = context.dataRepository;
-    // repo.EnsurePeriodInfoFor(mupId)
     ensurePeriodAndModulesForMup(mupId).then(() => {
       let mupDiffsToCompareWith = mupDiffs;
       if (!mupDiffs.hasOwnProperty(mupId) || !mupDiffs[mupId]) {
@@ -445,8 +397,6 @@ export function MupEditor(props: IMupEditorProps) {
         );
         const newMupDiffs = { ...mupDiffs, [mupId]: newInitDiff };
         mupDiffsToCompareWith = newMupDiffs;
-        // console.log("newInitDiff");
-        // console.log(newInitDiff);
         setMupDiffs(newMupDiffs);
       }
 
@@ -500,14 +450,14 @@ export function MupEditor(props: IMupEditorProps) {
       );
       newZeToModuleSelection[ze] = moduleSelection;
     }
-    console.log("newZeToModuleSelection");
-    console.log(newZeToModuleSelection);
+    // console.log("newZeToModuleSelection");
+    // console.log(newZeToModuleSelection);
 
     return newZeToModuleSelection;
   };
 
   const handleRefresh = () => {
-    console.log("handleRefresh");
+    // console.log("handleRefresh");
     let mupIdsToRefresh: string[] = Object.keys(mupDiffs);
     let selectedMupIds: Set<string> = new Set<string>();
     for (let mupId of mupIdsToRefresh) {
@@ -619,7 +569,7 @@ export function MupEditor(props: IMupEditorProps) {
     newDates: [string, string],
     zeToModuleSelections: { [key: number]: IModuleSelection[] }
   ) => {
-    console.log("Debounce handleApply");
+    // console.log("Debounce handleApply");
     debouncedWrapperForApply(() => {
       const actions = generateActions(
         mupDiffs,
@@ -639,19 +589,19 @@ export function MupEditor(props: IMupEditorProps) {
       .then((results) => setMupEditorActionResults(results))
       .then(() => alert("Применение изменений завершено"))
       .then(() => handleRefresh()) // refresh
-      .then(() => setExecutingActionsInProgress(false))
-      // .catch((err) => {
-      //   setExecutingActionsInProgress(false);
-      //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-      //     props.onUnauthorized();
-      //     return;
-      //   }
-      //   throw err;
-      // });
+      .then(() => setExecutingActionsInProgress(false));
+    // .catch((err) => {
+    //   setExecutingActionsInProgress(false);
+    //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+    //     props.onUnauthorized();
+    //     return;
+    //   }
+    //   throw err;
+    // });
   };
 
   const handleApplyRealDebounced = () => {
-    console.log("Debounce handleApplyRealDebounced");
+    // console.log("Debounce handleApplyRealDebounced");
 
     debouncedWrapperForApply(() => handleApplyReal());
   };

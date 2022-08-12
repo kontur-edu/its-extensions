@@ -7,6 +7,7 @@ import {
   SAFE_MODE_ENABLED_MESSAGE,
 } from "./constants";
 import { ApiValidator } from "./apiValidator";
+import { getNextDelay, waitPromise } from "./helpers";
 
 export type FormBodyObj = { [key: string]: string | number | string[] };
 
@@ -45,24 +46,60 @@ export class RequestService {
     return result;
   }
 
-  async SendRequest(url: string, options: any, bodyObj?: FormBodyObj) {
-    
+  async fetchWithRetry(
+    url: string,
+    options: any,
+    delay: number = 0,
+    maxRetries = 5
+  ) {
+    let currentTry = 0;
+    let response;
+    while (currentTry <= maxRetries) {
+      currentTry++;
+      if (delay > 0) {
+        await waitPromise(delay);
+      }
+      delay = getNextDelay(delay);
+      try {
+        response = await fetch(url, options);
+        if (response.status !== 502) {
+          return response;
+        }
+      } catch (err) {
+        this.onConnectionRefused?.();
+        // throw new Error(REQUEST_ERROR_CONNECTION_REFUSED);
+      }
+      console.warn(`fetchWithRetry: retry ${currentTry}`);
+    }
+    return response;
+  }
+
+  async SendRequest(
+    url: string,
+    options: any,
+    bodyObj?: FormBodyObj,
+    maxRetries: number = 0
+  ) {
     if (options.method === "GET" || bodyObj) {
       let clearedUrl = url;
       if (clearedUrl.startsWith(this.proxyUrl)) {
-        clearedUrl = clearedUrl.replace(this.proxyUrl + "/", '');
+        clearedUrl = clearedUrl.replace(this.proxyUrl + "/", "");
       }
       if (!this.apiValidator.validate(options.method, clearedUrl, bodyObj)) {
         throw new Error(SAFE_MODE_ENABLED_MESSAGE);
       }
     }
 
-    let response: any = null;
-    try {
-      response = await fetch(url, options);
-    } catch (err) {
-      this.onConnectionRefused?.();
-      // throw new Error(REQUEST_ERROR_CONNECTION_REFUSED);
+    let response = await this.fetchWithRetry(url, options, maxRetries);
+    if (!response) {
+      console.error("fetchWithRetry was not able to get any data");
+      return { success: true, data: "502 Bad Gateway" };
+    }
+    if (response.status === 502) {
+      // delay
+      console.error(`SendRequest with retries: result ${response.status}`);
+      const message = await response.text();
+      console.error(`message: ${message}`);
     }
 
     if (response.status === 401) {

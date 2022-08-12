@@ -147,7 +147,7 @@ function generateUpdateLimitActions(
       const selectionGroupId = selectionGroupsIds[i];
       const initLimit = mupDiffs[mupId].initLimits[i];
       // alert(mupDiffs[mupId].initLimits);
-      console.log(`initLimit: ${initLimit} newLimit: ${newLimit}`);
+      // console.log(`initLimit: ${initLimit} newLimit: ${newLimit}`);
       if (initLimit !== newLimit) {
         actions.push(new UpdateLimitAction(mupId, selectionGroupId, newLimit));
       }

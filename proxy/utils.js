@@ -14,6 +14,16 @@ export const handleRequest = (httpMethod, handler) => async (req, res) => {
   event.body = req.body;
   event.isBase64Encoded = true;
 
+  // if (event.url.includes("MUPItsSubgroup/Students") && getRandomInt(10) < 5) {
+  //   const err = {
+  //     message:
+  //       "request to function 'd4e0jgfdt1ml981lgh8i' failed, reason: got http error: url = https://functions.yandexcloud.net/d4e0jgfdt1ml981lgh8i?integration=raw&tag=$latest, method = POST, status = 429",
+  //   };
+  //   const data = JSON.stringify(err);
+  //   res.status(502).send(data);
+  //   return;
+  // }
+
   const result = await handler(event, {});
 
   // set data to res
@@ -44,3 +54,8 @@ export const handleRequest = (httpMethod, handler) => async (req, res) => {
     res.end();
   }
 };
+
+
+function getRandomInt(max) {
+  return Math.floor(Math.random() * max);
+}

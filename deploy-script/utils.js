@@ -94,8 +94,8 @@ export async function createFunction(fname) {
   return execCommandAndGetField(`yc serverless function create ${fname}`, "id");
 }
 
-export async function makeFunctionPublick(fname) {
-  console.log(`makeFunctionPublick: ${fname}`);
+export async function makeFunctionPublic(fname) {
+  console.log(`makeFunctionPublic: ${fname}`);
   return execCommandAndGetField(
     `yc serverless function allow-unauthenticated-invoke ${fname}`,
     ""

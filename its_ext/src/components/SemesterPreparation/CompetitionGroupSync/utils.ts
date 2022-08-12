@@ -39,8 +39,8 @@ function insertReferenceSubgroupItem(index: number, item: ISubgroupReferenceInfo
     }
   }
   items[index] = item;
-  console.log("items");
-  console.log(items);
+  // console.log("items");
+  // console.log(items);
 }
 
 export function createSubgroupReferenceInfoFromCompetitionGroup(
@@ -127,14 +127,14 @@ function generateUpdateSubgroupCountToActions(
   subgroupMetas: ISubgroupMeta[]
 ): ITSAction[] {
   const actions: ITSAction[] = [];
-  console.log("-------------------------");
-  console.log("subgroupReferenceInfo");
-  console.log(subgroupReferenceInfo);
-  console.log("mupNameToMupId");
-  console.log(mupNameToMupId);
-  console.log("subgroupMetas");
-  console.log(subgroupMetas);
-  console.log("-------------------------");
+  // console.log("-------------------------");
+  // console.log("subgroupReferenceInfo");
+  // console.log(subgroupReferenceInfo);
+  // console.log("mupNameToMupId");
+  // console.log(mupNameToMupId);
+  // console.log("subgroupMetas");
+  // console.log(subgroupMetas);
+  // console.log("-------------------------");
 
   for (const meta of subgroupMetas) {
     if (
@@ -229,10 +229,10 @@ export function checkSubgroupsCreated(
   subgroupReferenceInfo: ISubgroupReferenceInfo,
   currentSubgroupInfo: ISubgroupReferenceInfo
 ) {
-  console.log("subgroupReferenceInfo");
-  console.log(subgroupReferenceInfo);
-  console.log("currentSubgroupInfo");
-  console.log(currentSubgroupInfo);
+  // console.log("subgroupReferenceInfo");
+  // console.log(subgroupReferenceInfo);
+  // console.log("currentSubgroupInfo");
+  // console.log(currentSubgroupInfo);
   for (const mupName in subgroupReferenceInfo) {
     for (const load in subgroupReferenceInfo[mupName]) {
       const refLoad = subgroupReferenceInfo[mupName][load];
@@ -246,8 +246,8 @@ export function checkSubgroupsCreated(
         i++
       ) {
         const subgroupInfo = curLoad.subgroupInfo[i];
-        console.log("subgroupInfo");
-        console.log(subgroupInfo);
+        // console.log("subgroupInfo");
+        // console.log(subgroupInfo);
         if (
           subgroupInfo.limit === undefined &&
           subgroupInfo.teacher === undefined
@@ -271,10 +271,10 @@ export function createSyncActions(
 ): ITSAction[] {
   const allActions: ITSAction[] = [];
 
-  console.log("competitionGroupIdToInfo");
-  console.log(competitionGroupIdToInfo);
-  console.log("competitionGroupIds");
-  console.log(competitionGroupIds);
+  // console.log("competitionGroupIdToInfo");
+  // console.log(competitionGroupIdToInfo);
+  // console.log("competitionGroupIds");
+  // console.log(competitionGroupIds);
 
   // for (const competitionGroupId of competitionGroupIds) {
   //   if (!competitionGroupToSubgroupMetas.hasOwnProperty(competitionGroupId)) {
@@ -377,10 +377,10 @@ export function getDiffMessagesBySubgroupReferenceInfo(
       for (const load in referenceInfo[mupName]) {
         const refLoad = referenceInfo[mupName][load];
         const curLoad = currentInfo[mupName][load];
-        console.log("refLoad");
-        console.log(refLoad);
-        console.log("curLoad");
-        console.log(curLoad);
+        // console.log("refLoad");
+        // console.log(refLoad);
+        // console.log("curLoad");
+        // console.log(curLoad);
         if (refLoad.count !== curLoad.count) {
           differentSubgroupCountMessages.push(
             `${load} (${refLoad.count} <> ${curLoad.count})`

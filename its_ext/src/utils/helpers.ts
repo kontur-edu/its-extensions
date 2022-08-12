@@ -9,6 +9,7 @@ import {
   ICompetitionGroup,
   ICompetitionGroupData,
 } from "../common/types";
+import { MAX_ASYNC_REQUEST_PER_BATCH } from "./constants";
 
 export function prepareSelectionGroupData(
   selectionGroups: ISelectionGroup[]
@@ -164,4 +165,44 @@ export function downloadFileFromText(
   element.click();
 
   document.body.removeChild(element);
+}
+
+export function paginate(arr: Array<any>, size: number) {
+  return arr.reduce((acc, val, i) => {
+    let idx = Math.floor(i / size);
+    let page = acc[idx] || (acc[idx] = []);
+    page.push(val);
+    return acc;
+  }, []);
+}
+
+export async function createPromisesAndWaitAllPaginated<T>(
+  arr: Array<T>,
+  func: (v: T) => Promise<any>,
+  size: number = MAX_ASYNC_REQUEST_PER_BATCH
+) {
+  // console.warn("createPromisesAndWaitAllPaginated");
+  const pages = paginate(arr, size);
+  const pagesSettled: PromiseSettledResult<any>[][] = [];
+  for (const page of pages) {
+    // console.warn("--------------> ");
+    const pageSettled = await Promise.allSettled(page.map(func));
+    pagesSettled.push(pageSettled);
+  }
+  return pagesSettled.flat();
+}
+
+export function waitPromise(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function getNextDelay(ms: number) {
+  if (ms === 0) {
+    return 750 + getRandomInt(500);
+  }
+  return ms * 2;
+}
+
+export function getRandomInt(max: number) {
+  return Math.floor(Math.random() * max);
 }

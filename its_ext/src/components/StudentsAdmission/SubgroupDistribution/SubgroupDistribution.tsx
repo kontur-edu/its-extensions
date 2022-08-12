@@ -280,8 +280,8 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
       context.dataRepository.studentData
     );
 
-    console.log("studentAndMupItems");
-    console.log(studentAndMupItems);
+    // console.log("studentAndMupItems");
+    // console.log(studentAndMupItems);
 
     const availableAdmissionIds = getAvailableAdmissionIds(
       props.competitionGroupIds,
@@ -316,8 +316,8 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
         context.dataRepository.subgroupIdToStudentSubgroupMembership,
         context.dataRepository.studentIdToPersonalNumber
       );
-      console.log("mupToLoadToSubgroupMembership");
-      console.log(mupToLoadToSubgroupMembership);
+      // console.log("mupToLoadToSubgroupMembership");
+      // console.log(mupToLoadToSubgroupMembership);
       const newSubgroupDistributionTextOutput = JSON.stringify(
         mupToLoadToSubgroupMembership,
         null,

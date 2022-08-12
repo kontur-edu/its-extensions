@@ -144,10 +144,10 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   const refreshData = () => ensureData(true);
 
   const prepareItemsAndStudentMupDataText = () => {
-    console.log("context.dataRepository.competitionGroupIdToMupAdmissions");
-    console.log(context.dataRepository.competitionGroupIdToMupAdmissions);
-    console.log("context.dataRepository.admissionInfo");
-    console.log(context.dataRepository.admissionInfo);
+    // console.log("context.dataRepository.competitionGroupIdToMupAdmissions");
+    // console.log(context.dataRepository.competitionGroupIdToMupAdmissions);
+    // console.log("context.dataRepository.admissionInfo");
+    // console.log(context.dataRepository.admissionInfo);
 
     const allPersonalNumbers = getAllPersonalNumbers(
       props.competitionGroupIds,
@@ -217,11 +217,11 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       JSON.stringify(newStudentDistributionData, null, 2)
     );
 
-    console.log("newPersonalNumberToStudentItems");
-    console.log(studentAndMupItems.personalNumberToStudentItems);
+    // console.log("newPersonalNumberToStudentItems");
+    // console.log(studentAndMupItems.personalNumberToStudentItems);
 
-    console.log("newMupIdToMupItems");
-    console.log(studentAndMupItems.mupIdToMupItems);
+    // console.log("newMupIdToMupItems");
+    // console.log(studentAndMupItems.mupIdToMupItems);
   };
 
   useEffect(() => {
@@ -283,8 +283,8 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         personalNumberToSelectedAdmissionIds
       );
 
-      console.log("studentAndMupItems");
-      console.log(studentAndMupItems);
+      // console.log("studentAndMupItems");
+      // console.log(studentAndMupItems);
 
       setPersonalNumberToStudentItems(
         studentAndMupItems.personalNumberToStudentItems

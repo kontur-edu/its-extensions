@@ -45,3 +45,5 @@ export const MupEditorMessages = {
 };
 
 export const DEBOUNCE_MS = 1000;
+
+export const MAX_ASYNC_REQUEST_PER_BATCH = 50;

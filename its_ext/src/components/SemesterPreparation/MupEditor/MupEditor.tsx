@@ -227,8 +227,8 @@ export function MupEditor(props: IMupEditorProps) {
       };
 
       if (mupDiff) {
-        console.log("initMupDiff");
-        console.log(mupDiff);
+        // console.log("initMupDiff");
+        // console.log(mupDiff);
       }
 
       newMupEdits[mupId] = mupEdit;
@@ -257,8 +257,8 @@ export function MupEditor(props: IMupEditorProps) {
 
   const ensureData = (mupIds: string[], refresh: boolean) => {
     console.log(`ensureData mupIds: ${mupIds.length} refresh: ${refresh}`);
-    console.log("selectionGroupIds");
-    console.log(props.selectionGroupIds);
+    // console.log("selectionGroupIds");
+    // console.log(props.selectionGroupIds);
     if (currentEnsurePromise.current !== null) {
       console.log("refreshInProgress is already in progress");
       return currentEnsurePromise.current;
@@ -439,8 +439,8 @@ export function MupEditor(props: IMupEditorProps) {
         );
         const newMupDiffs = { ...mupDiffs, [mupId]: newInitDiff };
         mupDiffsToCompareWith = newMupDiffs;
-        console.log("newInitDiff");
-        console.log(newInitDiff);
+        // console.log("newInitDiff");
+        // console.log(newInitDiff);
         setMupDiffs(newMupDiffs);
       }
 

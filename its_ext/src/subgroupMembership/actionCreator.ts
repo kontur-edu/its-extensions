@@ -54,8 +54,8 @@ function generateUpdateMembershipActions(
     }
   }
 
-  console.log("newSubroupIdToIncludedStudentIds");
-  console.log(newSubroupIdToIncludedStudentIds);
+  // console.log("newSubroupIdToIncludedStudentIds");
+  // console.log(newSubroupIdToIncludedStudentIds);
 
   for (const subgroupIdStr in subgroupIdToStudentSubgroupMembership) {
     const subgroupId = Number(subgroupIdStr);

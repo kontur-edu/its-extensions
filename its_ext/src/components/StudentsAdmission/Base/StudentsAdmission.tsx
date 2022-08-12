@@ -5,13 +5,19 @@ import { IStudentsAdmissionProps } from "./types";
 import { ITSContext } from "../../../common/Context";
 import { CompetitionGroupSelect } from "../CompetitionGroupSelect";
 import { ICompetitionGroupItem } from "../CompetitionGroupSelect/types";
-import { REQUEST_ERROR_UNAUTHORIZED } from "../../../utils/constants";
+import {
+  DEBOUNCE_MS,
+  REQUEST_ERROR_UNAUTHORIZED,
+} from "../../../utils/constants";
 import { TaskResultsInput } from "../TaskResultsInput";
 
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 import { StudentsDistribution } from "../StudentsDistribution";
 import { SubgroupDistribution } from "../SubgroupDistribution";
 import { BackButton } from "../../BackButton";
+import { createDebouncedWrapper } from "../../../utils/helpers";
+
+const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
 export function StudentsAdmission(props: IStudentsAdmissionProps) {
   const [competitionGroupItems, setCompetitionGroupItems] = useState<
@@ -86,7 +92,9 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
   const handleCompetitionGroupsSelect = (newCompetitionGroupIds: number[]) => {
     setStepTwoLoaded(false);
     setStepThreeLoaded(false);
-    setCompetitionGroupIds(newCompetitionGroupIds);
+    debouncedWrapperForApply(() =>
+      setCompetitionGroupIds(newCompetitionGroupIds)
+    );
   };
 
   const handleCompetitionGroupSelectButton = () => {

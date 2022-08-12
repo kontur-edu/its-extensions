@@ -4,9 +4,14 @@
 
 ### Создайте Yandex Cloud Function
 1. Создайте новую функцию и дайте ей публичный доступ 
-2. Загрузите файл ```function.js``` и ```package.json```
-3. Создайте версию
-4. Скопируйте id фунции
+2. Укажите корректные значения константам в файле `constants.js`
+```
+const PROXY_URL_VALUE = "<https://<домен API-Gateway>/notion>";
+const NOTION_MAIN_PAGE_VALUE = "<URL адрес страницы Notion с таблицей спецкурсов>";
+```
+3. Загрузите файлы ```function.js``` и ```package.json```
+4. Создайте версию
+5. Скопируйте id фунции
 
 ### Измените конфигурацию API-Gateway
 1. Перейдите "Обзор" API-Gateway и нажмите "Редактировать"

@@ -178,7 +178,7 @@ export function paginate(arr: Array<any>, size: number) {
 export async function createPromisesAndWaitAllPaginated<T>(
   arr: Array<T>,
   func: (v: T) => Promise<any>,
-  size: number = 5
+  size: number = 50
 ) {
   // console.warn("createPromisesAndWaitAllPaginated");
   const pages = paginate(arr, size);
@@ -191,14 +191,17 @@ export async function createPromisesAndWaitAllPaginated<T>(
   return pagesSettled.flat();
 }
 
-
 export function waitPromise(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export function getNextDelay(ms: number) {
   if (ms === 0) {
-    return 1000;
+    return 750 + getRandomInt(500);
   }
   return ms * 2;
+}
+
+export function getRandomInt(max: number) {
+  return Math.floor(Math.random() * max);
 }

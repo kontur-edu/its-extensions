@@ -144,12 +144,12 @@ export class ITSRepository {
       selectionGroupIdToSelectionGroupMups
     );
     console.log(this.selectionGroupToMupsData);
-    return failedIds;
+    // return failedIds;
   }
 
-  async UpdateSelectionGroupToMupsDataWithRetries(subgroupIds: number[]) {
-    await this.tryRequestWithDelay(subgroupIds, this.UpdateSelectionGroupToMupsData);
-  }
+  // async UpdateSelectionGroupToMupsDataWithRetries(subgroupIds: number[]) {
+  //   await this.tryRequestWithDelay(subgroupIds, this.UpdateSelectionGroupToMupsData);
+  // }
 
   CheckPeriodDataPresent(mupIds: string[]) {
     const res = mupIds.every((mId) => this.mupToPeriods.hasOwnProperty(mId));
@@ -176,12 +176,12 @@ export class ITSRepository {
       }
     }
     console.log("/ UpdatePeriods");
-    return failedIds;
+    // return failedIds;
   }
 
-  async UpdatePeriodsWithRetries(mupIds: string[]) {
-    await this.tryRequestWithDelay(mupIds, this.UpdatePeriods);
-  }
+  // async UpdatePeriodsWithRetries(mupIds: string[]) {
+  //   await this.tryRequestWithDelay(mupIds, this.UpdatePeriods);
+  // }
 
   async EnsurePeriodInfoFor(mupId: string) {
     console.log(`ITSRepository: EnsurePeriodInfoFor ${mupId}`);
@@ -223,12 +223,12 @@ export class ITSRepository {
         );
       }
     }
-    return failedIds;
+    // return failedIds;
   }
 
-  async UpdateSubgroupMetasWithRetries(competitionGroupIds: number[]) {
-    await this.tryRequestWithDelay(competitionGroupIds, this.UpdateSubgroupMetas);
-  }
+  // async UpdateSubgroupMetasWithRetries(competitionGroupIds: number[]) {
+  //   await this.tryRequestWithDelay(competitionGroupIds, this.UpdateSubgroupMetas);
+  // }
 
   CheckSubgroupPresent(competitionGroupIds: number[]) {
     const res = competitionGroupIds.every((cgId) =>
@@ -267,12 +267,12 @@ export class ITSRepository {
         );
       }
     }
-    return failedIds;
+    // return failedIds;
   }
 
-  async UpdateSubgroupsWithRetries(competitionGroupIds: number[]) {
-    await this.tryRequestWithDelay(competitionGroupIds, this.UpdateSubgroups);
-  }
+  // async UpdateSubgroupsWithRetries(competitionGroupIds: number[]) {
+  //   await this.tryRequestWithDelay(competitionGroupIds, this.UpdateSubgroups);
+  // }
 
   CheckCompetitionGroupDataPresent(competitionGroupIds: number[]) {
     const res = competitionGroupIds.every((cgId) =>
@@ -325,12 +325,12 @@ export class ITSRepository {
         mupIdToAdmission;
     }
 
-    return failedIds;
+    // return failedIds;
   }
 
-  async UpdateAdmissionMetasWithRetries(competitionGroupIds: number[]) {
-    await this.tryRequestWithDelay(competitionGroupIds, this.UpdateAdmissionMetas);
-  }
+  // async UpdateAdmissionMetasWithRetries(competitionGroupIds: number[]) {
+  //   await this.tryRequestWithDelay(competitionGroupIds, this.UpdateAdmissionMetas);
+  // }
 
   fillStudentRawInfoToStudentDataAndAdmissionInfo(
     admissionId: number,
@@ -455,12 +455,12 @@ export class ITSRepository {
         failedIds.push(subgroupId);
       }
     }
-    return failedIds;
+    // return failedIds;
   }
 
-  async UpdateSubgroupMembershipWithRetries(subgroupIds: number[]) {
-    await this.tryRequestWithDelay(subgroupIds, this.UpdateSubgroupMembership);
-  }
+  // async UpdateSubgroupMembershipWithRetries(subgroupIds: number[]) {
+  //   await this.tryRequestWithDelay(subgroupIds, this.UpdateSubgroupMembership);
+  // }
 
   
 
@@ -531,10 +531,10 @@ export class ITSRepository {
         failedIds.push(connectionId);
       }
     }
-    return failedIds;
+    // return failedIds;
   }
 
-  async UpdateSelectionGroupMupModuleDisciplinesWithRetries(connectionIds: number[]) {
-    await this.tryRequestWithDelay(connectionIds, this.UpdateSelectionGroupMupModuleDisciplines);
-  }
+  // async UpdateSelectionGroupMupModuleDisciplinesWithRetries(connectionIds: number[]) {
+  //   await this.tryRequestWithDelay(connectionIds, this.UpdateSelectionGroupMupModuleDisciplines);
+  // }
 }

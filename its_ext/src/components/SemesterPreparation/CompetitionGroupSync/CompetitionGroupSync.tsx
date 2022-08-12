@@ -37,10 +37,6 @@ import { SimpleSelect } from "../../SimpleSelect/SimpleSelect";
 import { getCompetitionGroupName } from "../CompetitionGroupPreparation/CompetitionGroupPreparation";
 import { SelectChangeEvent } from "@mui/material/Select";
 
-// function checkArraysSame(arr1: any[], arr2: any[]) {
-//   return arr1.sort().join(",") === arr2.sort().join(",");
-// }
-
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
 export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
@@ -50,9 +46,9 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
 
   const [canBeSync, setCanBeSync] = useState<boolean>(true);
   const [mupIds, setMupIds] = useState<string[]>([]);
-  const [competitionGroupIdToInfo, setCompetitionGroupIdToInfo] = useState<{
-    [key: number]: ISubgroupReferenceInfo;
-  }>({});
+  // const [competitionGroupIdToInfo, setCompetitionGroupIdToInfo] = useState<{
+  //   [key: number]: ISubgroupReferenceInfo;
+  // }>({});
   const [mupToMessages, setMupToMessages] = useState<{
     [key: string]: [string[], string[]];
   }>({});
@@ -326,7 +322,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
         console.warn(`Cannot be synchronized`);
         return;
       }
-      setCompetitionGroupIdToInfo(competitionGroupIdToInfo);
+      // setCompetitionGroupIdToInfo(competitionGroupIdToInfo);
       const actions = generateActions(
         newReferenceCompetitionGroupId,
         newCompetitionGroupIds,
@@ -357,11 +353,17 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
   };
 
   useEffect(() => {
+    return () => {
+      console.warn("CompetitionGroupSync UNMOUNTED");
+    };
+  }, []);
+
+  useEffect(() => {
     if (props.selectionGroupIds.length !== 2) {
       return;
     }
     refreshData(false);
-  }, [props.dataIsPrepared, props.selectionGroupIds]);
+  }, [props.selectionGroupIds]);
 
   useEffect(() => {
     console.warn(
@@ -450,12 +452,6 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
       if (mupToMessages.hasOwnProperty(mup.name)) {
         [differences, todos] = mupToMessages[mup.name];
       }
-      // if (differences.length === 0) {
-      //   differences = ["Нет отличий"];
-      // }
-      // if (todos.length === 0) {
-      //   todos = ["Нет действий"];
-      // }
 
       return (
         <tr key={mupId}>

@@ -358,6 +358,10 @@ export function CompetitionGroupPreparation(
           generateAllActions(newSelectedCompetitionGroupId, allMupIds);
       })
       .finally(() => props.onLoad());
+  
+    return () => {
+      console.warn("CompetitionGroupPreparation UNMOUNTED");
+    };
   }, []);
 
   const handleCompetitionGroupChange = (event: SelectChangeEvent) => {

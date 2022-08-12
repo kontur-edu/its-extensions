@@ -30,16 +30,17 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
   const stepThreeRef = useRef<HTMLElement | null>(null);
   const stepFourRef = useRef<HTMLElement | null>(null);
 
+  const [groupIdsFixed, setGroupIdsFixed] = useState<boolean>(false);
   const [stepTwoLoaded, setStepTwoLoaded] = useState<boolean>(false);
   const [stepThreeLoaded, setStepThreeLoaded] = useState<boolean>(false);
 
   const handleStepTwoLoaded = () => {
-    console.log("handleStepTwoLoaded");
+    console.warn("handleStepTwoLoaded");
     setStepTwoLoaded(true);
   };
 
   const handleStepThreeLoaded = () => {
-    console.log("handleStepThreeLoaded");
+    console.warn("handleStepThreeLoaded");
     setStepThreeLoaded(true);
   };
 
@@ -87,14 +88,16 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
 
   useEffect(() => {
     refreshCompetitionGroups();
-  }, []);
+  }, [props.isUnauthorized]);
 
   const handleCompetitionGroupsSelect = (newCompetitionGroupIds: number[]) => {
     setStepTwoLoaded(false);
     setStepThreeLoaded(false);
-    debouncedWrapperForApply(() =>
-      setCompetitionGroupIds(newCompetitionGroupIds)
-    );
+    setGroupIdsFixed(false);
+    debouncedWrapperForApply(() => {
+      setCompetitionGroupIds(newCompetitionGroupIds);
+      setGroupIdsFixed(true); 
+    });
   };
 
   const handleCompetitionGroupSelectButton = () => {
@@ -194,7 +197,7 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
         </div>
       </article>
 
-      {isGroupSelectionValid() && renderTaskResultsInput()}
+      {isGroupSelectionValid() && groupIdsFixed && renderTaskResultsInput()}
 
       {isGroupSelectionValid() &&
         stepTwoLoaded &&

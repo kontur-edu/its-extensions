@@ -374,6 +374,12 @@ export function MupEditor(props: IMupEditorProps) {
   };
 
   useEffect(() => {
+    return () => {
+      console.warn("MupEditor UNMOUNTED");
+    }
+  }, []);
+
+  useEffect(() => {
     const repo = context.dataRepository;
     const updateSelectionGroupToMupDataPromise = () =>
       repo.CheckSelectionGroupToMupDataPresent(props.selectionGroupIds)

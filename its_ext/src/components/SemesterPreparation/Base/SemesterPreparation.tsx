@@ -17,40 +17,10 @@ import { BackButton } from "../../BackButton";
 import { CompetitionGroupPreparation } from "../CompetitionGroupPreparation";
 import { createDebouncedWrapper } from "../../../utils/helpers";
 
-// Получение данных:
-// Запросить все Группы выбора
-// Запросить МУПы с Лимитами для выбранных Групп выбора
-// Найти объединение выбранных МУПов из Групп выбора
-// Запросить все Периоды для МУПов из объединения
-// Отобрать периоды с годом и типом семестра (весна/осень) таким же как и в первой из выбранных групп выбора (для определения дат)
-// Понадобится любой период с заполненными нагрузками, чтобы скопировать нагрузки
-// Вставить дату из первого попавшегося периода
-// Определить МУПы с пустыми нагрузками (Tmers)
-// Определить какие МУПы есть только в одной из групп
-// Определить какие МУПы не имеют подходящего периода
-// Проверить, есть ли отличия дат среди выбранных периодов
 
-// Ошибки:
-// Нет МУПа в группе -> Добавить МУП в группу ("Примените изменения")
-// Лимит не совпадает -> Установить нужный Лимит ("Примените изменения")
-// Подходящего периода нет -> создать период с датами и (если есть) вставить нагрузки из любого другого периода ("Примените изменения")
-// Нет другого периода с заполненными нагрузками -> дать ссылку на ИТС для заполнения нагрузки, созданному периоду (ссылка)
-// Даты (начала/конца выбора) не совпадают -> изменить даты в отобранных периодах ("Примените изменения")
-
-// По кнопке "Применить изменения":
-// 1) Добавление МУПов в группы
-// 2) Обновление Лимитов
-// 3) Создание нужных периодов
-// 4) Обновление дат в периодах
-
-// unionMupIds -> mupdsUpdate (request limit);
-// mupId -> limit
-// AllMups if (limit > 0) new
-// mupsUpdate {ids: [], data: {id: {id, limit}}}
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
 export function SemesterPreparation(props: ISemesterPreparationProps) {
-  // TODO: вынести в отдельный компонент
   const [selectionGroupsListItems, setSelectionGroupsListItems] = useState<
     ISelectionListItem[]
   >([]);
@@ -62,7 +32,6 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
 
   const [referenceCompetitionGroupId, setReferenceCompetitionGroupId] =
     useState<number | null>(null);
-  // const [editorDataPrepared, setEditorDataPrepared] = useState<boolean>(false);
   const requestSelectionGroupsInProgress = useRef(false);
 
   const stepTwoRef = useRef<HTMLElement | null>(null);
@@ -101,25 +70,21 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
   };
 
   const handleMupEditorLoaded = () => {
-    console.log("handleMupEditorLoaded");
+    console.warn("handleMupEditorLoaded");
     setMupEditorLoaded(true);
   };
 
   const handleCompetitionGroupPreparationLoaded = () => {
-    console.log("handleMupEditorLoaded");
+    console.warn("handleMupEditorLoaded");
     setCompetitionGroupLoaded(true);
   };
 
-  // selectionGroupMups, SubgroupGroupMetas, Subgroups
   const handleSelectionGroupSelected = (selectionGroupIds: number[]) => {
     if (selectionGroupIds.length !== 2) {
       setSelectionValid(false);
     }
     setMupEditorLoaded(false);
     setCompetitionGroupLoaded(false);
-    // setEditorDataPrepared(false);
-    // console.log("handleSelectionGroupValid");
-    // remember chosen selectionGroup ids
     debouncedWrapperForApply(() => {
       const repo = context.dataRepository;
       const updateMupDataPromise =
@@ -163,7 +128,6 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
 
         <MupEditor
           selectionGroupIds={selectionGroupsIds}
-          // dataIsPrepared={editorDataPrepared}
           onLoad={handleMupEditorLoaded}
           onNextStep={handleStepThree}
           onUnauthorized={props.onUnauthorized}
@@ -181,9 +145,8 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
 
         <CompetitionGroupPreparation
           selectionGroupIds={selectionGroupsIds}
-          dataIsPrepared={mupEditorLoaded} // TODO: delete this
           onUnauthorized={props.onUnauthorized}
-          onNextStep={handleStepFour} // TODO: fix
+          onNextStep={handleStepFour}
           onLoad={handleCompetitionGroupPreparationLoaded}
           onReferenceCompetitionGroupChange={
             handleReferenceCompetitionGroupIdChange
@@ -200,7 +163,6 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
 
         <CompetitionGroupSync
           selectionGroupIds={selectionGroupsIds}
-          dataIsPrepared={mupEditorLoaded} // TODO: delete this
           onUnauthorized={props.onUnauthorized}
           referenceCompetitionGroupId={referenceCompetitionGroupId}
         />

@@ -113,7 +113,7 @@ export class ITSRepository {
           selectionGroupMupData;
       } else {
         failedIds.push(selectionGroupId);
-        console.error(
+        console.warn(
           `Failed to request SelectionGroupMupData for selectionGroupId: ${selectionGroupId}`
         );
       }
@@ -143,7 +143,7 @@ export class ITSRepository {
         this.mupToPeriods[mupId] = resp.value;
       } else {
         failedIds.push(mupId);
-        console.error(`Failed to request Periods for mupId: ${mupId}`);
+        console.warn(`Failed to request Periods for mupId: ${mupId}`);
       }
     }
     console.log("/ UpdatePeriods");
@@ -181,7 +181,7 @@ export class ITSRepository {
         this.competitionGroupToSubgroupMetas[competitionGroupId] = resp.value;
       } else {
         failedIds.push(competitionGroupId);
-        console.error(
+        console.warn(
           `Failed to request SubgroupMeta for competitionGroupId: ${competitionGroupId}`
         );
       }
@@ -216,7 +216,7 @@ export class ITSRepository {
         this.competitionGroupToSubgroupIds[competitionGroupId] = subgroupIds;
       } else {
         failedIds.push(competitionGroupId);
-        console.error(
+        console.warn(
           `Failed to request Subgroups for competitionGroupId: ${competitionGroupId}`
         );
       }

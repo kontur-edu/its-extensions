@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import style from "./TaskResultsInput.module.css";
 import { ITaskResultsInputProps } from "./types";
-import { DEBOUNCE_MS } from "../../../utils/constants";
+import { DEBOUNCE_MS, REQUEST_ERROR_UNAUTHORIZED } from "../../../utils/constants";
 import { ITSContext } from "../../../common/Context";
 import {
   CompetitionGroupIdToMupAdmissions,
@@ -211,7 +211,15 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   }, []);
 
   useEffect(() => {
-    refreshAdmissionInfo().finally(() => props.onLoad());
+    refreshAdmissionInfo()
+    .catch((err) =>{
+      setEnsureDataInProgress(false);
+      console.warn(`catch: ${err.message}`);
+      if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+        props.onUnauthorized();
+      }
+    })
+    .finally(() => props.onLoad());
   }, [props.competitionGroupIds]);
 
   useEffect(() => {
@@ -264,6 +272,12 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
       .then((newStudentItems) => {
         handleGenerateActionsDebounced(newStudentItems);
         setEnsureDataInProgress(false);
+      }).catch((err) =>{
+        setEnsureDataInProgress(false);
+        console.warn(`catch: ${err.message}`);
+        if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+          props.onUnauthorized();
+        }
       })
       // .finally(() => {
       //   console.log("competitionGroupToAdmissionIds");

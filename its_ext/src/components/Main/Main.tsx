@@ -72,6 +72,7 @@ export function Main(props: IMainProps) {
   };
 
   context?.requestService.setOnConnectionRefused(handleConnectoinRefused);
+  context?.requestService.setOnUnauthorized(handleUnauthorized);
 
   return (
     <div>

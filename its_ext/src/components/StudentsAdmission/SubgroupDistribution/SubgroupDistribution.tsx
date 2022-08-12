@@ -250,6 +250,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
       })
       .catch((err) => {
         setEnsureDataInProgress(false);
+        console.warn(`catch: ${err.message}`);
         if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
           props.onUnauthorized();
           return;

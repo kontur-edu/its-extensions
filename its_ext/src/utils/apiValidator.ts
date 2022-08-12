@@ -109,6 +109,7 @@ export class ApiValidator {
     }
 
     const matches = url.match(
+      // eslint-disable-next-line
       /^(?:(http[s]?|ftp):\/)?\/?([^:\/\s]+)((?:\/\w+)*\/?)([\w\-\.]+[^#?\s]+)?(.*)?(#[\w\-]+)?$/i
     );
     if (matches && matches.length > 3) {

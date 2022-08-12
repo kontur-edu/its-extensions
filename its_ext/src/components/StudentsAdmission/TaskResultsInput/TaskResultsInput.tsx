@@ -1,10 +1,7 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import style from "./TaskResultsInput.module.css";
 import { ITaskResultsInputProps } from "./types";
-import {
-  DEBOUNCE_MS,
-  REQUEST_ERROR_UNAUTHORIZED,
-} from "../../../utils/constants";
+import { DEBOUNCE_MS } from "../../../utils/constants";
 import { ITSContext } from "../../../common/Context";
 import {
   CompetitionGroupIdToMupAdmissions,
@@ -45,15 +42,15 @@ export function getAdmissionIdsPerCompetitionGroup(
   const competitionGroupIdToAdmissionIds: { [key: number]: number[] } = {};
   for (const competitionGroupId of competitionGroupIds) {
     if (!competitionGroupIdToMupAdmissions.hasOwnProperty(competitionGroupId)) {
-      console.log(
-        `competitionGroupId: ${competitionGroupId} not found in competitionGroupIdToMupAdmissions`
-      );
+      // console.log(
+      //   `competitionGroupId: ${competitionGroupId} not found in competitionGroupIdToMupAdmissions`
+      // );
       continue;
     }
     const mupIdToAdmissionId =
       competitionGroupIdToMupAdmissions[competitionGroupId];
     if (!mupIdToAdmissionId.hasOwnProperty(mupId)) {
-      console.log(`mupId: ${mupId} not found in mupIdToAdmissionId`);
+      // console.log(`mupId: ${mupId} not found in mupIdToAdmissionId`);
       continue;
     }
     if (!competitionGroupIdToAdmissionIds.hasOwnProperty(competitionGroupId)) {
@@ -101,8 +98,6 @@ export function createStudentItems(
   for (const admissionId of admissionIds) {
     if (admissionInfo.hasOwnProperty(admissionId)) {
       const personalNumberToStudentAdmission = admissionInfo[admissionId];
-      // console.log("personalNumberToStudentAdmission");
-      // console.log(personalNumberToStudentAdmission);
       for (const personalNumber in personalNumberToStudentAdmission) {
         if (!studentData.data.hasOwnProperty(personalNumber)) {
           console.log(
@@ -112,8 +107,6 @@ export function createStudentItems(
         }
 
         const studentInfo = studentData.data[personalNumber];
-        // console.log("studentInfo");
-        // console.log(studentInfo);
         if (studentInfo.status !== "Активный") {
           continue;
         }
@@ -129,8 +122,7 @@ export function createStudentItems(
       }
     }
   }
-  // console.log("personalNumberToStudentItems");
-  // console.log(personalNumberToStudentItems);
+
   return personalNumberToStudentItems;
 }
 
@@ -172,8 +164,6 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
       mupId,
       context.dataRepository.competitionGroupIdToMupAdmissions
     );
-    // console.log("competitionGroupIdToAdmissionIds");
-    // console.log(competitionGroupIdToAdmissionIds);
     return competitionGroupIdToAdmissionIds;
   };
 
@@ -209,7 +199,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
 
   useEffect(() => {
     return () => {
-      console.warn("TaskResultInput UNMOUNTED");
+      // console.warn("TaskResultInput UNMOUNTED");
     };
   }, []);
 
@@ -223,6 +213,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
       //   }
       // })
       .finally(() => props.onLoad());
+    // eslint-disable-next-line
   }, [props.competitionGroupIds]);
 
   useEffect(() => {
@@ -236,19 +227,11 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
       admissionIds.push(...aIds)
     );
 
-    console.log("admissionIds");
-    console.log(admissionIds);
     if (admissionIds.length === 0) {
       setEnsureDataInProgress(false);
       return;
     }
 
-    // for (const admissionId of admissionIds) {
-    //   if (!repo.admissionInfo.hasOwnProperty(admissionId)) {
-    //     admissionDataIsPresent = false;
-    //     break;
-    //   }
-    // }
     const ensureStudentAdmissionDataIsPresentPromise =
       repo.CheckAdmissionInfoPresent(admissionIds)
         ? Promise.resolve()
@@ -256,12 +239,6 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
             competitionGroupToAdmissionIds
           );
 
-    // if (!admissionDataIsPresent) {
-    //   ensureStudentAdmissionDataIsPresentPromise =
-    //     repo.UpdateStudentAdmissionsAndStudentData(
-    //       competitionGroupToAdmissionIds
-    //     );
-    // }
     ensureStudentAdmissionDataIsPresentPromise
       .then(() => {
         const newStudentItems = createStudentItems(
@@ -288,15 +265,13 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     //   console.log(competitionGroupToAdmissionIds);
     //   props.onLoad();
     // });
+    // eslint-disable-next-line
   }, [competitionGroupToAdmissionIds]);
 
   const handleMupChange = (event: SelectChangeEvent) => {
     setApplyClicked(false);
-    // allowSuccessMessage.current = false;
 
     const newMupId = event.target.value;
-    // console.log("newMupId");
-    // console.log(newMupId);
     setSelectedMupId(newMupId);
 
     const newCompetitionGroupToAdmissionIds =
@@ -307,7 +282,6 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   };
 
   const handleStudentPassedToggle = (personalNumber: string) => {
-    console.log("handleStudentPassedToggle");
     setApplyClicked(false);
     const newStudentItems = { ...studentItems };
     const studentItem = newStudentItems[personalNumber];
@@ -370,7 +344,6 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   };
 
   const selectStudentsDebounced = (records: TaskResultNameRecord[]) => {
-    console.log("Debounce studentSelect");
     debouncedWrapperForApply(() => {
       const newStudentItems = selectStudentsByNameRecords(records);
       generateActions(newStudentItems);
@@ -447,7 +420,6 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   };
 
   const handleRealApplyDebounced = () => {
-    // allowSuccessMessage.current = true;
     debouncedWrapperForApply(handleRealApply);
   };
 
@@ -485,20 +457,11 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
           Распрасить студентов
         </Button>
         <h3>Студенты (активные), прошедшие Тестовое</h3>
-
-        {/* <RefreshButton
-          onClick={handleRefreshAdmissionInfo}
-          title="Обновить список"
-        /> */}
-
-        {/* <div className="load_content_container_small">
-          {ensureDataInProgress && <CircularProgress className="progress_icon_small" />} */}
         <RefreshButton
           onClick={handleRefreshAdmissionInfo}
           title="Обновить список"
           loading={ensureDataInProgress}
         />
-        {/* </div> */}
 
         <section className="table__container">
           <table className="table">

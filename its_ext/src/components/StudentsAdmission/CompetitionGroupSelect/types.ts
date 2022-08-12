@@ -1,6 +1,3 @@
-import { ICompetitionGroup } from "../../../common/types";
-import { ISelectionListItem } from "../../SelectionList/types";
-
 export interface ICompetitionGroupItem {
   id: number;
   name: string;

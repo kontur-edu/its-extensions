@@ -1,4 +1,5 @@
 import React from "react";
+// eslint-disable-next-line
 import style from "./OuterLink.module.css";
 
 import { IOuterLinkProps } from "./types";
@@ -17,12 +18,11 @@ export function OuterLink(props: React.PropsWithChildren<IOuterLinkProps>) {
         display: "inline-flex",
         alignItems: "center",
         fontSize: "1em",
-        margin: "0 0.4em"
+        margin: "0 0.4em",
       }}
     >
       <NorthEastIcon />
       {props.children}
-      {/* {props.title} */}
     </Link>
   );
 }

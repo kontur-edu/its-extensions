@@ -34,14 +34,12 @@ export function StudentInfo(props: IStudentInfoProps) {
   };
 
   const handleExit = () => {
-    context.requestService.ExitStudent().then(res => {
+    context.requestService.ExitStudent().then((res) => {
       alert(`Exit result: ${res}`);
     });
-  }
+  };
 
-  const handleAuth = () => {
-    
-  }
+  const handleAuth = () => {};
 
   return (
     <section className={style.modal}>
@@ -49,7 +47,6 @@ export function StudentInfo(props: IStudentInfoProps) {
       <button onClick={handleRequest}>RequestData</button>
       <button onClick={handleExit}>Exit</button>
       <div dangerouslySetInnerHTML={{ __html: data }} />
-      
     </section>
   );
 }

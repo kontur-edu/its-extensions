@@ -106,20 +106,9 @@ export function createSubgroupDiffInfo(
   competitionGroupToSubgroupIds: ICompetitionGroupToSubgroupIds,
   subgroupData: ISubgroupData
 ): ISubgoupDiffInfo {
-  // debugger;
-  // console.log(`>>>>>> createSubgroupDiffInfo ${competitionGroupIds}`);
-  // console.log("competitionGroupToSubgroupMetas");
-  // console.log(competitionGroupToSubgroupMetas);
   const metaDiffs: MetaDiffs = {};
   for (let competitionGroupId of competitionGroupIds) {
-    // console.log("> competitionGroupToSubgroupMetas");
-    // console.log(competitionGroupToSubgroupMetas);
-    // console.log("> competitionGroupId");
-    // console.log(competitionGroupId);
-
     const subgroupMetas = competitionGroupToSubgroupMetas[competitionGroupId];
-    // console.log("subgroupMetas");
-    // console.log(subgroupMetas);
     for (let subgroupMeta of subgroupMetas) {
       if (!metaDiffs.hasOwnProperty(subgroupMeta.discipline)) {
         metaDiffs[subgroupMeta.discipline] = {};
@@ -299,13 +288,8 @@ export function createSubgroupDiffs(
 export function createMupToDifferenceMessages(
   mupNames: string[],
   sDiffs: { [key: string]: IMupSubgroupDiff },
-  // competitionGroupIds: number[],
   subgroupDiffInfo: ISubgoupDiffInfo
 ): { [key: string]: string[] } {
-  // console.log(`createMupToDifferenceMessages: sDiffs`);
-  // console.log(sDiffs);
-  // console.log(`createMupToDifferenceMessages: subgroupDiffInfo`);
-  // console.log(subgroupDiffInfo);
   const res: { [key: string]: string[] } = {};
   mupNames.forEach((mupName) => {
     if (!sDiffs.hasOwnProperty(mupName)) {
@@ -314,7 +298,6 @@ export function createMupToDifferenceMessages(
     res[mupName] = createDifferenceMessagesForMup(
       mupName,
       sDiffs[mupName],
-      // competitionGroupIds,
       subgroupDiffInfo
     );
   });
@@ -324,7 +307,6 @@ export function createMupToDifferenceMessages(
 export function createDifferenceMessagesForMup(
   mupName: string,
   sDiff: IMupSubgroupDiff,
-  // competitionGroupIds: number[],
   subgroupDiffInfo: ISubgoupDiffInfo
 ): string[] {
   const messages: string[] = [];

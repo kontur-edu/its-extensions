@@ -181,11 +181,9 @@ export async function createPromisesAndWaitAllPaginated<T>(
   func: (v: T) => Promise<any>,
   size: number = MAX_ASYNC_REQUEST_PER_BATCH
 ) {
-  // console.warn("createPromisesAndWaitAllPaginated");
   const pages = paginate(arr, size);
   const pagesSettled: PromiseSettledResult<any>[][] = [];
   for (const page of pages) {
-    // console.warn("--------------> ");
     const pageSettled = await Promise.allSettled(page.map(func));
     pagesSettled.push(pageSettled);
   }

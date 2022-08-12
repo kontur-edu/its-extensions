@@ -16,7 +16,6 @@ import {
   IMupLoad,
   IMupDiff,
   IPeriodTimeInfo,
-  // IMupToPeriods,
   IPeriod,
   IMupData,
   IModuleSelection,
@@ -218,14 +217,6 @@ function generateAddLoadsActions(
 ) {
   const actions: ITSAction[] = [];
   for (let mupId of selectedMupsIds) {
-    // let loads: IMupLoad[] = [];
-    // for (let period of mupToPeriods[mupId]) {
-    //   if (period.loads.length > 0) {
-    //     loads = period.loads;
-    //     break;
-    //   }
-    // }
-
     const mupDiff = mupDiffs[mupId];
 
     // NOTE: if we want to have same loads for 3 and 4 coursess
@@ -269,17 +260,6 @@ function generateUpdatePeriodActions(
           currentPeriod.selectionBegin !== periodTimeInfo.dates[0] ||
           currentPeriod.selectionDeadline !== periodTimeInfo.dates[1]
         ) {
-          // if (!mupDiff.canBeDeleted) {
-          //   const periodInfoNotChangedSelectionBegin: IPeriodTimeInfo = {
-          //     ...periodTimeInfo,
-          //     dates: [currentPeriod.selectionBegin, periodTimeInfo.dates[1]],
-          //   };
-          //   actions.push(
-          //     new UpdatePeriodAction(mupId, periodInfoNotChangedSelectionBegin)
-          //   );
-          // } else {
-          //   actions.push(new UpdatePeriodAction(mupId, periodTimeInfo));
-          // }
           actions.push(new UpdatePeriodAction(mupId, periodTimeInfo));
         }
       }
@@ -297,8 +277,6 @@ function generateUpdateModulesAction(
   moduleData: IModuleData
 ) {
   const actions: ITSAction[] = [];
-  console.log("zeToModuleSelection");
-  console.log(zeToModuleSelection);
   for (let mupId of selectedMupsIds) {
     const ze = mupData.data[mupId].ze;
 
@@ -308,8 +286,6 @@ function generateUpdateModulesAction(
         moduleIdToSelection[rm.id] = rm.selected;
       });
     }
-    // console.log("moduleIdToSelection");
-    // console.log(moduleIdToSelection);
     for (let i = 0; i < selectedMupsIds.length; i++) {
       const selectionGroupId = selectionGroupsIds[i];
       if (mupDiffs[mupId].updateSelectedModuleDisciplines[i]) {
@@ -388,9 +364,11 @@ export function createActions(
   );
 
   if (actions.length > 0) {
-    actions.push(...generateRefreshActions(selectionGroupsIds, selectedMupsIds));
+    actions.push(
+      ...generateRefreshActions(selectionGroupsIds, selectedMupsIds)
+    );
   }
-  
+
   actions.push(
     ...generateUpdateLimitActions(
       selectionGroupsIds,
@@ -416,7 +394,6 @@ export function createActions(
       selectedMupsIds,
       mupDiffs,
       courseToPeriodTimeInfo
-      // itsContext.dataRepository.mupToPeriods
     )
   );
 

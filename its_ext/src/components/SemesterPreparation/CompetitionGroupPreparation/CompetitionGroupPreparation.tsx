@@ -1,4 +1,3 @@
-import { Button } from "@mui/material";
 import React, { useContext, useState, useRef, useEffect } from "react";
 import { COMPETITION_GROUP_URL, DEBOUNCE_MS } from "../../../utils/constants";
 import { ITSContext } from "../../../common/Context";
@@ -64,9 +63,6 @@ export function CompetitionGroupPreparation(
     number | null
   >(null);
 
-  // const [allMupNames, setAllMupNames] = useState<Set<string>>(
-  //   new Set<string>()
-  // );
   const [updateSubgroupCountActions, setUpdateSubgroupCountActions] = useState<
     ITSAction[]
   >([]);
@@ -103,11 +99,11 @@ export function CompetitionGroupPreparation(
     refresh: boolean = false,
     forceRefreshSubgroups: boolean = false
   ) => {
-    console.log("CompetitionGroupPreparation: ensureData");
+    // console.log("CompetitionGroupPreparation: ensureData");
     if (currentEnsurePromise.current !== null) {
-      console.log(
-        "CompetitionGroupPreparation: ensureData is already in progress"
-      );
+      // console.log(
+      //   "CompetitionGroupPreparation: ensureData is already in progress"
+      // );
       return currentEnsurePromise.current;
     }
     setEnsureInProgress(true);
@@ -220,9 +216,6 @@ export function CompetitionGroupPreparation(
       ).forEach((mId) => allMupIds.add(mId));
     }
 
-    // console.log("allMupIds");
-    // console.log(allMupIds);
-
     return { newSelectedCompetitionGroupId, allMupIds };
   };
 
@@ -234,8 +227,6 @@ export function CompetitionGroupPreparation(
     const newAllMupNames = new Set<string>(
       Array.from(allMupIds).map((mId) => repo.mupData.data[mId].name)
     );
-    // console.log("newAllMupNames");
-    // console.log(newAllMupNames);
 
     const actions = createUpdateSubgroupCountActions(
       cgId,
@@ -359,8 +350,9 @@ export function CompetitionGroupPreparation(
       .finally(() => props.onLoad());
 
     return () => {
-      console.warn("CompetitionGroupPreparation UNMOUNTED");
+      // console.warn("CompetitionGroupPreparation UNMOUNTED");
     };
+    // eslint-disable-next-line
   }, []);
 
   const handleCompetitionGroupChange = (event: SelectChangeEvent) => {

@@ -18,7 +18,9 @@ export interface ISimpleSelectProps {
 
 export function SimpleSelect(props: ISimpleSelectProps) {
   return (
-    <FormControl style={{ minWidth: 120, margin: '1em', display: 'inline-block' }}>
+    <FormControl
+      style={{ minWidth: 120, margin: "1em", display: "inline-block" }}
+    >
       <InputLabel id="competition-group-preparation-select">
         {props.label}
       </InputLabel>

@@ -3,12 +3,6 @@ import { ISubgroup, ISubgroupInfo, ISubgroupMeta } from "../common/types";
 import { ActionType, ITSAction } from "../common/actions";
 import { IActionResponse } from "../utils/ITSApiService";
 
-// Add loads for mup Period
-
-// Change count of subgroups
-// Create subgroups
-// Copy Teachers from existing load_number
-// https://its.urfu.ru/MUPItsSubgroup/Create?competitionGroupId=28
 export class CreateSubgroupsAction extends ITSAction {
   constructor(public competitionGroupId: number) {
     super(ActionType.CreateSubgroups);
@@ -29,7 +23,6 @@ export class CreateSubgroupsAction extends ITSAction {
 
 export class UpdateSubgroupMetaLoadCountAction extends ITSAction {
   constructor(
-    // public subgroupMetaId: number,
     public meta: ISubgroupMeta,
     public newCount: number,
     public mupName: string
@@ -84,7 +77,7 @@ export class UpdateTeacherForSubgroupAction extends ITSAction {
     public competitionGroupId: number,
     public subgroupInfo: ISubgroupInfo,
     public teacherId?: string,
-    public limit?: number,
+    public limit?: number
   ) {
     super(ActionType.UpdateTeacherForSubgroup);
   }
@@ -97,7 +90,7 @@ export class UpdateTeacherForSubgroupAction extends ITSAction {
     if (this.limit !== undefined) {
       updates.push(`обновить лимит: ${this.limit}`);
     }
-    const updatesStr = updates.join(', ');
+    const updatesStr = updates.join(", ");
     return `Обновить подгруппу: ${updatesStr} для МУПа: ${this.subgroupInfo.mupName}
         нагрузки: ${this.subgroupInfo.load} с номером: ${this.subgroupInfo.number}
         (Конкурсная группа с id:${this.competitionGroupId})`;
@@ -130,13 +123,13 @@ export class UpdateTeacherForSubgroupAction extends ITSAction {
             (competitionGroupId: ${this.competitionGroupId})`);
     }
     const updatedSubgroup: ISubgroup = {
-      ...subgroup
+      ...subgroup,
     };
     if (this.teacherId !== undefined) {
       updatedSubgroup.teacherId = this.teacherId;
     }
     if (this.limit !== undefined) {
-      updatedSubgroup.limit = this.limit
+      updatedSubgroup.limit = this.limit;
     }
     return [await context.apiService.UpdateSubgroup(updatedSubgroup)];
   }

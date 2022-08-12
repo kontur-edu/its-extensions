@@ -2,20 +2,11 @@ import React, { useState, useContext, useEffect, useRef } from "react";
 import { ITSContext } from "../../../common/Context";
 import style from "./CompetitionGroupSync.module.css";
 import { ICompetitionGroupSyncProps } from "./types";
-import {
-  COMPETITION_GROUP_URL,
-  COMPETITION_GROUP_SUBGROUP_META_URL,
-  DEBOUNCE_MS,
-} from "../../../utils/constants";
-import { ISubgoupDiffInfo, IMupSubgroupDiff } from "../../../common/types";
-import { REQUEST_ERROR_UNAUTHORIZED } from "../../../utils/constants";
+import { COMPETITION_GROUP_URL, DEBOUNCE_MS } from "../../../utils/constants";
 import { ITSAction } from "../../../common/actions";
 import { IActionExecutionLogItem } from "../../../common/actions";
 
-import {
-  createActionsByDiffs,
-  getMupNameActions,
-} from "../../../subgroupUpdater/actionCreator";
+import { getMupNameActions } from "../../../subgroupUpdater/actionCreator";
 
 import { createDebouncedWrapper } from "../../../utils/helpers";
 import { executeActions } from "../../../common/actions";
@@ -46,9 +37,6 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
 
   const [canBeSync, setCanBeSync] = useState<boolean>(true);
   const [mupIds, setMupIds] = useState<string[]>([]);
-  // const [competitionGroupIdToInfo, setCompetitionGroupIdToInfo] = useState<{
-  //   [key: number]: ISubgroupReferenceInfo;
-  // }>({});
   const [mupToMessages, setMupToMessages] = useState<{
     [key: string]: [string[], string[]];
   }>({});
@@ -80,9 +68,9 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
     refresh: boolean = false,
     forceRefreshSubgroups: boolean = false
   ) => {
-    console.log("SubgroupSelection: ensureData");
+    // console.log("SubgroupSelection: ensureData");
     if (currentEnsurePromise.current !== null) {
-      console.log("SubgroupSelection: ensureData is already in progress");
+      // console.log("SubgroupSelection: ensureData is already in progress");
       return currentEnsurePromise.current;
     }
     setEnsureInProgress(true);
@@ -156,7 +144,6 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
   const prepareData = (
     newReferenceCompetitionGroupId: number | null = null
   ) => {
-    console.warn(`prepareData: ${newReferenceCompetitionGroupId}`);
     const repo = context.dataRepository;
 
     const newCompetitionGroupIds = extractCompetitionGroupIds(
@@ -259,8 +246,6 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
       mupNameToMupId,
       competitionGroupIdToInfo,
       repo.competitionGroupToSubgroupMetas
-      // repo.competitionGroupToSubgroupIds,
-      // repo.subgroupData
     );
     setSyncActions(newActions);
     return newActions;
@@ -286,9 +271,6 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
       newMupNameToMessages[mupName][1] = getTodoMessagesByActions(
         mupNameToActions[mupName]
       );
-      // newMupNameToMessages[mupName][1] = mupNameToActions[mupName].map((a) =>
-      //   a.getMessageSimple()
-      // );
     }
 
     for (const mupName in mupNameToDiffMEssages) {
@@ -315,11 +297,11 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
         competitionGroupIdToInfo,
       } = prepareData(competitionGroupId);
       if (newReferenceCompetitionGroupId === null) {
-        console.warn(`newReferenceCompetitionGroupId is null`);
+        // console.warn(`newReferenceCompetitionGroupId is null`);
         return;
       }
       if (!newCanBeSync) {
-        console.warn(`Cannot be synchronized`);
+        // console.warn(`Cannot be synchronized`);
         return;
       }
       // setCompetitionGroupIdToInfo(competitionGroupIdToInfo);
@@ -354,7 +336,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
 
   useEffect(() => {
     return () => {
-      console.warn("CompetitionGroupSync UNMOUNTED");
+      // console.warn("CompetitionGroupSync UNMOUNTED");
     };
   }, []);
 
@@ -363,18 +345,20 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
       return;
     }
     refreshData(false);
+    // eslint-disable-next-line
   }, [props.selectionGroupIds]);
 
   useEffect(() => {
-    console.warn(
-      `NEW referenceCompetitionGroupId: ${props.referenceCompetitionGroupId}`
-    );
+    // console.warn(
+    //   `NEW referenceCompetitionGroupId: ${props.referenceCompetitionGroupId}`
+    // );
     if (props.referenceCompetitionGroupId !== null) {
       setReferenceCompetitionGroupId(props.referenceCompetitionGroupId);
       refreshDataForNewReferenceCompetitionGroupDebounced(
         props.referenceCompetitionGroupId
       );
     }
+    // eslint-disable-next-line
   }, [props.referenceCompetitionGroupId]);
 
   const handleReferenceCompetitionGroupChange = (event: SelectChangeEvent) => {

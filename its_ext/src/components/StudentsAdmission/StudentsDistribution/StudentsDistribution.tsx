@@ -19,10 +19,7 @@ import {
   addRandomMupsForStudentIfNeeded,
 } from "../../../studentAdmission/studentDistributor";
 import { ITSContext } from "../../../common/Context";
-import {
-  REQUEST_ERROR_UNAUTHORIZED,
-  DEBOUNCE_MS,
-} from "../../../utils/constants";
+import { DEBOUNCE_MS } from "../../../utils/constants";
 import { createDebouncedWrapper } from "../../../utils/helpers";
 import { createStudentAdmissionActions } from "../../../studentAdmission/actionCreator";
 import {
@@ -144,11 +141,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   const refreshData = () => ensureData(true);
 
   const prepareItemsAndStudentMupDataText = () => {
-    // console.log("context.dataRepository.competitionGroupIdToMupAdmissions");
-    // console.log(context.dataRepository.competitionGroupIdToMupAdmissions);
-    // console.log("context.dataRepository.admissionInfo");
-    // console.log(context.dataRepository.admissionInfo);
-
     const allPersonalNumbers = getAllPersonalNumbers(
       props.competitionGroupIds,
       context.dataRepository.competitionGroupIdToMupAdmissions,
@@ -216,17 +208,11 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     setStudentAdmissionsText(
       JSON.stringify(newStudentDistributionData, null, 2)
     );
-
-    // console.log("newPersonalNumberToStudentItems");
-    // console.log(studentAndMupItems.personalNumberToStudentItems);
-
-    // console.log("newMupIdToMupItems");
-    // console.log(studentAndMupItems.mupIdToMupItems);
   };
 
   useEffect(() => {
     return () => {
-      console.warn("StudentDistribution UNMOUNTED");
+      // console.warn("StudentDistribution UNMOUNTED");s
     };
   }, []);
 
@@ -234,6 +220,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     refreshData()
       .then(() => prepareItemsAndStudentMupDataText())
       .finally(() => props.onLoad());
+    // eslint-disable-next-line
   }, [props.competitionGroupIds]);
 
   const handleRefresh = () => {
@@ -268,8 +255,8 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       context.dataRepository.competitionGroupIdToMupAdmissions
     );
     setStudentAdmissionsTextInputMessages(messages);
-    console.log("validateStudentAdmissions");
-    console.log({ success, messages });
+    // console.log("validateStudentAdmissions");
+    // console.log({ success, messages });
 
     if (success) {
       const personalNumberToSelectedAdmissionIds: { [key: string]: string[] } =
@@ -288,9 +275,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         context.dataRepository.studentData,
         personalNumberToSelectedAdmissionIds
       );
-
-      // console.log("studentAndMupItems");
-      // console.log(studentAndMupItems);
 
       setPersonalNumberToStudentItems(
         studentAndMupItems.personalNumberToStudentItems
@@ -375,8 +359,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
 
   const handleRealApplyDebounced = () => {
     debouncedWrapperForApply(() => {
-      // alert("Real apply declined");
-      // return;
       executeActions(studentAdmissionActions, context)
         .then((actionResults) => {
           setStudentAdmissionActionResults(actionResults);
@@ -435,7 +417,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           <tr key={personalNumber}>
             <td>
               {student.surname} {student.firstname} {student.patronymic}{" "}
-              {/* {personalNumber} */}
             </td>
             <td>{student.groupName}</td>
             <td>{student.rating}</td>

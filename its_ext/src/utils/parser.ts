@@ -3,8 +3,10 @@ import { CSRF_TOKEN_INPUT_NAME } from "./constants";
 export function findCsrfTokens(page: string) {
   const tokens: string[] = [];
   const htmlPage = new DOMParser().parseFromString(page, "text/html");
-  const elementsWithCsrfToken = htmlPage.getElementsByName(CSRF_TOKEN_INPUT_NAME);
-  
+  const elementsWithCsrfToken = htmlPage.getElementsByName(
+    CSRF_TOKEN_INPUT_NAME
+  );
+
   for (let i = 0; i < elementsWithCsrfToken.length; i++) {
     const elementWithCsrfToken = elementsWithCsrfToken[i];
     const token = elementWithCsrfToken.getAttribute("value");
@@ -12,7 +14,6 @@ export function findCsrfTokens(page: string) {
       tokens.push(token);
     }
   }
-
 
   return tokens;
 }

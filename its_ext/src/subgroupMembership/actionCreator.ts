@@ -38,7 +38,7 @@ function generateUpdateMembershipActions(
             )
           ) {
             console.log(
-              `нагрузка "load_number" не найдена в subgoupDiffInfo.subgroupDiffs[${mupName}][${cgId}]`
+              `нагрузка "${load_number}" не найдена в subgoupDiffInfo.subgroupDiffs[${mupName}][${cgId}]`
             );
             continue;
           }
@@ -54,8 +54,6 @@ function generateUpdateMembershipActions(
     }
   }
 
-  // console.log("newSubroupIdToIncludedStudentIds");
-  // console.log(newSubroupIdToIncludedStudentIds);
 
   for (const subgroupIdStr in subgroupIdToStudentSubgroupMembership) {
     const subgroupId = Number(subgroupIdStr);
@@ -78,7 +76,6 @@ function generateUpdateMembershipActions(
       newStudentIds.filter((sId) => !initStudentIdSet.has(sId))
     );
 
-    // console.log(`subgroupId: ${subgroupId}`);
     for (const sId of Array.from(toExclude)) {
       actions.push(new UpdateMembershipAction(sId, subgroupId, false));
     }
@@ -98,13 +95,6 @@ export function createSubgroupMembershipActions(
   },
   studentData: IStudentData
 ): ITSAction[] {
-  // console.log("createSubgroupMembershipActions");
-  // console.log("subgoupDiffInfo");
-  // console.log(subgoupDiffInfo);
-  // console.log("mupToLoadToSubgroupMembership");
-  // console.log(mupToLoadToSubgroupMembership);
-  // console.log("subgroupIdToStudentSubgroupMembership");
-  // console.log(subgroupIdToStudentSubgroupMembership);
   const actions: ITSAction[] = [];
 
   actions.push(

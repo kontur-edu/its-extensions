@@ -31,7 +31,8 @@ export function MupsList(props: IMupsListProps) {
       .map((mupId: string) => {
         const mup = props.mupData.data[mupId];
         if (!mup) {
-          console.log(`Not found mup for [${mupId}]`);
+          console.warn(`MupsList: mup not founf for id: [${mupId}]`);
+          return null;
         }
         const mupEdit = props.mupEdits[mupId];
         const haveMessages =

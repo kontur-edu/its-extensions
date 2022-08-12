@@ -1,4 +1,5 @@
 import React from "react";
+// eslint-disable-next-line
 import style from "./RefreshButton.module.css";
 
 import { IRefreshButtonProps } from "./types";

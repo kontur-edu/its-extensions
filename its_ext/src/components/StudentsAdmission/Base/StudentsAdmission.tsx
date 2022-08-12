@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
-
+// eslint-disable-next-line
 import style from "./StudentsAdmission.module.css";
 import { IStudentsAdmissionProps } from "./types";
 import { ITSContext } from "../../../common/Context";
@@ -86,6 +86,7 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
 
   useEffect(() => {
     refreshCompetitionGroups();
+    // eslint-disable-next-line
   }, [props.isUnauthorized]);
 
   const handleCompetitionGroupsSelect = (newCompetitionGroupIds: number[]) => {

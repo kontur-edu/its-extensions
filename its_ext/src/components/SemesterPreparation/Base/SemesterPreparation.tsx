@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { MupEditor } from "../MupEditor";
 import { ISelectionListItem } from "../../SelectionList/types";
+// eslint-disable-next-line
 import style from "./SemesterPreparation.module.css";
 import { ISemesterPreparationProps } from "./types";
 import {
@@ -114,6 +115,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
   useEffect(() => {
     refreshSelectionGroups();
     return () => {};
+    // eslint-disable-next-line
   }, [props.isUnauthorized]);
 
   const renderStep2 = () => {

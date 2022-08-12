@@ -9,10 +9,9 @@ export interface ISelectionGroup {
   year: number;
   semesterId: number;
   semesterName: string;
-  // ze: number; // UnitsSum.
 
   eduSpaceId: number;
-  unitSum: number; // zet
+  unitSum: number; // З.Е
   byPriority: number;
   competitionGroupId: number | null;
   competitionGroupName: string;
@@ -137,9 +136,8 @@ export interface ISubgroup {
 
 export type ICompetitionGroupToSubgroups = { [key: number]: ISubgroup[] };
 
-// subgroupId to Subgroup
+// subgroupId -> Subgroup
 export interface ISubgroupData {
-  // ids: number[];
   data: { [key: number]: ISubgroup };
 }
 export type ICompetitionGroupToSubgroupIds = { [key: number]: number[] };
@@ -159,7 +157,7 @@ export type MetaDiffs = {
     // competitionGroupId
     [key: number]: {
       // load
-      [key: string]: ISubgroupMeta; //
+      [key: string]: ISubgroupMeta;
     };
   };
 };
@@ -238,7 +236,7 @@ export interface IStudentAdmissionRaw {
   rating: number | null;
   priority: number | null;
   testResult: number | null;
-  status: number; // 0 - не зачислен, 1 - зачислен
+  status: number; // 0 - нет решения, 1 - зачислен, 2 - не зачислен
   studentStatus: string;
   groupName: string;
 }
@@ -263,19 +261,11 @@ export interface IStudentData {
   data: { [key: string]: IStudent };
 }
 
-// competitionGroup -> mup -> Admissions[]
-// students
-// Admission
-//  - studentId
-//  - priority
 export interface IStudentAdmission {
-  // id: string;
-  // personalNumber: string;
-  // mupId: string;
   admissionId: number;
   priority: number | null;
   testResult: number | null;
-  status: number; // 0 - нет решения, 1 - зачислен
+  status: number; // 0 - нет решения, 1 - зачислен, 2 - не зачислен
 }
 
 export type AdmissionInfo = {

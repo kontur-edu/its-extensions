@@ -17,7 +17,6 @@ import { BackButton } from "../../BackButton";
 import { CompetitionGroupPreparation } from "../CompetitionGroupPreparation";
 import { createDebouncedWrapper } from "../../../utils/helpers";
 
-
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
 export function SemesterPreparation(props: ISemesterPreparationProps) {
@@ -45,27 +44,25 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     }
     if (!requestSelectionGroupsInProgress.current) {
       requestSelectionGroupsInProgress.current = true;
-      context.dataRepository
-        .UpdateSelectionGroupData()
-        .then(() => {
-          requestSelectionGroupsInProgress.current = false;
-          setSelectionGroupsListItems(
-            context.dataRepository.selectionGroupData.ids.map((sgId) => {
-              return {
-                id: sgId,
-                name: context.dataRepository.selectionGroupData.data[sgId].name,
-              };
-            })
-          );
-        })
-        .catch((err) => {
-          requestSelectionGroupsInProgress.current = false;
-          if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-            props.onUnauthorized();
-            return;
-          }
-          throw err;
-        });
+      context.dataRepository.UpdateSelectionGroupData().then(() => {
+        requestSelectionGroupsInProgress.current = false;
+        setSelectionGroupsListItems(
+          context.dataRepository.selectionGroupData.ids.map((sgId) => {
+            return {
+              id: sgId,
+              name: context.dataRepository.selectionGroupData.data[sgId].name,
+            };
+          })
+        );
+      });
+      // .catch((err) => {
+      //   requestSelectionGroupsInProgress.current = false;
+      //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+      //     props.onUnauthorized();
+      //     return;
+      //   }
+      //   throw err;
+      // });
     }
   };
 

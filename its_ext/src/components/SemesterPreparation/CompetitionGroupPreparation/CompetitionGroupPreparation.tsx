@@ -170,16 +170,16 @@ export function CompetitionGroupPreparation(
       .then(() => {
         currentEnsurePromise.current = null;
         setEnsureInProgress(false);
-      })
-      .catch((err) => {
-        currentEnsurePromise.current = null;
-        setEnsureInProgress(false);
-        if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-          props.onUnauthorized();
-          return;
-        }
-        throw err;
       });
+    // .catch((err) => {
+    //   currentEnsurePromise.current = null;
+    //   setEnsureInProgress(false);
+    //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+    //     props.onUnauthorized();
+    //     return;
+    //   }
+    //   throw err;
+    // });
 
     currentEnsurePromise.current = ensurePromise;
     return ensurePromise;
@@ -358,7 +358,7 @@ export function CompetitionGroupPreparation(
           generateAllActions(newSelectedCompetitionGroupId, allMupIds);
       })
       .finally(() => props.onLoad());
-  
+
     return () => {
       console.warn("CompetitionGroupPreparation UNMOUNTED");
     };

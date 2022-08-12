@@ -16,11 +16,15 @@ export class RequestService {
     public proxyUrl: string,
     public loginUrl: string,
     public apiValidator: ApiValidator,
-    private onConnectionRefused?: () => any
+    private onConnectionRefused?: () => any,
+    private onUnauthorized?: () => any
   ) {}
 
   setOnConnectionRefused(func: () => any) {
     this.onConnectionRefused = func;
+  }
+  setOnUnauthorized(func: () => any) {
+    this.onUnauthorized = func;
   }
 
   static formatFormData(obj: FormBodyObj): string {
@@ -92,21 +96,22 @@ export class RequestService {
 
     let response = await this.fetchWithRetry(url, options, maxRetries);
     if (!response) {
-      console.error("fetchWithRetry was not able to get any data");
+      console.warn("fetchWithRetry was not able to get any data");
       return { success: true, data: "502 Bad Gateway" };
     }
     if (response.status === 502) {
       // delay
-      console.error(`SendRequest with retries: result ${response.status}`);
+      console.warn(`SendRequest with retries: result ${response.status}`);
       const message = await response.text();
-      console.error(`message: ${message}`);
+      console.warn(`message: ${message}`);
     }
 
     if (response.status === 401) {
-      throw Error(REQUEST_ERROR_UNAUTHORIZED);
+      this.onUnauthorized?.();
+      throw new Error(REQUEST_ERROR_UNAUTHORIZED);
     }
     if (response.status === 500) {
-      throw Error(REQUEST_ERROR_REQUEST_FAILED);
+      throw new Error(REQUEST_ERROR_REQUEST_FAILED);
     }
     if (response.status === 302 || response.status === 204) {
       return { success: true, data: "" };
@@ -180,6 +185,7 @@ export class RequestService {
     return false;
   }
 
+  // NOTE: only used in Student auth
   private async getWithManualRedirectInBody(
     url: string
   ): Promise<{ success: boolean; data?: any }> {

@@ -32,9 +32,9 @@ export function MainMenuButton(
 export function MainMenu(props: IMainMenuProps) {
   const navigate = useNavigate();
 
-  const handleStudent = () => {
-    navigate("/student");
-  };
+  // const handleStudent = () => {
+  //   navigate("/student");
+  // };
   const handleSemesterPreparation = () => {
     navigate("/semesterPreparation");
   };

@@ -88,7 +88,7 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
 
   useEffect(() => {
     refreshCompetitionGroups();
-  }, []);
+  }, [props.isUnauthorized]);
 
   const handleCompetitionGroupsSelect = (newCompetitionGroupIds: number[]) => {
     setStepTwoLoaded(false);

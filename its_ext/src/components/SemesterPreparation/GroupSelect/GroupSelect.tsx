@@ -13,7 +13,6 @@ export function GroupSelect(props: IGroupSelectProps) {
     props.onRefresh();
   };
 
-  // FIXME: При первом корректном выборе не запрашиваются данные МУПов для групп (понять почему)
   const handleSelectionGroupToggle = (id: number) => {
     let newIds = [];
     if (selectionGroupsIds.includes(id)) {
@@ -23,9 +22,7 @@ export function GroupSelect(props: IGroupSelectProps) {
     }
 
     setSelectionGroupsIds(newIds);
-    // if (newIds.length === 2) {
     props.onSelection(newIds);
-    // }
   };
 
   useEffect(() => {

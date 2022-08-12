@@ -178,7 +178,7 @@ export function paginate(arr: Array<any>, size: number) {
 export async function createPromisesAndWaitAllPaginated<T>(
   arr: Array<T>,
   func: (v: T) => Promise<any>,
-  size: number = 50
+  size: number = 10
 ) {
   // console.warn("createPromisesAndWaitAllPaginated");
   const pages = paginate(arr, size);

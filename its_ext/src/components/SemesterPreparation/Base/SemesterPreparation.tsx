@@ -3,7 +3,10 @@ import { MupEditor } from "../MupEditor";
 import { ISelectionListItem } from "../../SelectionList/types";
 import style from "./SemesterPreparation.module.css";
 import { ISemesterPreparationProps } from "./types";
-import { REQUEST_ERROR_UNAUTHORIZED } from "../../../utils/constants";
+import {
+  DEBOUNCE_MS,
+  REQUEST_ERROR_UNAUTHORIZED,
+} from "../../../utils/constants";
 
 import { GroupSelect } from "../GroupSelect/GroupSelect";
 import { ITSContext } from "../../../common/Context";
@@ -12,6 +15,7 @@ import { CompetitionGroupSync } from "../CompetitionGroupSync";
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 import { BackButton } from "../../BackButton";
 import { CompetitionGroupPreparation } from "../CompetitionGroupPreparation";
+import { createDebouncedWrapper } from "../../../utils/helpers";
 
 // Получение данных:
 // Запросить все Группы выбора
@@ -43,6 +47,7 @@ import { CompetitionGroupPreparation } from "../CompetitionGroupPreparation";
 // mupId -> limit
 // AllMups if (limit > 0) new
 // mupsUpdate {ids: [], data: {id: {id, limit}}}
+const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
 export function SemesterPreparation(props: ISemesterPreparationProps) {
   // TODO: вынести в отдельный компонент
@@ -115,14 +120,14 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     // setEditorDataPrepared(false);
     // console.log("handleSelectionGroupValid");
     // remember chosen selectionGroup ids
-    const repo = context.dataRepository;
-    const updateMupDataPromise =
-      repo.mupData.ids.length > 0 ? Promise.resolve() : repo.UpdateMupData();
-    // const updateSelectionSelectionGroupDataPromise = repo.CheckSelectionGroupDataPresent(selectionGroupIds) ?
-    //   Promise.resolve() : repo.UpdateSelectionGroupData();
-    updateMupDataPromise.then(() => {
-      setSelectionValid(true);
-      setSelectionGroupsIds(selectionGroupIds);
+    debouncedWrapperForApply(() => {
+      const repo = context.dataRepository;
+      const updateMupDataPromise =
+        repo.mupData.ids.length > 0 ? Promise.resolve() : repo.UpdateMupData();
+      updateMupDataPromise.then(() => {
+        setSelectionValid(true);
+        setSelectionGroupsIds(selectionGroupIds);
+      });
     });
   };
 

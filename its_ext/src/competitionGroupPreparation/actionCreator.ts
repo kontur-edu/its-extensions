@@ -30,8 +30,8 @@ function generateUpdateSubgroupCountToDefaultActions(
   const actions: ITSAction[] = [];
   // console.log("competitionGroupToSubgroupMetas");
   // console.log(competitionGroupToSubgroupMetas);
-  console.log("selectedMupNamesSet");
-  console.log(Array.from(selectedMupNamesSet));
+  // console.log("selectedMupNamesSet");
+  // console.log(Array.from(selectedMupNamesSet));
   if (!competitionGroupToSubgroupMetas.hasOwnProperty(competitionGroupId)) {
     console.warn(
       `Competition group ${competitionGroupId} not found in competitionGroupToSubgroupMetas`

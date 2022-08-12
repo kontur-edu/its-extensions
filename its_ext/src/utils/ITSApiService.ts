@@ -161,7 +161,6 @@ export class ITSApiService {
     selectionGroup: ISelectionGroup,
     mupIds: string[]
   ): Promise<IActionResponse> {
-
     const url = "https://its.urfu.ru/EduSpace/UpdateSelectionGroup";
     const competitionGroupId = selectionGroup.competitionGroupId ?? "";
     const data = {
@@ -185,7 +184,6 @@ export class ITSApiService {
     periodId: number,
     load: IMupLoad
   ): Promise<IActionResponse> {
-
     const url = "https://its.urfu.ru/MUP/AddTmer";
 
     const data = {
@@ -204,14 +202,12 @@ export class ITSApiService {
     periodId: number,
     load: IMupLoad
   ): Promise<IActionResponse> {
-
     const url = "https://its.urfu.ru/MUP/DeleteTmer";
 
     const data = {
       id: periodId,
       kmer: load.kmer,
     };
-
 
     const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
@@ -220,7 +216,6 @@ export class ITSApiService {
   }
 
   async CreatePeriod(mupId: string, period: IPeriod): Promise<IActionResponse> {
-
     const url = "https://its.urfu.ru/MUP/CreatePeriod";
 
     const data = {
@@ -240,7 +235,6 @@ export class ITSApiService {
   }
 
   async UpdatePeriod(mupId: string, period: IPeriod): Promise<IActionResponse> {
-
     const url = "https://its.urfu.ru/MUP/UpdatePeriod";
 
     const data = {
@@ -253,7 +247,6 @@ export class ITSApiService {
       SelectionDeadline: period.selectionDeadline,
     };
 
-
     const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
 
@@ -265,14 +258,12 @@ export class ITSApiService {
     connectionId: number,
     limit: number
   ): Promise<IActionResponse> {
-
     const url = "https://its.urfu.ru/EduSpace/UpdateLimit";
 
     const data = {
       id: connectionId,
       limit: limit,
     };
-
 
     const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
@@ -318,14 +309,12 @@ export class ITSApiService {
     subgroupMetaId: number,
     groupCount: number
   ): Promise<IActionResponse> {
-
     const url = `https://its.urfu.ru/MUPItsSubgroupMeta/Edit`;
 
     const data = {
       id: subgroupMetaId,
       groupCount: groupCount,
     };
-
 
     const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
@@ -355,7 +344,6 @@ export class ITSApiService {
   }
 
   async UpdateSubgroup(subgroup: ISubgroup): Promise<IActionResponse> {
-
     const url = "https://its.urfu.ru/MUPItsSubgroup/Edit";
 
     const data = {
@@ -366,14 +354,12 @@ export class ITSApiService {
       Description: subgroup.description,
     };
 
-
     const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
     return result;
   }
 
   async DeleteSubgroup(subgroupIds: number[]): Promise<IActionResponse> {
-
     const url = "https://its.urfu.ru/MUPItsSubgroup/Delete";
     const data = JSON.stringify(subgroupIds);
 
@@ -460,7 +446,6 @@ export class ITSApiService {
     admissionId: number,
     testResult: number
   ) {
-
     const url = "https://its.urfu.ru/MUPItsAdmission/EditTestResults";
 
     const data = {
@@ -478,7 +463,6 @@ export class ITSApiService {
     admissionId: number,
     status: number
   ) {
-
     const url =
       "https://its.urfu.ru/MUPItsAdmission/SetCompetitionGroupAdmissionStatus";
 
@@ -487,7 +471,6 @@ export class ITSApiService {
       id: admissionId,
       status: status,
     };
-
 
     const result = await this.requestService.PostFormData(url, data);
     return result;
@@ -513,7 +496,6 @@ export class ITSApiService {
     studentId: string,
     included: boolean
   ) {
-
     const url = "https://its.urfu.ru/MUPItsSubgroup/StudentMembership";
 
     const data = {
@@ -554,7 +536,6 @@ export class ITSApiService {
     connectionId: number,
     moduleSelections: IModuleSelection[]
   ) {
-
     const url = "https://its.urfu.ru/EduSpace/UpdateDisciplineConnection";
 
     const moduleDisciplines = moduleSelections.map((ms) => {

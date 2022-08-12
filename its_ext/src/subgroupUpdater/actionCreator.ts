@@ -31,10 +31,10 @@ function findCompetitionGroupsToCreateSubgroups(
   subgroupAndMetaAreSameDiffs: SubgroupAndMetaAreSameDiffs,
   sDiffs: { [key: string]: IMupSubgroupDiff }
 ): number[] {
-  console.log("subgroupAndMetaAreSameDiffs");
-  console.log(subgroupAndMetaAreSameDiffs);
-  console.log("competitionGroupIds");
-  console.log(competitionGroupIds);
+  // console.log("subgroupAndMetaAreSameDiffs");
+  // console.log(subgroupAndMetaAreSameDiffs);
+  // console.log("competitionGroupIds");
+  // console.log(competitionGroupIds);
   const res: Set<number> = new Set<number>();
   for (const mupName in subgroupAndMetaAreSameDiffs) {
     const [s1, s2] = subgroupAndMetaAreSameDiffs[mupName];
@@ -86,8 +86,8 @@ export function createActionsByDiffs(
       subgroupInfo.subgroupAndMetaAreSameDiffs,
       sDiffs
     );
-  console.log("competitionGroupIdsToCreateSubgroups");
-  console.log(competitionGroupIdsToCreateSubgroups);
+  // console.log("competitionGroupIdsToCreateSubgroups");
+  // console.log(competitionGroupIdsToCreateSubgroups);
   actions.push(
     ...generateCreateSubgroupsActions(competitionGroupIdsToCreateSubgroups)
   );

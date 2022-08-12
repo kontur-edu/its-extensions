@@ -319,8 +319,8 @@ export function createMupToLoadToSubgroupMembership(
   },
   studentIdToPersonalNumber: { [key: string]: string } = {}
 ): MupToLoadToSubgroupMembership {
-  console.log("mupNames");
-  console.log(mupNames);
+  // console.log("mupNames");
+  // console.log(mupNames);
   const res = prepareMupToLoadToSubgroupMembership(
     mupNames,
     competitionGroupIds,

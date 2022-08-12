@@ -302,10 +302,10 @@ export function createMupToDifferenceMessages(
   // competitionGroupIds: number[],
   subgroupDiffInfo: ISubgoupDiffInfo
 ): { [key: string]: string[] } {
-  console.log(`createMupToDifferenceMessages: sDiffs`);
-  console.log(sDiffs);
-  console.log(`createMupToDifferenceMessages: subgroupDiffInfo`);
-  console.log(subgroupDiffInfo);
+  // console.log(`createMupToDifferenceMessages: sDiffs`);
+  // console.log(sDiffs);
+  // console.log(`createMupToDifferenceMessages: subgroupDiffInfo`);
+  // console.log(subgroupDiffInfo);
   const res: { [key: string]: string[] } = {};
   mupNames.forEach((mupName) => {
     if (!sDiffs.hasOwnProperty(mupName)) {

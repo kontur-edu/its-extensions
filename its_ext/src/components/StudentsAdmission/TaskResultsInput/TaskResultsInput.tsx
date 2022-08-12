@@ -169,8 +169,8 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
       mupId,
       context.dataRepository.competitionGroupIdToMupAdmissions
     );
-    console.log("competitionGroupIdToAdmissionIds");
-    console.log(competitionGroupIdToAdmissionIds);
+    // console.log("competitionGroupIdToAdmissionIds");
+    // console.log(competitionGroupIdToAdmissionIds);
     return competitionGroupIdToAdmissionIds;
   };
 
@@ -260,8 +260,8 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     // allowSuccessMessage.current = false;
 
     const newMupId = event.target.value;
-    console.log("newMupId");
-    console.log(newMupId);
+    // console.log("newMupId");
+    // console.log(newMupId);
     setSelectedMupId(newMupId);
 
     const newCompetitionGroupToAdmissionIds =

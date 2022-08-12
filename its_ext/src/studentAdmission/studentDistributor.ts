@@ -79,11 +79,6 @@ export function createPersonalNumberToStudentItem(
         const studentItem = personalNumberToStudentItem[personalNumber];
         const admission = personalNumberToAdmission[personalNumber];
 
-        if (personalNumber === "56904306") {
-          console.log("admission");
-          console.log(admission);
-        }
-
         if (admission?.priority || admission?.status === 1) {
           studentItem.admissionIds.push(admissionId);
         }
@@ -114,8 +109,8 @@ export function createMupIdToMupItemByStudentItems(
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions,
   admissionIdToMupId: { [key: number]: string }
 ): { [key: string]: IMupDistributionItem } {
-  console.log("competitionGroupIdToMupAdmissions");
-  console.log(competitionGroupIdToMupAdmissions);
+  // console.log("competitionGroupIdToMupAdmissions");
+  // console.log(competitionGroupIdToMupAdmissions);
   const mupIdToMupItem: { [key: string]: IMupDistributionItem } = {};
   for (const competitionId of competitionGroupIds) {
     const mupIdToAdmission = competitionGroupIdToMupAdmissions[competitionId];
@@ -237,8 +232,8 @@ export function addRandomMupsForStudentIfNeeded(
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions
 ) {
   console.log("addRandomMupsForStudentIfNeeded");
-  console.log("mupIdToMupItem");
-  console.log(mupIdToMupItem);
+  // console.log("mupIdToMupItem");
+  // console.log(mupIdToMupItem);
   for (const personalNumber of personalNumbersOfActiveStudentsSortedByRating) {
     const sItem = personalNumberToStudentItem[personalNumber];
     const zeLimit = competitionGroupIdToZELimit[sItem.competitionGroupId];
@@ -403,8 +398,8 @@ export function prepareStudentAndMupItems(
   };
 } {
   console.log("prepareStudentAndMupItems");
-  console.log("studentPersonalNumberToMupIds");
-  console.log(studentPersonalNumberToMupIds);
+  // console.log("studentPersonalNumberToMupIds");
+  // console.log(studentPersonalNumberToMupIds);
   const personalNumberToStudentItems = createPersonalNumberToStudentItem(
     competitionGroupIds,
     competitionGroupIdToMupAdmissions,

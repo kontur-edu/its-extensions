@@ -247,16 +247,16 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
       })
       .then(() => {
         setEnsureDataInProgress(false);
-      })
-      // .catch((err) => {
-      //   setEnsureDataInProgress(false);
-      //   console.warn(`catch: ${err.message}`);
-      //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-      //     props.onUnauthorized();
-      //     return;
-      //   }
-      //   throw err;
-      // });
+      });
+    // .catch((err) => {
+    //   setEnsureDataInProgress(false);
+    //   console.warn(`catch: ${err.message}`);
+    //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+    //     props.onUnauthorized();
+    //     return;
+    //   }
+    //   throw err;
+    // });
   };
 
   const prepareData = () => {
@@ -346,7 +346,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
   useEffect(() => {
     return () => {
       console.warn("SubgroupDistribution UNMOUNTED");
-    }
+    };
   }, []);
 
   useEffect(() => {

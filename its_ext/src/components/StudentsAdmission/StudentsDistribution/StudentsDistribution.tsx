@@ -125,21 +125,20 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       updateAdmissionMetasPromise().then(() =>
         updateStudentAdmissionsAndStudentDataPromise()
       ),
-    ])
-      .then(() => {
-        currentEnsurePromise.current = null;
-        setEnsureInProgress(false);
-      })
-      // .catch((err) => {
-      //   currentEnsurePromise.current = null;
-      //   setEnsureInProgress(false);
-      //   console.warn(`catch: ${err.message}`);
-      //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-      //     props.onUnauthorized();
-      //     return;
-      //   }
-      //   throw err;
-      // });
+    ]).then(() => {
+      currentEnsurePromise.current = null;
+      setEnsureInProgress(false);
+    });
+    // .catch((err) => {
+    //   currentEnsurePromise.current = null;
+    //   setEnsureInProgress(false);
+    //   console.warn(`catch: ${err.message}`);
+    //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+    //     props.onUnauthorized();
+    //     return;
+    //   }
+    //   throw err;
+    // });
   };
 
   const refreshData = () => ensureData(true);
@@ -228,7 +227,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   useEffect(() => {
     return () => {
       console.warn("StudentDistribution UNMOUNTED");
-    }
+    };
   }, []);
 
   useEffect(() => {

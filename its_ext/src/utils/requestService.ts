@@ -17,7 +17,7 @@ export class RequestService {
     public loginUrl: string,
     public apiValidator: ApiValidator,
     private onConnectionRefused?: () => any,
-    private onUnauthorized?: () => any,
+    private onUnauthorized?: () => any
   ) {}
 
   setOnConnectionRefused(func: () => any) {

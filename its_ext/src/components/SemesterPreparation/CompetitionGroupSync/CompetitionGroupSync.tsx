@@ -138,16 +138,16 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
       .then(() => {
         currentEnsurePromise.current = null;
         setEnsureInProgress(false);
-      })
-      // .catch((err) => {
-      //   currentEnsurePromise.current = null;
-      //   setEnsureInProgress(false);
-      //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-      //     props.onUnauthorized();
-      //     return;
-      //   }
-      //   throw err;
-      // });
+      });
+    // .catch((err) => {
+    //   currentEnsurePromise.current = null;
+    //   setEnsureInProgress(false);
+    //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+    //     props.onUnauthorized();
+    //     return;
+    //   }
+    //   throw err;
+    // });
 
     currentEnsurePromise.current = ensurePromise;
     return ensurePromise;

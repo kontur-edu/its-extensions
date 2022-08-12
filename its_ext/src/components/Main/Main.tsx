@@ -99,7 +99,10 @@ export function Main(props: IMainProps) {
           element={
             <React.Fragment>
               <Modal visible={needAuthentication}>
-                <LoginForm onSubmit={handleLogin} title="Вход в аккаунт its.urfu.ru" />
+                <LoginForm
+                  onSubmit={handleLogin}
+                  title="Вход в аккаунт its.urfu.ru"
+                />
               </Modal>
               <SemesterPreparation
                 isUnauthorized={needAuthentication}
@@ -114,7 +117,10 @@ export function Main(props: IMainProps) {
           element={
             <React.Fragment>
               <Modal visible={needAuthentication}>
-                <LoginForm onSubmit={handleLogin} title="Вход в аккаунт its.urfu.ru" />
+                <LoginForm
+                  onSubmit={handleLogin}
+                  title="Вход в аккаунт its.urfu.ru"
+                />
               </Modal>
               <StudentsAdmission
                 isUnauthorized={needAuthentication}

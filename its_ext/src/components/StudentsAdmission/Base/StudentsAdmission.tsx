@@ -53,37 +53,35 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
       return;
     }
     competitionGroupRefreshInProgress.current = true;
-    context.dataRepository
-      .UpdateCompetitionGroupData()
-      .then(() => {
-        competitionGroupRefreshInProgress.current = false;
-        const newCompetitionGroupItems =
-          context.dataRepository.competitionGroupData.ids.map((cgId) => {
-            const competitionGroup =
-              context.dataRepository.competitionGroupData.data[cgId];
-            const selectionGroups =
-              competitionGroup.selectionGroupNames.join(", ");
-            const cgItem: ICompetitionGroupItem = {
-              id: competitionGroup.id,
-              name: competitionGroup.name,
-              course: competitionGroup.course,
-              year: competitionGroup.year,
-              semesterName: competitionGroup.semesterName,
-              selectionGroupName: selectionGroups,
-            };
+    context.dataRepository.UpdateCompetitionGroupData().then(() => {
+      competitionGroupRefreshInProgress.current = false;
+      const newCompetitionGroupItems =
+        context.dataRepository.competitionGroupData.ids.map((cgId) => {
+          const competitionGroup =
+            context.dataRepository.competitionGroupData.data[cgId];
+          const selectionGroups =
+            competitionGroup.selectionGroupNames.join(", ");
+          const cgItem: ICompetitionGroupItem = {
+            id: competitionGroup.id,
+            name: competitionGroup.name,
+            course: competitionGroup.course,
+            year: competitionGroup.year,
+            semesterName: competitionGroup.semesterName,
+            selectionGroupName: selectionGroups,
+          };
 
-            return cgItem;
-          });
-        setCompetitionGroupItems(newCompetitionGroupItems);
-      })
-      // .catch((err) => {
-      //   competitionGroupRefreshInProgress.current = false;
-      //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-      //     props.onUnauthorized();
-      //     return;
-      //   }
-      //   throw err;
-      // });
+          return cgItem;
+        });
+      setCompetitionGroupItems(newCompetitionGroupItems);
+    });
+    // .catch((err) => {
+    //   competitionGroupRefreshInProgress.current = false;
+    //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+    //     props.onUnauthorized();
+    //     return;
+    //   }
+    //   throw err;
+    // });
   };
 
   useEffect(() => {
@@ -96,7 +94,7 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
     setGroupIdsFixed(false);
     debouncedWrapperForApply(() => {
       setCompetitionGroupIds(newCompetitionGroupIds);
-      setGroupIdsFixed(true); 
+      setGroupIdsFixed(true);
     });
   };
 

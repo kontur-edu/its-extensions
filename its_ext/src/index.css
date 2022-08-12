@@ -189,7 +189,7 @@ td {
 }
 
 .table__container {
-  max-height: 800px;
+  max-height: 600px;
   overflow: auto;
   margin: 1em 0;
 }
@@ -286,4 +286,14 @@ td {
   margin-bottom: 1em;
   padding-left: 1em;
   margin-bottom: 1em;
+}
+
+
+@media (min-height: 1024px) {
+  .table__container {
+    max-height: 900px;
+  }
+  body {
+    font-size: 24px;
+  }
 }

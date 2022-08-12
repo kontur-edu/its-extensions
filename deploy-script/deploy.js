@@ -23,7 +23,7 @@ async function tryCreateBuckets(client, bucketName) {
     console.log("Successfully created a bucket called ", data.Location);
     return true;
   } catch (err) {
-    console.log("Bucket creation failed");
+    console.log("Bucket creation failed. " + err);
   }
   return false;
 }

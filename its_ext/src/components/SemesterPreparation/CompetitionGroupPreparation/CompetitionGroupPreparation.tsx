@@ -7,7 +7,6 @@ import {
   ICompetitionGroupData,
 } from "../../../common/types";
 import {
-  REQUEST_ERROR_UNAUTHORIZED,
   COMPETITION_GROUP_SUBGROUP_METAS_URL,
   COMPETITION_GROUP_SUBGROUP_URL,
 } from "../../../utils/constants";

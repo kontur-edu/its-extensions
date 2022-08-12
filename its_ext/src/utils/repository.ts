@@ -62,22 +62,22 @@ export class ITSRepository {
 
   constructor(public api: ITSApiService) {}
 
-  private async tryRequestWithDelay<T>(ids: T[], repoFunc: (ids: T[]) => Promise<T[]>, maxDelay: number = 100000) {
-    console.warn(`ITSRepository: tryRequestWithDelay ids: ${ids.length}, maxdelay: ${maxDelay}`);
-    let idsToRequest = ids;
-    let delay = 0;
-    while (idsToRequest.length > 0) {
-      console.warn(`tryRequestWithDelay idsToRequest: ${idsToRequest.length}, delay: ${delay}`);
-      if (delay > maxDelay) {
-        break;
-      }
-      if (delay > 0) {
-        await waitPromise(delay);
-      }
-      delay = getNextDelay(delay);
-      idsToRequest = await repoFunc.call(this, idsToRequest);
-    }
-  }
+  // private async tryRequestWithDelay<T>(ids: T[], repoFunc: (ids: T[]) => Promise<T[]>, maxDelay: number = 100000) {
+  //   console.warn(`ITSRepository: tryRequestWithDelay ids: ${ids.length}, maxdelay: ${maxDelay}`);
+  //   let idsToRequest = ids;
+  //   let delay = 0;
+  //   while (idsToRequest.length > 0) {
+  //     console.warn(`tryRequestWithDelay idsToRequest: ${idsToRequest.length}, delay: ${delay}`);
+  //     if (delay > maxDelay) {
+  //       break;
+  //     }
+  //     if (delay > 0) {
+  //       await waitPromise(delay);
+  //     }
+  //     delay = getNextDelay(delay);
+  //     idsToRequest = await repoFunc.call(this, idsToRequest);
+  //   }
+  // }
 
   async UpdateMupData() {
     console.log(`ITSRepository: UpdateMupData`);

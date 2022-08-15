@@ -1,5 +1,9 @@
-export const PROXY_URL = "http://<доменное имя API-Gateway>/proxy";
-export const PROXY_URL_LOCAL = "http://localhost:3000/proxy";
+export const PROXY_URL = process.env.REACT_APP_ITS_PROXY_URL;
+export const PROXY_URL_LOCAL =
+  process.env.REACT_APP_ITS_LOCAL_PROXY_URL || "http://localhost:3000/proxy";
+export const SAFE_MODE =
+  !process.env.REACT_APP_SAFE_MODE ||
+  process.env.REACT_APP_SAFE_MODE.toLocaleLowerCase() !== "false";
 
 export const CSRF_TOKEN_INPUT_NAME = "__RequestVerificationToken";
 

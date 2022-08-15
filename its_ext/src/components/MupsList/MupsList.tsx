@@ -2,7 +2,8 @@ import React from "react";
 import style from "./MupsList.module.css";
 import { IMupsListProps } from "./types";
 import Checkbox from "@mui/material/Checkbox";
-import Input from "@mui/material/Input";
+// import Input from "@mui/material/Input";
+import { TextField } from "@mui/material";
 import { MUP_PERIOD_URL } from "../../utils/constants";
 import { OuterLink } from "../OuterLink";
 import { CollapsableList } from "../CollapsableList";
@@ -10,7 +11,10 @@ import { CollapsableList } from "../CollapsableList";
 export function MupsList(props: IMupsListProps) {
   const handleLimitChange =
     (mupId: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-      const value = Number(event.target.value);
+      let value = Number(event.target.value);
+      if (isNaN(value) || value < 0) {
+        value = 0;
+      }
       props.onMupLimitChange(mupId, value);
     };
 
@@ -44,8 +48,8 @@ export function MupsList(props: IMupsListProps) {
               <span>{mup.name}</span>
             </td>
             <td>
-              <Input
-                type="number"
+              <TextField
+                // type="number"
                 value={mupEdit.limit}
                 onChange={handleLimitChange(mup.id)}
                 className={style.limit__input}

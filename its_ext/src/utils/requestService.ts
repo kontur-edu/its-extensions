@@ -89,9 +89,9 @@ export class RequestService {
       if (clearedUrl.startsWith(this.proxyUrl)) {
         clearedUrl = clearedUrl.replace(this.proxyUrl + "/", "");
       }
-      // if (!this.apiValidator.validate(options.method, clearedUrl, bodyObj)) {
-      //   throw new Error(SAFE_MODE_ENABLED_MESSAGE);
-      // }
+      if (!this.apiValidator.validate(options.method, clearedUrl, bodyObj)) {
+        throw new Error(SAFE_MODE_ENABLED_MESSAGE);
+      }
     }
 
     let response = await this.fetchWithRetry(url, options, maxRetries);

@@ -139,14 +139,17 @@ function generateUpdateLimitActions(
   mupLimits: { [key: string]: number },
   mupDiffs: { [key: string]: IMupDiff }
 ) {
+  console.log("generateUpdateLimitActions");
+  console.log("mupLimits");
+  console.log(mupLimits);
   const actions: ITSAction[] = [];
   for (let mupId of selectedMupsIds) {
-    let newLimit = mupLimits[mupId];
+    const newLimit = mupLimits[mupId];
     for (let i = 0; i < selectionGroupsIds.length; i++) {
       const selectionGroupId = selectionGroupsIds[i];
       const initLimit = mupDiffs[mupId].initLimits[i];
       // alert(mupDiffs[mupId].initLimits);
-      // console.log(`initLimit: ${initLimit} newLimit: ${newLimit}`);
+      console.log(`initLimit: ${initLimit} newLimit: ${newLimit}`);
       if (initLimit !== newLimit) {
         actions.push(new UpdateLimitAction(mupId, selectionGroupId, newLimit));
       }
@@ -317,6 +320,7 @@ export function createActions(
   zeToModuleSelection: { [key: number]: IModuleSelection[] },
   itsContext: IITSContext
 ): ITSAction[] {
+  console.log();
   if (selectionGroupsIds.length === 0) {
     return [];
   }

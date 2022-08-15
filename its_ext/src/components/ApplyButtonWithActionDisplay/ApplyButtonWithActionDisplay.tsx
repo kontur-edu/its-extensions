@@ -22,7 +22,7 @@ function clipString(message: string, length: number) {
   return message;
 }
 
-const MESSAGE_SIZE = 150;
+const MESSAGE_SIZE = 10000;
 
 export interface INextStepButtonProps {
   onClick: () => void;

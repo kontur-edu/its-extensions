@@ -440,6 +440,7 @@ export class ITSApiService {
         status: obj["Status"],
         studentStatus: obj["StudentStatus"],
         groupName: obj["GroupName"],
+        otherAdmissions: obj["OtherAdmissions"],
       };
       return admissionMeta;
     });

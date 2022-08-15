@@ -218,10 +218,12 @@ export function addRandomMupsForStudentIfNeeded(
   },
   mupIdToMupItem: { [key: string]: IMupDistributionItem },
   competitionGroupIdToZELimit: { [key: number]: number },
+  personalNumberToAdmittedMupNames: {[key: string]: Set<string>},
   admissionIdToMupId: { [key: number]: string },
   mupData: IMupData,
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions
 ) {
+  console.log("addRandomMupsForStudentIfNeeded");
   for (const personalNumber of personalNumbersOfActiveStudentsSortedByRating) {
     const sItem = personalNumberToStudentItem[personalNumber];
     const zeLimit = competitionGroupIdToZELimit[sItem.competitionGroupId];
@@ -232,13 +234,19 @@ export function addRandomMupsForStudentIfNeeded(
 
     // Добавить любой МУП чтобы не превысить ZE
     for (const mupId in mupIdToMupItem) {
-      const mupZe = mupData.data[mupId].ze;
+      const mup = mupData.data[mupId];
+      const mupZe = mup.ze;
       const mupItem = mupIdToMupItem[mupId];
       if (mupItem.count < mupItem.limit && sItem.currentZ + mupZe <= zeLimit) {
         // find admission
         let mupIsSelected = false;
         for (const aId of sItem.selectedAdmissionIds) {
           if (admissionIdToMupId[aId] === mupId) {
+            mupIsSelected = true;
+          }
+        }
+        if (personalNumberToAdmittedMupNames.hasOwnProperty(personalNumber)) {
+          if (personalNumberToAdmittedMupNames[personalNumber].has(mup.name)) {
             mupIsSelected = true;
           }
         }

@@ -36,6 +36,7 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { CopyOrDownload } from "../../CopyOrDownload";
 import { RefreshButton } from "../../RefreshButton";
 import CircularProgress from "@mui/material/CircularProgress";
+import { createPersonalNumberToAdmittedMupNames } from "./utils";
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 const debouncedEnsureData = createDebouncedWrapper(DEBOUNCE_MS);
@@ -71,10 +72,13 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   const [studentAdmissionActionResults, setStudentAdmissionActionResults] =
     useState<IActionExecutionLogItem[]>([]);
 
+  const [personalNumberToAdmittedMupNames, setPersonalNumberToAdmittedMupNames] = useState<{[key: string]: Set<string>}>({});
+
   const tableRef = useRef<HTMLElement | null>(null);
 
   const [ensureInProgress, setEnsureInProgress] = useState<boolean>(false);
   const currentEnsurePromise = useRef<Promise<any> | null>(null);
+
 
   const context = useContext(ITSContext)!;
 
@@ -118,13 +122,17 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         competitionGroupIdToAdmissionIds
       );
     };
+    const updatePersonalNumberToAdmittedMupNames = () => !refresh && Object.keys(personalNumberToAdmittedMupNames).length > 0 ?
+      Promise.resolve(personalNumberToAdmittedMupNames) : preparePersonalNumberToAdmittedMupNames();
     return Promise.allSettled([
       updateMupDataPromise(),
       updateSelectionGroupDataPromise(),
       updateAdmissionMetasPromise().then(() =>
         updateStudentAdmissionsAndStudentDataPromise()
       ),
-    ]).finally(() => {
+    ])
+    .then(() => updatePersonalNumberToAdmittedMupNames())
+    .finally(() => {
       currentEnsurePromise.current = null;
       setEnsureInProgress(false);
     });
@@ -141,6 +149,17 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   };
 
   const refreshData = () => ensureData(true);
+
+  const preparePersonalNumberToAdmittedMupNames = async () => {
+    const res = await createPersonalNumberToAdmittedMupNames(
+      context.apiService,
+      context.dataRepository.selectionGroupData,
+      context.dataRepository.mupData,
+    );
+    setPersonalNumberToAdmittedMupNames(res);
+    console.log(res);
+    return res;
+  }
 
   const prepareItemsAndStudentMupDataText = () => {
     const allPersonalNumbers = getAllPersonalNumbers(
@@ -336,6 +355,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       newPersonalNumberToStudentItems,
       newMupIdToMupItems,
       competitionGroupIdToZELimit.current,
+      personalNumberToAdmittedMupNames,
       context.dataRepository.admissionIdToMupId,
       context.dataRepository.mupData,
       context.dataRepository.competitionGroupIdToMupAdmissions

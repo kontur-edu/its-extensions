@@ -255,6 +255,7 @@ describe("addRandomMupsForStudentIfNeeded", () => {
       personalNumberToStudentItem,
       mupIdToMupItem,
       { 0: 6 },
+      {},
       { 1: "m1", 2: "m2", 3: "m3", 4: "m4" },
       mupData,
       competitionGroupIdToMupAdmissions

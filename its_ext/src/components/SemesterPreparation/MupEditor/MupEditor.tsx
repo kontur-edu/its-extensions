@@ -491,6 +491,8 @@ export function MupEditor(props: IMupEditorProps) {
         selectedMupIds.push(mupId);
       }
     }
+    console.log("mupLimits");
+    console.log(mupLimits);
 
     const actions = createActions(
       props.selectionGroupIds,

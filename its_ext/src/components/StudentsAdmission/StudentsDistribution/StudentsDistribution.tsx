@@ -38,6 +38,7 @@ import { RefreshButton } from "../../RefreshButton";
 import CircularProgress from "@mui/material/CircularProgress";
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
+const debouncedEnsureData = createDebouncedWrapper(DEBOUNCE_MS);
 
 export function StudentsDistribution(props: IStudentsDistributionProps) {
   const [personalNumberToStudentItems, setPersonalNumberToStudentItems] =
@@ -82,6 +83,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   };
 
   const ensureData = (refresh: boolean) => {
+    console.log("StudentsDistribution: ensureData");
     if (currentEnsurePromise.current !== null) {
       return currentEnsurePromise.current;
     }
@@ -212,14 +214,18 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
 
   useEffect(() => {
     return () => {
-      // console.warn("StudentDistribution UNMOUNTED");s
+      console.warn("StudentDistribution UNMOUNTED");
     };
   }, []);
 
   useEffect(() => {
-    refreshData()
+    console.log(
+      "------- props.competitionGroupIds changed, ",
+      props.competitionGroupIds
+    );
+    debouncedEnsureData(() => refreshData()
       .then(() => prepareItemsAndStudentMupDataText())
-      .finally(() => props.onLoad());
+      .finally(() => props.onLoad()));
     // eslint-disable-next-line
   }, [props.competitionGroupIds]);
 

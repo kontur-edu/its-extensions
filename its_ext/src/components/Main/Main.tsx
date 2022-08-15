@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import { LoginForm } from "../LoginForm";
 import { ICredentials } from "../../common/types";
@@ -53,6 +53,12 @@ export function Main(props: IMainProps) {
   //     setNeedStudentAuthentication(true);
   //   }
   // };
+
+  useEffect(() => {
+    return () => {
+      console.warn("Main: UNMOUNTED");
+    }
+  }, [])
 
   const handleUnauthorized = () => {
     if (!needAuthentication) {
@@ -117,6 +123,7 @@ export function Main(props: IMainProps) {
           path="/studentsAdmission"
           element={
             <React.Fragment>
+              {/* {(function() {console.warn("renderRoute"); return null})()} */}
               <Modal visible={needAuthentication}>
                 <LoginForm
                   onSubmit={handleLogin}

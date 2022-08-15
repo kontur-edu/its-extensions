@@ -34,13 +34,13 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
   const [stepTwoLoaded, setStepTwoLoaded] = useState<boolean>(false);
   const [stepThreeLoaded, setStepThreeLoaded] = useState<boolean>(false);
 
-  const handleGroupIdsFixed = (val: boolean) => {
-    if (groupIdsFixed !== val) {
-      setGroupIdsFixed(val);
-    }
-  };
+  // const handleGroupIdsFixed = (val: boolean) => {
+  //   if (groupIdsFixed !== val) {
+  //     setGroupIdsFixed(val);
+  //   }
+  // };
   const handleStepTwoLoaded = () => {
-    setStepTwoLoaded(true);
+    !stepTwoLoaded && setStepTwoLoaded(true);
   };
 
   const handleStepThreeLoaded = () => {
@@ -98,17 +98,20 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
 
   useEffect(() => {
     return () => {
-      // console.warn("StudentsAdmission is UNMOUNTED");
+      console.warn("StudentsAdmission is UNMOUNTED");
     };
-  });
+  }, []);
 
   const handleCompetitionGroupsSelect = (newCompetitionGroupIds: number[]) => {
-    setStepTwoLoaded(false);
-    setStepThreeLoaded(false);
-    handleGroupIdsFixed(false);
+    // if (JSON.stringify(competitionGroupIds) === JSON.stringify(newCompetitionGroupIds)) return;
+    console.log("handleCompetitionGroupsSelect >>>> ");
+    stepTwoLoaded && setStepTwoLoaded(false);
+    stepThreeLoaded && setStepThreeLoaded(false);
+    groupIdsFixed && setGroupIdsFixed(false);
     debouncedWrapperForApply(() => {
+      console.warn("StudentsAdmission: newCompetitionGroupIds");
       setCompetitionGroupIds(newCompetitionGroupIds);
-      handleGroupIdsFixed(true);
+      setGroupIdsFixed(true);
     });
   };
 
@@ -216,7 +219,7 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
         stepTwoLoaded &&
         renderStudentsAutoAdmission()}
 
-      {isGroupSelectionValid() &&
+      {isGroupSelectionValid() && false &&
         stepTwoLoaded &&
         stepThreeLoaded &&
         renderSubgroupDistribution()}

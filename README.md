@@ -3,6 +3,7 @@
 ## Развертывание
 
 ### 1. Подготовьте инфраструктуру Yandex Cloud
+
 1. Перейдите в консоль [Yandex Cloud](https://cloud.yandex.ru/)
 2. Создайте сервисный аккаунт с ролями: `storage.viewer`, `storage.uploader`, `storage.editor` (или примитивную роль `editor`)
 
@@ -18,22 +19,22 @@ SECRET_ACCESS_KEY="<секретный ключ>"
 4. Установите и настройте [Yandex Cloud CLI](https://cloud.yandex.ru/docs/cli/quickstart)
 5. Установите пакеты для скрипта подготовки инфраструктуры
 
-    - `cd deploy-scripts`
-    - `npm install`
+   - `cd deploy-scripts`
+   - `npm install`
 
 6. Проверьте остальные константы в файле `.env` или `.env.local` (настройки `.env.local` имеют больший приоритет)
 
 7. Выполните скрипт подготовки инфраструктуры
 
-    - `node deploy.js`
+   - `node deploy.js`
 
 ### 2. Настройте Bucket
 
 1. Перейдите в Object storage в раздел Настройки только что созданного бакета из `.env` или `.env.local`
 2. Укажите `Публичный` доступ для настроек:
 
-    - Доступ на чтение объектов
-    - Доступ к списку объектов
+   - Доступ на чтение объектов
+   - Доступ к списку объектов
 
 ### 3. Настройте Политику доступа созданного бакета
 
@@ -50,14 +51,14 @@ SECRET_ACCESS_KEY="<секретный ключ>"
 1. Укажите пользователя - сервисный аккаунт
 1. Укажите Дейсвтия (или выберите "Все действия"):
 
-    - ListBucket
-    - PutObject
-    - GetObject
+   - ListBucket
+   - PutObject
+   - GetObject
 
 1. Укажите Ресурсы:
 
-    - <название бакета>/\*
-    - <название бакета>
+   - <название бакета>/\*
+   - <название бакета>
 
 #### Остальные пользователи
 
@@ -71,8 +72,8 @@ SECRET_ACCESS_KEY="<секретный ключ>"
    - GetObject
 4. Укажите Ресурсы:
 
-    - <название бакета>/\*
-    - <название бакета>
+   - <название бакета>/\*
+   - <название бакета>
 
 ### 4. Настройте Веб-сайт бакета
 
@@ -84,19 +85,20 @@ SECRET_ACCESS_KEY="<секретный ключ>"
 
 ### 5. Создайте и загрузите сборку сайта, выполнив команды:
 
-1. Проверьте указанный адрес прокси в `its_ext\src\utils\constants.ts`
+1. Укажите адрес прокси в поле `REACT_APP_ITS_PROXY_URL` конфигурационного файла `its_ext\.env` или `its_ext\.env.local`
    ```
-   export const PROXY_URL = "https://<домен API-Gateway>/proxy";
+   REACT_APP_ITS_PROXY_URL=http://<доменное имя API-Gateway>/proxy
+   ...
    ```
 2. Соберите проект сайта:
 
-    - `cd its_ext`
-    - `npm run build`
+   - `cd its_ext`
+   - `npm run build`
 
 3. Обновите содержимое папки website в бакете:
 
-    - `cd deploy-scripts`
-    - `npm run sync`
+   - `cd deploy-scripts`
+   - `npm run sync`
 
 <br />
 
@@ -107,16 +109,16 @@ SECRET_ACCESS_KEY="<секретный ключ>"
 1. Проверьте адрес прокси к npm в .npmrc (если прокси не требуется, следует удалить файл .npmrc)
 2. Установите зависимости для проектов proxy, proxy-function, its_ext
 
-    - `cd proxy && npm install && cd ..`
-    - `cd proxy-function && npm install && cd ..`
-    - `cd its_ext && npm install && cd ..`
+   - `cd proxy && npm install && cd ..`
+   - `cd proxy-function && npm install && cd ..`
+   - `cd its_ext && npm install && cd ..`
 
 Ожидается, что приложение будет запущено на http://localhost:3001, если это не так, измените url в файле proxy/server.js в настройках cors
 
 3. Запустите proxy
 
-    - `cd proxy && npm run start`
+   - `cd proxy && npm run start`
 
 4. Запустите приложение
 
-    - `cd its_ext && npm run start`
+   - `cd its_ext && npm run start`

@@ -34,18 +34,23 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
   const [stepTwoLoaded, setStepTwoLoaded] = useState<boolean>(false);
   const [stepThreeLoaded, setStepThreeLoaded] = useState<boolean>(false);
 
+  const handleGroupIdsFixed = (val: boolean) => {
+    if (groupIdsFixed !== val) {
+      setGroupIdsFixed(val);
+    }
+  };
   const handleStepTwoLoaded = () => {
-    // console.warn("handleStepTwoLoaded");
     setStepTwoLoaded(true);
   };
 
   const handleStepThreeLoaded = () => {
-    // console.warn("handleStepThreeLoaded");
     setStepThreeLoaded(true);
   };
 
   const isGroupSelectionValid = () => {
-    return competitionGroupIds.length > 0 && competitionGroupIds.length <= 2;
+    const res =
+      competitionGroupIds.length > 0 && competitionGroupIds.length <= 2;
+    return res;
   };
 
   const refreshCompetitionGroups = () => {
@@ -91,13 +96,19 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
     // eslint-disable-next-line
   }, [props.isUnauthorized]);
 
+  useEffect(() => {
+    return () => {
+      // console.warn("StudentsAdmission is UNMOUNTED");
+    };
+  });
+
   const handleCompetitionGroupsSelect = (newCompetitionGroupIds: number[]) => {
     setStepTwoLoaded(false);
     setStepThreeLoaded(false);
-    setGroupIdsFixed(false);
+    handleGroupIdsFixed(false);
     debouncedWrapperForApply(() => {
       setCompetitionGroupIds(newCompetitionGroupIds);
-      setGroupIdsFixed(true);
+      handleGroupIdsFixed(true);
     });
   };
 
@@ -114,6 +125,7 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
   };
 
   const renderTaskResultsInput = () => {
+    // console.warn("rendering: renderTaskResultsInput");
     return (
       <React.Fragment>
         <article className="step" ref={stepTwoRef}>

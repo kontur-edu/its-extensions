@@ -167,7 +167,12 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     return competitionGroupIdToAdmissionIds;
   };
 
+  // const ensureData = () => {
+
+  // }
+
   const refreshAdmissionInfo = async () => {
+    // console.log("refreshAdmissionInfo");
     setEnsureDataInProgress(true);
     // ensure mup data is present
     if (context.dataRepository.mupData.ids.length === 0) {
@@ -198,21 +203,25 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   };
 
   useEffect(() => {
+    // console.log("useEffect: TaskResultsInput");
     return () => {
       // console.warn("TaskResultInput UNMOUNTED");
     };
   }, []);
 
   useEffect(() => {
-    refreshAdmissionInfo()
-      // .catch((err) =>{
-      //   setEnsureDataInProgress(false);
-      //   console.warn(`catch: ${err.message}`);
-      //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-      //     props.onUnauthorized();
-      //   }
-      // })
-      .finally(() => props.onLoad());
+    // console.log("useEffect: TaskResultsInput: [props.competitionGroupIds]: ", props.competitionGroupIds);
+    debouncedWrapperForApply(() =>
+      refreshAdmissionInfo().finally(() => props.onLoad())
+    );
+    // .catch((err) =>{
+    //   setEnsureDataInProgress(false);
+    //   console.warn(`catch: ${err.message}`);
+    //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
+    //     props.onUnauthorized();
+    //   }
+    // })
+
     // eslint-disable-next-line
   }, [props.competitionGroupIds]);
 

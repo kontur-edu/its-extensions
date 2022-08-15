@@ -223,9 +223,11 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       "------- props.competitionGroupIds changed, ",
       props.competitionGroupIds
     );
-    debouncedEnsureData(() => refreshData()
-      .then(() => prepareItemsAndStudentMupDataText())
-      .finally(() => props.onLoad()));
+    debouncedEnsureData(() =>
+      refreshData()
+        .then(() => prepareItemsAndStudentMupDataText())
+        .finally(() => props.onLoad())
+    );
     // eslint-disable-next-line
   }, [props.competitionGroupIds]);
 

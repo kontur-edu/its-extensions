@@ -216,10 +216,12 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
       {isGroupSelectionValid() && groupIdsFixed && renderTaskResultsInput()}
 
       {isGroupSelectionValid() &&
+        groupIdsFixed &&
         stepTwoLoaded &&
         renderStudentsAutoAdmission()}
 
-      {isGroupSelectionValid() && false &&
+      {isGroupSelectionValid() &&
+        groupIdsFixed &&
         stepTwoLoaded &&
         stepThreeLoaded &&
         renderSubgroupDistribution()}

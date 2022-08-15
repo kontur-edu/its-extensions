@@ -44,6 +44,7 @@ import { RefreshButton } from "../../RefreshButton";
 import Button from "@mui/material/Button";
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
+const debouncedWrapperForEnsureData = createDebouncedWrapper(DEBOUNCE_MS);
 
 export function SubgroupDistribution(props: ISubgroupDistributionProps) {
   const [
@@ -153,6 +154,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
 
   const ensureData = (refresh: boolean = false) => {
     setEnsureDataInProgress(true);
+    const hasMupData = context.dataRepository.mupData.ids.length > 0;
     const hasSubgroupMetas =
       !refresh &&
       props.competitionGroupIds.every((cgId) =>
@@ -181,6 +183,9 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     )
       .then(() =>
         Promise.allSettled([
+          hasMupData
+            ? Promise.resolve()
+            : context.dataRepository.UpdateMupData(),
           hasSubgroupMetas
             ? Promise.resolve()
             : context.dataRepository.UpdateSubgroupMetas(
@@ -336,21 +341,23 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
 
   useEffect(() => {
     return () => {
-      // console.warn("SubgroupDistribution UNMOUNTED");
+      console.warn("SubgroupDistribution UNMOUNTED");
     };
   }, []);
 
   useEffect(() => {
-    ensureData()
-      .then(() => {
-        if (subgroupDiffInfo) {
-          return subgroupDiffInfo;
-        }
-        return prepareData();
-      })
-      .then((newSubgroupDiffInfo) => {
-        generateActionsForOneGroupPerLoadDistribution(newSubgroupDiffInfo);
-      });
+    debouncedWrapperForEnsureData(() =>
+      ensureData()
+        .then(() => {
+          if (subgroupDiffInfo) {
+            return subgroupDiffInfo;
+          }
+          return prepareData();
+        })
+        .then((newSubgroupDiffInfo) => {
+          generateActionsForOneGroupPerLoadDistribution(newSubgroupDiffInfo);
+        })
+    );
     // eslint-disable-next-line
   }, [props.competitionGroupIds]);
 

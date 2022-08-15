@@ -40,16 +40,19 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
   //   }
   // };
   const handleStepTwoLoaded = () => {
-    !stepTwoLoaded && setStepTwoLoaded(true);
+    // console.log("handleStepTwoLoaded");
+    setStepTwoLoaded(true);
   };
 
   const handleStepThreeLoaded = () => {
+    // console.log("handleStepThreeLoaded");
     setStepThreeLoaded(true);
   };
 
   const isGroupSelectionValid = () => {
     const res =
       competitionGroupIds.length > 0 && competitionGroupIds.length <= 2;
+    // console.log(`isGroupSelectionValid: ${res}`);
     return res;
   };
 
@@ -99,19 +102,22 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
   }, [props.isUnauthorized]);
 
   useEffect(() => {
-    return () => {
-      // console.warn("StudentsAdmission is UNMOUNTED");
-    };
+    // console.warn("StudentsAdmission MONUTED");
+    // return () => {
+    //   console.warn("StudentsAdmission UNMOUNTED X");
+    // };
   }, []);
 
   const handleCompetitionGroupsSelect = (newCompetitionGroupIds: number[]) => {
-    // if (JSON.stringify(competitionGroupIds) === JSON.stringify(newCompetitionGroupIds)) return;
-    // console.log("handleCompetitionGroupsSelect >>>> ");
-    // stepTwoLoaded && setStepTwoLoaded(false);
-    // stepThreeLoaded && setStepThreeLoaded(false);
-    // groupIdsFixed && setGroupIdsFixed(false);
+    if (
+      JSON.stringify(competitionGroupIds) ===
+      JSON.stringify(newCompetitionGroupIds)
+    )
+      return;
+    setStepTwoLoaded(false);
+    setStepThreeLoaded(false);
+    setGroupIdsFixed(false);
     debouncedWrapperForApply(() => {
-      // console.warn("StudentsAdmission: newCompetitionGroupIds");
       setCompetitionGroupIds(newCompetitionGroupIds);
       setGroupIdsFixed(true);
     });
@@ -183,11 +189,6 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
     );
   };
 
-  // const renderCheck = () => {
-  //   // console.warn("-------------------------------------- renderCheck");
-  //   return null;
-  // };
-
   return (
     <section className="page">
       <h2 className="action_header">
@@ -223,11 +224,13 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
       {isGroupSelectionValid() && groupIdsFixed && renderTaskResultsInput()}
 
       {isGroupSelectionValid() &&
+        // false &&
         groupIdsFixed &&
         stepTwoLoaded &&
         renderStudentsAutoAdmission()}
 
       {isGroupSelectionValid() &&
+        // false &&
         groupIdsFixed &&
         stepTwoLoaded &&
         stepThreeLoaded &&

@@ -193,65 +193,27 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
 
     // setCompetitionGroupToAdmissionIds(newCompetitionGroupToAdmissionIds);
     try {
-    await context.dataRepository
-      .UpdateStudentAdmissionsAndStudentData(newCompetitionGroupToAdmissionIds)
-      .then(() =>
-        setCompetitionGroupToAdmissionIds(newCompetitionGroupToAdmissionIds)
-      );
+      await context.dataRepository
+        .UpdateStudentAdmissionsAndStudentData(
+          newCompetitionGroupToAdmissionIds
+        )
+        .then(() =>
+          setCompetitionGroupToAdmissionIds(newCompetitionGroupToAdmissionIds)
+        );
     } finally {
       setEnsureDataInProgress(false);
     }
-    
   };
 
-  // const refreshAdmissionInfo = async () => {
-  //   console.log("TaskResultsInput: refreshAdmissionInfo");
-  //   setEnsureDataInProgress(true);
-  //   // ensure mup data is present
-  //   if (context.dataRepository.mupData.ids.length === 0) {
-  //     await context.dataRepository.UpdateMupData();
-  //   }
-
-  //   // request admission metas
-  //   await context.dataRepository.UpdateAdmissionMetas(
-  //     props.competitionGroupIds
-  //   );
-
-  //   const newMupIds = getMupIdsToChoseFrom(
-  //     props.competitionGroupIds,
-  //     context.dataRepository.competitionGroupIdToMupAdmissions
-  //   );
-  //   setMupIds(newMupIds);
-
-  //   const newCompetitionGroupToAdmissionIds =
-  //     getCurrentAdmissionIdsPerCompetitionGroup(selectedMupId);
-
-  //   // setCompetitionGroupToAdmissionIds(newCompetitionGroupToAdmissionIds);
-  //   await context.dataRepository
-  //     .UpdateStudentAdmissionsAndStudentData(newCompetitionGroupToAdmissionIds)
-  //     .then(() =>
-  //       setCompetitionGroupToAdmissionIds(newCompetitionGroupToAdmissionIds)
-  //     );
-  //   setEnsureDataInProgress(false);
-  // };
-
   useEffect(() => {
-    // console.log("useEffect: TaskResultsInput");
-    return () => {
-      // console.warn("TaskResultInput UNMOUNTED");
-    };
+    // console.warn("TaskResultInput: MOUNTED");
+    // return () => {
+    //   console.warn("TaskResultInput UNMOUNTED X");
+    // };
   }, []);
 
   useEffect(() => {
-    // console.log("useEffect: TaskResultsInput: [props.competitionGroupIds]: ", props.competitionGroupIds);
     debouncedWrapperForApply(() => ensureData().finally(() => props.onLoad()));
-    // .catch((err) =>{
-    //   setEnsureDataInProgress(false);
-    //   console.warn(`catch: ${err.message}`);
-    //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-    //     props.onUnauthorized();
-    //   }
-    // })
 
     // eslint-disable-next-line
   }, [props.competitionGroupIds]);
@@ -259,8 +221,6 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   useEffect(() => {
     setEnsureDataInProgress(true);
     const repo = context.dataRepository;
-    // let ensureStudentAdmissionDataIsPresentPromise = Promise.resolve();
-    // let admissionDataIsPresent = true;
 
     const admissionIds: number[] = [];
     Object.values(competitionGroupToAdmissionIds).forEach((aIds) =>
@@ -292,19 +252,8 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
       .then((newStudentItems) => {
         handleGenerateActionsDebounced(newStudentItems);
         setEnsureDataInProgress(false);
-      });
-    // .catch((err) =>{
-    //   setEnsureDataInProgress(false);
-    //   console.warn(`catch: ${err.message}`);
-    //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-    //     props.onUnauthorized();
-    //   }
-    // })
-    // .finally(() => {
-    //   console.log("competitionGroupToAdmissionIds");
-    //   console.log(competitionGroupToAdmissionIds);
-    //   props.onLoad();
-    // });
+      })
+      .finally(() => setEnsureDataInProgress(false));
     // eslint-disable-next-line
   }, [competitionGroupToAdmissionIds]);
 

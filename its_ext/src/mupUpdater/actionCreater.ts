@@ -276,6 +276,7 @@ function generateUpdateModulesAction(
   mupData: IMupData,
   moduleData: IModuleData
 ) {
+  // console.log("generateUpdateModulesAction");
   const actions: ITSAction[] = [];
   for (let mupId of selectedMupsIds) {
     const ze = mupData.data[mupId].ze;
@@ -286,7 +287,7 @@ function generateUpdateModulesAction(
         moduleIdToSelection[rm.id] = rm.selected;
       });
     }
-    for (let i = 0; i < selectedMupsIds.length; i++) {
+    for (let i = 0; i < selectionGroupsIds.length; i++) {
       const selectionGroupId = selectionGroupsIds[i];
       if (mupDiffs[mupId].updateSelectedModuleDisciplines[i]) {
         const ms = Object.keys(moduleData.data).map((moduleId) => {

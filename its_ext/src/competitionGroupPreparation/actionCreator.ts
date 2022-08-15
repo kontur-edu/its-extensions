@@ -156,21 +156,19 @@ export function generateUpdateTeacherAndLimitActions(
     // const currentTeacherIds = subgroupReferenceInfo[meta.discipline][
     //   meta.load
     // ].subgroupInfo.map((si) => si.teacher);
-    const subgroupReferenceInfoItems = subgroupReferenceInfo[meta.discipline][
-      meta.load
-    ].subgroupInfo;
-    let subgroupCount =  subgroupReferenceInfo[meta.discipline][
-      meta.load
-    ].count;
+    const subgroupReferenceInfoItems =
+      subgroupReferenceInfo[meta.discipline][meta.load].subgroupInfo;
+    let subgroupCount = subgroupReferenceInfo[meta.discipline][meta.load].count;
     if (subgroupCount <= 0) {
       subgroupCount = 1;
-    };
+    }
 
     const selctionGroupMups = selectionGroupToMupData.data[selectionGroupId];
-    
-    
+
     const mupId = mupNameToMupId[meta.discipline];
-    const limitPerGroup = Math.ceil(selctionGroupMups.data[mupId].limit / subgroupCount);
+    const limitPerGroup = Math.ceil(
+      selctionGroupMups.data[mupId].limit / subgroupCount
+    );
 
     if (!mupData.data.hasOwnProperty(mupId)) {
       console.warn(`mupId: ${mupId} not found in mupData`);
@@ -181,7 +179,8 @@ export function generateUpdateTeacherAndLimitActions(
     // if (mup.teacherIds.length !== 1) {
     //   continue;
     // }
-    const refTeacher = mup.teacherIds.length === 1 ? mup.teacherIds[0] : undefined;
+    const refTeacher =
+      mup.teacherIds.length === 1 ? mup.teacherIds[0] : undefined;
 
     for (let i = 0; i < meta.count; i++) {
       // if (currentTeacherIds[i]) continue;
@@ -191,13 +190,12 @@ export function generateUpdateTeacherAndLimitActions(
         number: i + 1,
       };
 
-      
       let updateTeacher = true;
       let updateLimit = true;
       if (subgroupReferenceInfoItems.length > i) {
         if (subgroupReferenceInfoItems[i].teacher) {
           updateTeacher = false;
-        } 
+        }
         if (subgroupReferenceInfoItems[i].limit === limitPerGroup) {
           updateLimit = false;
         }
@@ -213,7 +211,7 @@ export function generateUpdateTeacherAndLimitActions(
           competitionGroupId,
           subgroupInfo,
           newTeacherId,
-          newLimit,
+          newLimit
         )
       );
     }
@@ -269,8 +267,8 @@ export function createPrepareSubgroupsActions(
     competitionGroupToSubgroupIds[competitionGroupId],
     subgroupData
   );
-  console.log("subgroupReferenceInfo");
-  console.log(subgroupReferenceInfo);
+  // console.log("subgroupReferenceInfo");
+  // console.log(subgroupReferenceInfo);
 
   actions.push(
     ...generateCreateSubgroupsActions(

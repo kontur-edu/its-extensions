@@ -140,3 +140,63 @@ export async function getApiGateWaySpec(apiGatewayName) {
   );
   return res.stdout;
 }
+
+export async function getUserId(userLogin) {
+  console.log(`getUserId: ${userLogin}`);
+  return execCommandAndGetField(
+    `yc iam user-account get --login ${userLogin}`,
+    "id"
+  );
+}
+
+export async function getServiceAccountId(serviceAccountName) {
+  console.log(`getServiceAccountId: ${serviceAccountName}`);
+  return execCommandAndGetField(
+    `yc iam service-account get ${serviceAccountName}`,
+    "id"
+  );
+}
+
+export function createBucketPolicy(bucketName, userId, serviceAccountId) {
+  const resource = [
+    `arn:aws:s3:::${bucketName}/*`,
+    `arn:aws:s3:::${bucketName}`,
+  ];
+  const consoleReferer = [
+    `https://console.cloud.yandex.ru/folders/*/storage/buckets/${bucketName}*`,
+    `https://console.cloud.yandex.com/folders/*/storage/buckets/${bucketName}*`,
+  ];
+  const ownerAndServiceAccountPolicy = {
+    Effect: "Allow",
+    Principal: {
+      CanonicalUser: [userId, serviceAccountId],
+    },
+    Action: "*",
+    Resource: resource,
+  };
+  const consolePolicy = {
+    Sid: "console-statement",
+    Effect: "Allow",
+    Principal: "*",
+    Action: "*",
+    Resource: resource,
+    Condition: {
+      StringLike: {
+        "aws:referer": consoleReferer,
+      },
+    },
+  };
+  const usersPolicy = {
+    Effect: "Allow",
+    Principal: "*",
+    Action: ["s3:ListBucket", "s3:GetObject"],
+    Resource: resource,
+  };
+
+  const policy = {
+    Version: "2012-10-17",
+    Statement: [ownerAndServiceAccountPolicy, consolePolicy, usersPolicy],
+  };
+
+  return policy;
+}

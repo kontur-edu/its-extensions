@@ -1,4 +1,7 @@
-import { CreateBucketCommand, ListBucketsCommand } from "@aws-sdk/client-s3";
+import {
+  CreateBucketCommand,
+  PutBucketPolicyCommand,
+} from "@aws-sdk/client-s3";
 import { s3Client, env } from "./libs/s3Client.js";
 import {
   prepareApiGatewaySpec,
@@ -13,11 +16,14 @@ import {
   updateApiGatewaySpec,
   createFunctionVersion,
   getApiGateWaySpec,
+  getUserId,
+  getServiceAccountId,
+  createBucketPolicy,
 } from "./utils.js";
 
-async function tryCreateBuckets(client, bucketName) {
+async function tryCreateBucket(client, bucketName) {
   try {
-    const data = await s3Client.send(
+    const data = await client.send(
       new CreateBucketCommand({ Bucket: bucketName })
     );
     console.log("Successfully created a bucket called ", data.Location);
@@ -28,11 +34,33 @@ async function tryCreateBuckets(client, bucketName) {
   return false;
 }
 
-async function getBuckets(client, bucketName) {
-  const data = await client.send(
-    new ListBucketsCommand({ Bucket: bucketName })
-  );
-  return data;
+export async function updateBucketPolicy(client, bucketName, policy) {
+  const params = {
+    Bucket: bucketName,
+    Policy: JSON.stringify(policy),
+  };
+  try {
+    const res = await client.send(new PutBucketPolicyCommand(params));
+    return res;
+  } catch (err) {
+    console.log(`Failed to update policy:`, params);
+    console.log(`Error: `, err);
+  }
+}
+
+async function prepareBucket(
+  client,
+  bucketName,
+  userLogin,
+  serviceAccountName
+) {
+  await tryCreateBucket(client, bucketName);
+  const userId = await getUserId(userLogin);
+  const serviceAccountId = await getServiceAccountId(serviceAccountName);
+  const bucketPolicy = createBucketPolicy(bucketName, userId, serviceAccountId);
+  console.log("Updating policy: ", bucketPolicy);
+  const res = await updateBucketPolicy(client, bucketName, bucketPolicy);
+  return res;
 }
 
 const FUNC_ZIP_FNAME = "function.zip";
@@ -43,7 +71,16 @@ async function deploy() {
   const functionName = env.FUNCTION_NAME;
   const gatewayName = env.API_GATEWAY_NAME;
   const functionSrcDir = env.FUNCTION_SRC_DIR;
-  const created = tryCreateBuckets(s3Client, bucketName);
+  const userLogin = env.USER_LOGIN;
+  const serviceAccountName = env.SERVICE_ACCOUNT_NAME;
+
+  const policyUpdateRes = prepareBucket(
+    s3Client,
+    bucketName,
+    userLogin,
+    serviceAccountName
+  );
+  // console.log(policyUpdateRes);
   // const buckets = await getBuckets(s3Client, bucketName);
   let function_id = await getFunctionId(functionName);
   if (!function_id) {

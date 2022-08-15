@@ -167,17 +167,20 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     return competitionGroupIdToAdmissionIds;
   };
 
-  const refreshAdmissionInfo = async () => {
-    setEnsureDataInProgress(true);
-    // ensure mup data is present
+  const ensureData = async (refresh: boolean = false) => {
     if (context.dataRepository.mupData.ids.length === 0) {
       await context.dataRepository.UpdateMupData();
     }
-
-    // request admission metas
-    await context.dataRepository.UpdateAdmissionMetas(
-      props.competitionGroupIds
-    );
+    if (
+      refresh ||
+      !context.dataRepository.CheckAdmissionMetasPresent(
+        props.competitionGroupIds
+      )
+    ) {
+      await context.dataRepository.UpdateAdmissionMetas(
+        props.competitionGroupIds
+      );
+    }
 
     const newMupIds = getMupIdsToChoseFrom(
       props.competitionGroupIds,
@@ -189,38 +192,35 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
       getCurrentAdmissionIdsPerCompetitionGroup(selectedMupId);
 
     // setCompetitionGroupToAdmissionIds(newCompetitionGroupToAdmissionIds);
-    await context.dataRepository
-      .UpdateStudentAdmissionsAndStudentData(newCompetitionGroupToAdmissionIds)
-      .then(() =>
-        setCompetitionGroupToAdmissionIds(newCompetitionGroupToAdmissionIds)
-      );
-    setEnsureDataInProgress(false);
+    try {
+      await context.dataRepository
+        .UpdateStudentAdmissionsAndStudentData(
+          newCompetitionGroupToAdmissionIds
+        )
+        .then(() =>
+          setCompetitionGroupToAdmissionIds(newCompetitionGroupToAdmissionIds)
+        );
+    } finally {
+      setEnsureDataInProgress(false);
+    }
   };
 
   useEffect(() => {
-    return () => {
-      // console.warn("TaskResultInput UNMOUNTED");
-    };
+    // console.warn("TaskResultInput: MOUNTED");
+    // return () => {
+    //   console.warn("TaskResultInput UNMOUNTED X");
+    // };
   }, []);
 
   useEffect(() => {
-    refreshAdmissionInfo()
-      // .catch((err) =>{
-      //   setEnsureDataInProgress(false);
-      //   console.warn(`catch: ${err.message}`);
-      //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-      //     props.onUnauthorized();
-      //   }
-      // })
-      .finally(() => props.onLoad());
+    debouncedWrapperForApply(() => ensureData().finally(() => props.onLoad()));
+
     // eslint-disable-next-line
   }, [props.competitionGroupIds]);
 
   useEffect(() => {
     setEnsureDataInProgress(true);
     const repo = context.dataRepository;
-    // let ensureStudentAdmissionDataIsPresentPromise = Promise.resolve();
-    // let admissionDataIsPresent = true;
 
     const admissionIds: number[] = [];
     Object.values(competitionGroupToAdmissionIds).forEach((aIds) =>
@@ -252,19 +252,8 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
       .then((newStudentItems) => {
         handleGenerateActionsDebounced(newStudentItems);
         setEnsureDataInProgress(false);
-      });
-    // .catch((err) =>{
-    //   setEnsureDataInProgress(false);
-    //   console.warn(`catch: ${err.message}`);
-    //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-    //     props.onUnauthorized();
-    //   }
-    // })
-    // .finally(() => {
-    //   console.log("competitionGroupToAdmissionIds");
-    //   console.log(competitionGroupToAdmissionIds);
-    //   props.onLoad();
-    // });
+      })
+      .finally(() => setEnsureDataInProgress(false));
     // eslint-disable-next-line
   }, [competitionGroupToAdmissionIds]);
 
@@ -377,7 +366,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   };
 
   const handleRefreshAdmissionInfo = () => {
-    refreshAdmissionInfo();
+    ensureData(true);
   };
 
   const generateActions = (newStudentItems: {
@@ -416,7 +405,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
       .then((actionResults) => {
         setTaskResultsActionResults(actionResults);
       })
-      .then(() => refreshAdmissionInfo());
+      .then(() => ensureData());
   };
 
   const handleRealApplyDebounced = () => {

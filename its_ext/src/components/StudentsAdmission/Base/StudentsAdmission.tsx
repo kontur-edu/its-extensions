@@ -34,18 +34,26 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
   const [stepTwoLoaded, setStepTwoLoaded] = useState<boolean>(false);
   const [stepThreeLoaded, setStepThreeLoaded] = useState<boolean>(false);
 
+  // const handleGroupIdsFixed = (val: boolean) => {
+  //   if (groupIdsFixed !== val) {
+  //     setGroupIdsFixed(val);
+  //   }
+  // };
   const handleStepTwoLoaded = () => {
-    // console.warn("handleStepTwoLoaded");
+    // console.log("handleStepTwoLoaded");
     setStepTwoLoaded(true);
   };
 
   const handleStepThreeLoaded = () => {
-    // console.warn("handleStepThreeLoaded");
+    // console.log("handleStepThreeLoaded");
     setStepThreeLoaded(true);
   };
 
   const isGroupSelectionValid = () => {
-    return competitionGroupIds.length > 0 && competitionGroupIds.length <= 2;
+    const res =
+      competitionGroupIds.length > 0 && competitionGroupIds.length <= 2;
+    // console.log(`isGroupSelectionValid: ${res}`);
+    return res;
   };
 
   const refreshCompetitionGroups = () => {
@@ -77,12 +85,14 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
         setCompetitionGroupItems(newCompetitionGroupItems);
       })
       .catch((err) => {
-        competitionGroupRefreshInProgress.current = false;
         if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
           props.onUnauthorized();
           return;
         }
         throw err;
+      })
+      .finally(() => {
+        competitionGroupRefreshInProgress.current = false;
       });
   };
 
@@ -91,7 +101,19 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
     // eslint-disable-next-line
   }, [props.isUnauthorized]);
 
+  useEffect(() => {
+    // console.warn("StudentsAdmission MONUTED");
+    // return () => {
+    //   console.warn("StudentsAdmission UNMOUNTED X");
+    // };
+  }, []);
+
   const handleCompetitionGroupsSelect = (newCompetitionGroupIds: number[]) => {
+    if (
+      JSON.stringify(competitionGroupIds) ===
+      JSON.stringify(newCompetitionGroupIds)
+    )
+      return;
     setStepTwoLoaded(false);
     setStepThreeLoaded(false);
     setGroupIdsFixed(false);
@@ -114,6 +136,7 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
   };
 
   const renderTaskResultsInput = () => {
+    // console.warn("rendering: renderTaskResultsInput");
     return (
       <React.Fragment>
         <article className="step" ref={stepTwoRef}>
@@ -201,10 +224,14 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
       {isGroupSelectionValid() && groupIdsFixed && renderTaskResultsInput()}
 
       {isGroupSelectionValid() &&
+        // false &&
+        groupIdsFixed &&
         stepTwoLoaded &&
         renderStudentsAutoAdmission()}
 
       {isGroupSelectionValid() &&
+        // false &&
+        groupIdsFixed &&
         stepTwoLoaded &&
         stepThreeLoaded &&
         renderSubgroupDistribution()}

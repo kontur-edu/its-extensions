@@ -44,6 +44,7 @@ import { RefreshButton } from "../../RefreshButton";
 import Button from "@mui/material/Button";
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
+const debouncedWrapperForEnsureData = createDebouncedWrapper(DEBOUNCE_MS);
 
 export function SubgroupDistribution(props: ISubgroupDistributionProps) {
   const [
@@ -153,6 +154,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
 
   const ensureData = (refresh: boolean = false) => {
     setEnsureDataInProgress(true);
+    const hasMupData = context.dataRepository.mupData.ids.length > 0;
     const hasSubgroupMetas =
       !refresh &&
       props.competitionGroupIds.every((cgId) =>
@@ -181,6 +183,9 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     )
       .then(() =>
         Promise.allSettled([
+          hasMupData
+            ? Promise.resolve()
+            : context.dataRepository.UpdateMupData(),
           hasSubgroupMetas
             ? Promise.resolve()
             : context.dataRepository.UpdateSubgroupMetas(
@@ -243,18 +248,9 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
           updateStudentAndAdmissionsPromise,
         ]);
       })
-      .then(() => {
+      .finally(() => {
         setEnsureDataInProgress(false);
       });
-    // .catch((err) => {
-    //   setEnsureDataInProgress(false);
-    //   console.warn(`catch: ${err.message}`);
-    //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-    //     props.onUnauthorized();
-    //     return;
-    //   }
-    //   throw err;
-    // });
   };
 
   const prepareData = () => {
@@ -335,22 +331,25 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
   };
 
   useEffect(() => {
-    return () => {
-      // console.warn("SubgroupDistribution UNMOUNTED");
-    };
+    // console.warn("SubgroupDistribution MOUNTED");
+    // return () => {
+    //   console.warn("SubgroupDistribution UNMOUNTED X");
+    // };
   }, []);
 
   useEffect(() => {
-    ensureData()
-      .then(() => {
-        if (subgroupDiffInfo) {
-          return subgroupDiffInfo;
-        }
-        return prepareData();
-      })
-      .then((newSubgroupDiffInfo) => {
-        generateActionsForOneGroupPerLoadDistribution(newSubgroupDiffInfo);
-      });
+    debouncedWrapperForEnsureData(() =>
+      ensureData()
+        .then(() => {
+          if (subgroupDiffInfo) {
+            return subgroupDiffInfo;
+          }
+          return prepareData();
+        })
+        .then((newSubgroupDiffInfo) => {
+          generateActionsForOneGroupPerLoadDistribution(newSubgroupDiffInfo);
+        })
+    );
     // eslint-disable-next-line
   }, [props.competitionGroupIds]);
 
@@ -499,13 +498,13 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
   };
 
   const renderSubgroupDistributionForOneGroupPerLoad = () => {
-    const haveActions =
-      subgroupDistributionForOneGroupPerLoadActions.length > 0 ||
-      subgroupDistributionActionForOneGroupPerLoadResults.length > 0;
+    // const haveActions =
+    //   subgroupDistributionForOneGroupPerLoadActions.length > 0 ||
+    //   subgroupDistributionActionForOneGroupPerLoadResults.length > 0;
     return (
       <React.Fragment>
         <h3>Зачисление студентов на МУПы с одной подгруппой</h3>
-        {!haveActions && <p>Не найдено возможных действий для этого шага</p>}
+        {/* {!haveActions && <p>Не найдено возможных действий для этого шага</p>} */}
         <ApplyButtonWithActionDisplay
           showErrorWarning={true}
           showSuccessMessage={true}
@@ -589,12 +588,12 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
 
         {subgroupDistributionTextInputMessages.length > 0 &&
           renderSubgroupDistributionTextInputMessages()}
-        {parseButtonClicked.current &&
+        {/* {parseButtonClicked.current &&
           subgroupDistributionTextInputMessages.length === 0 &&
           subgroupDistributionActions.length === 0 &&
           !secondApplyClicked && (
             <p>Не найдено возможных действий для этого шага</p>
-          )}
+          )} */}
         <ApplyButtonWithActionDisplay
           showErrorWarning={true}
           showSuccessMessage={true}

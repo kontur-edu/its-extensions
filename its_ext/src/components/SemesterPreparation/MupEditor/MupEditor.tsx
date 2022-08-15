@@ -291,7 +291,7 @@ export function MupEditor(props: IMupEditorProps) {
       .then(() =>
         createUpdateModuleAndSelectionGroupMupModuleDisciplinesPromise()
       )
-      .then(() => {
+      .finally(() => {
         currentEnsurePromise.current = null;
         setEnsureInProgress(false);
       });

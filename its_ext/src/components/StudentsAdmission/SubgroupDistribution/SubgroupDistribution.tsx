@@ -331,10 +331,10 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
   };
 
   useEffect(() => {
-    console.warn("SubgroupDistribution MOUNTED");
-    return () => {
-      console.warn("SubgroupDistribution UNMOUNTED X");
-    };
+    // console.warn("SubgroupDistribution MOUNTED");
+    // return () => {
+    //   console.warn("SubgroupDistribution UNMOUNTED X");
+    // };
   }, []);
 
   useEffect(() => {

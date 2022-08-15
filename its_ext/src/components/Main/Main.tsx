@@ -55,9 +55,9 @@ export function Main(props: IMainProps) {
   // };
 
   useEffect(() => {
-    return () => {
-      console.warn("Main: UNMOUNTED");
-    }
+    // return () => {
+    //   console.warn("Main: UNMOUNTED");
+    // }
   }, [])
 
   const handleUnauthorized = () => {

@@ -83,7 +83,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   };
 
   const ensureData = (refresh: boolean) => {
-    console.log("StudentsDistribution: ensureData");
+    // console.log("StudentsDistribution: ensureData");
     if (currentEnsurePromise.current !== null) {
       return currentEnsurePromise.current;
     }
@@ -214,15 +214,15 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
 
   useEffect(() => {
     return () => {
-      console.warn("StudentDistribution UNMOUNTED");
+      // console.warn("StudentDistribution UNMOUNTED");
     };
   }, []);
 
   useEffect(() => {
-    console.log(
-      "------- props.competitionGroupIds changed, ",
-      props.competitionGroupIds
-    );
+    // console.log(
+    //   "------- props.competitionGroupIds changed, ",
+    //   props.competitionGroupIds
+    // );
     debouncedEnsureData(() =>
       refreshData()
         .then(() => prepareItemsAndStudentMupDataText())

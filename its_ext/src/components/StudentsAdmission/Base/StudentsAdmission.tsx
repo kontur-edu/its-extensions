@@ -100,18 +100,18 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
 
   useEffect(() => {
     return () => {
-      console.warn("StudentsAdmission is UNMOUNTED");
+      // console.warn("StudentsAdmission is UNMOUNTED");
     };
   }, []);
 
   const handleCompetitionGroupsSelect = (newCompetitionGroupIds: number[]) => {
     // if (JSON.stringify(competitionGroupIds) === JSON.stringify(newCompetitionGroupIds)) return;
-    console.log("handleCompetitionGroupsSelect >>>> ");
+    // console.log("handleCompetitionGroupsSelect >>>> ");
     // stepTwoLoaded && setStepTwoLoaded(false);
     // stepThreeLoaded && setStepThreeLoaded(false);
     // groupIdsFixed && setGroupIdsFixed(false);
     debouncedWrapperForApply(() => {
-      console.warn("StudentsAdmission: newCompetitionGroupIds");
+      // console.warn("StudentsAdmission: newCompetitionGroupIds");
       setCompetitionGroupIds(newCompetitionGroupIds);
       setGroupIdsFixed(true);
     });
@@ -183,10 +183,10 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
     );
   };
 
-  const renderCheck = () => {
-    console.warn("-------------------------------------- renderCheck");
-    return null;
-  };
+  // const renderCheck = () => {
+  //   // console.warn("-------------------------------------- renderCheck");
+  //   return null;
+  // };
 
   return (
     <section className="page">
@@ -227,12 +227,11 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
         stepTwoLoaded &&
         renderStudentsAutoAdmission()}
 
-      {(isGroupSelectionValid() &&
+      {isGroupSelectionValid() &&
         groupIdsFixed &&
         stepTwoLoaded &&
         stepThreeLoaded &&
-        renderSubgroupDistribution()) ||
-        renderCheck()}
+        renderSubgroupDistribution()}
     </section>
   );
 }

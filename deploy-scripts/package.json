@@ -1,5 +1,5 @@
 {
-  "name": "deploy-script",
+  "name": "deploy-scripts",
   "version": "1.0.0",
   "description": "",
   "main": "deploy.js",

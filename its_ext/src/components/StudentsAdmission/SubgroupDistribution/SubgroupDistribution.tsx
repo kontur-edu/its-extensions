@@ -248,18 +248,9 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
           updateStudentAndAdmissionsPromise,
         ]);
       })
-      .then(() => {
+      .finally(() => {
         setEnsureDataInProgress(false);
       });
-    // .catch((err) => {
-    //   setEnsureDataInProgress(false);
-    //   console.warn(`catch: ${err.message}`);
-    //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-    //     props.onUnauthorized();
-    //     return;
-    //   }
-    //   throw err;
-    // });
   };
 
   const prepareData = () => {
@@ -340,8 +331,9 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
   };
 
   useEffect(() => {
+    console.warn("SubgroupDistribution MOUNTED");
     return () => {
-      console.warn("SubgroupDistribution UNMOUNTED");
+      console.warn("SubgroupDistribution UNMOUNTED X");
     };
   }, []);
 

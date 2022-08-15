@@ -123,7 +123,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
           updateSubgroupsPromise(newCompetitionGroupIds),
         ]);
       })
-      .then(() => {
+      .finally(() => {
         currentEnsurePromise.current = null;
         setEnsureInProgress(false);
       });

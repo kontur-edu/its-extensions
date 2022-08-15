@@ -82,12 +82,14 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
         setCompetitionGroupItems(newCompetitionGroupItems);
       })
       .catch((err) => {
-        competitionGroupRefreshInProgress.current = false;
         if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
           props.onUnauthorized();
           return;
         }
         throw err;
+      })
+      .finally(() => {
+        competitionGroupRefreshInProgress.current = false;
       });
   };
 
@@ -105,9 +107,9 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
   const handleCompetitionGroupsSelect = (newCompetitionGroupIds: number[]) => {
     // if (JSON.stringify(competitionGroupIds) === JSON.stringify(newCompetitionGroupIds)) return;
     console.log("handleCompetitionGroupsSelect >>>> ");
-    stepTwoLoaded && setStepTwoLoaded(false);
-    stepThreeLoaded && setStepThreeLoaded(false);
-    groupIdsFixed && setGroupIdsFixed(false);
+    // stepTwoLoaded && setStepTwoLoaded(false);
+    // stepThreeLoaded && setStepThreeLoaded(false);
+    // groupIdsFixed && setGroupIdsFixed(false);
     debouncedWrapperForApply(() => {
       console.warn("StudentsAdmission: newCompetitionGroupIds");
       setCompetitionGroupIds(newCompetitionGroupIds);
@@ -181,6 +183,11 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
     );
   };
 
+  const renderCheck = () => {
+    console.warn("-------------------------------------- renderCheck");
+    return null;
+  };
+
   return (
     <section className="page">
       <h2 className="action_header">
@@ -220,11 +227,12 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
         stepTwoLoaded &&
         renderStudentsAutoAdmission()}
 
-      {isGroupSelectionValid() &&
+      {(isGroupSelectionValid() &&
         groupIdsFixed &&
         stepTwoLoaded &&
         stepThreeLoaded &&
-        renderSubgroupDistribution()}
+        renderSubgroupDistribution()) ||
+        renderCheck()}
     </section>
   );
 }

@@ -124,7 +124,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       updateAdmissionMetasPromise().then(() =>
         updateStudentAdmissionsAndStudentDataPromise()
       ),
-    ]).then(() => {
+    ]).finally(() => {
       currentEnsurePromise.current = null;
       setEnsureInProgress(false);
     });

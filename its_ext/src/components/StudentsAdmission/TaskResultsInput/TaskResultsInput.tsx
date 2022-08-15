@@ -192,12 +192,16 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
       getCurrentAdmissionIdsPerCompetitionGroup(selectedMupId);
 
     // setCompetitionGroupToAdmissionIds(newCompetitionGroupToAdmissionIds);
+    try {
     await context.dataRepository
       .UpdateStudentAdmissionsAndStudentData(newCompetitionGroupToAdmissionIds)
       .then(() =>
         setCompetitionGroupToAdmissionIds(newCompetitionGroupToAdmissionIds)
       );
-    setEnsureDataInProgress(false);
+    } finally {
+      setEnsureDataInProgress(false);
+    }
+    
   };
 
   // const refreshAdmissionInfo = async () => {

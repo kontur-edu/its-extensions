@@ -162,7 +162,7 @@ export function CompetitionGroupPreparation(
           ]);
         });
       })
-      .then(() => {
+      .finally(() => {
         currentEnsurePromise.current = null;
         setEnsureInProgress(false);
       });

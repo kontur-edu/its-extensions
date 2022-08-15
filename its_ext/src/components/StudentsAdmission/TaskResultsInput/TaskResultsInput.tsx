@@ -443,7 +443,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
         />
         {invalidStudentRows.length > 0 && renderInvalidStudentRows()}
         <Button onClick={handleSelectStudentsFromTextArea}>
-          Распрасить студентов
+          Распарсить студентов
         </Button>
         <h3>Студенты (активные), прошедшие Тестовое</h3>
         <RefreshButton

@@ -43,6 +43,20 @@ function extractCompetitionGroupIds(
   return newCompetitionGroupIds;
 }
 
+function getCompetitionGroupIdToSelectionGroupId(
+  selectionGroupIds: number[],
+  selectionGroupData: ISelectionGroupData
+) {
+  const res: {[key: number]: number} = {};
+  selectionGroupIds.forEach((sgId) => {
+    const cgId = selectionGroupData.data[sgId].competitionGroupId;
+    if (cgId !== null && cgId !== undefined) {
+      res[cgId] = sgId;
+    }
+  });
+  return res;
+}
+
 export function getCompetitionGroupName(
   competitionGroupId: number,
   competitionGroupData: ICompetitionGroupData
@@ -52,6 +66,10 @@ export function getCompetitionGroupName(
   }
   return competitionGroupId;
 }
+
+// function getSelectionGroupIdByCompetitionGroup(competitonGroupId, selectionGroupIds, competitionGroupIds) {
+//   if (selectionGroupIds.le)
+// }
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
@@ -247,10 +265,16 @@ export function CompetitionGroupPreparation(
       const mup = repo.mupData.data[mId];
       mupNameToMupId[mup.name] = mId;
     });
+    // TODO: save result
+    const competitionGroupIdToSelectionGroupId = getCompetitionGroupIdToSelectionGroupId(
+      props.selectionGroupIds, repo.selectionGroupData);
+    const sgId = competitionGroupIdToSelectionGroupId[cgId];
     const { actions, subgroupReferenceInfo } = createPrepareSubgroupsActions(
       cgId,
+      sgId,
       mupNameToMupId,
       repo.mupData,
+      repo.selectionGroupToMupsData,
       repo.competitionGroupToSubgroupMetas,
       repo.competitionGroupToSubgroupIds,
       repo.subgroupData

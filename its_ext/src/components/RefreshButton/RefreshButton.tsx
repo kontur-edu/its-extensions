@@ -1,5 +1,4 @@
 import React from "react";
-// eslint-disable-next-line
 import style from "./RefreshButton.module.css";
 
 import { IRefreshButtonProps } from "./types";
@@ -14,7 +13,7 @@ export function RefreshButton(props: IRefreshButtonProps) {
   };
 
   return (
-    <div className="load_content_container_small">
+    <div className={`load_content_container_small ${style.sticky}`}>
       <Button
         onClick={handleRefreshButton}
         style={{

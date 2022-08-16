@@ -73,6 +73,7 @@ async function deploy() {
   const functionSrcDir = env.FUNCTION_SRC_DIR;
   const userLogin = env.USER_LOGIN;
   const serviceAccountName = env.SERVICE_ACCOUNT_NAME;
+  const websiteDir = env.WEBSITE_BUCKET_DIR;
 
   const policyUpdateRes = prepareBucket(
     s3Client,
@@ -97,7 +98,12 @@ async function deploy() {
 
     const { preparedSpecFilename, content } = await prepareApiGatewaySpec(
       apigatewaySpecFilename,
-      { ...defaultParams, function_id: function_id, bucket_name: bucketName }
+      {
+        ...defaultParams,
+        function_id: function_id,
+        bucket_name: bucketName,
+        website_dir: websiteDir,
+      }
     );
 
     domain = await createApiGateway(gatewayName, preparedSpecFilename);

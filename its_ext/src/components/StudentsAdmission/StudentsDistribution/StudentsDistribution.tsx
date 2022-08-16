@@ -36,7 +36,7 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { CopyOrDownload } from "../../CopyOrDownload";
 import { RefreshButton } from "../../RefreshButton";
 import CircularProgress from "@mui/material/CircularProgress";
-import { createPersonalNumberToAdmittedMupNames } from "./utils";
+// import { createPersonalNumberToAdmittedMupNames } from "./utils";
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 const debouncedEnsureData = createDebouncedWrapper(DEBOUNCE_MS);
@@ -72,7 +72,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   const [studentAdmissionActionResults, setStudentAdmissionActionResults] =
     useState<IActionExecutionLogItem[]>([]);
 
-  const [personalNumberToAdmittedMupNames, setPersonalNumberToAdmittedMupNames] = useState<{[key: string]: Set<string>}>({});
+  // const [personalNumberToAdmittedMupNames, setPersonalNumberToAdmittedMupNames] = useState<{[key: string]: Set<string>}>({});
 
   const tableRef = useRef<HTMLElement | null>(null);
 
@@ -122,8 +122,8 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         competitionGroupIdToAdmissionIds
       );
     };
-    const updatePersonalNumberToAdmittedMupNames = () => !refresh && Object.keys(personalNumberToAdmittedMupNames).length > 0 ?
-      Promise.resolve(personalNumberToAdmittedMupNames) : preparePersonalNumberToAdmittedMupNames();
+    const updatePersonalNumberToAdmittedMupNames = () => !refresh && Object.keys(repo.personalNumberToAdmittedMupNames).length > 0 ?
+      Promise.resolve() : repo.UpdatePersonalNumberToAdmittedMupNames();
     return Promise.allSettled([
       updateMupDataPromise(),
       updateSelectionGroupDataPromise(),
@@ -150,16 +150,16 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
 
   const refreshData = () => ensureData(true);
 
-  const preparePersonalNumberToAdmittedMupNames = async () => {
-    const res = await createPersonalNumberToAdmittedMupNames(
-      context.apiService,
-      context.dataRepository.selectionGroupData,
-      context.dataRepository.mupData,
-    );
-    setPersonalNumberToAdmittedMupNames(res);
-    console.log(res);
-    return res;
-  }
+  // const preparePersonalNumberToAdmittedMupNames = async () => {
+  //   const res = await createPersonalNumberToAdmittedMupNames(
+  //     context.apiService,
+  //     context.dataRepository.selectionGroupData,
+  //     context.dataRepository.mupData,
+  //   );
+  //   setPersonalNumberToAdmittedMupNames(res);
+  //   console.log(res);
+  //   return res;
+  // }
 
   const prepareItemsAndStudentMupDataText = () => {
     const allPersonalNumbers = getAllPersonalNumbers(
@@ -339,15 +339,17 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       newMupIdToMupItems[mupId] = { ...mupIdToMupItems[mupId] };
     }
 
+    const repo = context.dataRepository;
+
     tryDistributeMupsByStudentRatingAndAdmissionPriority(
       newPersonalNumberToStudentItems,
       newMupIdToMupItems,
       mupIdsWithTestResultRequired.current,
       competitionGroupIdToZELimit.current,
       personalNumbersOfActiveStudentsSortedByRating.current,
-      context.dataRepository.mupData,
-      context.dataRepository.admissionIdToMupId,
-      context.dataRepository.admissionInfo
+      repo.mupData,
+      repo.admissionIdToMupId,
+      repo.admissionInfo
     );
 
     addRandomMupsForStudentIfNeeded(
@@ -355,10 +357,10 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       newPersonalNumberToStudentItems,
       newMupIdToMupItems,
       competitionGroupIdToZELimit.current,
-      personalNumberToAdmittedMupNames,
-      context.dataRepository.admissionIdToMupId,
-      context.dataRepository.mupData,
-      context.dataRepository.competitionGroupIdToMupAdmissions
+      repo.personalNumberToAdmittedMupNames,
+      repo.admissionIdToMupId,
+      repo.mupData,
+      repo.competitionGroupIdToMupAdmissions
     );
 
     setPersonalNumberToStudentItems(newPersonalNumberToStudentItems);
@@ -445,6 +447,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           <tr key={personalNumber}>
             <td>
               {student.surname} {student.firstname} {student.patronymic}{" "}
+              {student.personalNumber}
             </td>
             <td>{student.groupName}</td>
             <td>{student.rating}</td>

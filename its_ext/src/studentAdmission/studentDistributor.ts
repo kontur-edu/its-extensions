@@ -247,7 +247,8 @@ export function addRandomMupsForStudentIfNeeded(
         }
         if (personalNumberToAdmittedMupNames.hasOwnProperty(personalNumber)) {
           if (personalNumberToAdmittedMupNames[personalNumber].has(mup.name)) {
-            mupIsSelected = true;
+            console.log(`Cant assign mup: ${personalNumber} x ${mup.name}`);
+            continue;
           }
         }
         if (mupIsSelected) {

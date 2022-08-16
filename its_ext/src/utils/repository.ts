@@ -58,6 +58,8 @@ export class ITSRepository {
     [key: number]: ISelectedModuleDisciplines;
   } = {};
 
+  personalNumberToAdmittedMupNames: { [key: string]: Set<string> } = {};
+
   constructor(public api: ITSApiService) {}
 
   async UpdateMupData() {
@@ -441,4 +443,57 @@ export class ITSRepository {
       }
     }
   }
+
+  // NOTE: needs selectionGroupData and mupData
+  async UpdatePersonalNumberToAdmittedMupNames() {
+    console.log(`ITSRepository: UpdatePersonalNumberToAdmittedMupNames`);
+    this.personalNumberToAdmittedMupNames =
+      await createPersonalNumberToAdmittedMupNames(
+        this.api,
+        this.selectionGroupData,
+        this.mupData
+      );
+
+    console.log(this.personalNumberToAdmittedMupNames);
+  }
+}
+
+export async function createPersonalNumberToAdmittedMupNames(
+  api: ITSApiService,
+  selectionGroupData: ISelectionGroupData,
+  mupData: IMupData
+) {
+  const personalNumberToMupNameSet: { [key: string]: Set<string> } = {};
+  for (const selectionGroupId in selectionGroupData.data) {
+    const selectionGroup = selectionGroupData.data[selectionGroupId];
+    const cgId = selectionGroup.competitionGroupId;
+    if (cgId === null) {
+      continue;
+    }
+
+    const admissionMetas = await api.GetStudentAdmissionMetas(cgId);
+    if (admissionMetas.length > 0) {
+      const meta = admissionMetas[0];
+      const admissionId = meta.admissionsId;
+      const mupId = meta.mupId;
+      const mupName = mupData.data[mupId].name;
+      const studentsRaw = await api.GetStudentsForAdmission(admissionId);
+      for (const studentRaw of studentsRaw) {
+        console.log("studentRaw");
+        console.log(studentRaw);
+        const pn = studentRaw.personalNumber;
+        if (!personalNumberToMupNameSet.hasOwnProperty(pn)) {
+          personalNumberToMupNameSet[pn] = new Set<string>();
+        }
+        if (studentRaw.status === 1) {
+          personalNumberToMupNameSet[pn].add(mupName);
+        }
+        studentRaw.otherAdmissions.forEach((name) =>
+          personalNumberToMupNameSet[pn].add(name)
+        );
+      }
+    }
+  }
+
+  return personalNumberToMupNameSet;
 }

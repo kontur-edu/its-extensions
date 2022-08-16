@@ -6,6 +6,7 @@ export const defaultParams = {
   server_url: "placeholder",
   function_id: "placeholder",
   bucket_name: "placeholder",
+  website_dir: "website",
 };
 
 function escapeRegExp(string) {

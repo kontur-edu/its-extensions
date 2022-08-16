@@ -394,8 +394,8 @@ export function CompetitionGroupPreparation(
           generateAllActions(newSelectedCompetitionGroupId, allMupIds);
       });
     }
-    // eslint-disable-next-lines
-  }, [props.refreshCounter]);
+    
+  }, [props.refreshCounter]); // eslint-disable-line
 
   const handleCompetitionGroupChange = (event: SelectChangeEvent) => {
     const newCompetitionGroupIdStr = event.target.value;

@@ -206,14 +206,5 @@ export function getRandomInt(max: number) {
 }
 
 export function isLocalAddress(ipAddress: string) {
-  if (ipAddress === "localhost") return true;
-  let parts = ipAddress.split(".");
-  if (parts.length !== 4) return false;
-  return (
-    parts[0] === "10" ||
-    (parts[0] === "172" &&
-      parseInt(parts[1], 10) >= 16 &&
-      parseInt(parts[1], 10) <= 31) ||
-    (parts[0] === "192" && parts[1] === "168")
-  );
+  return ipAddress === "localhost" || ipAddress === "127.0.0.1";
 }

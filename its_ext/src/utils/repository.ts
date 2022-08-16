@@ -454,7 +454,7 @@ export class ITSRepository {
         this.mupData
       );
 
-    console.log(this.personalNumberToAdmittedMupNames);
+    // console.log(this.personalNumberToAdmittedMupNames);
   }
 }
 
@@ -479,8 +479,8 @@ export async function createPersonalNumberToAdmittedMupNames(
       const mupName = mupData.data[mupId].name;
       const studentsRaw = await api.GetStudentsForAdmission(admissionId);
       for (const studentRaw of studentsRaw) {
-        console.log("studentRaw");
-        console.log(studentRaw);
+        // console.log("studentRaw");
+        // console.log(studentRaw);
         const pn = studentRaw.personalNumber;
         if (!personalNumberToMupNameSet.hasOwnProperty(pn)) {
           personalNumberToMupNameSet[pn] = new Set<string>();

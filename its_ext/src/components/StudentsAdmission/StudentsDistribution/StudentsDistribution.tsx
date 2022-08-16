@@ -356,11 +356,13 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       personalNumbersOfActiveStudentsSortedByRating.current,
       newPersonalNumberToStudentItems,
       newMupIdToMupItems,
+      mupIdsWithTestResultRequired.current,
       competitionGroupIdToZELimit.current,
       repo.personalNumberToAdmittedMupNames,
       repo.admissionIdToMupId,
       repo.mupData,
-      repo.competitionGroupIdToMupAdmissions
+      repo.competitionGroupIdToMupAdmissions,
+      repo.admissionInfo,
     );
 
     setPersonalNumberToStudentItems(newPersonalNumberToStudentItems);

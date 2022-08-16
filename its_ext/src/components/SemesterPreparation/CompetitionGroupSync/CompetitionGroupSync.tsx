@@ -335,10 +335,18 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
   };
 
   useEffect(() => {
-    return () => {
-      // console.warn("CompetitionGroupSync UNMOUNTED");
-    };
-  }, []);
+    // console.warn(
+    //   `CompetitionGroupSync: useEffect [${props.refreshCounter}]`
+    // );
+    if (props.refreshCounter > 0) {
+      // console.warn(`refreshing on counter`);
+      if (props.selectionGroupIds.length !== 2) {
+        return;
+      }
+      refreshData(false, true);
+    }
+    // eslint-disable-next-line
+  }, [props.refreshCounter]);
 
   useEffect(() => {
     if (props.selectionGroupIds.length !== 2) {

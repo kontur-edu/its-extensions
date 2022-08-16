@@ -3,4 +3,5 @@ export interface IMupEditorProps {
   onLoad: () => void;
   onNextStep: () => void;
   onUnauthorized: () => void;
+  onApplyFinish: () => void;
 }

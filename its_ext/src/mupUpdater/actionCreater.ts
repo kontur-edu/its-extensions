@@ -315,7 +315,6 @@ export function createActions(
   zeToModuleSelection: { [key: number]: IModuleSelection[] },
   itsContext: IITSContext
 ): ITSAction[] {
-  console.log();
   if (selectionGroupsIds.length === 0) {
     return [];
   }

@@ -47,7 +47,7 @@ function getCompetitionGroupIdToSelectionGroupId(
   selectionGroupIds: number[],
   selectionGroupData: ISelectionGroupData
 ) {
-  const res: {[key: number]: number} = {};
+  const res: { [key: number]: number } = {};
   selectionGroupIds.forEach((sgId) => {
     const cgId = selectionGroupData.data[sgId].competitionGroupId;
     if (cgId !== null && cgId !== undefined) {
@@ -266,8 +266,11 @@ export function CompetitionGroupPreparation(
       mupNameToMupId[mup.name] = mId;
     });
     // TODO: save result
-    const competitionGroupIdToSelectionGroupId = getCompetitionGroupIdToSelectionGroupId(
-      props.selectionGroupIds, repo.selectionGroupData);
+    const competitionGroupIdToSelectionGroupId =
+      getCompetitionGroupIdToSelectionGroupId(
+        props.selectionGroupIds,
+        repo.selectionGroupData
+      );
     const sgId = competitionGroupIdToSelectionGroupId[cgId];
     const { actions, subgroupReferenceInfo } = createPrepareSubgroupsActions(
       cgId,
@@ -379,6 +382,21 @@ export function CompetitionGroupPreparation(
     // eslint-disable-next-line
   }, []);
 
+  useEffect(() => {
+    // console.warn(
+    //   `CompetitionGroupPreparation: useEffect [${props.refreshCounter}]`
+    // );
+    if (props.refreshCounter > 0) {
+      // console.warn(`refreshing on counter`);
+      ensureData(false, true).then(() => {
+        const { newSelectedCompetitionGroupId, allMupIds } = prepareData();
+        newSelectedCompetitionGroupId !== null &&
+          generateAllActions(newSelectedCompetitionGroupId, allMupIds);
+      });
+    }
+    // eslint-disable-next-lines
+  }, [props.refreshCounter]);
+
   const handleCompetitionGroupChange = (event: SelectChangeEvent) => {
     const newCompetitionGroupIdStr = event.target.value;
     if (newCompetitionGroupIdStr !== null) {
@@ -403,7 +421,10 @@ export function CompetitionGroupPreparation(
         setUpdateSubgroupCountActionResults(actionResults);
       })
       .then(() => refreshSubgroupsAndRegenerateAcrtions())
-      .then(() => setUpdateSubgroupCountInProgress(false));
+      .finally(() => {
+        setUpdateSubgroupCountInProgress(false);
+        props.onApplyFinish();
+      });
   };
 
   const handleUpdateSubgroupCountApplyDebounced = () => {
@@ -419,7 +440,10 @@ export function CompetitionGroupPreparation(
         setPrepareSubgroupActionResults(actionResults);
       })
       .then(() => refreshSubgroupsAndRegenerateAcrtions())
-      .then(() => setPrepareSubgroupInProgress(false));
+      .finally(() => {
+        setPrepareSubgroupInProgress(false);
+        props.onApplyFinish();
+      });
   };
 
   const handlePrepareSubgroupsApplyDebounced = () => {

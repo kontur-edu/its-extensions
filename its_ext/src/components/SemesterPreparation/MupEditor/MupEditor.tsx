@@ -591,7 +591,10 @@ export function MupEditor(props: IMupEditorProps) {
       .then((results) => setMupEditorActionResults(results))
       .then(() => alert("Применение изменений завершено"))
       .then(() => handleRefresh()) // refresh
-      .then(() => setExecutingActionsInProgress(false));
+      .finally(() => {
+        setExecutingActionsInProgress(false);
+        props.onApplyFinish();
+      });
     // .catch((err) => {
     //   setExecutingActionsInProgress(false);
     //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {

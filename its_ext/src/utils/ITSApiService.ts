@@ -41,9 +41,7 @@ function addSummary(response: any, url: string, data?: any): IActionResponse {
 }
 
 export class ITSApiService {
-  constructor(
-    public requestService: RequestService,
-  ) {}
+  constructor(public requestService: RequestService) {}
 
   async GetSelectionGroupsForEduSpace(
     eduSpaceId: number
@@ -450,7 +448,9 @@ export class ITSApiService {
     admissionId: number,
     testResult: number
   ) {
-    console.log(`UpdateStudentTestResults: ${studentId}, ${admissionId}, ${testResult}`);
+    console.log(
+      `UpdateStudentTestResults: ${studentId}, ${admissionId}, ${testResult}`
+    );
     const url = "https://its.urfu.ru/MUPItsAdmission/EditTestResults";
 
     const data = {
@@ -469,7 +469,9 @@ export class ITSApiService {
     admissionId: number,
     status: number
   ) {
-    console.log(`UpdateStudentAdmissionStatus: ${studentId}, ${admissionId}, ${status}`);
+    console.log(
+      `UpdateStudentAdmissionStatus: ${studentId}, ${admissionId}, ${status}`
+    );
     const url =
       "https://its.urfu.ru/MUPItsAdmission/SetCompetitionGroupAdmissionStatus";
 
@@ -481,8 +483,11 @@ export class ITSApiService {
 
     const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
-    if (response.data && response.data.toLocaleLowerCase().includes("не зачислен")) {
-      result.success = false; 
+    if (
+      response.data &&
+      response.data.toLocaleLowerCase().includes("не зачислен")
+    ) {
+      result.success = false;
     }
     return result;
   }
@@ -508,7 +513,9 @@ export class ITSApiService {
     studentId: string,
     included: boolean
   ) {
-    console.log(`UpdateStudentSubgroupMembership: ${subgroupId}, ${studentId}, ${included}`);
+    console.log(
+      `UpdateStudentSubgroupMembership: ${subgroupId}, ${studentId}, ${included}`
+    );
     const url = "https://its.urfu.ru/MUPItsSubgroup/StudentMembership";
 
     const data = {
@@ -551,7 +558,10 @@ export class ITSApiService {
     connectionId: number,
     moduleSelections: IModuleSelection[]
   ) {
-    console.log(`UpdateSelectionGroupMupModules: ${connectionId}, moduleSelections: `, moduleSelections);
+    console.log(
+      `UpdateSelectionGroupMupModules: ${connectionId}, moduleSelections: `,
+      moduleSelections
+    );
     const url = "https://its.urfu.ru/EduSpace/UpdateDisciplineConnection";
 
     const moduleDisciplines = moduleSelections.map((ms) => {

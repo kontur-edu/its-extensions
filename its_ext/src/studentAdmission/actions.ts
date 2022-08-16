@@ -26,19 +26,6 @@ export class UpdateStudentAdmissionAction extends ITSAction {
       this.admissionId,
       this.status
     );
-    // let message = "";
-    // try {
-    //   if (res.data.length > 0) {
-    //     const resObj = JSON.parse(res.data);
-    //     if (resObj.report) {
-    //       message = resObj.report;
-    //     }
-    //   }
-    // } catch(err) {
-    //   console.warn("Failed to read response from UpdateStudentAdmissionStatus: ", err);
-    // }
-    // const response = {...res, message: message};
-    // console.warn(response);
     return [response];
   }
 }

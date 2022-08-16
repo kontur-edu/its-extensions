@@ -491,8 +491,8 @@ export function MupEditor(props: IMupEditorProps) {
         selectedMupIds.push(mupId);
       }
     }
-    console.log("mupLimits");
-    console.log(mupLimits);
+    // console.log("mupLimits");
+    // console.log(mupLimits);
 
     const actions = createActions(
       props.selectionGroupIds,
@@ -540,7 +540,7 @@ export function MupEditor(props: IMupEditorProps) {
             !isSelected &&
             mupDiffs[mupId].presentInGroups.length > 0
           ) {
-            newMupEdits[mupId].messages.push("Удалить МУП из групп");
+            newMupEdits[mupId].messages.push("Удалить созданные подгруппы и удалить МУП из групп");
           }
 
           if (isSelected && mupDiffs[mupId].someLoads.length === 0) {

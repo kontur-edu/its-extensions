@@ -1,5 +1,5 @@
 import { IITSContext } from "../common/Context";
-import { ActionType, ITSAction } from "../common/actions";
+import { ActionType, isRefreshAction, ITSAction } from "../common/actions";
 import {
   DeleteSubgroupsAction,
   UpdateSelectionGroupAction,
@@ -138,19 +138,14 @@ function generateUpdateLimitActions(
   selectedMupsIds: string[],
   mupLimits: { [key: string]: number },
   mupDiffs: { [key: string]: IMupDiff },
-  needToUpdateAllLimits: boolean,
+  needToUpdateAllLimits: boolean
 ) {
-  // console.log("generateUpdateLimitActions");
-  // console.log("mupLimits");
-  // console.log(mupLimits);
   const actions: ITSAction[] = [];
   for (let mupId of selectedMupsIds) {
     const newLimit = mupLimits[mupId];
     for (let i = 0; i < selectionGroupsIds.length; i++) {
       const selectionGroupId = selectionGroupsIds[i];
       const initLimit = mupDiffs[mupId].initLimits[i];
-      // alert(mupDiffs[mupId].initLimits);
-      // console.log(`initLimit: ${initLimit} newLimit: ${newLimit}`);
       if (initLimit !== newLimit || needToUpdateAllLimits) {
         actions.push(new UpdateLimitAction(mupId, selectionGroupId, newLimit));
       }
@@ -280,7 +275,6 @@ function generateUpdateModulesAction(
   mupData: IMupData,
   moduleData: IModuleData
 ) {
-  // console.log("generateUpdateModulesAction");
   const actions: ITSAction[] = [];
   for (let mupId of selectedMupsIds) {
     const ze = mupData.data[mupId].ze;
@@ -357,12 +351,10 @@ export function createActions(
     selectionGroupsIds,
     selectedMupsIds,
     itsContext.dataRepository
-  )
+  );
   const needToUpdateAllLimits = updateSelectionGroupActions.length > 0;
 
-  actions.push(
-    ...updateSelectionGroupActions
-  );
+  actions.push(...updateSelectionGroupActions);
 
   actions.push(
     ...generateCreatePeriodActions(
@@ -377,6 +369,7 @@ export function createActions(
       ...generateRefreshActions(selectionGroupsIds, selectedMupsIds)
     );
   }
+  // TODO: remove refresh actions from the end if no actions after
 
   actions.push(
     ...generateUpdateLimitActions(
@@ -384,7 +377,7 @@ export function createActions(
       selectedMupsIds,
       mupLimits,
       mupDiffs,
-      needToUpdateAllLimits,
+      needToUpdateAllLimits
     )
   );
 
@@ -414,6 +407,8 @@ export function createActions(
       courseToPeriodTimeInfo
     )
   );
+
+  trimRefreshActionsFromEnd(actions);
 
   return actions;
 }
@@ -457,4 +452,15 @@ export function getMupActions(actions: ITSAction[]): {
   }
 
   return res;
+}
+
+function trimRefreshActionsFromEnd(actions: ITSAction[]) {
+  for (let i = actions.length - 1; i >= 0; i++) {
+    const action = actions[i];
+    if (isRefreshAction(action)) {
+      actions.pop();
+    } else {
+      break;
+    }
+  }
 }

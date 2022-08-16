@@ -137,11 +137,12 @@ function generateUpdateLimitActions(
   selectionGroupsIds: number[],
   selectedMupsIds: string[],
   mupLimits: { [key: string]: number },
-  mupDiffs: { [key: string]: IMupDiff }
+  mupDiffs: { [key: string]: IMupDiff },
+  needToUpdateAllLimits: boolean,
 ) {
-  console.log("generateUpdateLimitActions");
-  console.log("mupLimits");
-  console.log(mupLimits);
+  // console.log("generateUpdateLimitActions");
+  // console.log("mupLimits");
+  // console.log(mupLimits);
   const actions: ITSAction[] = [];
   for (let mupId of selectedMupsIds) {
     const newLimit = mupLimits[mupId];
@@ -149,8 +150,8 @@ function generateUpdateLimitActions(
       const selectionGroupId = selectionGroupsIds[i];
       const initLimit = mupDiffs[mupId].initLimits[i];
       // alert(mupDiffs[mupId].initLimits);
-      console.log(`initLimit: ${initLimit} newLimit: ${newLimit}`);
-      if (initLimit !== newLimit) {
+      // console.log(`initLimit: ${initLimit} newLimit: ${newLimit}`);
+      if (initLimit !== newLimit || needToUpdateAllLimits) {
         actions.push(new UpdateLimitAction(mupId, selectionGroupId, newLimit));
       }
     }
@@ -352,12 +353,15 @@ export function createActions(
     )
   );
 
+  const updateSelectionGroupActions = generateUpdateSelectionGroupActions(
+    selectionGroupsIds,
+    selectedMupsIds,
+    itsContext.dataRepository
+  )
+  const needToUpdateAllLimits = updateSelectionGroupActions.length > 0;
+
   actions.push(
-    ...generateUpdateSelectionGroupActions(
-      selectionGroupsIds,
-      selectedMupsIds,
-      itsContext.dataRepository
-    )
+    ...updateSelectionGroupActions
   );
 
   actions.push(
@@ -379,7 +383,8 @@ export function createActions(
       selectionGroupsIds,
       selectedMupsIds,
       mupLimits,
-      mupDiffs
+      mupDiffs,
+      needToUpdateAllLimits,
     )
   );
 

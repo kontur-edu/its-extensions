@@ -30,8 +30,13 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
   const [competitionGroupLoaded, setCompetitionGroupLoaded] =
     useState<boolean>(false);
 
+  const [competitionGroupPreparationRefreshCounter, setCompetitionGroupPreparationRefreshCounter] = useState<number>(0);
+  const [competitionGroupSyncRefreshCounter, setCompetitionGroupSyncRefreshCounter] = useState<number>(0);
+
+
   const [referenceCompetitionGroupId, setReferenceCompetitionGroupId] =
     useState<number | null>(null);
+
   const requestSelectionGroupsInProgress = useRef(false);
 
   const stepTwoRef = useRef<HTMLElement | null>(null);
@@ -78,6 +83,14 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     // console.warn("handleMupEditorLoaded");
     setCompetitionGroupLoaded(true);
   };
+
+  const handleMupEditorApply = () => {
+    setCompetitionGroupPreparationRefreshCounter(competitionGroupPreparationRefreshCounter + 1);
+  }
+
+  const handleCompetitionGroupPreparationApply = () => {
+    setCompetitionGroupSyncRefreshCounter(competitionGroupSyncRefreshCounter + 1);
+  }
 
   const handleSelectionGroupSelected = (selectionGroupIds: number[]) => {
     if (selectionGroupIds.length !== 2) {
@@ -132,6 +145,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
           onLoad={handleMupEditorLoaded}
           onNextStep={handleStepThree}
           onUnauthorized={props.onUnauthorized}
+          onApplyFinish={handleMupEditorApply}
         />
       </article>
     );
@@ -152,6 +166,8 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
           onReferenceCompetitionGroupChange={
             handleReferenceCompetitionGroupIdChange
           }
+          refreshCounter={competitionGroupPreparationRefreshCounter}
+          onApplyFinish={handleCompetitionGroupPreparationApply}
         />
       </article>
     );
@@ -166,6 +182,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
           selectionGroupIds={selectionGroupsIds}
           onUnauthorized={props.onUnauthorized}
           referenceCompetitionGroupId={referenceCompetitionGroupId}
+          refreshCounter={competitionGroupSyncRefreshCounter}
         />
       </article>
     );

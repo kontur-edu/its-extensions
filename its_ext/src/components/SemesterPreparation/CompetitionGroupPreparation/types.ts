@@ -4,4 +4,6 @@ export interface ICompetitionGroupPreparationProps {
   onNextStep: () => void;
   onLoad: () => void;
   onReferenceCompetitionGroupChange: (competitionGroupId: number) => void;
+  refreshCounter: number;
+  onApplyFinish: () => void;
 }

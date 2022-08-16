@@ -383,11 +383,11 @@ export function CompetitionGroupPreparation(
   }, []);
 
   useEffect(() => {
-    console.warn(
-      `CompetitionGroupPreparation: useEffect [${props.refreshCounter}]`
-    );
+    // console.warn(
+    //   `CompetitionGroupPreparation: useEffect [${props.refreshCounter}]`
+    // );
     if (props.refreshCounter > 0) {
-      console.warn(`refreshing on counter`);
+      // console.warn(`refreshing on counter`);
       ensureData(false, true).then(() => {
         const { newSelectedCompetitionGroupId, allMupIds } = prepareData();
         newSelectedCompetitionGroupId !== null &&

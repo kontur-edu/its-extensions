@@ -335,11 +335,11 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
   };
 
   useEffect(() => {
-    console.warn(
-      `CompetitionGroupSync: useEffect [${props.refreshCounter}]`
-    );
+    // console.warn(
+    //   `CompetitionGroupSync: useEffect [${props.refreshCounter}]`
+    // );
     if (props.refreshCounter > 0) {
-      console.warn(`refreshing on counter`);
+      // console.warn(`refreshing on counter`);
       if (props.selectionGroupIds.length !== 2) {
         return;
       }

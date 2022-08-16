@@ -19,12 +19,16 @@ export enum ActionType {
   UpdateStudentAdmission,
 }
 
-export function checkAllRefreshAction(actions: ITSAction[]) {
-  return actions.every(a =>
-    a.actionType === ActionType.RefreshSelectionGroups ||
-    a.actionType === ActionType.RefreshPeriods ||
-    a.actionType === ActionType.RefreshSubgroups
+export function isRefreshAction(action: ITSAction) {
+  return (
+    action.actionType === ActionType.RefreshSelectionGroups ||
+    action.actionType === ActionType.RefreshPeriods ||
+    action.actionType === ActionType.RefreshSubgroups
   );
+}
+
+export function checkAllRefreshAction(actions: ITSAction[]) {
+  return actions.every((a) => isRefreshAction(a));
 }
 
 export interface IActionResultInfo {}
@@ -51,8 +55,8 @@ export async function executeActions(
     let actionResults: IActionResponse[] = [];
     try {
       actionResults = await action.execute(itsContext);
-    } catch(err) {
-      actionResults.push({success: false, message: err as string})
+    } catch (err) {
+      actionResults.push({ success: false, message: err as string });
     }
     const actionExecutionLogItem: IActionExecutionLogItem = {
       actionMessage: action.getMessage(),

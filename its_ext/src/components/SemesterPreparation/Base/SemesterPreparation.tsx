@@ -171,6 +171,9 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     );
   };
 
+  // console.log("selectionGroupsListItems");
+  // console.log(selectionGroupsListItems);
+
   return (
     <section className="page">
       <h2 className="action_header">

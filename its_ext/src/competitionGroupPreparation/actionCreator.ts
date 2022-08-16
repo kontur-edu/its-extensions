@@ -5,6 +5,7 @@ import {
   IMupData,
   ISubgroupData,
   ISubgroupInfo,
+  ISelectionGroupToMupsData,
 } from "../common/types";
 import {
   createSubgroupReferenceInfoFromCompetitionGroup,
@@ -135,11 +136,13 @@ export function generateRefreshSubgroupsActions(competitionGroupId: number) {
   return [new RefreshSubgroupsAction([competitionGroupId])];
 }
 
-export function generateUpdateTeacherActions(
+export function generateUpdateTeacherAndLimitActions(
   competitionGroupId: number,
+  selectionGroupId: number,
   mupNameToMupId: { [key: string]: string },
   subgroupReferenceInfo: ISubgroupReferenceInfo,
   mupData: IMupData,
+  selectionGroupToMupData: ISelectionGroupToMupsData,
   competitionGroupToSubgroupMetas: ICompetitionGroupToSubgroupMetas
 ): ITSAction[] {
   const actions: ITSAction[] = [];
@@ -150,11 +153,22 @@ export function generateUpdateTeacherActions(
     if (!mupNameToMupId.hasOwnProperty(meta.discipline)) {
       continue;
     }
-    const currentTeacherIds = subgroupReferenceInfo[meta.discipline][
-      meta.load
-    ].subgroupInfo.map((si) => si.teacher);
+    // const currentTeacherIds = subgroupReferenceInfo[meta.discipline][
+    //   meta.load
+    // ].subgroupInfo.map((si) => si.teacher);
+    const subgroupReferenceInfoItems =
+      subgroupReferenceInfo[meta.discipline][meta.load].subgroupInfo;
+    let subgroupCount = subgroupReferenceInfo[meta.discipline][meta.load].count;
+    if (subgroupCount <= 0) {
+      subgroupCount = 1;
+    }
+
+    const selctionGroupMups = selectionGroupToMupData.data[selectionGroupId];
 
     const mupId = mupNameToMupId[meta.discipline];
+    const limitPerGroup = Math.ceil(
+      selctionGroupMups.data[mupId].limit / subgroupCount
+    );
 
     if (!mupData.data.hasOwnProperty(mupId)) {
       console.warn(`mupId: ${mupId} not found in mupData`);
@@ -162,23 +176,42 @@ export function generateUpdateTeacherActions(
     }
 
     const mup = mupData.data[mupId];
-    if (mup.teacherIds.length !== 1) {
-      continue;
-    }
+    // if (mup.teacherIds.length !== 1) {
+    //   continue;
+    // }
+    const refTeacher =
+      mup.teacherIds.length === 1 ? mup.teacherIds[0] : undefined;
 
     for (let i = 0; i < meta.count; i++) {
-      if (currentTeacherIds[i]) continue;
+      // if (currentTeacherIds[i]) continue;
       const subgroupInfo: ISubgroupInfo = {
         mupName: meta.discipline,
         load: meta.load,
         number: i + 1,
       };
 
+      let updateTeacher = true;
+      let updateLimit = true;
+      if (subgroupReferenceInfoItems.length > i) {
+        if (subgroupReferenceInfoItems[i].teacher) {
+          updateTeacher = false;
+        }
+        if (subgroupReferenceInfoItems[i].limit === limitPerGroup) {
+          updateLimit = false;
+        }
+      }
+      let newTeacherId = updateTeacher ? refTeacher : undefined;
+      let newLimit = updateLimit ? limitPerGroup : undefined;
+      if (newTeacherId === undefined && newLimit === undefined) {
+        continue;
+      }
+
       actions.push(
         new UpdateTeacherForSubgroupAction(
           competitionGroupId,
           subgroupInfo,
-          mup.teacherIds[0]
+          newTeacherId,
+          newLimit
         )
       );
     }
@@ -207,8 +240,10 @@ export function createUpdateSubgroupCountActions(
 
 export function createPrepareSubgroupsActions(
   competitionGroupId: number,
+  selectionGroupId: number,
   mupNameToMupId: { [key: string]: string },
   mupData: IMupData,
+  selectionGroupToMupData: ISelectionGroupToMupsData,
   competitionGroupToSubgroupMetas: ICompetitionGroupToSubgroupMetas,
   competitionGroupToSubgroupIds: ICompetitionGroupToSubgroupIds,
   subgroupData: ISubgroupData
@@ -232,6 +267,8 @@ export function createPrepareSubgroupsActions(
     competitionGroupToSubgroupIds[competitionGroupId],
     subgroupData
   );
+  // console.log("subgroupReferenceInfo");
+  // console.log(subgroupReferenceInfo);
 
   actions.push(
     ...generateCreateSubgroupsActions(
@@ -247,12 +284,20 @@ export function createPrepareSubgroupsActions(
     actions.push(...generateRefreshSubgroupsActions(competitionGroupId));
   }
 
+  // actions.push(
+  //   ...generateUpdateSubgroupLimitsActions(
+  //     competitionGroupId,
+  //   );
+  // );
+
   actions.push(
-    ...generateUpdateTeacherActions(
+    ...generateUpdateTeacherAndLimitActions(
       competitionGroupId,
+      selectionGroupId,
       mupNameToMupId,
       subgroupReferenceInfo,
       mupData,
+      selectionGroupToMupData,
       competitionGroupToSubgroupMetas
     )
   );

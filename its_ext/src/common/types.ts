@@ -239,6 +239,7 @@ export interface IStudentAdmissionRaw {
   status: number; // 0 - нет решения, 1 - зачислен, 2 - не зачислен
   studentStatus: string;
   groupName: string;
+  otherAdmissions: string[];
 }
 
 export interface IStudent {

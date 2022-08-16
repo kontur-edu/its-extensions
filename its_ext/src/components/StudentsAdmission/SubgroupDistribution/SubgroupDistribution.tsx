@@ -313,6 +313,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
       );
       setSubgroupDistributionTextOutput(newSubgroupDistributionTextOutput);
     } catch (err: any) {
+      console.warn("Error: ", err);
       setSubgroupDistributionTextOutput(`Error: ${err.message}`);
     }
 

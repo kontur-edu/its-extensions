@@ -1,5 +1,5 @@
 import { IITSContext } from "../common/Context";
-import { ActionType, ITSAction } from "../common/actions";
+import { ActionType, isRefreshAction, ITSAction } from "../common/actions";
 import {
   DeleteSubgroupsAction,
   UpdateSelectionGroupAction,
@@ -137,17 +137,16 @@ function generateUpdateLimitActions(
   selectionGroupsIds: number[],
   selectedMupsIds: string[],
   mupLimits: { [key: string]: number },
-  mupDiffs: { [key: string]: IMupDiff }
+  mupDiffs: { [key: string]: IMupDiff },
+  needToUpdateAllLimits: boolean
 ) {
   const actions: ITSAction[] = [];
   for (let mupId of selectedMupsIds) {
-    let newLimit = mupLimits[mupId];
+    const newLimit = mupLimits[mupId];
     for (let i = 0; i < selectionGroupsIds.length; i++) {
       const selectionGroupId = selectionGroupsIds[i];
       const initLimit = mupDiffs[mupId].initLimits[i];
-      // alert(mupDiffs[mupId].initLimits);
-      // console.log(`initLimit: ${initLimit} newLimit: ${newLimit}`);
-      if (initLimit !== newLimit) {
+      if (initLimit !== newLimit || needToUpdateAllLimits) {
         actions.push(new UpdateLimitAction(mupId, selectionGroupId, newLimit));
       }
     }
@@ -286,7 +285,7 @@ function generateUpdateModulesAction(
         moduleIdToSelection[rm.id] = rm.selected;
       });
     }
-    for (let i = 0; i < selectedMupsIds.length; i++) {
+    for (let i = 0; i < selectionGroupsIds.length; i++) {
       const selectionGroupId = selectionGroupsIds[i];
       if (mupDiffs[mupId].updateSelectedModuleDisciplines[i]) {
         const ms = Object.keys(moduleData.data).map((moduleId) => {
@@ -316,6 +315,7 @@ export function createActions(
   zeToModuleSelection: { [key: number]: IModuleSelection[] },
   itsContext: IITSContext
 ): ITSAction[] {
+  console.log();
   if (selectionGroupsIds.length === 0) {
     return [];
   }
@@ -347,13 +347,14 @@ export function createActions(
     )
   );
 
-  actions.push(
-    ...generateUpdateSelectionGroupActions(
-      selectionGroupsIds,
-      selectedMupsIds,
-      itsContext.dataRepository
-    )
+  const updateSelectionGroupActions = generateUpdateSelectionGroupActions(
+    selectionGroupsIds,
+    selectedMupsIds,
+    itsContext.dataRepository
   );
+  const needToUpdateAllLimits = updateSelectionGroupActions.length > 0;
+
+  actions.push(...updateSelectionGroupActions);
 
   actions.push(
     ...generateCreatePeriodActions(
@@ -368,13 +369,15 @@ export function createActions(
       ...generateRefreshActions(selectionGroupsIds, selectedMupsIds)
     );
   }
+  // TODO: remove refresh actions from the end if no actions after
 
   actions.push(
     ...generateUpdateLimitActions(
       selectionGroupsIds,
       selectedMupsIds,
       mupLimits,
-      mupDiffs
+      mupDiffs,
+      needToUpdateAllLimits
     )
   );
 
@@ -404,6 +407,8 @@ export function createActions(
       courseToPeriodTimeInfo
     )
   );
+
+  trimRefreshActionsFromEnd(actions);
 
   return actions;
 }
@@ -447,4 +452,15 @@ export function getMupActions(actions: ITSAction[]): {
   }
 
   return res;
+}
+
+function trimRefreshActionsFromEnd(actions: ITSAction[]) {
+  for (let i = actions.length - 1; i >= 0; i++) {
+    const action = actions[i];
+    if (isRefreshAction(action)) {
+      actions.pop();
+    } else {
+      break;
+    }
+  }
 }

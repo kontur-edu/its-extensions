@@ -14,6 +14,7 @@ import ExpandMore from "@mui/icons-material/ExpandMore";
 import DoneIcon from "@mui/icons-material/Done";
 import SystemUpdateAltIcon from "@mui/icons-material/SystemUpdateAlt";
 import CircularProgress from "@mui/material/CircularProgress";
+import { ACTION_MESSAGE_SIZE } from "../../utils/constants";
 
 function clipString(message: string, length: number) {
   if (message.length > length) {
@@ -21,8 +22,6 @@ function clipString(message: string, length: number) {
   }
   return message;
 }
-
-const MESSAGE_SIZE = 10000;
 
 export interface INextStepButtonProps {
   onClick: () => void;
@@ -74,7 +73,9 @@ export function ApplyButtonWithActionDisplay(
         <Collapse in={actionListOpen} timeout="auto" unmountOnExit>
           <ul>
             {props.actions?.map((a: ITSAction, index: number) => (
-              <li key={index}>{clipString(a.getMessage(), MESSAGE_SIZE)}</li>
+              <li key={index}>
+                {clipString(a.getMessage(), ACTION_MESSAGE_SIZE)}
+              </li>
             ))}
           </ul>
         </Collapse>
@@ -94,7 +95,7 @@ export function ApplyButtonWithActionDisplay(
             {props.actionResults?.map(
               (logItem: IActionExecutionLogItem, index: number) => (
                 <li key={index}>
-                  {clipString(logItem.actionMessage, MESSAGE_SIZE)}
+                  {clipString(logItem.actionMessage, ACTION_MESSAGE_SIZE)}
                   <ul>
                     {logItem.actionResults.map((ar, arIdx) => (
                       <li
@@ -103,7 +104,8 @@ export function ApplyButtonWithActionDisplay(
                           ar.success ? "message_success" : "message_error"
                         }
                       >
-                        {ar.message}
+                        {ar.message &&
+                          clipString(ar.message, ACTION_MESSAGE_SIZE)}
                       </li>
                     ))}
                   </ul>

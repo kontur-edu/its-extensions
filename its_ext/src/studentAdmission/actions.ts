@@ -21,11 +21,11 @@ export class UpdateStudentAdmissionAction extends ITSAction {
   }
 
   async execute(context: IITSContext): Promise<IActionResponse[]> {
-    const res = await context.apiService.UpdateStudentAdmissionStatus(
+    const response = await context.apiService.UpdateStudentAdmissionStatus(
       this.studentId,
       this.admissionId,
       this.status
     );
-    return [res];
+    return [response];
   }
 }

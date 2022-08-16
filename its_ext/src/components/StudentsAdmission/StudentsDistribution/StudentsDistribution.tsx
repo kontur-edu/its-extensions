@@ -79,7 +79,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   const [ensureInProgress, setEnsureInProgress] = useState<boolean>(false);
   const currentEnsurePromise = useRef<Promise<any> | null>(null);
 
-
   const context = useContext(ITSContext)!;
 
   const handleGoToTable = () => {
@@ -122,8 +121,10 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         competitionGroupIdToAdmissionIds
       );
     };
-    const updatePersonalNumberToAdmittedMupNames = () => !refresh && Object.keys(repo.personalNumberToAdmittedMupNames).length > 0 ?
-      Promise.resolve() : repo.UpdatePersonalNumberToAdmittedMupNames();
+    const updatePersonalNumberToAdmittedMupNames = () =>
+      !refresh && Object.keys(repo.personalNumberToAdmittedMupNames).length > 0
+        ? Promise.resolve()
+        : repo.UpdatePersonalNumberToAdmittedMupNames();
     return Promise.allSettled([
       updateMupDataPromise(),
       updateSelectionGroupDataPromise(),
@@ -131,11 +132,11 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         updateStudentAdmissionsAndStudentDataPromise()
       ),
     ])
-    .then(() => updatePersonalNumberToAdmittedMupNames())
-    .finally(() => {
-      currentEnsurePromise.current = null;
-      setEnsureInProgress(false);
-    });
+      .then(() => updatePersonalNumberToAdmittedMupNames())
+      .finally(() => {
+        currentEnsurePromise.current = null;
+        setEnsureInProgress(false);
+      });
     // .catch((err) => {
     //   currentEnsurePromise.current = null;
     //   setEnsureInProgress(false);
@@ -362,7 +363,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       repo.admissionIdToMupId,
       repo.mupData,
       repo.competitionGroupIdToMupAdmissions,
-      repo.admissionInfo,
+      repo.admissionInfo
     );
 
     setPersonalNumberToStudentItems(newPersonalNumberToStudentItems);

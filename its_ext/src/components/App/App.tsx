@@ -30,7 +30,7 @@ const proxyUrl =
     : PROXY_URL;
 const apiValidator = new ApiValidator(apiValidatorConfig);
 const requestService = new RequestService(proxyUrl, LOGIN_URL, apiValidator);
-const apiService = new ITSApiService(requestService, false);
+const apiService = new ITSApiService(requestService);
 const dataRepository = new ITSRepository(apiService);
 
 function App() {

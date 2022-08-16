@@ -123,7 +123,7 @@ export class ITSRepository {
     this.selectionGroupToMupsData = prepareSelectionGroupToMupsData(
       selectionGroupIdToSelectionGroupMups
     );
-    console.log(this.selectionGroupToMupsData);
+    // console.log(this.selectionGroupToMupsData);
   }
 
   CheckPeriodDataPresent(mupIds: string[]) {

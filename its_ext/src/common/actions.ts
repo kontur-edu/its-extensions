@@ -64,6 +64,7 @@ export async function executeActions(
     };
     actionResults.forEach((ar) => {
       let message = "выполнено";
+      // console.warn(ar);
       if (ar.summary || ar.message) {
         message = `${ar.summary || ""} ${ar.message || ""}`;
       }

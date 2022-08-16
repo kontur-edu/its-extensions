@@ -21,23 +21,23 @@ export class UpdateStudentAdmissionAction extends ITSAction {
   }
 
   async execute(context: IITSContext): Promise<IActionResponse[]> {
-    const res = await context.apiService.UpdateStudentAdmissionStatus(
+    const response = await context.apiService.UpdateStudentAdmissionStatus(
       this.studentId,
       this.admissionId,
       this.status
     );
-    let message = "";
-    try {
-      if (res.data.length > 0) {
-        const resObj = JSON.parse(res.data);
-        if (resObj.report) {
-          message = resObj.report;
-        }
-      }
-    } catch(err) {
-      console.warn("Failed to read response from UpdateStudentAdmissionStatus: ", err);
-    }
-    const response = {...res, message: message};
+    // let message = "";
+    // try {
+    //   if (res.data.length > 0) {
+    //     const resObj = JSON.parse(res.data);
+    //     if (resObj.report) {
+    //       message = resObj.report;
+    //     }
+    //   }
+    // } catch(err) {
+    //   console.warn("Failed to read response from UpdateStudentAdmissionStatus: ", err);
+    // }
+    // const response = {...res, message: message};
     // console.warn(response);
     return [response];
   }

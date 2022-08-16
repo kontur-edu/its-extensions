@@ -35,7 +35,7 @@ function addSummary(response: any, url: string, data?: any): IActionResponse {
   if (response.success && response.data) {
     const bodyJson = JSON.parse(response.data);
     result.success = bodyJson.success;
-    result.message = bodyJson.message;
+    result.message = bodyJson.message || bodyJson.report;
   }
   return result;
 }
@@ -43,7 +43,6 @@ function addSummary(response: any, url: string, data?: any): IActionResponse {
 export class ITSApiService {
   constructor(
     public requestService: RequestService,
-    private readonly safeMode: boolean = false
   ) {}
 
   async GetSelectionGroupsForEduSpace(
@@ -460,7 +459,8 @@ export class ITSApiService {
       resultValue: testResult,
     };
 
-    const result = await this.requestService.PostFormData(url, data);
+    const response = await this.requestService.PostFormData(url, data);
+    const result = addSummary(response, url, data);
     return result;
   }
 
@@ -479,7 +479,11 @@ export class ITSApiService {
       status: status,
     };
 
-    const result = await this.requestService.PostFormData(url, data);
+    const response = await this.requestService.PostFormData(url, data);
+    const result = addSummary(response, url, data);
+    if (response.data && response.data.toLocaleLowerCase().includes("не зачислен")) {
+      result.success = false; 
+    }
     return result;
   }
 
@@ -513,7 +517,8 @@ export class ITSApiService {
       include: included ? "true" : "false",
     };
 
-    const result = await this.requestService.PostFormData(url, data);
+    const response = await this.requestService.PostFormData(url, data);
+    const result = addSummary(response, url, data);
     return result;
   }
 
@@ -558,7 +563,8 @@ export class ITSApiService {
       moduleDisciplines: JSON.stringify(moduleDisciplines),
     };
 
-    const result = await this.requestService.PostFormData(url, data);
+    const response = await this.requestService.PostFormData(url, data);
+    const result = addSummary(response, url, data);
     return result;
   }
 }

@@ -2,7 +2,6 @@ import React from "react";
 import style from "./MupsList.module.css";
 import { IMupsListProps } from "./types";
 import Checkbox from "@mui/material/Checkbox";
-// import Input from "@mui/material/Input";
 import { TextField } from "@mui/material";
 import { MUP_PERIOD_URL } from "../../utils/constants";
 import { OuterLink } from "../OuterLink";

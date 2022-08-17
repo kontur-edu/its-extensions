@@ -377,44 +377,41 @@ export function MupEditor(props: IMupEditorProps) {
     return Promise.allSettled([periodPromise, modulePromise]);
   };
 
-  const handleMupToggle = (mupId: string) => {
-    console.log("handleMupToggle: zeToModuleSelection");
-    console.log(zeToModuleSelection);
-    // console.log(`handleMupToggle: ${mupId}`);
+  const ensureMupDiff = async (mupId: string) => {
     let newDates: [string, string] = ["", ""];
     let newDiff: IMupDiff | null = null;
     let useNewDates = false;
     const repo = context.dataRepository;
-    ensurePeriodAndModulesForMup(mupId).then(() => {
-      let mupDiffsToCompareWith = mupDiffs;
-      if (!mupDiffs.hasOwnProperty(mupId) || !mupDiffs[mupId]) {
-        newDiff = createDiffForMup(
-          mupId,
-          props.selectionGroupIds,
-          [startDate, endDate],
-          zeToModuleSelection,
-          repo.mupData,
-          repo.selectionGroupToMupsData,
-          repo.selectionGroupData,
-          repo.mupToPeriods,
-          repo.selectionGroupModuleIdToSelectedModuleDisciplines
-        );
-        // const newMupDiffs = { ...mupDiffs, [mupId]: newInitDiff };
+    await ensurePeriodAndModulesForMup(mupId);
+    if (!mupDiffs.hasOwnProperty(mupId) || !mupDiffs[mupId]) {
+      newDiff = createDiffForMup(
+        mupId,
+        props.selectionGroupIds,
+        [startDate, endDate],
+        zeToModuleSelection,
+        repo.mupData,
+        repo.selectionGroupToMupsData,
+        repo.selectionGroupData,
+        repo.mupToPeriods,
+        repo.selectionGroupModuleIdToSelectedModuleDisciplines
+      );
 
-        // // FIXME: need to split large functions
-        if (!startDate && !endDate && !newDates[0] && !newDates[1]) {
-          useNewDates = true;
-          const datesFromNewMup = getDatesOfMupDiff(newDiff);
-          if (datesFromNewMup[0] || datesFromNewMup[1]) {
-            newDates = datesFromNewMup;
-          }
+      if (!startDate && !endDate && !newDates[0] && !newDates[1]) {
+        useNewDates = true;
+        const datesFromNewMup = getDatesOfMupDiff(newDiff);
+        if (datesFromNewMup[0] || datesFromNewMup[1]) {
+          newDates = datesFromNewMup;
         }
-
-        // mupDiffsToCompareWith = newMupDiffs;
-        // setMupDiffs(newMupDiffs);
       }
+    }
+    return { newDiff, newDates, useNewDates };
+  };
 
-      mupDiffsToCompareWith = mupDiffs;
+  const handleMupToggle = (mupId: string) => {
+    console.log("handleMupToggle: zeToModuleSelection");
+    console.log(zeToModuleSelection);
+    ensureMupDiff(mupId).then(({ newDiff, newDates, useNewDates }) => {
+      let mupDiffsToCompareWith = mupDiffs;
 
       if (newDiff) {
         mupDiffsToCompareWith = { ...mupDiffs, [mupId]: newDiff };

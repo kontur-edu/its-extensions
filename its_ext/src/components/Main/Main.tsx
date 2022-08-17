@@ -86,7 +86,6 @@ export function Main(props: IMainProps) {
           path="/studentsAdmission"
           element={
             <React.Fragment>
-              {/* {(function() {console.warn("renderRoute"); return null})()} */}
               <Modal visible={needAuthentication}>
                 <LoginForm
                   onSubmit={handleLogin}

@@ -277,7 +277,6 @@ function generateUpdateModulesAction(
 ) {
   const actions: ITSAction[] = [];
 
-  
   for (let mupId of selectedMupsIds) {
     const ze = mupData.data[mupId].ze;
 
@@ -305,7 +304,6 @@ function generateUpdateModulesAction(
     for (let i = 0; i < selectionGroupsIds.length; i++) {
       const selectionGroupId = selectionGroupsIds[i];
       if (mupDiffs[mupId].updateSelectedModuleDisciplines[i]) {
-        
         actions.push(new UpdateModulesAction(mupId, selectionGroupId, ms));
       }
     }

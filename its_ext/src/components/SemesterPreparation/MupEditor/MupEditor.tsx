@@ -37,27 +37,34 @@ import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay
 import { RefreshButton } from "../../RefreshButton";
 import CircularProgress from "@mui/material/CircularProgress";
 
-const findInitDates = (initDiffs: {
-  [key: string]: IMupDiff;
-}): [string, string] => {
+function getDatesOfMupDiff(diff: IMupDiff) {
   const dates: [string, string] = ["", ""];
-  for (let mupId of Object.keys(initDiffs)) {
-    for (let currentPeriod of Object.values(
-      initDiffs[mupId].courseToCurrentPeriod
-    )) {
-      if (currentPeriod.selectionBegin) {
-        dates[0] = currentPeriod.selectionBegin;
-      }
-      if (currentPeriod.selectionDeadline) {
-        dates[1] = currentPeriod.selectionDeadline;
-      }
-      if (dates[0] && dates[1]) {
-        return dates;
-      }
+  for (let currentPeriod of Object.values(diff.courseToCurrentPeriod)) {
+    if (currentPeriod.selectionBegin) {
+      dates[0] = currentPeriod.selectionBegin;
+    }
+    if (currentPeriod.selectionDeadline) {
+      dates[1] = currentPeriod.selectionDeadline;
+    }
+    if (dates[0] && dates[1]) {
+      return dates;
     }
   }
   return dates;
-};
+}
+
+function findInitDates(initDiffs: {
+  [key: string]: IMupDiff;
+}): [string, string] {
+  const dates: [string, string] = ["", ""];
+  for (let mupId of Object.keys(initDiffs)) {
+    const newDates = getDatesOfMupDiff(initDiffs[mupId]);
+    if (newDates[0] && newDates[1]) {
+      return newDates;
+    }
+  }
+  return dates;
+}
 
 function findModuleSelection(
   semesterName: string,
@@ -112,40 +119,28 @@ export function MupEditor(props: IMupEditorProps) {
 
   const context = useContext(ITSContext)!;
 
-  const onStartDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const dateFormatted = event.target.value;
+  const handleDateChanged = (dates: [string, string]) => {
+    if (dates.length !== 2) return;
+    if (dates[0] === startDate && dates[1] === endDate) return;
+
+    if (dates[0] !== startDate) setStartDate(dates[0]);
+    if (dates[1] !== endDate) setEndDate(dates[1]);
 
     const newMupDiffs = { ...mupDiffs };
     for (let mupId in newMupDiffs) {
-      updateMupDiffDateInfo(newMupDiffs[mupId], [dateFormatted, endDate]);
+      updateMupDiffDateInfo(newMupDiffs[mupId], dates);
     }
     setMupDiffs(newMupDiffs);
-
-    setStartDate(dateFormatted);
-    callDebouncedApply(
-      newMupDiffs,
-      mupEdits,
-      [dateFormatted, endDate],
-      zeToModuleSelection
-    );
+    generateActionsDebounced(newMupDiffs, mupEdits, dates, zeToModuleSelection);
+  };
+  const onStartDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const dateFormatted = event.target.value;
+    handleDateChanged([dateFormatted, endDate]);
   };
 
   const onEndDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const dateFormatted = event.target.value;
-
-    const newMupDiffs = { ...mupDiffs };
-    for (let mupId in newMupDiffs) {
-      updateMupDiffDateInfo(newMupDiffs[mupId], [startDate, dateFormatted]);
-    }
-    setMupDiffs(newMupDiffs);
-
-    setEndDate(dateFormatted);
-    callDebouncedApply(
-      newMupDiffs,
-      mupEdits,
-      [startDate, dateFormatted],
-      zeToModuleSelection
-    );
+    handleDateChanged([startDate, dateFormatted]);
   };
 
   const createInitDiffsAndDates = (
@@ -317,7 +312,7 @@ export function MupEditor(props: IMupEditorProps) {
     );
     setZeToModuleSelection(newZeToModuleSelection);
     setUpDiffsAndDates(newMupDiffs, newMupEdits, initDates);
-    callDebouncedApply(
+    generateActionsDebounced(
       newMupDiffs,
       newMupEdits,
       initDates,
@@ -380,11 +375,14 @@ export function MupEditor(props: IMupEditorProps) {
 
   const handleMupToggle = (mupId: string) => {
     // console.log(`handleMupToggle: ${mupId}`);
+    let newDates: [string, string] = ["", ""];
+    let newDiff: IMupDiff | null = null;
+    let useNewDates = false;
     const repo = context.dataRepository;
     ensurePeriodAndModulesForMup(mupId).then(() => {
       let mupDiffsToCompareWith = mupDiffs;
       if (!mupDiffs.hasOwnProperty(mupId) || !mupDiffs[mupId]) {
-        const newInitDiff = createDiffForMup(
+        newDiff = createDiffForMup(
           mupId,
           props.selectionGroupIds,
           [startDate, endDate],
@@ -395,9 +393,35 @@ export function MupEditor(props: IMupEditorProps) {
           repo.mupToPeriods,
           repo.selectionGroupModuleIdToSelectedModuleDisciplines
         );
-        const newMupDiffs = { ...mupDiffs, [mupId]: newInitDiff };
-        mupDiffsToCompareWith = newMupDiffs;
-        setMupDiffs(newMupDiffs);
+        // const newMupDiffs = { ...mupDiffs, [mupId]: newInitDiff };
+
+        // // FIXME: need to split large functions
+        if (!startDate && !endDate && !newDates[0] && !newDates[1]) {
+          useNewDates = true;
+          const datesFromNewMup = getDatesOfMupDiff(newDiff);
+          if (datesFromNewMup[0] || datesFromNewMup[1]) {
+            newDates = datesFromNewMup;
+          }
+        }
+
+        // mupDiffsToCompareWith = newMupDiffs;
+        // setMupDiffs(newMupDiffs);
+      }
+
+      mupDiffsToCompareWith = mupDiffs;
+      
+      if (newDiff) {
+        mupDiffsToCompareWith = { ...mupDiffs, [mupId]: newDiff };
+
+        if (!startDate && !endDate && (newDates[0] || newDates[1])) {
+          if (newDates[0]) setStartDate(newDates[0]);
+          if (newDates[1]) setEndDate(newDates[1]);
+          for (let mupId in mupDiffsToCompareWith) {
+            updateMupDiffDateInfo(mupDiffsToCompareWith[mupId], newDates);
+          }
+        }
+
+        setMupDiffs(mupDiffsToCompareWith);
       }
 
       const newMupEdits = { ...mupEdits };
@@ -405,10 +429,13 @@ export function MupEditor(props: IMupEditorProps) {
 
       setMupEdits(newMupEdits);
 
-      callDebouncedApply(
+        // FIXME
+      const datesToCompareWith: [string, string] = (useNewDates) ? newDates : [startDate, endDate];
+
+      generateActionsDebounced(
         mupDiffsToCompareWith,
         newMupEdits,
-        [startDate, endDate],
+        datesToCompareWith,
         zeToModuleSelection
       );
     });
@@ -420,7 +447,7 @@ export function MupEditor(props: IMupEditorProps) {
       [mupId]: { ...mupEdits[mupId], limit: newLimit },
     };
     setMupEdits(newEdits);
-    callDebouncedApply(
+    generateActionsDebounced(
       mupDiffs,
       newEdits,
       [startDate, endDate],
@@ -540,7 +567,9 @@ export function MupEditor(props: IMupEditorProps) {
             !isSelected &&
             mupDiffs[mupId].presentInGroups.length > 0
           ) {
-            newMupEdits[mupId].messages.push("Удалить созданные подгруппы и удалить МУП из групп");
+            newMupEdits[mupId].messages.push(
+              "Удалить созданные подгруппы и удалить МУП из групп"
+            );
           }
 
           if (isSelected && mupDiffs[mupId].someLoads.length === 0) {
@@ -565,7 +594,7 @@ export function MupEditor(props: IMupEditorProps) {
     setMupEdits(newMupEdits);
   };
 
-  const callDebouncedApply = (
+  const generateActionsDebounced = (
     mupDiffs: { [key: string]: IMupDiff },
     mupEdits: { [key: string]: IMupEdit },
     newDates: [string, string],

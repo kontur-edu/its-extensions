@@ -419,9 +419,9 @@ export function MupEditor(props: IMupEditorProps) {
       if (newDiff) {
         mupDiffsToCompareWith = { ...mupDiffs, [mupId]: newDiff };
 
-        if (!startDate && !endDate && (newDates[0] || newDates[1])) {
-          if (newDates[0]) setStartDate(newDates[0]);
-          if (newDates[1]) setEndDate(newDates[1]);
+        if (useNewDates) {
+          setStartDate(newDates[0]);
+          setEndDate(newDates[1]);
           for (let mupId in mupDiffsToCompareWith) {
             updateMupDiffDateInfo(mupDiffsToCompareWith[mupId], newDates);
           }

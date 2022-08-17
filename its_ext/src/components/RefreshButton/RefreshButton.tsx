@@ -18,6 +18,7 @@ export function RefreshButton(props: IRefreshButtonProps) {
         onClick={handleRefreshButton}
         style={{
           fontSize: "0.75em",
+          backgroundColor: "#fff",
         }}
         variant="text"
         startIcon={<RefreshIcon />}

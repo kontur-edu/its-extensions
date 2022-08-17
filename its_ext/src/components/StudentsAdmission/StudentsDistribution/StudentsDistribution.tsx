@@ -27,6 +27,8 @@ import {
   IActionExecutionLogItem,
   ITSAction,
 } from "../../../common/actions";
+import { createStudentDistributionMupToErrorMessages } from "./utils";
+
 import Collapse from "@mui/material/Collapse";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
@@ -71,6 +73,9 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   >([]);
   const [studentAdmissionActionResults, setStudentAdmissionActionResults] =
     useState<IActionExecutionLogItem[]>([]);
+  const [mupToErrorMessages, setMupToErrorMessages] = useState<{
+    [key: string]: string[];
+  }>({});
 
   // const [personalNumberToAdmittedMupNames, setPersonalNumberToAdmittedMupNames] = useState<{[key: string]: Set<string>}>({});
 
@@ -395,6 +400,15 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       executeActions(studentAdmissionActions, context)
         .then((actionResults) => {
           setStudentAdmissionActionResults(actionResults);
+          // FIXME:
+          const newMupToErrorMessages =
+            createStudentDistributionMupToErrorMessages(
+              actionResults,
+              studentAdmissionActions,
+              context.dataRepository.admissionIdToMupId,
+              context.dataRepository.mupData
+            );
+          setMupToErrorMessages(newMupToErrorMessages);
           return handleRefresh();
         })
         .then(() => generateActions(personalNumberToStudentItems));
@@ -548,6 +562,23 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     );
   };
 
+  const renderMupToErrorMessages = () => {
+    return Object.keys(mupToErrorMessages).map((mupName, i) => {
+      if (mupToErrorMessages[mupName].length === 0) return null;
+      const messages = mupToErrorMessages[mupName];
+      return (
+        <li key={i}>
+          "{mupName}":
+          <ul>
+            {messages.map((message, mIdx) => (
+              <li key={mIdx}>{message}</li>
+            ))}
+          </ul>
+        </li>
+      );
+    });
+  };
+
   const renderContent = () => {
     return (
       <React.Fragment>
@@ -588,6 +619,12 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
             {renderAdmissionsInput()}
           </div>
         </Collapse>
+
+        {Object.keys(mupToErrorMessages).length > 0 && (
+          <article className={style.error_list_container}>
+            <ul className="warning">{renderMupToErrorMessages()}</ul>
+          </article>
+        )}
 
         <ApplyButtonWithActionDisplay
           showErrorWarning={true}

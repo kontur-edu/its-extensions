@@ -43,10 +43,12 @@ export function GroupSelect(props: IGroupSelectProps) {
       <article className="step__message_container "></article>
       <article className={style.selectionGroup_link}>
         <p>Если групп нет, создайте их в ИТС или попробуйте обновить список</p>
-        <RefreshButton
-          onClick={handleRefreshSelectionGroups}
-          title="Обновить список"
-        />
+        <span>
+          <RefreshButton
+            onClick={handleRefreshSelectionGroups}
+            title="Обновить список"
+          />
+        </span>
         <OuterLink url={EDU_SPACE_URL}>Перейти в ИТС</OuterLink>
       </article>
     </section>

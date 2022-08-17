@@ -4,6 +4,7 @@ import { IApplyButtonWithActionDisplayProps } from "./types";
 import {
   IActionExecutionLogItem,
   ITSAction,
+  IActionExecutionLogItemActionResult,
   checkAllRefreshAction,
 } from "../../common/actions";
 
@@ -83,6 +84,23 @@ export function ApplyButtonWithActionDisplay(
     );
   };
 
+  const formatActionResultItems = (
+    actionResults: IActionExecutionLogItemActionResult[]
+  ) => {
+    return actionResults.map((ar, arIdx) => {
+      const messageParts = [ar.summary, ar.message];
+      const message = messageParts.join(" ");
+      return (
+        <li
+          key={arIdx}
+          className={ar.success ? "message_success" : "message_error"}
+        >
+          {message && clipString(message, ACTION_MESSAGE_SIZE)}
+        </li>
+      );
+    });
+  };
+
   const renderActionResultsList = () => {
     return (
       <React.Fragment>
@@ -97,17 +115,7 @@ export function ApplyButtonWithActionDisplay(
                 <li key={index}>
                   {clipString(logItem.actionMessage, ACTION_MESSAGE_SIZE)}
                   <ul>
-                    {logItem.actionResults.map((ar, arIdx) => (
-                      <li
-                        key={arIdx}
-                        className={
-                          ar.success ? "message_success" : "message_error"
-                        }
-                      >
-                        {ar.message &&
-                          clipString(ar.message, ACTION_MESSAGE_SIZE)}
-                      </li>
-                    ))}
+                    {formatActionResultItems(logItem.actionResults)}
                   </ul>
                 </li>
               )

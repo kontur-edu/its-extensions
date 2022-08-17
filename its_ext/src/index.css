@@ -44,6 +44,11 @@ h4 {
 }
 
 .action_header {
+  display: flex;
+  flex-direction: column;
+  /* justify-content: center; */
+  flex-wrap: wrap;
+
   position: relative;
 
   /* font-size: 42px; */
@@ -51,6 +56,11 @@ h4 {
   font-weight: 500;
   text-align: center;
   padding: 0.5em 0;
+  margin: 0;
+}
+
+.action_header h2 {
+  justify-self: center;
   margin: 0;
 }
 
@@ -270,6 +280,7 @@ td {
 
 .load_content_container_small {
   position: relative;
+  align-self: flex-start;
   /* width: 100%; */
 }
 

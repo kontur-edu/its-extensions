@@ -30,9 +30,14 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
   const [competitionGroupLoaded, setCompetitionGroupLoaded] =
     useState<boolean>(false);
 
-  const [competitionGroupPreparationRefreshCounter, setCompetitionGroupPreparationRefreshCounter] = useState<number>(0);
-  const [competitionGroupSyncRefreshCounter, setCompetitionGroupSyncRefreshCounter] = useState<number>(0);
-
+  const [
+    competitionGroupPreparationRefreshCounter,
+    setCompetitionGroupPreparationRefreshCounter,
+  ] = useState<number>(0);
+  const [
+    competitionGroupSyncRefreshCounter,
+    setCompetitionGroupSyncRefreshCounter,
+  ] = useState<number>(0);
 
   const [referenceCompetitionGroupId, setReferenceCompetitionGroupId] =
     useState<number | null>(null);
@@ -85,12 +90,16 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
   };
 
   const handleMupEditorApply = () => {
-    setCompetitionGroupPreparationRefreshCounter(competitionGroupPreparationRefreshCounter + 1);
-  }
+    setCompetitionGroupPreparationRefreshCounter(
+      competitionGroupPreparationRefreshCounter + 1
+    );
+  };
 
   const handleCompetitionGroupPreparationApply = () => {
-    setCompetitionGroupSyncRefreshCounter(competitionGroupSyncRefreshCounter + 1);
-  }
+    setCompetitionGroupSyncRefreshCounter(
+      competitionGroupSyncRefreshCounter + 1
+    );
+  };
 
   const handleSelectionGroupSelected = (selectionGroupIds: number[]) => {
     if (selectionGroupIds.length !== 2) {
@@ -193,10 +202,10 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
 
   return (
     <section className="page">
-      <h2 className="action_header">
+      <header className="action_header">
         <BackButton route={"/"} />
-        Подготовка семестра
-      </h2>
+        <h2>Подготовка семестра</h2>
+      </header>
       <article className="step">
         <h3 className="step__header">
           1. Выберите группы выбора: для третьего и четвертого курса

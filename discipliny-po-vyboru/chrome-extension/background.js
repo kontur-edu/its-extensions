@@ -1,10 +1,21 @@
+try {
+  importScripts("./constants.js");
+} catch (e) {
+  console.error(e);
+}
+
+const SETTINGS = {
+  [NOTION_MAIN_PAGE_KEY]: NOTION_MAIN_PAGE_VALUE,
+  [PROXY_URL_KEY]: PROXY_URL_VALUE,
+};
+
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   // console.log(`chrome.runtime.onMessage.addListener`);
   // console.log(request);
   if (request.type === "set") {
     if (request.hasOwnProperty("key") && request.hasOwnProperty("value")) {
       const key = request["key"];
-      chrome.storage.sync.set({ [key]: request["value"] });
+      SETTINGS[key] = request["value"];
       sendResponse({
         success: true,
       });
@@ -16,9 +27,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   } else if (request.type === "get") {
     if (request.hasOwnProperty("key")) {
       const key = request["key"];
-      chrome.storage.sync.get(request["key"], (val) => {
-        sendResponse({ success: true, value: val[key] });
-      });
+      sendResponse({ success: true, value: SETTINGS[key] });
     } else {
       sendResponse({
         success: false,

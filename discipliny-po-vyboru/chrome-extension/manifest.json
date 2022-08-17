@@ -1,12 +1,12 @@
 {
   "name": "ITS MUP Description",
-  "description": "Shows descriptions of MUPs on discipliny-po-vyboru page",
+  "description": "Shows more information about elective disciplines for FIIT UrFU students",
   "version": "1.0",
   "manifest_version": 3,
   "background": {
     "service_worker": "background.js"
   },
-  "permissions": ["storage"],
+  "permissions": [],
   "action": {
     "default_popup": "settings.html"
   },

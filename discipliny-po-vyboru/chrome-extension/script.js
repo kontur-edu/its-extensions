@@ -2,6 +2,7 @@ const SETTINGS = {
   [NOTION_MAIN_PAGE_KEY]: NOTION_MAIN_PAGE_VALUE,
   [PROXY_URL_KEY]: PROXY_URL_VALUE,
 };
+
 const mupNameToItems = {};
 
 function timeout(ms) {
@@ -211,7 +212,7 @@ function addMarkup(item, mupNameToNotionInfo) {
       }
     });
   } else {
-    console.warn(`Page not found for ${item.mupName}`);
+    // console.warn(`Page not found for ${item.mupName}`);
   }
 }
 

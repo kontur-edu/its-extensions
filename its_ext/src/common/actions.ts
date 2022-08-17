@@ -41,9 +41,15 @@ export abstract class ITSAction {
   abstract execute(context: IITSContext): Promise<IActionResponse[]>;
 }
 
+export interface IActionExecutionLogItemActionResult {
+  success: boolean;
+  message?: string;
+  summary?: string;
+}
+
 export interface IActionExecutionLogItem {
   actionMessage: string;
-  actionResults: { success: boolean; message?: string }[];
+  actionResults: IActionExecutionLogItemActionResult[];
 }
 
 export async function executeActions(
@@ -63,14 +69,14 @@ export async function executeActions(
       actionResults: [],
     };
     actionResults.forEach((ar) => {
-      let message = "выполнено";
       // console.warn(ar);
-      if (ar.summary || ar.message) {
-        message = `${ar.summary || ""} ${ar.message || ""}`;
-      }
+      // if (ar.summary || ar.message) {
+      //   message = `${ar.summary || ""} ${ar.message || ""}`;
+      // }
       actionExecutionLogItem.actionResults.push({
         success: ar.success,
-        message: message,
+        message: ar.message || "выполнено",
+        summary: ar.summary,
       });
     });
     results.push(actionExecutionLogItem);

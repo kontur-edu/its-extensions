@@ -148,8 +148,8 @@ export function MupEditor(props: IMupEditorProps) {
     selectedMupIdsSet: Set<string>,
     zeToModuleSelections: { [key: number]: IModuleSelection[] }
   ) => {
-    console.log("createInitDiffsAndDates: zeToModuleSelections");
-    console.log(zeToModuleSelections);
+    // console.log("createInitDiffsAndDates: zeToModuleSelections");
+    // console.log(zeToModuleSelections);
     const repo = context.dataRepository;
     const newMupEdits: { [key: string]: IMupEdit } = {};
     const newMupDiffs: { [key: string]: IMupDiff } = {};

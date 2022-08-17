@@ -92,7 +92,7 @@ function checkIfCanBeDeleted(
   return canBeDeleted;
 }
 
-function checkNeedUpdateForConnectionId(
+function checkNeedModuleUpdateForConnectionId(
   connectionId: number,
   referenceModuleDisciplines: IModuleSelection[],
   selectionGroupModuleIdToSelectedModuleDisciplines: {
@@ -156,7 +156,7 @@ function checkIfNeedUpdateModules(
 
     const cId = selectionGroupMupData.data[mupId].connectionId;
 
-    const needUpdate = checkNeedUpdateForConnectionId(
+    const needUpdate = checkNeedModuleUpdateForConnectionId(
       cId,
       referenceModuleDisciplines,
       selectionGroupModuleIdToSelectedModuleDisciplines

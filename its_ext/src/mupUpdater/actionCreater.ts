@@ -276,6 +276,7 @@ function generateUpdateModulesAction(
   moduleData: IModuleData
 ) {
   const actions: ITSAction[] = [];
+
   for (let mupId of selectedMupsIds) {
     const ze = mupData.data[mupId].ze;
 
@@ -285,20 +286,24 @@ function generateUpdateModulesAction(
         moduleIdToSelection[rm.id] = rm.selected;
       });
     }
+
+    const ms = Object.keys(moduleData.data).map((moduleId) => {
+      const moduleSelection: IModuleSelection = {
+        id: moduleId,
+        selected: [],
+      };
+
+      if (moduleIdToSelection.hasOwnProperty(moduleId)) {
+        moduleSelection.selected = moduleIdToSelection[moduleId];
+      }
+      return moduleSelection;
+    });
+    // console.log("ms");
+    // console.log(ms);
+    if (ms.length === 0) continue;
     for (let i = 0; i < selectionGroupsIds.length; i++) {
       const selectionGroupId = selectionGroupsIds[i];
       if (mupDiffs[mupId].updateSelectedModuleDisciplines[i]) {
-        const ms = Object.keys(moduleData.data).map((moduleId) => {
-          const moduleSelection: IModuleSelection = {
-            id: moduleId,
-            selected: [],
-          };
-
-          if (moduleIdToSelection.hasOwnProperty(moduleId)) {
-            moduleSelection.selected = moduleIdToSelection[moduleId];
-          }
-          return moduleSelection;
-        });
         actions.push(new UpdateModulesAction(mupId, selectionGroupId, ms));
       }
     }

@@ -33,27 +33,6 @@ export function Main(props: IMainProps) {
     }
   };
 
-  // TODO: deside if it is needed
-  // const handleStudentLogin = async (credentials: ICredentials) => {
-  //   if (!credentials.username || !credentials.password) {
-  //     return;
-  //   }
-  //   const success = await context?.requestService.AuthenticateStudent(
-  //     credentials
-  //   );
-  //   if (success) {
-  //     setCurrentLogin(credentials.username);
-  //     setNeedStudentAuthentication(false);
-  //   } else {
-  //     setCurrentLogin("");
-  //   }
-  // };
-  // const handleStudentUnauthorized = () => {
-  //   if (!needStudentAuthentication) {
-  //     setNeedStudentAuthentication(true);
-  //   }
-  // };
-
   useEffect(() => {
     // return () => {
     //   console.warn("Main: UNMOUNTED");
@@ -85,22 +64,6 @@ export function Main(props: IMainProps) {
       <Routes>
         <Route path="/" element={<MainMenu login={currentLogin} />} />
 
-        {/* TODO: deside if it is needed */}
-        {/* <Route
-          path="/student"
-          element={
-            <React.Fragment>
-              <Modal visible={needStudentAuthentication}>
-                <LoginForm onSubmit={handleStudentLogin} title="Вход в аккаунт sts.urfu.ru" />
-              </Modal>
-              <StudentInfo
-                isUnauthorized={needStudentAuthentication}
-                onUnauthorized={handleStudentUnauthorized}
-              />
-            </React.Fragment>
-          }
-        /> */}
-
         <Route
           path="/semesterPreparation"
           element={
@@ -123,7 +86,6 @@ export function Main(props: IMainProps) {
           path="/studentsAdmission"
           element={
             <React.Fragment>
-              {/* {(function() {console.warn("renderRoute"); return null})()} */}
               <Modal visible={needAuthentication}>
                 <LoginForm
                   onSubmit={handleLogin}

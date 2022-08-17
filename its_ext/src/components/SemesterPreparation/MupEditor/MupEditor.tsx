@@ -133,6 +133,7 @@ export function MupEditor(props: IMupEditorProps) {
     setMupDiffs(newMupDiffs);
     generateActionsDebounced(newMupDiffs, mupEdits, dates, zeToModuleSelection);
   };
+
   const onStartDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const dateFormatted = event.target.value;
     handleDateChanged([dateFormatted, endDate]);
@@ -147,9 +148,12 @@ export function MupEditor(props: IMupEditorProps) {
     selectedMupIdsSet: Set<string>,
     zeToModuleSelections: { [key: number]: IModuleSelection[] }
   ) => {
+    console.log("createInitDiffsAndDates: zeToModuleSelections");
+    console.log(zeToModuleSelections);
+    const repo = context.dataRepository;
     const newMupEdits: { [key: string]: IMupEdit } = {};
     const newMupDiffs: { [key: string]: IMupDiff } = {};
-    context.dataRepository.mupData.ids.forEach((mupId) => {
+    repo.mupData.ids.forEach((mupId) => {
       const selected = selectedMupIdsSet.has(mupId);
       let limit = 0;
       let mupDiff: IMupDiff | null = null;
@@ -159,10 +163,10 @@ export function MupEditor(props: IMupEditorProps) {
           props.selectionGroupIds,
           [startDate, endDate],
           zeToModuleSelections,
-          context.dataRepository.mupData,
-          context.dataRepository.selectionGroupToMupsData,
-          context.dataRepository.selectionGroupData,
-          context.dataRepository.mupToPeriods,
+          repo.mupData,
+          repo.selectionGroupToMupsData,
+          repo.selectionGroupData,
+          repo.mupToPeriods,
           context.dataRepository
             .selectionGroupModuleIdToSelectedModuleDisciplines
         );
@@ -374,6 +378,8 @@ export function MupEditor(props: IMupEditorProps) {
   };
 
   const handleMupToggle = (mupId: string) => {
+    console.log("handleMupToggle: zeToModuleSelection");
+    console.log(zeToModuleSelection);
     // console.log(`handleMupToggle: ${mupId}`);
     let newDates: [string, string] = ["", ""];
     let newDiff: IMupDiff | null = null;
@@ -409,7 +415,7 @@ export function MupEditor(props: IMupEditorProps) {
       }
 
       mupDiffsToCompareWith = mupDiffs;
-      
+
       if (newDiff) {
         mupDiffsToCompareWith = { ...mupDiffs, [mupId]: newDiff };
 
@@ -429,8 +435,10 @@ export function MupEditor(props: IMupEditorProps) {
 
       setMupEdits(newMupEdits);
 
-        // FIXME
-      const datesToCompareWith: [string, string] = (useNewDates) ? newDates : [startDate, endDate];
+      // FIXME
+      const datesToCompareWith: [string, string] = useNewDates
+        ? newDates
+        : [startDate, endDate];
 
       generateActionsDebounced(
         mupDiffsToCompareWith,

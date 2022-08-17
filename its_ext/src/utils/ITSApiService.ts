@@ -483,11 +483,13 @@ export class ITSApiService {
 
     const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
-    if (
-      response.data &&
-      response.data.toLocaleLowerCase().includes("не зачислен")
-    ) {
-      result.success = false;
+    if (response.data) {
+      try {
+        const dataObj = JSON.parse(response.data);
+        if (dataObj.wrongStudents && dataObj.wrongStudents.length > 0) {
+          result.success = false;
+        }
+      } catch {}
     }
     return result;
   }

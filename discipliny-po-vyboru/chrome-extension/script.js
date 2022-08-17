@@ -2,10 +2,30 @@ const SETTINGS = {
   [NOTION_MAIN_PAGE_KEY]: NOTION_MAIN_PAGE_VALUE,
   [PROXY_URL_KEY]: PROXY_URL_VALUE,
 };
+
 const mupNameToItems = {};
 
 function timeout(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+const loadingDiv = document.createElement("div");
+const LOADING_DIV_TAG = "its_ext_loading_container";
+loadingDiv.id = LOADING_DIV_TAG;
+loadingDiv.style = "position: fixed; bottom: 0; right: 0;";
+loadingDiv.innerHTML = `<button class="btn btn-primary" type="button" disabled>
+<span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>
+ITS Extension is loading...
+</button>`;
+loadingDiv.classList.add("hide");
+document.body.appendChild(loadingDiv);
+
+function startLoading() {
+  document.getElementById(LOADING_DIV_TAG).classList.remove("hide");
+}
+
+function finishLoading() {
+  document.getElementById(LOADING_DIV_TAG).classList.add("hide");
 }
 
 async function waitForMups(mupNameToNotionInfo) {
@@ -178,6 +198,8 @@ function addFrame(item, url) {
   iframe.classList.add("its_ext_display_none", "its_ext_iframe");
   item.descriptionElement.appendChild(iframe);
   item.frame = iframe;
+
+  // item.descriptionElement.appendChild(div);
 }
 
 function addBr(item) {
@@ -211,7 +233,7 @@ function addMarkup(item, mupNameToNotionInfo) {
       }
     });
   } else {
-    console.warn(`Page not found for ${item.mupName}`);
+    // console.warn(`Page not found for ${item.mupName}`);
   }
 }
 
@@ -241,6 +263,7 @@ async function getSettingsPromise(key) {
 }
 
 function onLoad() {
+  startLoading();
   timeout(1)
     .then(() => {
       return Promise.allSettled([
@@ -281,7 +304,8 @@ function onLoad() {
     .catch((err) => {
       alert("При подготовке данных расширения произошла ошибка: " + err);
       console.error("Error: ", err);
-    });
+    })
+    .finally(() => finishLoading());
 }
 
 window.addEventListener("load", () => onLoad(), false);

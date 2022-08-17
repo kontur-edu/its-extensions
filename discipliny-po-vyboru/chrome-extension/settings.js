@@ -17,6 +17,7 @@ proxyUrlInput.addEventListener("change", () => {
   messageHolder.innerText = "";
 });
 
+
 function setSettingsPromise(key, value) {
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage({ type: "set", key, value }, async (resp) => {

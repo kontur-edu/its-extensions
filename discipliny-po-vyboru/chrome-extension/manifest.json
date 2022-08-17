@@ -1,12 +1,12 @@
 {
   "name": "ITS MUP Description",
-  "description": "Shows descriptions of MUPs on discipliny-po-vyboru page",
+  "description": "Shows more information about elective disciplines for FIIT UrFU students",
   "version": "1.0",
   "manifest_version": 3,
   "background": {
     "service_worker": "background.js"
   },
-  "permissions": ["storage"],
+  "permissions": [],
   "action": {
     "default_popup": "settings.html"
   },
@@ -14,7 +14,8 @@
     {
       "matches": ["https://istudent.urfu.ru/s/discipliny-po-vyboru/*"],
       "js": ["constants.js", "utils.js", "script.js"],
-      "css": ["styles.css"]
+      "css": ["styles.css", "bootstrap.min.css"]
     }
-  ]
+  ],
+  "icons": { "16": "icon16.png", "48": "icon48.png", "128": "icon128.png" }
 }

@@ -65,12 +65,117 @@ async function prepareBucket(
 
 const FUNC_ZIP_FNAME = "function.zip";
 
+async function prepareFunctions(functionName, notionFunctionName) {
+  let functionId = await getFunctionId(functionName);
+  if (!functionId) {
+    console.log("function not found, creating...");
+    functionId = await createFunction(functionName);
+    await makeFunctionPublic(functionName);
+  }
+
+  let notionFunctionId = null;
+  if (notionFunctionName) {
+    notionFunctionId = await getFunctionId(notionFunctionName);
+    if (!notionFunctionId) {
+      console.log("notion function not found, creating...");
+      notionFunctionId = await createFunction(notionFunctionName);
+      await makeFunctionPublic(notionFunctionName);
+    }
+  }
+  return { functionId, notionFunctionId };
+}
+
+async function ensureApiGatewayDomain(
+  gatewayName,
+  functionId,
+  notionFunctionId,
+  bucketName,
+  websiteDir,
+  apiGatewaySpec
+) {
+  let domain = await getApiGateWayDomain(gatewayName);
+  if (!domain) {
+    console.log("api-gateway not found, creating...");
+
+    const { preparedSpecFilename, content } = await prepareApiGatewaySpec(
+      apiGatewaySpec,
+      {
+        ...defaultParams,
+        function_id: functionId,
+        bucket_name: bucketName,
+        website_dir: websiteDir,
+        notion_function_id: notionFunctionId,
+      }
+    );
+
+    domain = await createApiGateway(gatewayName, preparedSpecFilename);
+    await deleteFile(preparedSpecFilename);
+  }
+  return domain;
+}
+
+async function prepareApiGateway(
+  gatewayName,
+  functionId,
+  notionFunctionId,
+  bucketName,
+  websiteDir,
+  apiGatewaySpec,
+  domain
+) {
+  const apiGatewayParams = {
+    server_url: `https://${domain}`,
+    function_id: functionId,
+    bucket_name: bucketName,
+    website_dir: websiteDir,
+    notion_function_id: notionFunctionId,
+  };
+
+  const existingSpec = await getApiGateWaySpec(gatewayName);
+  let specIsCorrect = true;
+  for (const key in apiGatewayParams) {
+    if (!existingSpec.includes(apiGatewayParams[key])) {
+      specIsCorrect = false;
+      break;
+    }
+  }
+
+  if (specIsCorrect) {
+    console.log("Existing api-gateway spec is correct");
+  } else {
+    console.log("Spec is different, updating...");
+    const { preparedSpecFilename, content } = await prepareApiGatewaySpec(
+      apiGatewaySpec,
+      apiGatewayParams
+    );
+    await updateApiGatewaySpec(gatewayName, preparedSpecFilename);
+
+    await deleteFile(preparedSpecFilename);
+  }
+}
+
+async function prepareFunctionVersion(
+  archiveName,
+  functionName,
+  functionSrcDir,
+  filenames
+) {
+  archiveName = `${Date.now()}_${archiveName}`;
+  const ptr = await zipFiles(archiveName, functionSrcDir, filenames);
+  await createFunctionVersion(functionName, archiveName);
+  await deleteFile(archiveName);
+}
+
 async function deploy() {
   const bucketName = env.BUCKET_NAME;
   const apigatewaySpecFilename = env.API_GATEWAY_SPEC_TEMPLATE;
+  const apigatewaySpecWithNotionFilename =
+    env.API_GATEWAY_SPEC_WITH_NOTION_PROXY_TEMPLATE;
   const functionName = env.FUNCTION_NAME;
+  const notionFunctionName = env.NOTION_PROXY_FUNCTION_NAME.trim();
   const gatewayName = env.API_GATEWAY_NAME;
   const functionSrcDir = env.FUNCTION_SRC_DIR;
+  const notionFunctionSrcDir = env.NOTION_PROXY_FUNCTION_SRC_DIR;
   const userLogin = env.USER_LOGIN;
   const serviceAccountName = env.SERVICE_ACCOUNT_NAME;
   const websiteDir = env.WEBSITE_BUCKET_DIR;
@@ -81,72 +186,56 @@ async function deploy() {
     userLogin,
     serviceAccountName
   );
+
   // console.log(policyUpdateRes);
   // const buckets = await getBuckets(s3Client, bucketName);
-  let function_id = await getFunctionId(functionName);
-  if (!function_id) {
-    console.log("function not found, creating...");
-    function_id = await createFunction(functionName);
-    await makeFunctionPublic(functionName);
-  }
+  const { functionId, notionFunctionId } = await prepareFunctions(
+    functionName,
+    notionFunctionName
+  );
 
-  let domain = await getApiGateWayDomain(gatewayName);
-  let needSpecUpdate = false;
-  if (!domain) {
-    console.log("api-gateway not found, creating...");
-    needSpecUpdate = true;
+  const suitableApigatewaySpecFilename = notionFunctionId
+    ? apigatewaySpecWithNotionFilename
+    : apigatewaySpecFilename;
 
-    const { preparedSpecFilename, content } = await prepareApiGatewaySpec(
-      apigatewaySpecFilename,
-      {
-        ...defaultParams,
-        function_id: function_id,
-        bucket_name: bucketName,
-        website_dir: websiteDir,
-      }
+  console.log(`API-Gateway: using spec: ${suitableApigatewaySpecFilename}`);
+  console.log(suitableApigatewaySpecFilename);
+  let domain = await ensureApiGatewayDomain(
+    gatewayName,
+    functionId,
+    notionFunctionId,
+    bucketName,
+    websiteDir,
+    suitableApigatewaySpecFilename
+  );
+  console.log(`API-Gateway domain: ${domain}`);
+
+  await prepareApiGateway(
+    gatewayName,
+    functionId,
+    notionFunctionId,
+    bucketName,
+    websiteDir,
+    suitableApigatewaySpecFilename,
+    domain
+  );
+
+  const functionFilenames = ["function.js", "package.json"];
+  await prepareFunctionVersion(
+    FUNC_ZIP_FNAME,
+    functionName,
+    functionSrcDir,
+    functionFilenames
+  );
+
+  if (notionFunctionId) {
+    await prepareFunctionVersion(
+      FUNC_ZIP_FNAME,
+      notionFunctionName,
+      notionFunctionSrcDir,
+      functionFilenames
     );
-
-    domain = await createApiGateway(gatewayName, preparedSpecFilename);
-    await deleteFile(preparedSpecFilename);
   }
-
-  const apiGatewayParams = {
-    server_url: `https://${domain}`,
-    function_id: function_id,
-    bucket_name: bucketName,
-  };
-
-  const existingSpec = await getApiGateWaySpec(gatewayName);
-  // console.log("existingSpec");
-  // console.log(existingSpec);
-  let specIsCorrect = true;
-  for (const key in apiGatewayParams) {
-    if (!existingSpec.includes(apiGatewayParams[key])) {
-      specIsCorrect = false;
-      break;
-    }
-  }
-  if (specIsCorrect) {
-    console.log("Existing api-gateway spec is correct");
-  } else {
-    console.log("Spec is different, updating...");
-    const { preparedSpecFilename, content } = await prepareApiGatewaySpec(
-      apigatewaySpecFilename,
-      apiGatewayParams
-    );
-    await updateApiGatewaySpec(gatewayName, preparedSpecFilename);
-
-    await deleteFile(preparedSpecFilename);
-  }
-
-  const ptr = await zipFiles(FUNC_ZIP_FNAME, functionSrcDir, [
-    "function.js",
-    "package.json",
-  ]);
-
-  await createFunctionVersion(functionName, FUNC_ZIP_FNAME);
-
-  await deleteFile(FUNC_ZIP_FNAME);
 
   console.log("\n\nПодготовка завершена");
 }

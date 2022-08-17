@@ -5,6 +5,7 @@ import * as child_process from "node:child_process";
 export const defaultParams = {
   server_url: "placeholder",
   function_id: "placeholder",
+  notion_function_id: "placeholder",
   bucket_name: "placeholder",
   website_dir: "website",
 };

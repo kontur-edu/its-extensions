@@ -465,18 +465,18 @@ export class ITSApiService {
   }
 
   async UpdateStudentAdmissionStatus(
-    studentId: string,
     admissionId: number,
+    studentIds: string[],
     status: number
   ) {
     console.log(
-      `UpdateStudentAdmissionStatus: ${studentId}, ${admissionId}, ${status}`
+      `UpdateStudentAdmissionStatus: admissionId: ${admissionId}, studentIds: ${studentIds}, status: ${status}`
     );
     const url =
       "https://its.urfu.ru/MUPItsAdmission/SetCompetitionGroupAdmissionStatus";
 
     const data = {
-      studentIds: studentId,
+      studentIds: studentIds,
       id: admissionId,
       status: status,
     };

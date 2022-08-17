@@ -5,8 +5,8 @@ import { IActionResponse } from "../utils/ITSApiService";
 
 export class UpdateStudentAdmissionAction extends ITSAction {
   constructor(
-    public studentId: string,
     public admissionId: number,
+    public studentIds: string[],
     public status: number
   ) {
     super(ActionType.UpdateStudentAdmission);
@@ -17,13 +17,14 @@ export class UpdateStudentAdmissionAction extends ITSAction {
   }
 
   getMessage(): string {
-    return `Изменить статус на ${this.status} студента с id: ${this.studentId} для Зачисления с id: ${this.admissionId}`;
+    const studentIdsStr = JSON.stringify(this.studentIds, null, 2);
+    return `Изменить статус на ${this.status} для студентов с id: ${studentIdsStr} для зачисления с id: ${this.admissionId}`;
   }
 
   async execute(context: IITSContext): Promise<IActionResponse[]> {
     const response = await context.apiService.UpdateStudentAdmissionStatus(
-      this.studentId,
       this.admissionId,
+      this.studentIds,
       this.status
     );
     return [response];

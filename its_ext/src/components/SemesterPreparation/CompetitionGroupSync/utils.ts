@@ -7,7 +7,7 @@ import {
 } from "../../../common/types";
 import {
   UpdateSubgroupMetaLoadCountAction,
-  UpdateTeacherForSubgroupAction,
+  UpdateSubgroupAction,
   CreateSubgroupsAction,
 } from "../../../subgroupUpdater/actions";
 import { generateRefreshSubgroupsActions } from "../../../competitionGroupPreparation/actionCreator";
@@ -203,7 +203,7 @@ function generateUpdateSubgroupActions(
       const limit = referenceInfo.subgroupInfo[i].limit;
 
       actions.push(
-        new UpdateTeacherForSubgroupAction(
+        new UpdateSubgroupAction(
           competitionGroupId,
           subgroupInfo,
           teacher,
@@ -407,7 +407,7 @@ export function getTodoMessagesByActions(actions: ITSAction[]) {
   for (const action of actions) {
     if (action.actionType === ActionType.UpdateSubgroupMetaLoadCount) {
       needUpdateMeta = true;
-    } else if (action.actionType === ActionType.UpdateTeacherForSubgroup) {
+    } else if (action.actionType === ActionType.UpdateSubgroup) {
       needUpdateSubgroups = true;
     }
   }

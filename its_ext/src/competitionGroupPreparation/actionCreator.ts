@@ -13,7 +13,7 @@ import {
 } from "../components/SemesterPreparation/CompetitionGroupSync/utils";
 import {
   UpdateSubgroupMetaLoadCountAction,
-  UpdateTeacherForSubgroupAction,
+  UpdateSubgroupAction,
   CreateSubgroupsAction,
   RefreshSubgroupsAction,
 } from "../subgroupUpdater/actions";
@@ -153,9 +153,6 @@ export function generateUpdateTeacherAndLimitActions(
     if (!mupNameToMupId.hasOwnProperty(meta.discipline)) {
       continue;
     }
-    // const currentTeacherIds = subgroupReferenceInfo[meta.discipline][
-    //   meta.load
-    // ].subgroupInfo.map((si) => si.teacher);
     const subgroupReferenceInfoItems =
       subgroupReferenceInfo[meta.discipline][meta.load].subgroupInfo;
     let subgroupCount = subgroupReferenceInfo[meta.discipline][meta.load].count;
@@ -176,14 +173,10 @@ export function generateUpdateTeacherAndLimitActions(
     }
 
     const mup = mupData.data[mupId];
-    // if (mup.teacherIds.length !== 1) {
-    //   continue;
-    // }
     const refTeacher =
       mup.teacherIds.length === 1 ? mup.teacherIds[0] : undefined;
 
     for (let i = 0; i < meta.count; i++) {
-      // if (currentTeacherIds[i]) continue;
       const subgroupInfo: ISubgroupInfo = {
         mupName: meta.discipline,
         load: meta.load,
@@ -207,7 +200,7 @@ export function generateUpdateTeacherAndLimitActions(
       }
 
       actions.push(
-        new UpdateTeacherForSubgroupAction(
+        new UpdateSubgroupAction(
           competitionGroupId,
           subgroupInfo,
           newTeacherId,
@@ -267,8 +260,6 @@ export function createPrepareSubgroupsActions(
     competitionGroupToSubgroupIds[competitionGroupId],
     subgroupData
   );
-  // console.log("subgroupReferenceInfo");
-  // console.log(subgroupReferenceInfo);
 
   actions.push(
     ...generateCreateSubgroupsActions(
@@ -283,12 +274,6 @@ export function createPrepareSubgroupsActions(
   if (actions.length > 0) {
     actions.push(...generateRefreshSubgroupsActions(competitionGroupId));
   }
-
-  // actions.push(
-  //   ...generateUpdateSubgroupLimitsActions(
-  //     competitionGroupId,
-  //   );
-  // );
 
   actions.push(
     ...generateUpdateTeacherAndLimitActions(

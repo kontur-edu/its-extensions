@@ -72,14 +72,14 @@ export class RefreshSubgroupsAction extends ITSAction {
   }
 }
 
-export class UpdateTeacherForSubgroupAction extends ITSAction {
+export class UpdateSubgroupAction extends ITSAction {
   constructor(
     public competitionGroupId: number,
     public subgroupInfo: ISubgroupInfo,
     public teacherId?: string,
     public limit?: number
   ) {
-    super(ActionType.UpdateTeacherForSubgroup);
+    super(ActionType.UpdateSubgroup);
   }
 
   getMessage(): string {

@@ -73,7 +73,6 @@ export class RequestService {
         this.onConnectionRefused?.();
         // throw new Error(REQUEST_ERROR_CONNECTION_REFUSED);
       }
-      // console.warn(`fetchWithRetry: retry ${currentTry}`);
     }
     return response;
   }
@@ -229,8 +228,6 @@ export class RequestService {
     };
 
     let result = await this.SendRequest(urlWithProxy, options, data);
-    // console.log(`Result`);
-    // console.log(result);
     return result;
   }
 

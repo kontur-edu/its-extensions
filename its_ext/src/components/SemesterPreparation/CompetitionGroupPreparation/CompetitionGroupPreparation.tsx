@@ -67,9 +67,6 @@ export function getCompetitionGroupName(
   return competitionGroupId;
 }
 
-// function getSelectionGroupIdByCompetitionGroup(competitonGroupId, selectionGroupIds, competitionGroupIds) {
-//   if (selectionGroupIds.le)
-// }
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
@@ -265,7 +262,7 @@ export function CompetitionGroupPreparation(
       const mup = repo.mupData.data[mId];
       mupNameToMupId[mup.name] = mId;
     });
-    // TODO: save result
+
     const competitionGroupIdToSelectionGroupId =
       getCompetitionGroupIdToSelectionGroupId(
         props.selectionGroupIds,
@@ -394,7 +391,6 @@ export function CompetitionGroupPreparation(
           generateAllActions(newSelectedCompetitionGroupId, allMupIds);
       });
     }
-    
   }, [props.refreshCounter]); // eslint-disable-line
 
   const handleCompetitionGroupChange = (event: SelectChangeEvent) => {
@@ -494,7 +490,6 @@ export function CompetitionGroupPreparation(
           actions={updateSubgroupCountActions}
           actionResults={updateSubgroupCountActionResults}
           clicked={applyDefaultClicked}
-          // onNextStep={onNextStep}
           loading={updateSubgroupCountInProgress}
           onApply={handleUpdateSubgroupCountApplyDebounced}
         >
@@ -536,7 +531,6 @@ export function CompetitionGroupPreparation(
           actions={prepareSubgroupActions}
           actionResults={prepareSubgroupActionResults}
           clicked={applySubgroupsClicked}
-          // onNextStep={onNextStep}
           loading={prepareSubgroupInProgress}
           onApply={handlePrepareSubgroupsApplyDebounced}
         >
@@ -612,9 +606,11 @@ export function CompetitionGroupPreparation(
       />
       {competitionGroupIds.length === 0 && renderCompetitionGroupsNotFound()}
       {competitionGroupIds.length > 0 && renderSteps()}
-      <NextStepButton onClick={props.onNextStep}>
-        К следующему шагу
-      </NextStepButton>
+      <div>
+        <NextStepButton onClick={props.onNextStep}>
+          К следующему шагу
+        </NextStepButton>
+      </div>
     </React.Fragment>
   );
 }

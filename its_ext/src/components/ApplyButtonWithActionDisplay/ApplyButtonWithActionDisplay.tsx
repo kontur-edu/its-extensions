@@ -35,7 +35,7 @@ export function NextStepButton(
     <Button
       onClick={props.onClick}
       variant="contained"
-      style={{ marginRight: "1em", alignSelf: "flex-start" }}
+      style={{ marginRight: "1em", alignSelf: "center" }}
       endIcon={<SystemUpdateAltIcon />}
     >
       {props.children}
@@ -114,9 +114,7 @@ export function ApplyButtonWithActionDisplay(
               (logItem: IActionExecutionLogItem, index: number) => (
                 <li key={index}>
                   {clipString(logItem.actionMessage, ACTION_MESSAGE_SIZE)}
-                  <ul>
-                    {formatActionResultItems(logItem.actionResults)}
-                  </ul>
+                  <ul>{formatActionResultItems(logItem.actionResults)}</ul>
                 </li>
               )
             )}

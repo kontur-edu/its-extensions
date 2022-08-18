@@ -57,8 +57,6 @@ function generateUpdateStudentAdmissionActions(
     admissionInfo,
     studentData
   );
-  // console.log("admissionToStudents");
-  // console.log(admissionToStudents);
 
   for (const admissionIdStr in admissionToStudents) {
     const admissionId = Number(admissionIdStr);

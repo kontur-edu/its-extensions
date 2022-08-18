@@ -148,8 +148,6 @@ export function MupEditor(props: IMupEditorProps) {
     selectedMupIdsSet: Set<string>,
     zeToModuleSelections: { [key: number]: IModuleSelection[] }
   ) => {
-    // console.log("createInitDiffsAndDates: zeToModuleSelections");
-    // console.log(zeToModuleSelections);
     const repo = context.dataRepository;
     const newMupEdits: { [key: string]: IMupEdit } = {};
     const newMupDiffs: { [key: string]: IMupDiff } = {};
@@ -408,8 +406,6 @@ export function MupEditor(props: IMupEditorProps) {
   };
 
   const handleMupToggle = (mupId: string) => {
-    console.log("handleMupToggle: zeToModuleSelection");
-    console.log(zeToModuleSelection);
     ensureMupDiff(mupId).then(({ newDiff, newDates, useNewDates }) => {
       let mupDiffsToCompareWith = mupDiffs;
 
@@ -432,7 +428,6 @@ export function MupEditor(props: IMupEditorProps) {
 
       setMupEdits(newMupEdits);
 
-      // FIXME
       const datesToCompareWith: [string, string] = useNewDates
         ? newDates
         : [startDate, endDate];
@@ -482,14 +477,11 @@ export function MupEditor(props: IMupEditorProps) {
       );
       newZeToModuleSelection[ze] = moduleSelection;
     }
-    // console.log("newZeToModuleSelection");
-    // console.log(newZeToModuleSelection);
 
     return newZeToModuleSelection;
   };
 
   const handleRefresh = () => {
-    // console.log("handleRefresh");
     let mupIdsToRefresh: string[] = Object.keys(mupDiffs);
     let selectedMupIds: Set<string> = new Set<string>();
     for (let mupId of mupIdsToRefresh) {
@@ -523,8 +515,6 @@ export function MupEditor(props: IMupEditorProps) {
         selectedMupIds.push(mupId);
       }
     }
-    // console.log("mupLimits");
-    // console.log(mupLimits);
 
     const actions = createActions(
       props.selectionGroupIds,
@@ -623,7 +613,7 @@ export function MupEditor(props: IMupEditorProps) {
     setExecutingActionsInProgress(true);
     executeActions(mupEditorActions, context)
       .then((results) => setMupEditorActionResults(results))
-      .then(() => alert("Применение изменений завершено"))
+      // .then(() => alert("Применение изменений завершено"))
       .then(() => handleRefresh()) // refresh
       .finally(() => {
         setExecutingActionsInProgress(false);

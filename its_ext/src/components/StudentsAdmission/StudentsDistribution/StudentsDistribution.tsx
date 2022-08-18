@@ -38,7 +38,6 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { CopyOrDownload } from "../../CopyOrDownload";
 import { RefreshButton } from "../../RefreshButton";
 import CircularProgress from "@mui/material/CircularProgress";
-// import { createPersonalNumberToAdmittedMupNames } from "./utils";
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 const debouncedEnsureData = createDebouncedWrapper(DEBOUNCE_MS);
@@ -67,7 +66,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   const mupIdsWithTestResultRequired = useRef<Set<string>>(new Set<string>());
   const competitionGroupIdToZELimit = useRef<{ [key: number]: number }>({});
   const personalNumbersOfActiveStudentsSortedByRating = useRef<string[]>([]);
-  // const refreshInProgress = useRef<boolean>(false);
   const [studentAdmissionActions, setStudentAdmissionActions] = useState<
     ITSAction[]
   >([]);
@@ -76,8 +74,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   const [mupToErrorMessages, setMupToErrorMessages] = useState<{
     [key: string]: string[];
   }>({});
-
-  // const [personalNumberToAdmittedMupNames, setPersonalNumberToAdmittedMupNames] = useState<{[key: string]: Set<string>}>({});
 
   const tableRef = useRef<HTMLElement | null>(null);
 
@@ -156,17 +152,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
 
   const refreshData = () => ensureData(true);
 
-  // const preparePersonalNumberToAdmittedMupNames = async () => {
-  //   const res = await createPersonalNumberToAdmittedMupNames(
-  //     context.apiService,
-  //     context.dataRepository.selectionGroupData,
-  //     context.dataRepository.mupData,
-  //   );
-  //   setPersonalNumberToAdmittedMupNames(res);
-  //   console.log(res);
-  //   return res;
-  // }
-
   const prepareItemsAndStudentMupDataText = () => {
     const allPersonalNumbers = getAllPersonalNumbers(
       props.competitionGroupIds,
@@ -244,10 +229,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   }, []);
 
   useEffect(() => {
-    // console.log(
-    //   "------- props.competitionGroupIds changed, ",
-    //   props.competitionGroupIds
-    // );
     debouncedEnsureData(() =>
       refreshData()
         .then(() => prepareItemsAndStudentMupDataText())
@@ -288,8 +269,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       context.dataRepository.competitionGroupIdToMupAdmissions
     );
     setStudentAdmissionsTextInputMessages(messages);
-    // console.log("validateStudentAdmissions");
-    // console.log({ success, messages });
 
     if (success) {
       const personalNumberToSelectedAdmissionIds: { [key: string]: string[] } =
@@ -400,7 +379,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       executeActions(studentAdmissionActions, context)
         .then((actionResults) => {
           setStudentAdmissionActionResults(actionResults);
-          // FIXME:
           const newMupToErrorMessages =
             createStudentDistributionMupToErrorMessages(
               actionResults,
@@ -464,7 +442,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           <tr key={personalNumber}>
             <td>
               {student.surname} {student.firstname} {student.patronymic}{" "}
-              {student.personalNumber}
+              {/* {student.personalNumber} */}
             </td>
             <td>{student.groupName}</td>
             <td>{student.rating}</td>

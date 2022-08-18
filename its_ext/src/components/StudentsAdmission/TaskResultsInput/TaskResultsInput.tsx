@@ -140,7 +140,6 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   >([]);
   const [textAreaValue, setTextAreaValue] = useState<string>("");
   const [invalidStudentRows, setInvalidStudentRows] = useState<string[]>([]);
-  // const allowSuccessMessage = useRef<boolean>(false);
   const [applyClicked, setApplyClicked] = useState<boolean>(false);
 
   const [ensureDataInProgress, setEnsureDataInProgress] =
@@ -191,7 +190,6 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     const newCompetitionGroupToAdmissionIds =
       getCurrentAdmissionIdsPerCompetitionGroup(selectedMupId);
 
-    // setCompetitionGroupToAdmissionIds(newCompetitionGroupToAdmissionIds);
     try {
       await context.dataRepository
         .UpdateStudentAdmissionsAndStudentData(
@@ -399,7 +397,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   }) => debouncedWrapperForApply(() => generateActions(newStudentItems));
 
   const handleRealApply = () => {
-    alert(`Настоящее применение изменений`);
+    // alert(`Настоящее применение изменений`);
     setApplyClicked(true);
     executeActions(taskResultsActions, context)
       .then((actionResults) => {

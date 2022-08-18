@@ -55,7 +55,6 @@ export class ITSApiService {
         year: obj["Year"],
         semesterId: obj["SemesterId"],
         semesterName: obj["SemesterName"],
-        // ze: obj["UnitsSum"],
         eduSpaceId: obj["EduSpaceId"],
         unitSum: obj["UnitsSum"],
         byPriority: obj["ByPriority"],

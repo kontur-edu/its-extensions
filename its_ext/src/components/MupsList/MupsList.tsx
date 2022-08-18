@@ -48,7 +48,6 @@ export function MupsList(props: IMupsListProps) {
             </td>
             <td>
               <TextField
-                // type="number"
                 value={mupEdit.limit}
                 onChange={handleLimitChange(mup.id)}
                 className={style.limit__input}

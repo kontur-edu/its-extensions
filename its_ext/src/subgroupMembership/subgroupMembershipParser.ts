@@ -152,14 +152,12 @@ export function trySubstituteLoadWildcards(
   return newMupToLoadToSubgroupMembership;
 }
 
-// Возможно сначала заменить короткие имена на полные, потом "*" на нагрузки
 
 export function validateSubgroupMembership(
   competitionGroupIds: number[],
   mupToLoadToSubgroupMembership: MupToLoadToSubgroupMembership,
   subgoupDiffInfo: ISubgoupDiffInfo,
   studentData: IStudentData
-  // mupData: IMupData
 ): { success: boolean; messages: string[] } {
   const notDeterminedPersonalNumbers = new Set<string>();
   const notDeterminedMupNames: string[] = [];

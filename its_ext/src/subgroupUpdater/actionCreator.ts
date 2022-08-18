@@ -8,7 +8,7 @@ import {
   CreateSubgroupsAction,
   RefreshSubgroupsAction,
   UpdateSubgroupMetaLoadCountAction,
-  UpdateTeacherForSubgroupAction,
+  UpdateSubgroupAction,
 } from "./actions";
 import { IMupSubgroupDiff } from "../common/types";
 
@@ -64,7 +64,6 @@ export function createActionsByDiffs(
   competitionGroupIds: number[],
   sDiffs: { [key: string]: IMupSubgroupDiff },
   subgroupInfo: ISubgoupDiffInfo
-  // subgroupData: ISubgroupData,
 ): ITSAction[] {
   const actions: ITSAction[] = [];
 
@@ -159,7 +158,7 @@ export function createUpdateTeacherActionsBySubgroupDiff(
       if (teacherId && !t1 && t2) {
         // t1 not set, copy t2
         actions.push(
-          new UpdateTeacherForSubgroupAction(
+          new UpdateSubgroupAction(
             competitionGroupIds[0],
             subgroupInfo,
             teacherId
@@ -168,7 +167,7 @@ export function createUpdateTeacherActionsBySubgroupDiff(
       } else if (teacherId && !t2 && t1) {
         // t2 not set, t2
         actions.push(
-          new UpdateTeacherForSubgroupAction(
+          new UpdateSubgroupAction(
             competitionGroupIds[1],
             subgroupInfo,
             teacherId
@@ -192,8 +191,8 @@ export function getMupNameActions(actions: ITSAction[]): {
 
       if (!res.hasOwnProperty(mupName)) res[mupName] = [];
       res[mupName].push(action);
-    } else if (action.actionType === ActionType.UpdateTeacherForSubgroup) {
-      const updateLimitAction = action as UpdateTeacherForSubgroupAction;
+    } else if (action.actionType === ActionType.UpdateSubgroup) {
+      const updateLimitAction = action as UpdateSubgroupAction;
       const mupName = updateLimitAction.subgroupInfo.mupName;
 
       if (!res.hasOwnProperty(mupName)) res[mupName] = [];

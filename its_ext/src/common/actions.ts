@@ -14,7 +14,7 @@ export enum ActionType {
   AddLoads,
   CreateSubgroups,
   UpdateSubgroupMetaLoadCount,
-  UpdateTeacherForSubgroup,
+  UpdateSubgroup,
   UpdateTaskResult,
   UpdateStudentAdmission,
 }
@@ -69,10 +69,6 @@ export async function executeActions(
       actionResults: [],
     };
     actionResults.forEach((ar) => {
-      // console.warn(ar);
-      // if (ar.summary || ar.message) {
-      //   message = `${ar.summary || ""} ${ar.message || ""}`;
-      // }
       actionExecutionLogItem.actionResults.push({
         success: ar.success,
         message: ar.message || "выполнено",

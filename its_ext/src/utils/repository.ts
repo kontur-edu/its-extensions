@@ -123,7 +123,6 @@ export class ITSRepository {
     this.selectionGroupToMupsData = prepareSelectionGroupToMupsData(
       selectionGroupIdToSelectionGroupMups
     );
-    // console.log(this.selectionGroupToMupsData);
   }
 
   CheckPeriodDataPresent(mupIds: string[]) {
@@ -155,7 +154,6 @@ export class ITSRepository {
     console.log(`ITSRepository: EnsurePeriodInfoFor ${mupId}`);
     if (this.mupToPeriods.hasOwnProperty(mupId)) return;
 
-    // this.mupToPeriods[mupId] = [];
     const periods = await this.api.GetPeriods(mupId);
     this.mupToPeriods[mupId] = periods;
   }
@@ -453,8 +451,6 @@ export class ITSRepository {
         this.selectionGroupData,
         this.mupData
       );
-
-    // console.log(this.personalNumberToAdmittedMupNames);
   }
 }
 
@@ -479,8 +475,6 @@ export async function createPersonalNumberToAdmittedMupNames(
       const mupName = mupData.data[mupId].name;
       const studentsRaw = await api.GetStudentsForAdmission(admissionId);
       for (const studentRaw of studentsRaw) {
-        // console.log("studentRaw");
-        // console.log(studentRaw);
         const pn = studentRaw.personalNumber;
         if (!personalNumberToMupNameSet.hasOwnProperty(pn)) {
           personalNumberToMupNameSet[pn] = new Set<string>();

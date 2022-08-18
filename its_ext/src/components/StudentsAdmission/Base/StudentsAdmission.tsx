@@ -34,11 +34,6 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
   const [stepTwoLoaded, setStepTwoLoaded] = useState<boolean>(false);
   const [stepThreeLoaded, setStepThreeLoaded] = useState<boolean>(false);
 
-  // const handleGroupIdsFixed = (val: boolean) => {
-  //   if (groupIdsFixed !== val) {
-  //     setGroupIdsFixed(val);
-  //   }
-  // };
   const handleStepTwoLoaded = () => {
     // console.log("handleStepTwoLoaded");
     setStepTwoLoaded(true);
@@ -136,7 +131,6 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
   };
 
   const renderTaskResultsInput = () => {
-    // console.warn("rendering: renderTaskResultsInput");
     return (
       <React.Fragment>
         <article className="step" ref={stepTwoRef}>
@@ -224,13 +218,11 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
       {isGroupSelectionValid() && groupIdsFixed && renderTaskResultsInput()}
 
       {isGroupSelectionValid() &&
-        // false &&
         groupIdsFixed &&
         stepTwoLoaded &&
         renderStudentsAutoAdmission()}
 
       {isGroupSelectionValid() &&
-        // false &&
         groupIdsFixed &&
         stepTwoLoaded &&
         stepThreeLoaded &&

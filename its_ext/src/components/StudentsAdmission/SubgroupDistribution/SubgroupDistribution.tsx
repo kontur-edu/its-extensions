@@ -423,7 +423,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
 
   const handleSubgroupDistributionRealApplyDebounced = () => {
     debouncedWrapperForApply(() => {
-      alert(`Настоящее применение изменений`);
+      // alert(`Настоящее применение изменений`);
       setFirstApplyClicked(false);
       setSecondApplyClicked(true);
       executeActions(subgroupDistributionActions, context)
@@ -452,7 +452,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
 
   const handleSubgroupDistributionForOneGroupPerLoadApplyDebounced = () => {
     debouncedWrapperForApply(() => {
-      alert(`Настоящее применение изменений`);
+      // alert(`Настоящее применение изменений`);
       setFirstApplyClicked(true);
       setSecondApplyClicked(false);
       executeActions(subgroupDistributionForOneGroupPerLoadActions, context)
@@ -499,13 +499,9 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
   };
 
   const renderSubgroupDistributionForOneGroupPerLoad = () => {
-    // const haveActions =
-    //   subgroupDistributionForOneGroupPerLoadActions.length > 0 ||
-    //   subgroupDistributionActionForOneGroupPerLoadResults.length > 0;
     return (
       <React.Fragment>
         <h3>Зачисление студентов на МУПы с одной подгруппой</h3>
-        {/* {!haveActions && <p>Не найдено возможных действий для этого шага</p>} */}
         <ApplyButtonWithActionDisplay
           showErrorWarning={true}
           showSuccessMessage={true}
@@ -589,12 +585,6 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
 
         {subgroupDistributionTextInputMessages.length > 0 &&
           renderSubgroupDistributionTextInputMessages()}
-        {/* {parseButtonClicked.current &&
-          subgroupDistributionTextInputMessages.length === 0 &&
-          subgroupDistributionActions.length === 0 &&
-          !secondApplyClicked && (
-            <p>Не найдено возможных действий для этого шага</p>
-          )} */}
         <ApplyButtonWithActionDisplay
           showErrorWarning={true}
           showSuccessMessage={true}

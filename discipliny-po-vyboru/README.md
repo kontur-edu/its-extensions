@@ -1,6 +1,16 @@
 # discipliny-po-vyboru Extensions
 
-## Развертывание
+## Развертывание вместе с its_ext
+
+### Подготовьте инфраструктуру Yandex Cloud
+
+1. Выполните шаг "1. Подготовьте инфраструктуру Yandex Cloud" в разделе "Развертывание" файла README.md в корне репозитория:
+   - задайте имя функции в поле `NOTION_PROXY_FUNCTION_NAME=`
+   - проверьте путь до папки с кодом функции в поле `NOTION_PROXY_FUNCTION_SRC_DIR=`
+
+
+
+## Развертывание вручную
 
 ### 1. Создайте Yandex Cloud Function и обновите спецификацию API-Gateway
 

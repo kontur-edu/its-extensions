@@ -264,13 +264,14 @@ describe("addRandomMupsForStudentIfNeeded", () => {
     );
 
     // console.log(personalNumberToStudentItem);
+    const studentItem = personalNumberToStudentItem["s1"]; 
 
-    expect(personalNumberToStudentItem["s1"].currentZ).toBe(6);
+    expect(studentItem.currentZ).toBe(6);
     expect(
-      personalNumberToStudentItem["s1"].selectedAdmissionIds
+      studentItem.selectedAdmissionIds
     ).not.toContain(2);
     expect(
-      new Set(personalNumberToStudentItem["s1"].selectedAdmissionIds).size
+      new Set(studentItem.selectedAdmissionIds).size
     ).toBe(2);
   });
 });

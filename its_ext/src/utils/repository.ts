@@ -147,7 +147,8 @@ export class ITSRepository {
         console.warn(`Failed to request Periods for mupId: ${mupId}`);
       }
     }
-    console.log("/ UpdatePeriods");
+    // console.log("this.mupToPeriods");
+    // console.log(this.mupToPeriods);
   }
 
   async EnsurePeriodInfoFor(mupId: string) {

@@ -232,7 +232,6 @@ export function addRandomMupsForStudentIfNeeded(
     if (sItem.currentZ >= zeLimit) {
       continue;
     }
-
     // Добавить любой МУП чтобы не превысить ZE
     for (const mupId in mupIdToMupItem) {
       const mup = mupData.data[mupId];
@@ -240,10 +239,15 @@ export function addRandomMupsForStudentIfNeeded(
       const mupItem = mupIdToMupItem[mupId];
       if (mupItem.count < mupItem.limit && sItem.currentZ + mupZe <= zeLimit) {
         // find admission
+        let alreadySelected = false;
         for (const aId of sItem.selectedAdmissionIds) {
           if (admissionIdToMupId[aId] === mupId) {
-            continue;
+            alreadySelected = true;
+            break;
           }
+        }
+        if (alreadySelected) {
+          continue;
         }
 
         if (personalNumberToAdmittedMupNames.hasOwnProperty(personalNumber)) {

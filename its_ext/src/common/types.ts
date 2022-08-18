@@ -175,7 +175,7 @@ export type SubgroupDiffs = {
 
 export type SubgroupAndMetaAreSameDiffs = {
   // discipline
-  [key: string]: [boolean, boolean]; // for 2 competitonGroups
+  [key: string]: boolean[]; // for 2 competitonGroups
 };
 
 export interface ISubgoupDiffInfo {

@@ -23,7 +23,10 @@ import {
   createSubgroupMembershipActions,
   createSubgroupMembershipActionsForOneGroupPerLoadDistribution,
 } from "../../../subgroupMembership/actionCreator";
-import { createSubgroupDiffInfo } from "../../../subgroupUpdater/subgroupDiffs";
+import {
+  checkSubgroupsAreSync,
+  createSubgroupDiffInfo,
+} from "../../../subgroupUpdater/subgroupDiffs";
 
 import {
   parseSubgroupMembershipFromText,
@@ -74,6 +77,8 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     subgroupDistributionTextInputMessages,
     setSubgroupDistributionTextInputMessages,
   ] = useState<string[]>([]);
+  const [competitionGroupsErrorMessages, setCompetitionGroupsErrorMessages] =
+    useState<string[]>([]);
 
   const [mupToLoadToSubgroupMembership, setMupToLoadToSubgroupMembership] =
     useState<MupToLoadToSubgroupMembership>({});
@@ -146,6 +151,16 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     return (
       <ul className="warning">
         {subgroupDistributionTextInputMessages.map((message, index) => (
+          <li key={index}>{message}</li>
+        ))}
+      </ul>
+    );
+  };
+
+  const renderCompetitionGroupsErrorMessages = () => {
+    return (
+      <ul className="warning">
+        {competitionGroupsErrorMessages.map((message, index) => (
           <li key={index}>{message}</li>
         ))}
       </ul>
@@ -261,6 +276,9 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
       context.dataRepository.subgroupData
     );
 
+    // console.log("newSubgroupDiffInfo");
+    // console.log(newSubgroupDiffInfo);
+
     setSubgroupDiffInfo(newSubgroupDiffInfo);
 
     const studentAndMupItems = prepareStudentAndMupItems(
@@ -297,7 +315,28 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     availableMupIds.forEach((mId) =>
       mupNames.push(context.dataRepository.mupData.data[mId].name)
     );
+
+    if (props.competitionGroupIds.length > 0) {
+      const synced = checkSubgroupsAreSync(
+        mupNames,
+        props.competitionGroupIds,
+        newSubgroupDiffInfo.metaDiffs,
+        newSubgroupDiffInfo.subgroupDiffs
+      );
+      if (!synced) {
+        // FIXME:
+        // alert("! NOT SYNCED !");
+        setCompetitionGroupsErrorMessages([
+          `Конкурсные группы имеют различные количества подгрупп или различные созданные подгруппы. Вернитесь к "Подготовке семестра" и синхронизируйте конкурсные группы.`,
+        ]);
+      } else {
+        setCompetitionGroupsErrorMessages([]);
+      }
+    }
+
     try {
+      // console.log("newSubgroupDiffInfo");
+      // console.log(newSubgroupDiffInfo);
       const mupToLoadToSubgroupMembership = createMupToLoadToSubgroupMembership(
         mupNames,
         props.competitionGroupIds,
@@ -347,7 +386,9 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
           }
           return prepareData();
         })
-        .then((newSubgroupDiffInfo) => {
+        .then(() => {
+          const newSubgroupDiffInfo = prepareData();
+
           generateActionsForOneGroupPerLoadDistribution(newSubgroupDiffInfo);
         })
     );
@@ -525,6 +566,9 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
           loading={ensureDataInProgress}
         />
 
+        {competitionGroupsErrorMessages.length > 0 &&
+          renderCompetitionGroupsErrorMessages()}
+
         {renderSubgroupDistributionForOneGroupPerLoad()}
 
         <h3>Зачисление студентов на МУПы с несколькими подгруппами</h3>
@@ -585,6 +629,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
 
         {subgroupDistributionTextInputMessages.length > 0 &&
           renderSubgroupDistributionTextInputMessages()}
+
         <ApplyButtonWithActionDisplay
           showErrorWarning={true}
           showSuccessMessage={true}

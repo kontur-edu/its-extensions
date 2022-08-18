@@ -399,7 +399,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   }) => debouncedWrapperForApply(() => generateActions(newStudentItems));
 
   const handleRealApply = () => {
-    alert(`Настоящее применение изменений`);
+    // alert(`Настоящее применение изменений`);
     setApplyClicked(true);
     executeActions(taskResultsActions, context)
       .then((actionResults) => {

@@ -394,7 +394,6 @@ export function CompetitionGroupPreparation(
           generateAllActions(newSelectedCompetitionGroupId, allMupIds);
       });
     }
-    
   }, [props.refreshCounter]); // eslint-disable-line
 
   const handleCompetitionGroupChange = (event: SelectChangeEvent) => {
@@ -613,9 +612,9 @@ export function CompetitionGroupPreparation(
       {competitionGroupIds.length === 0 && renderCompetitionGroupsNotFound()}
       {competitionGroupIds.length > 0 && renderSteps()}
       <div>
-      <NextStepButton onClick={props.onNextStep}>
-        К следующему шагу
-      </NextStepButton>
+        <NextStepButton onClick={props.onNextStep}>
+          К следующему шагу
+        </NextStepButton>
       </div>
     </React.Fragment>
   );

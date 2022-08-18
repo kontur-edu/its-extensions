@@ -623,7 +623,7 @@ export function MupEditor(props: IMupEditorProps) {
     setExecutingActionsInProgress(true);
     executeActions(mupEditorActions, context)
       .then((results) => setMupEditorActionResults(results))
-      .then(() => alert("Применение изменений завершено"))
+      // .then(() => alert("Применение изменений завершено"))
       .then(() => handleRefresh()) // refresh
       .finally(() => {
         setExecutingActionsInProgress(false);

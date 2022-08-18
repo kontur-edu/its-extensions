@@ -423,7 +423,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
 
   const handleSubgroupDistributionRealApplyDebounced = () => {
     debouncedWrapperForApply(() => {
-      alert(`Настоящее применение изменений`);
+      // alert(`Настоящее применение изменений`);
       setFirstApplyClicked(false);
       setSecondApplyClicked(true);
       executeActions(subgroupDistributionActions, context)
@@ -452,7 +452,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
 
   const handleSubgroupDistributionForOneGroupPerLoadApplyDebounced = () => {
     debouncedWrapperForApply(() => {
-      alert(`Настоящее применение изменений`);
+      // alert(`Настоящее применение изменений`);
       setFirstApplyClicked(true);
       setSecondApplyClicked(false);
       executeActions(subgroupDistributionForOneGroupPerLoadActions, context)

@@ -36,7 +36,8 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
     useState<number | null>(null);
 
   const [canBeSync, setCanBeSync] = useState<boolean>(true);
-  const [mupIds, setMupIds] = useState<string[]>([]);
+  // const [mupIds, setMupIds] = useState<Set<string>>(new Set<string>);
+  const [mupNames, setMupNames] = useState<Set<string>>(new Set<string>()); // FIXME:
   const [mupToMessages, setMupToMessages] = useState<{
     [key: string]: [string[], string[]];
   }>({});
@@ -178,13 +179,15 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
       ).forEach((mId) => allMupIds.add(mId));
     }
 
-    setMupIds(Array.from(allMupIds));
+    // setMupIds(Array.from(allMupIds));
 
     const mupNameToMupId: { [key: string]: string } = {};
     allMupIds.forEach((mId) => {
       const mup = repo.mupData.data[mId];
       mupNameToMupId[mup.name] = mId;
     });
+
+    setMupNames(new Set<string>(Object.keys(mupNameToMupId)));
 
     const competitionGroupIdToInfo: { [key: number]: ISubgroupReferenceInfo } =
       {};
@@ -427,50 +430,90 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
     );
   };
 
-  const compareMupIds = (lhsMupId: string, rhsMupId: string) => {
-    const lhsName = context.dataRepository.mupData.data[lhsMupId]?.name ?? "";
-    const rhsName = context.dataRepository.mupData.data[rhsMupId]?.name ?? "";
-    return lhsName.localeCompare(rhsName);
-  };
+  // const compareMupIds = (lhsMupId: string, rhsMupId: string) => {
+  //   const lhsName = context.dataRepository.mupData.data[lhsMupId]?.name ?? "";
+  //   const rhsName = context.dataRepository.mupData.data[rhsMupId]?.name ?? "";
+  //   return lhsName.localeCompare(rhsName);
+  // };
 
   const renderRows = () => {
     if (!canBeSync) return null;
 
-    return mupIds.sort(compareMupIds).map((mupId) => {
-      const mup = context.dataRepository.mupData.data[mupId];
+    console.log("mupToMessages");
+    console.log(mupToMessages);
 
-      let differences: string[] = [];
-      let todos: string[] = [];
-      if (mupToMessages.hasOwnProperty(mup.name)) {
-        [differences, todos] = mupToMessages[mup.name];
-      }
+    return Object.keys(mupToMessages)
+      .sort()
+      .map((mupName, i) => {
+        let [differences, todos] = mupToMessages[mupName];
+        const present = mupNames.has(mupName);
+        if (!present) {
+          differences = [
+            "МУП не состоит в группах выбора, но имеет количество групп, не равное 0",
+          ];
+        }
+        return (
+          <tr key={i} className={present ? "" : "warning"}>
+            <td>{mupName}</td>
+            <td>
+              <ul className={style.list}>
+                {differences.map((val, index) => (
+                  <li key={index}>{val}</li>
+                ))}
+                {differences.length === 0 && (
+                  <li className="message_success">Нет отличий</li>
+                )}
+              </ul>
+            </td>
+            <td>
+              <ul className={style.list}>
+                {todos.map((val, index) => (
+                  <li key={index}>{val}</li>
+                ))}
+                {todos.length === 0 && (
+                  <li className="message_success">Нет действий</li>
+                )}
+              </ul>
+            </td>
+          </tr>
+        );
+      });
 
-      return (
-        <tr key={mupId}>
-          <td>{mup.name}</td>
-          <td>
-            <ul className={style.list}>
-              {differences.map((val, index) => (
-                <li key={index}>{val}</li>
-              ))}
-              {differences.length === 0 && (
-                <li className="message_success">Нет отличий</li>
-              )}
-            </ul>
-          </td>
-          <td>
-            <ul className={style.list}>
-              {todos.map((val, index) => (
-                <li key={index}>{val}</li>
-              ))}
-              {todos.length === 0 && (
-                <li className="message_success">Нет действий</li>
-              )}
-            </ul>
-          </td>
-        </tr>
-      );
-    });
+    // return mupIds.sort(compareMupIds).map((mupId) => {
+    //   const mup = context.dataRepository.mupData.data[mupId];
+
+    //   let differences: string[] = [];
+    //   let todos: string[] = [];
+    //   if (mupToMessages.hasOwnProperty(mup.name)) {
+    //     [differences, todos] = mupToMessages[mup.name];
+    //   }
+
+    //   return (
+    //     <tr key={mupId}>
+    //       <td>{mup.name}</td>
+    //       <td>
+    //         <ul className={style.list}>
+    //           {differences.map((val, index) => (
+    //             <li key={index}>{val}</li>
+    //           ))}
+    //           {differences.length === 0 && (
+    //             <li className="message_success">Нет отличий</li>
+    //           )}
+    //         </ul>
+    //       </td>
+    //       <td>
+    //         <ul className={style.list}>
+    //           {todos.map((val, index) => (
+    //             <li key={index}>{val}</li>
+    //           ))}
+    //           {todos.length === 0 && (
+    //             <li className="message_success">Нет действий</li>
+    //           )}
+    //         </ul>
+    //       </td>
+    //     </tr>
+    //   );
+    // });
   };
 
   const renderTable = () => {
@@ -500,7 +543,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
     setSyncInProgress(true);
     executeActions(syncActions, context)
       .then((results) => setSyncActionResults(results))
-      .then(() => alert("Применение изменений завершено"))
+      // .then(() => alert("Применение изменений завершено"))
       .then(() => refreshDataDebounced())
       // .catch((err) => {
       //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {

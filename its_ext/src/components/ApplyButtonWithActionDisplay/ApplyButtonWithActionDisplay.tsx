@@ -114,9 +114,7 @@ export function ApplyButtonWithActionDisplay(
               (logItem: IActionExecutionLogItem, index: number) => (
                 <li key={index}>
                   {clipString(logItem.actionMessage, ACTION_MESSAGE_SIZE)}
-                  <ul>
-                    {formatActionResultItems(logItem.actionResults)}
-                  </ul>
+                  <ul>{formatActionResultItems(logItem.actionResults)}</ul>
                 </li>
               )
             )}

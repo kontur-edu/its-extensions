@@ -219,7 +219,7 @@ export function addRandomMupsForStudentIfNeeded(
   mupIdToMupItem: { [key: string]: IMupDistributionItem },
   mupIdsWithTestResultRequired: Set<string>,
   competitionGroupIdToZELimit: { [key: number]: number },
-  personalNumberToAdmittedMupNames: {[key: string]: Set<string>},
+  personalNumberToAdmittedMupNames: { [key: string]: Set<string> },
   admissionIdToMupId: { [key: number]: string },
   mupData: IMupData,
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions,
@@ -236,8 +236,6 @@ export function addRandomMupsForStudentIfNeeded(
 
     // Добавить любой МУП чтобы не превысить ZE
     for (const mupId in mupIdToMupItem) {
-      
-
       const mup = mupData.data[mupId];
       const mupZe = mup.ze;
       const mupItem = mupIdToMupItem[mupId];
@@ -248,7 +246,7 @@ export function addRandomMupsForStudentIfNeeded(
             continue;
           }
         }
-        
+
         if (personalNumberToAdmittedMupNames.hasOwnProperty(personalNumber)) {
           if (personalNumberToAdmittedMupNames[personalNumber].has(mup.name)) {
             // console.log(`Cant assign mup: ${personalNumber} x ${mup.name}`);
@@ -263,7 +261,6 @@ export function addRandomMupsForStudentIfNeeded(
         }
 
         const admissionId = mupIdToAdmission[mupId].admissionsId;
-
 
         if (mupIdsWithTestResultRequired.has(mupId)) {
           const admission = admissionInfo[admissionId][personalNumber];
@@ -348,6 +345,17 @@ export function getAvailableAdmissionIds(
   }
   return availableAdmissionIds;
 }
+
+const compareStudentsByGroupAndName =
+  (studentData: IStudentData) => (lhs: string, rhs: string) => {
+    const lhsStudent = studentData.data[lhs];
+    const rhsStudent = studentData.data[rhs];
+    if (lhsStudent.groupName !== rhsStudent.groupName) {
+      return lhsStudent.groupName.localeCompare(rhsStudent.groupName);
+    }
+    return lhsStudent.surname.localeCompare(rhsStudent.surname);
+  };
+
 export function createStudentsDistributionData(
   newPersonalNumberToStudentItems: {
     [key: string]: IStudentAdmissionDistributionItem;
@@ -361,7 +369,12 @@ export function createStudentsDistributionData(
     students: [],
     mupIdToMupName: {},
   };
-  for (const personalNumber in newPersonalNumberToStudentItems) {
+  const personalNumbersSorted = Object.keys(
+    newPersonalNumberToStudentItems
+  ).sort(compareStudentsByGroupAndName(studentData));
+  // console.log("personalNumbersSorted");
+  // console.log(personalNumbersSorted);
+  for (const personalNumber of personalNumbersSorted) {
     const student = studentData.data[personalNumber];
     const mupIds = newPersonalNumberToStudentItems[
       personalNumber

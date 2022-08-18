@@ -12,6 +12,7 @@ import {
 
 import { ITSAction } from "../common/actions";
 import { checkSetsEqual } from "../mupUpdater/actionCreater";
+import { checkObjectKeysAreSame } from "../utils/helpers";
 
 function checkIfMetasAndSubgroupsAreSameForMupAndSubgroup(
   mupName: string,
@@ -67,6 +68,103 @@ function checkIfMetasAndSubgroupsAreSameForMupAndSubgroup(
   return true;
 }
 
+function compareLoadToSubgroupMetas(
+  lhs: { [key: string]: ISubgroupMeta },
+  rhs: { [key: string]: ISubgroupMeta }
+) {
+  if (!checkObjectKeysAreSame(lhs, rhs)) {
+    return false;
+  }
+  for (const load in lhs) {
+    const lhsMeta = lhs[load];
+    const rhsMeta = rhs[load];
+    if (lhsMeta.count !== rhsMeta.count) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function compareLoadNumberToSubgroupIds(
+  lhs: { [key: string]: number }, // <load>_<number> -> subgroupId
+  rhs: { [key: string]: number } // <load>_<number> -> subgroupId
+) {
+  return checkObjectKeysAreSame(lhs, rhs);
+}
+
+
+export function checkSubgroupsAreSync(
+  mupNames: string[],
+  competitionGroupIds: number[],
+  metaDiffs: MetaDiffs,
+  subgroupDiffs: SubgroupDiffs,
+) {
+  // const result: {differentMetas: {[key: string]: string[]}, differentSubgroups: string[]} = {
+  //   differentMetas: {},
+  //   differentSubgroups: [],
+  // };
+  // const mupNames = Object.keys(metaDiffs);
+  for (const mupName of mupNames) {
+    // result.differentMetas[mupName] = [];
+    const competitionGroupIdToLoadToSubgroupMeta = metaDiffs[mupName];
+    const competitionGroupIdToLoadNumberToSubgroupId =
+      subgroupDiffs.hasOwnProperty(mupName) ? subgroupDiffs[mupName] : null;
+
+    let referenceMetas: { [key: string]: ISubgroupMeta } | null = null;
+    let referenceSubgroups: { [key: string]: number } | null = null;
+    for (const competitionGroupId of competitionGroupIds) {
+      if (
+        competitionGroupIdToLoadToSubgroupMeta.hasOwnProperty(
+          competitionGroupId
+        )
+      ) {
+        const currentMetas =
+          competitionGroupIdToLoadToSubgroupMeta[competitionGroupId];
+        if (!referenceMetas) {
+          referenceMetas = currentMetas;
+        } else {
+          const loadsSynced = compareLoadToSubgroupMetas(
+            currentMetas,
+            referenceMetas
+          );
+          if (!loadsSynced) {
+            // result.differentMetas[mupName].push(); // FIXME:
+            return false;
+          }
+        }
+      } else {
+        // console.warn(
+        //   `metaDiffs does not have competitionGroupIds: ${competitionGroupIds}`
+        // );
+        if (referenceMetas) return false;
+      }
+    
+      if (
+        competitionGroupIdToLoadNumberToSubgroupId &&
+        competitionGroupIdToLoadNumberToSubgroupId.hasOwnProperty(
+          competitionGroupId
+        )
+      ) {
+        const currentSubgroups =
+          competitionGroupIdToLoadNumberToSubgroupId[competitionGroupId];
+        if (!referenceSubgroups) {
+          referenceSubgroups = currentSubgroups;
+        }
+        const subgroupsSynced = compareLoadNumberToSubgroupIds(
+          currentSubgroups, referenceSubgroups 
+        );
+        if (!subgroupsSynced) return false;
+      } else {
+        // console.warn(
+        //   `subgroupDiffs does not have competitionGroupIds: ${competitionGroupIds}`
+        // );
+        if (referenceSubgroups) return false;
+      }
+    }
+  }
+  return true;
+}
+
 function createSubgroupAndMetaAreSameDiffs(
   metaDiffs: MetaDiffs,
   subgroupDiffs: SubgroupDiffs,
@@ -80,21 +178,25 @@ function createSubgroupAndMetaAreSameDiffs(
   ]);
   const mupNamesUnion = Array.from(mupNamesUnionSet);
   for (let mupName of mupNamesUnion) {
-    const same1 = checkIfMetasAndSubgroupsAreSameForMupAndSubgroup(
-      mupName,
-      competitionGroupIds[0],
-      metaDiffs,
-      subgroupDiffs,
-      subgroupData
-    );
-    const same2 = checkIfMetasAndSubgroupsAreSameForMupAndSubgroup(
-      mupName,
-      competitionGroupIds[1],
-      metaDiffs,
-      subgroupDiffs,
-      subgroupData
-    );
-    res[mupName] = [same1, same2];
+    res[mupName] = [];
+    for (const competitionGroupId of competitionGroupIds) {
+      const same = checkIfMetasAndSubgroupsAreSameForMupAndSubgroup(
+        mupName,
+        competitionGroupId,
+        metaDiffs,
+        subgroupDiffs,
+        subgroupData
+      );
+      res[mupName].push(same);
+    }
+    // const same2 = checkIfMetasAndSubgroupsAreSameForMupAndSubgroup(
+    //   mupName,
+    //   competitionGroupIds[1],
+    //   metaDiffs,
+    //   subgroupDiffs,
+    //   subgroupData
+    // );
+    // res[mupName] = [same1, same2];
   }
 
   return res;

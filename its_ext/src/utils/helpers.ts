@@ -207,3 +207,23 @@ export function getRandomInt(max: number) {
 export function isLocalAddress(ipAddress: string) {
   return ipAddress === "localhost" || ipAddress === "127.0.0.1";
 }
+
+export function checkObjectKeysAreSame(lhs: object, rhs: object) {
+  const tmp = {...lhs, ...rhs};
+  const totalKeyCount = Object.keys(tmp).length;
+  if (Object.keys(lhs).length !== totalKeyCount || Object.keys(rhs).length !== totalKeyCount) {
+    return false;
+  }
+  return true;
+  // for (const key in lhs) {
+  //   if (!rhs.hasOwnProperty(key)) {
+  //     return false;
+  //   }
+  // }
+  // for (const key in rhs) {
+  //   if (!lhs.hasOwnProperty(key)) {
+  //     return false;
+  //   }
+  // }
+  // return true;
+}

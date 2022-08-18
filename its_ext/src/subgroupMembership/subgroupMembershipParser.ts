@@ -277,7 +277,7 @@ function prepareMupToLoadToSubgroupMembership(
         if (res[mupName].hasOwnProperty(load)) {
           if (res[mupName][load].length !== meta.count) {
             throw Error(
-              `Mup: ${mupName}, load: ${load} have different counts for competition groups ${competitionGroupIds}`
+              `Для МУПа "${mupName}" нагрузка "${load}" количество подргупп в разных конкурсных группах (ids: ${competitionGroupIds}) отличается. Вернитесь в подготовку семестра и синхронизируйте группы.`
             );
           }
           continue;
@@ -308,6 +308,9 @@ export function createMupToLoadToSubgroupMembership(
     subgoupDiffInfo
   );
   for (const mupName of mupNames) {
+    if (!subgoupDiffInfo.subgroupDiffs.hasOwnProperty(mupName)) {
+      continue;
+    }
     for (const competitionGroupId of competitionGroupIds) {
       if (
         !subgoupDiffInfo.subgroupDiffs[mupName].hasOwnProperty(

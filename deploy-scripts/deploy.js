@@ -134,7 +134,7 @@ async function prepareApiGateway(
   const existingSpec = await getApiGateWaySpec(gatewayName);
   let specIsCorrect = true;
   for (const key in apiGatewayParams) {
-    if (!existingSpec.includes(apiGatewayParams[key])) {
+    if (apiGatewayParams[key] && !existingSpec.includes(apiGatewayParams[key])) {
       specIsCorrect = false;
       break;
     }

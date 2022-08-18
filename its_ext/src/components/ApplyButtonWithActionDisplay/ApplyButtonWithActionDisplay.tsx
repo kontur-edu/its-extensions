@@ -35,7 +35,7 @@ export function NextStepButton(
     <Button
       onClick={props.onClick}
       variant="contained"
-      style={{ marginRight: "1em", alignSelf: "flex-start" }}
+      style={{ marginRight: "1em", alignSelf: "center" }}
       endIcon={<SystemUpdateAltIcon />}
     >
       {props.children}

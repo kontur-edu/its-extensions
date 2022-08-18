@@ -11,7 +11,7 @@ import {
 
 import { checkDateIsLess } from "../utils/helpers";
 
-function findInitLimits(
+export function findInitLimits(
   mupId: string,
   selectionGroupIds: number[],
   selectionGroupToMupsData: ISelectionGroupToMupsData
@@ -30,7 +30,7 @@ function findInitLimits(
   return limits;
 }
 
-function findCourseToCurrentPeriod(
+export function findCourseToCurrentPeriod(
   year: number,
   semesterId: number,
   periods: IPeriod[]
@@ -45,13 +45,14 @@ function findCourseToCurrentPeriod(
   return courseToCurrentPeriod;
 }
 
-function checkIfNeedChangeDates(
+export function checkIfNeedChangeDates(
   courseToCurrentPeriod: { [key: number]: IPeriod },
   dates: [string, string]
 ): boolean {
   let changeDates = false;
 
-  for (let course of [3, 4]) {
+  // for (let course of [3, 4]) {
+  for (let course in courseToCurrentPeriod) {
     if (
       courseToCurrentPeriod.hasOwnProperty(course) &&
       courseToCurrentPeriod[course]
@@ -69,12 +70,12 @@ function checkIfNeedChangeDates(
   return changeDates;
 }
 
-function checkIfCanBeDeleted(courseToCurrentPeriod: {
+export function checkIfCanBeDeleted(courseToCurrentPeriod: {
   [key: number]: IPeriod;
 }): boolean {
   let canBeDeleted = true;
 
-  for (let course of [3, 4]) {
+  for (let course in courseToCurrentPeriod) {
     if (
       courseToCurrentPeriod.hasOwnProperty(course) &&
       courseToCurrentPeriod[course]
@@ -92,7 +93,7 @@ function checkIfCanBeDeleted(courseToCurrentPeriod: {
   return canBeDeleted;
 }
 
-function checkNeedModuleUpdateForConnectionId(
+export function checkNeedModuleUpdateForConnectionId(
   connectionId: number,
   referenceModuleDisciplines: IModuleSelection[],
   selectionGroupModuleIdToSelectedModuleDisciplines: {
@@ -253,7 +254,7 @@ export function updateMupDiffDateInfo(
   dates: [string, string]
 ) {
   let needToChangeDates = false;
-  for (let course of [3, 4]) {
+  for (let course in mupDiff.courseToCurrentPeriod) {
     if (
       mupDiff.courseToCurrentPeriod.hasOwnProperty(course) &&
       mupDiff.courseToCurrentPeriod[course]

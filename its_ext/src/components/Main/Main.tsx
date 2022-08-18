@@ -13,9 +13,6 @@ import Button from "@mui/material/Button";
 
 export function Main(props: IMainProps) {
   const [needAuthentication, setNeedAuthentication] = useState(false);
-  // TODO: deside if it is needed
-  // const [needStudentAuthentication, setNeedStudentAuthentication] =
-  //   useState(false);
   const [connectionRefused, setConnectionRefused] = useState(false);
   const context = useContext(ITSContext);
   const [currentLogin, setCurrentLogin] = useState<string>("");
@@ -34,9 +31,6 @@ export function Main(props: IMainProps) {
   };
 
   useEffect(() => {
-    // return () => {
-    //   console.warn("Main: UNMOUNTED");
-    // }
   }, [])
 
   const handleUnauthorized = () => {

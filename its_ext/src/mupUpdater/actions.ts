@@ -188,7 +188,6 @@ function findCurrentPeriod(
   return null;
 }
 
-// TODO: Update MupToPeriods before call execute
 export class UpdatePeriodAction extends ITSAction {
   constructor(public mupId: string, public periodTimeInfo: IPeriodTimeInfo) {
     super(ActionType.UpdatePeriod);

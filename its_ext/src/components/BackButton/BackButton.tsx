@@ -20,12 +20,7 @@ export function BackButton(props: IBackButtonProps) {
       onClick={handleBackButton}
       variant="text"
       style={{
-        // position: "absolute",
-        // left: 0,
-        // top: "50%",
-        // transform: "translate(0, -50%)",
         alignSelf: "flex-start",
-        // backgroundColor: "#fff",
       }}
       startIcon={<WestIcon />}
     >

@@ -33,9 +33,6 @@ function insertReferenceSubgroupItem(
   item: ISubgroupReferenceInfoItem,
   items: ISubgroupReferenceInfoItem[]
 ) {
-  // console.log(
-  //   `insertReferenceSubgroupItem: idx: ${index} length: ${items.length}`
-  // );
   if (index >= items.length) {
     for (let i = items.length; i < index + 1; i++) {
       items.push({});
@@ -63,9 +60,6 @@ export function createSubgroupReferenceInfoFromCompetitionGroup(
       subgroupInfo: [],
       count: meta.count,
     };
-    // for (let i = 0; i < meta.count; i++) {
-    //   subgroupReferenceInfo[meta.discipline][meta.load].subgroupInfo.push({});
-    // }
   }
 
   for (const subgroupId of subgroupIds) {
@@ -76,8 +70,6 @@ export function createSubgroupReferenceInfoFromCompetitionGroup(
       if (!loadToInfo.hasOwnProperty(subgroup.load)) continue;
       if (
         subgroup.number > 0
-        // &&
-        // subgroup.number <= loadToInfo[subgroup.load].subgroupInfo.length
       ) {
         const sItem: ISubgroupReferenceInfoItem = {
           limit: subgroup.limit,
@@ -95,11 +87,6 @@ export function createSubgroupReferenceInfoFromCompetitionGroup(
           sItem,
           loadToInfo[subgroup.load].subgroupInfo
         );
-        // const info = loadToInfo[subgroup.load].subgroupInfo[num];
-        // if (subgroup.teacherId) {
-        //   info.teacher = subgroup.teacherId;
-        // }
-        // info.limit = subgroup.limit;
       }
     }
   }
@@ -251,8 +238,6 @@ export function createSyncActions(
   mupNameToMupId: { [key: string]: string },
   competitionGroupIdToInfo: { [key: number]: ISubgroupReferenceInfo },
   competitionGroupToSubgroupMetas: ICompetitionGroupToSubgroupMetas
-  // competitionGroupToSubgroupIds: ICompetitionGroupToSubgroupIds,
-  // subgroupData: ISubgroupData
 ): ITSAction[] {
   const allActions: ITSAction[] = [];
   const subgroupReferenceInfo =
@@ -268,9 +253,7 @@ export function createSyncActions(
 
     actions.push(
       ...generateUpdateSubgroupCountToActions(
-        // meta is enough
         subgroupReferenceInfo,
-        // currentSubgroupInfo,
         mupNameToMupId,
         competitionGroupToSubgroupMetas[competitionGroupId]
       )

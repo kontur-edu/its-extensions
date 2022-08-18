@@ -64,7 +64,6 @@ export function createActionsByDiffs(
   competitionGroupIds: number[],
   sDiffs: { [key: string]: IMupSubgroupDiff },
   subgroupInfo: ISubgoupDiffInfo
-  // subgroupData: ISubgroupData,
 ): ITSAction[] {
   const actions: ITSAction[] = [];
 

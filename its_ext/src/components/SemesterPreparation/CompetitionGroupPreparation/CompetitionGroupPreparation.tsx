@@ -67,9 +67,6 @@ export function getCompetitionGroupName(
   return competitionGroupId;
 }
 
-// function getSelectionGroupIdByCompetitionGroup(competitonGroupId, selectionGroupIds, competitionGroupIds) {
-//   if (selectionGroupIds.le)
-// }
 
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
@@ -265,7 +262,7 @@ export function CompetitionGroupPreparation(
       const mup = repo.mupData.data[mId];
       mupNameToMupId[mup.name] = mId;
     });
-    // TODO: save result
+
     const competitionGroupIdToSelectionGroupId =
       getCompetitionGroupIdToSelectionGroupId(
         props.selectionGroupIds,
@@ -493,7 +490,6 @@ export function CompetitionGroupPreparation(
           actions={updateSubgroupCountActions}
           actionResults={updateSubgroupCountActionResults}
           clicked={applyDefaultClicked}
-          // onNextStep={onNextStep}
           loading={updateSubgroupCountInProgress}
           onApply={handleUpdateSubgroupCountApplyDebounced}
         >
@@ -535,7 +531,6 @@ export function CompetitionGroupPreparation(
           actions={prepareSubgroupActions}
           actionResults={prepareSubgroupActionResults}
           clicked={applySubgroupsClicked}
-          // onNextStep={onNextStep}
           loading={prepareSubgroupInProgress}
           onApply={handlePrepareSubgroupsApplyDebounced}
         >

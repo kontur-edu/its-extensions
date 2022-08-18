@@ -363,8 +363,6 @@ export function createDifferenceMessagesForSubgroupDiff(
         loadsWithDifferentCounts.push(
           `"${load}" (${sm1.count} != ${sm2.count})`
         );
-        // messages.push(`Количество групп для нагрузки: "${load}" отличается (${sm1.count} != ${sm2.count}).
-        //             Проверьте настройки, перейдя по ссылкам над таблицей`);
       }
     }
   }

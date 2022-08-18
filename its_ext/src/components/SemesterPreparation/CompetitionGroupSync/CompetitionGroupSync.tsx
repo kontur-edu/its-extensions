@@ -36,8 +36,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
     useState<number | null>(null);
 
   const [canBeSync, setCanBeSync] = useState<boolean>(true);
-  // const [mupIds, setMupIds] = useState<Set<string>>(new Set<string>);
-  const [mupNames, setMupNames] = useState<Set<string>>(new Set<string>()); // FIXME:
+  const [mupNames, setMupNames] = useState<Set<string>>(new Set<string>());
   const [mupToMessages, setMupToMessages] = useState<{
     [key: string]: [string[], string[]];
   }>({});
@@ -75,7 +74,6 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
       return currentEnsurePromise.current;
     }
     setEnsureInProgress(true);
-    // currentEnsurePromise.current = Promise.resolve();
 
     const repo = context.dataRepository;
     const updateSelectionGroupPromise = () =>
@@ -178,8 +176,6 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
         repo.selectionGroupToMupsData.data[selectionGroupId].data
       ).forEach((mId) => allMupIds.add(mId));
     }
-
-    // setMupIds(Array.from(allMupIds));
 
     const mupNameToMupId: { [key: string]: string } = {};
     allMupIds.forEach((mId) => {
@@ -307,7 +303,6 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
         // console.warn(`Cannot be synchronized`);
         return;
       }
-      // setCompetitionGroupIdToInfo(competitionGroupIdToInfo);
       const actions = generateActions(
         newReferenceCompetitionGroupId,
         newCompetitionGroupIds,
@@ -439,9 +434,6 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
   const renderRows = () => {
     if (!canBeSync) return null;
 
-    console.log("mupToMessages");
-    console.log(mupToMessages);
-
     return Object.keys(mupToMessages)
       .sort()
       .map((mupName, i) => {
@@ -478,42 +470,6 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
           </tr>
         );
       });
-
-    // return mupIds.sort(compareMupIds).map((mupId) => {
-    //   const mup = context.dataRepository.mupData.data[mupId];
-
-    //   let differences: string[] = [];
-    //   let todos: string[] = [];
-    //   if (mupToMessages.hasOwnProperty(mup.name)) {
-    //     [differences, todos] = mupToMessages[mup.name];
-    //   }
-
-    //   return (
-    //     <tr key={mupId}>
-    //       <td>{mup.name}</td>
-    //       <td>
-    //         <ul className={style.list}>
-    //           {differences.map((val, index) => (
-    //             <li key={index}>{val}</li>
-    //           ))}
-    //           {differences.length === 0 && (
-    //             <li className="message_success">Нет отличий</li>
-    //           )}
-    //         </ul>
-    //       </td>
-    //       <td>
-    //         <ul className={style.list}>
-    //           {todos.map((val, index) => (
-    //             <li key={index}>{val}</li>
-    //           ))}
-    //           {todos.length === 0 && (
-    //             <li className="message_success">Нет действий</li>
-    //           )}
-    //         </ul>
-    //       </td>
-    //     </tr>
-    //   );
-    // });
   };
 
   const renderTable = () => {

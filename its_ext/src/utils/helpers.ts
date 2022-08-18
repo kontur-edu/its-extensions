@@ -130,7 +130,6 @@ export function reformatItsDate(itsDate: string) {
 }
 
 export function checkDateIsLess(dateStr: string, timeStamp: number) {
-  // return parseDate(dateStr).getTime() < timeStamp;
   if (!dateStr) return false;
   return new Date(dateStr).getTime() < timeStamp;
 }

@@ -69,9 +69,9 @@ function checkIfNeedChangeDates(
   return changeDates;
 }
 
-function checkIfCanBeDeleted(
-  courseToCurrentPeriod: { [key: number]: IPeriod }
-): boolean {
+function checkIfCanBeDeleted(courseToCurrentPeriod: {
+  [key: number]: IPeriod;
+}): boolean {
   let canBeDeleted = true;
 
   for (let course of [3, 4]) {
@@ -267,6 +267,5 @@ export function updateMupDiffDateInfo(
       }
     }
   }
-  // console.log(needToChangeDates ? "CHANGE DATE" : "NOT CHANGE DATE");
   mupDiff.changeDates = needToChangeDates;
 }

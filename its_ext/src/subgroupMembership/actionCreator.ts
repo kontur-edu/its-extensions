@@ -8,7 +8,6 @@ import {
 } from "../common/types";
 import { UpdateMembershipAction } from "./actions";
 
-// createSubgroupDiffInfo
 function generateUpdateMembershipActions(
   subgoupDiffInfo: ISubgoupDiffInfo,
   mupToLoadToSubgroupMembership: MupToLoadToSubgroupMembership,
@@ -53,7 +52,6 @@ function generateUpdateMembershipActions(
       }
     }
   }
-
 
   for (const subgroupIdStr in subgroupIdToStudentSubgroupMembership) {
     const subgroupId = Number(subgroupIdStr);

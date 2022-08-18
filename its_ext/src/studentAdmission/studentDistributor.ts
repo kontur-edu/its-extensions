@@ -225,7 +225,6 @@ export function addRandomMupsForStudentIfNeeded(
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions,
   admissionInfo: AdmissionInfo
 ) {
-  // console.log("addRandomMupsForStudentIfNeeded");
   for (const personalNumber of personalNumbersOfActiveStudentsSortedByRating) {
     const sItem = personalNumberToStudentItem[personalNumber];
     const zeLimit = competitionGroupIdToZELimit[sItem.competitionGroupId];
@@ -249,7 +248,6 @@ export function addRandomMupsForStudentIfNeeded(
 
         if (personalNumberToAdmittedMupNames.hasOwnProperty(personalNumber)) {
           if (personalNumberToAdmittedMupNames[personalNumber].has(mup.name)) {
-            // console.log(`Cant assign mup: ${personalNumber} x ${mup.name}`);
             continue;
           }
         }
@@ -372,8 +370,6 @@ export function createStudentsDistributionData(
   const personalNumbersSorted = Object.keys(
     newPersonalNumberToStudentItems
   ).sort(compareStudentsByGroupAndName(studentData));
-  // console.log("personalNumbersSorted");
-  // console.log(personalNumbersSorted);
   for (const personalNumber of personalNumbersSorted) {
     const student = studentData.data[personalNumber];
     const mupIds = newPersonalNumberToStudentItems[
@@ -385,7 +381,6 @@ export function createStudentsDistributionData(
         fullname: `${student.surname} ${student.firstname} ${student.patronymic}`,
         group: student.groupName,
         mupIds: mupIds,
-        // newPersonalNumberToStudentItems[personalNumber].selectedAdmissionIds,
       };
       result.students.push(studentInfo);
     }
@@ -398,7 +393,6 @@ export function createStudentsDistributionData(
   return result;
 }
 
-//
 export function prepareStudentAndMupItems(
   competitionGroupIds: number[],
   mupData: IMupData,

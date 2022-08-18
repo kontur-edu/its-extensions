@@ -80,12 +80,10 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
   };
 
   const handleMupEditorLoaded = () => {
-    // console.warn("handleMupEditorLoaded");
     setMupEditorLoaded(true);
   };
 
   const handleCompetitionGroupPreparationLoaded = () => {
-    // console.warn("handleMupEditorLoaded");
     setCompetitionGroupLoaded(true);
   };
 
@@ -197,8 +195,6 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
     );
   };
 
-  // console.log("selectionGroupsListItems");
-  // console.log(selectionGroupsListItems);
 
   return (
     <section className="page">
@@ -238,7 +234,7 @@ export function SemesterPreparation(props: ISemesterPreparationProps) {
 
       {selectionValid &&
         selectionGroupsIds.length === 2 &&
-        mupEditorLoaded && // TODO Delete this
+        mupEditorLoaded &&
         renderStep3()}
 
       {selectionValid &&

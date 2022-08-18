@@ -34,7 +34,6 @@ const apiService = new ITSApiService(requestService);
 const dataRepository = new ITSRepository(apiService);
 
 function App() {
-  // console.log(apiValidatorConfig);
   return (
     <HashRouter>
       <ITSContext.Provider

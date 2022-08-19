@@ -145,7 +145,7 @@ function generateUpdateSubgroupCountToActions(
   return actions;
 }
 
-function generateUpdateSubgroupActions(
+export function generateUpdateSubgroupActions(
   competitionGroupId: number,
   subgroupReferenceInfo: ISubgroupReferenceInfo,
   currentSubgroupInfo: ISubgroupReferenceInfo,
@@ -286,16 +286,16 @@ export function createSyncActions(
 }
 
 export function getDiffMessagesBySubgroupReferenceInfo(
-  newReferenceCompetitionGroupId: number,
-  newCompetitionGroupIds: number[],
+  referenceCompetitionGroupId: number,
+  competitionGroupIds: number[],
   competitionGroupIdToInfo: { [key: number]: ISubgroupReferenceInfo }
 ): { [key: string]: string[] } {
   const res: { [key: string]: string[] } = {};
   const referenceInfo =
-    competitionGroupIdToInfo[newReferenceCompetitionGroupId];
+    competitionGroupIdToInfo[referenceCompetitionGroupId];
 
-  for (const competitionGroupId of newCompetitionGroupIds) {
-    if (newReferenceCompetitionGroupId === competitionGroupId) {
+  for (const competitionGroupId of competitionGroupIds) {
+    if (referenceCompetitionGroupId === competitionGroupId) {
       continue;
     }
 

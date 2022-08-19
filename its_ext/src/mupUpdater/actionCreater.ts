@@ -25,6 +25,8 @@ import {
 
 import { ITSRepository } from "../utils/repository";
 
+const COURCES = [3, 4];
+
 function generateDeleteSubgroupsActions(
   selectionGroupsIds: number[],
   selectedMupsIds: string[],
@@ -161,7 +163,7 @@ function generateCreatePeriodActions(
 ) {
   const actions: ITSAction[] = [];
   for (let mupId of selectedMupsIds) {
-    for (let course of [3, 4]) {
+    for (let course of COURCES) {
       if (!mupDiffs[mupId].courseToCurrentPeriod.hasOwnProperty(course)) {
         const periodTimeInfo = courseToPeriodTimeInfo[course];
         actions.push(new CreatePeriodAction(mupId, periodTimeInfo));
@@ -175,7 +177,7 @@ export function createResultLoads(mupDiff: IMupDiff): {
   [key: string]: IMupLoad;
 } {
   const kmerToLoad: { [key: string]: IMupLoad } = {};
-  for (let course of [3, 4]) {
+  for (let course of COURCES) {
     if (mupDiff.courseToCurrentPeriod.hasOwnProperty(course)) {
       const currentPeriod = mupDiff.courseToCurrentPeriod[course];
       for (let load of currentPeriod.loads) {
@@ -222,7 +224,7 @@ function generateAddLoadsActions(
     // find union of loads
     const resulLoads = Object.values(createResultLoads(mupDiff));
 
-    for (let course of [3, 4]) {
+    for (let course of COURCES) {
       const periodTimeInfo = courseToPeriodTimeInfo[course];
       let loadsToAdd: IMupLoad[] = resulLoads;
       if (mupDiff.courseToCurrentPeriod.hasOwnProperty(course)) {
@@ -250,7 +252,7 @@ function generateUpdatePeriodActions(
   for (let mupId of selectedMupsIds) {
     const mupDiff = mupDiffs[mupId];
 
-    for (let course of [3, 4]) {
+    for (let course of COURCES) {
       const periodTimeInfo = courseToPeriodTimeInfo[course];
       if (mupDiff.courseToCurrentPeriod.hasOwnProperty(course)) {
         const currentPeriod = mupDiff.courseToCurrentPeriod[course];

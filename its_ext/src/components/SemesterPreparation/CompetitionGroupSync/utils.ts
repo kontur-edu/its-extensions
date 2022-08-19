@@ -18,10 +18,10 @@ export interface ISubgroupReferenceInfoItem {
 }
 
 export interface ISubgroupReferenceInfo {
+  // mupName
   [key: string]: {
-    // mupName
+    // load
     [key: string]: {
-      // load
       subgroupInfo: ISubgroupReferenceInfoItem[];
       count: number;
     };
@@ -68,9 +68,7 @@ export function createSubgroupReferenceInfoFromCompetitionGroup(
       if (!subgroupReferenceInfo.hasOwnProperty(subgroup.mupName)) continue;
       const loadToInfo = subgroupReferenceInfo[subgroup.mupName];
       if (!loadToInfo.hasOwnProperty(subgroup.load)) continue;
-      if (
-        subgroup.number > 0
-      ) {
+      if (subgroup.number > 0) {
         const sItem: ISubgroupReferenceInfoItem = {
           limit: subgroup.limit,
         };
@@ -147,7 +145,7 @@ function generateUpdateSubgroupCountToActions(
   return actions;
 }
 
-function generateUpdateSubgroupActions(
+export function generateUpdateSubgroupActions(
   competitionGroupId: number,
   subgroupReferenceInfo: ISubgroupReferenceInfo,
   currentSubgroupInfo: ISubgroupReferenceInfo,
@@ -288,16 +286,16 @@ export function createSyncActions(
 }
 
 export function getDiffMessagesBySubgroupReferenceInfo(
-  newReferenceCompetitionGroupId: number,
-  newCompetitionGroupIds: number[],
+  referenceCompetitionGroupId: number,
+  competitionGroupIds: number[],
   competitionGroupIdToInfo: { [key: number]: ISubgroupReferenceInfo }
 ): { [key: string]: string[] } {
   const res: { [key: string]: string[] } = {};
   const referenceInfo =
-    competitionGroupIdToInfo[newReferenceCompetitionGroupId];
+    competitionGroupIdToInfo[referenceCompetitionGroupId];
 
-  for (const competitionGroupId of newCompetitionGroupIds) {
-    if (newReferenceCompetitionGroupId === competitionGroupId) {
+  for (const competitionGroupId of competitionGroupIds) {
+    if (referenceCompetitionGroupId === competitionGroupId) {
       continue;
     }
 

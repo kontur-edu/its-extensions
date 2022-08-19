@@ -4,6 +4,8 @@ import {
   IMupData,
   IStudentAdmission,
   AdmissionInfo,
+  CompetitionGroupIdToMupAdmissions,
+  IStudent,
 } from "../common/types";
 import {
   calcZE,
@@ -13,6 +15,8 @@ import {
   findMupIdsWithTestResultRequired,
   tryDistributeMupsByStudentRatingAndAdmissionPriority,
   IMupDistributionItem,
+  addRandomMupsForStudentIfNeeded,
+  filterActiveStudentsAndSortByRating,
 } from "../studentAdmission/studentDistributor";
 import { cloneObject } from "../utils/helpers";
 
@@ -253,73 +257,73 @@ describe("findMupIdsWithTestResultRequired", () => {
   });
 });
 
-describe("tryDistributeMupsByStudentRatingAndAdmissionPriority", () => {
-  const personalNumberToStudentItem: {
-    [key: string]: IStudentAdmissionDistributionItem;
-  } = {
+const personalNumberToStudentItem: {
+  [key: string]: IStudentAdmissionDistributionItem;
+} = {
+  pn1: {
+    currentZ: 0,
+    admissionIds: [1, 2],
+    selectedAdmissionIds: [],
+    competitionGroupId: 1,
+  },
+  pn2: {
+    currentZ: 0,
+    admissionIds: [1, 2],
+    selectedAdmissionIds: [],
+    competitionGroupId: 1,
+  },
+};
+const mupIdToMupItem: { [key: string]: IMupDistributionItem } = {
+  m1: {
+    limit: 2,
+    count: 0,
+  },
+  m2: {
+    limit: 2,
+    count: 0,
+  },
+};
+const mupIdsWithTestResultRequired: Set<string> = new Set<string>();
+const competitionGroupIdToZELimit: { [key: number]: number } = {
+  1: 6,
+};
+const personalNumbersSortedByRating: string[] = ["pn1", "pn2"];
+const admissionIdToMupId: { [key: number]: string } = {
+  1: "m1",
+  2: "m2",
+};
+const admissionInfo: AdmissionInfo = {
+  1: {
     pn1: {
-      currentZ: 0,
-      admissionIds: [1, 2],
-      selectedAdmissionIds: [],
-      competitionGroupId: 1,
+      admissionId: 1,
+      priority: 1,
+      testResult: null,
+      status: 0,
     },
     pn2: {
-      currentZ: 0,
-      admissionIds: [1, 2],
-      selectedAdmissionIds: [],
-      competitionGroupId: 1,
+      admissionId: 1,
+      priority: 1,
+      testResult: null,
+      status: 0,
     },
-  };
-  const mupIdToMupItem: { [key: string]: IMupDistributionItem } = {
-    m1: {
-      limit: 2,
-      count: 0,
+  },
+  2: {
+    pn1: {
+      admissionId: 2,
+      priority: 1,
+      testResult: null,
+      status: 0,
     },
-    m2: {
-      limit: 2,
-      count: 0,
+    pn2: {
+      admissionId: 2,
+      priority: 1,
+      testResult: null,
+      status: 0,
     },
-  };
-  const mupIdsWithTestResultRequired: Set<string> = new Set<string>();
-  const competitionGroupIdToZELimit: { [key: number]: number } = {
-    1: 6,
-  };
-  const personalNumbersSortedByRating: string[] = ["pn1", "pn2"];
-  const admissionIdToMupId: { [key: number]: string } = {
-    1: "m1",
-    2: "m2",
-  };
-  const admissionInfo: AdmissionInfo = {
-    1: {
-      pn1: {
-        admissionId: 1,
-        priority: 1,
-        testResult: null,
-        status: 0,
-      },
-      pn2: {
-        admissionId: 1,
-        priority: 1,
-        testResult: null,
-        status: 0,
-      },
-    },
-    2: {
-      pn1: {
-        admissionId: 2,
-        priority: 1,
-        testResult: null,
-        status: 0,
-      },
-      pn2: {
-        admissionId: 2,
-        priority: 1,
-        testResult: null,
-        status: 0,
-      },
-    },
-  };
+  },
+};
 
+describe("tryDistributeMupsByStudentRatingAndAdmissionPriority", () => {
   it("distributes", () => {
     const testPersonalNumberToStudentItem = cloneObject(
       personalNumberToStudentItem
@@ -642,5 +646,196 @@ describe("tryDistributeMupsByStudentRatingAndAdmissionPriority", () => {
     expect(
       testPersonalNumberToStudentItem["pn2"].selectedAdmissionIds
     ).toContain(4);
+  });
+});
+
+describe("addRandomMupsForStudentIfNeeded", () => {
+  const personalNumberToStudentItem: {
+    [key: string]: IStudentAdmissionDistributionItem;
+  } = {
+    pn1: {
+      currentZ: 0,
+      admissionIds: [],
+      selectedAdmissionIds: [],
+      competitionGroupId: 1,
+    },
+    pn2: {
+      currentZ: 0,
+      admissionIds: [],
+      selectedAdmissionIds: [],
+      competitionGroupId: 1,
+    },
+  };
+  const admissionInfo: AdmissionInfo = {
+    1: {
+      pn1: {
+        admissionId: 1,
+        priority: null,
+        testResult: null,
+        status: 0,
+      },
+      pn2: {
+        admissionId: 1,
+        priority: 1,
+        testResult: null,
+        status: 0,
+      },
+    },
+    2: {
+      pn1: {
+        admissionId: 2,
+        priority: 1,
+        testResult: null,
+        status: 0,
+      },
+      pn2: {
+        admissionId: 2,
+        priority: 1,
+        testResult: null,
+        status: 0,
+      },
+    },
+  };
+
+  const competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions = {
+    1: {
+      m1: {
+        mupId: "m1",
+        limit: 2,
+        count: 0,
+        admissionsId: 1,
+      },
+      m2: {
+        mupId: "m2",
+        limit: 2,
+        count: 0,
+        admissionsId: 2,
+      },
+    },
+  };
+
+  const personalNumberToAdmittedMupNames: { [key: string]: Set<string> } = {
+    pn1: new Set<string>(["M1"]),
+  };
+  it("adds missing mups", () => {
+    const testPersonalNumberToStudentItem = cloneObject(
+      personalNumberToStudentItem
+    );
+    const testMupIdToMupItem = cloneObject(mupIdToMupItem);
+
+    addRandomMupsForStudentIfNeeded(
+      personalNumbersSortedByRating,
+      testPersonalNumberToStudentItem,
+      testMupIdToMupItem,
+      mupIdsWithTestResultRequired,
+      competitionGroupIdToZELimit,
+      personalNumberToAdmittedMupNames,
+      admissionIdToMupId,
+      mupData,
+      competitionGroupIdToMupAdmissions,
+      admissionInfo
+    );
+
+    expect(testPersonalNumberToStudentItem["pn1"].currentZ).toBe(3);
+    expect(
+      testPersonalNumberToStudentItem["pn1"].selectedAdmissionIds.length
+    ).toBe(1);
+
+    expect(testPersonalNumberToStudentItem["pn2"].currentZ).toBe(6);
+    expect(
+      testPersonalNumberToStudentItem["pn2"].selectedAdmissionIds
+    ).toContain(2);
+  });
+
+  it("takes into account current admitted mups", () => {
+    const testPersonalNumberToStudentItem = cloneObject(
+      personalNumberToStudentItem
+    );
+    const testMupIdToMupItem = cloneObject(mupIdToMupItem);
+
+    testMupIdToMupItem["m2"].limit = 0;
+
+    testPersonalNumberToStudentItem["pn1"].currentZ = 3;
+    testPersonalNumberToStudentItem["pn1"].admissionIds = [1];
+    testPersonalNumberToStudentItem["pn1"].selectedAdmissionIds = [1];
+
+    addRandomMupsForStudentIfNeeded(
+      personalNumbersSortedByRating,
+      testPersonalNumberToStudentItem,
+      testMupIdToMupItem,
+      mupIdsWithTestResultRequired,
+      competitionGroupIdToZELimit,
+      {},
+      admissionIdToMupId,
+      mupData,
+      competitionGroupIdToMupAdmissions,
+      admissionInfo
+    );
+
+    expect(testPersonalNumberToStudentItem["pn1"].currentZ).toBe(3);
+    expect(
+      testPersonalNumberToStudentItem["pn1"].selectedAdmissionIds.length
+    ).toBe(1);
+
+    expect(testPersonalNumberToStudentItem["pn2"].currentZ).toBe(3);
+    expect(
+      testPersonalNumberToStudentItem["pn2"].selectedAdmissionIds
+    ).toContain(1);
+  });
+});
+
+describe("filterActiveStudentsAndSortByRating", () => {
+  it("filter and sorts", () => {
+    const students: IStudent[] = [
+      {
+        id: "s1",
+        personalNumber: "pn1",
+        groupName: "g1",
+        surname: "s",
+        firstname: "f",
+        patronymic: "p",
+        rating: 1,
+        status: "Активный",
+        competitionGroupId: 1,
+      },
+      {
+        id: "s2",
+        personalNumber: "pn2",
+        groupName: "g1",
+        surname: "s",
+        firstname: "f",
+        patronymic: "p",
+        rating: 2,
+        status: "Активный",
+        competitionGroupId: 1,
+      },
+      {
+        id: "s3",
+        personalNumber: "pn3",
+        groupName: "g3",
+        surname: "s",
+        firstname: "f",
+        patronymic: "p",
+        rating: 3,
+        status: "Отчислен",
+        competitionGroupId: 1,
+      },
+    ];
+    const studentData = {
+      ids: ["pn1", "pn2", "pn3"],
+      data: {
+        pn1: students[0],
+        pn2: students[1],
+        pn3: students[2],
+      },
+    };
+    const actualRes = filterActiveStudentsAndSortByRating(
+      studentData.ids,
+      studentData
+    );
+
+    expect(actualRes.length).toBe(2);
+    expect(actualRes[0]).toBe("pn2");
+    expect(actualRes[1]).toBe("pn1");
   });
 });

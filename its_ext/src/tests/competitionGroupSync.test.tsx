@@ -294,6 +294,8 @@ describe("getDiffMessagesBySubgroupReferenceInfo", () => {
       2: currentInfo,
     });
     expect(actualRes["M1"].length).toBe(2);
+    const messages = actualRes["M1"].join().toLocaleLowerCase();
+    expect(messages.includes("подгрупп")).toBeTruthy();
   });
 
   it("returns message on different subgroup limits", () => {
@@ -306,6 +308,9 @@ describe("getDiffMessagesBySubgroupReferenceInfo", () => {
     });
     // console.log(JSON.stringify(actualRes, null, 2));
     expect(actualRes["M1"].length).toBe(1);
+    expect(
+      actualRes["M1"][0].toLocaleLowerCase().includes("лимит")
+    ).toBeTruthy();
   });
 
   it("returns message on different subgroup teachers", () => {
@@ -317,5 +322,8 @@ describe("getDiffMessagesBySubgroupReferenceInfo", () => {
       2: currentInfo,
     });
     expect(actualRes["M1"].length).toBe(1);
+    expect(
+      actualRes["M1"][0].toLocaleLowerCase().includes("преподавател")
+    ).toBeTruthy();
   });
 });

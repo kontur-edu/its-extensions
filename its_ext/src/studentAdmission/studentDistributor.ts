@@ -35,7 +35,7 @@ export interface IDistributionResult {
   mupIdToMupItem: { [key: string]: IMupDistributionItem };
 }
 
-function calcZE(
+export function calcZE(
   admissionIds: number[],
   mupData: IMupData,
   admissionIdToMupId: { [key: number]: string }
@@ -165,6 +165,7 @@ export function findMupIdsWithTestResultRequired(
   return result;
 }
 
+// NOTE: Приоритет задается порядком списка admissions у student item
 export function tryDistributeMupsByStudentRatingAndAdmissionPriority(
   personalNumberToStudentItem: {
     [key: string]: IStudentAdmissionDistributionItem;
@@ -225,11 +226,14 @@ export function addRandomMupsForStudentIfNeeded(
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions,
   admissionInfo: AdmissionInfo
 ) {
+  // console.log("personalNumbersOfActiveStudentsSortedByRating");
+  // console.log(personalNumbersOfActiveStudentsSortedByRating);
   for (const personalNumber of personalNumbersOfActiveStudentsSortedByRating) {
     const sItem = personalNumberToStudentItem[personalNumber];
     const zeLimit = competitionGroupIdToZELimit[sItem.competitionGroupId];
 
     if (sItem.currentZ >= zeLimit) {
+      // console.log("ze overflow");
       continue;
     }
     // Добавить любой МУП чтобы не превысить ZE
@@ -247,11 +251,13 @@ export function addRandomMupsForStudentIfNeeded(
           }
         }
         if (alreadySelected) {
+          // console.log("alreadySelected");
           continue;
         }
 
         if (personalNumberToAdmittedMupNames.hasOwnProperty(personalNumber)) {
           if (personalNumberToAdmittedMupNames[personalNumber].has(mup.name)) {
+            // console.log("already admitted");
             continue;
           }
         }
@@ -259,6 +265,7 @@ export function addRandomMupsForStudentIfNeeded(
         const mupIdToAdmission =
           competitionGroupIdToMupAdmissions[sItem.competitionGroupId];
         if (!mupIdToAdmission.hasOwnProperty(mupId)) {
+          // console.log("no admission");
           continue;
         }
 
@@ -267,6 +274,7 @@ export function addRandomMupsForStudentIfNeeded(
         if (mupIdsWithTestResultRequired.has(mupId)) {
           const admission = admissionInfo[admissionId][personalNumber];
           if (!admission || !admission.testResult) {
+            // console.log("no test result");
             continue;
           }
         }

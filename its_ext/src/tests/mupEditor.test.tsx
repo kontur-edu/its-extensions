@@ -7,6 +7,8 @@ import {
   ISelectedModuleDisciplines,
   IMupData,
   IMup,
+  ISelectionGroupData,
+  ISelectionGroup,
 } from "../common/types";
 import {
   checkIfNeedChangeDates,
@@ -15,6 +17,7 @@ import {
   findCourseToCurrentPeriod,
   checkNeedModuleUpdateForConnectionId,
   checkIfNeedUpdateModules,
+  createDiffForMup,
 } from "../mupUpdater/mupDifference";
 
 const selectionGroupMups: ISelectionGroupMup[] = [
@@ -201,7 +204,6 @@ describe("checkIfCanBeDeleted", () => {
   });
 });
 
-
 describe("findCourseToCurrentPeriod", () => {
   it("finds periods", () => {
     const actualRes = findCourseToCurrentPeriod(2022, 0, periods);
@@ -216,80 +218,87 @@ describe("findCourseToCurrentPeriod", () => {
   });
 });
 
-
 const moduleSelections: IModuleSelection[] = [
   {
-    id: 'mn1',
-    selected: ['ms1']
+    id: "mn1",
+    selected: ["ms1"],
   },
   {
-    id: 'mn2',
-    selected: ['ms1', 'ms2']
+    id: "mn2",
+    selected: ["ms1", "ms2"],
   },
 ];
 
 const selectedModuleDisciplines: ISelectedModuleDisciplines[] = [
   {
-    'mn1': ['ms1'],
-    'mn2': ['ms1', 'ms2']
+    mn1: ["ms1"],
+    mn2: ["ms1", "ms2"],
   },
   {
-    'mn1': ['ms1'],
-    'mn2': ['ms1']
-  }
+    mn1: ["ms1"],
+    mn2: ["ms1"],
+  },
 ];
 
 describe("checkNeedModuleUpdateForConnectionId", () => {
   it("no update on no change", () => {
     const actualRes = checkNeedModuleUpdateForConnectionId(
-      1, moduleSelections, {1: selectedModuleDisciplines[0]});
+      1,
+      moduleSelections,
+      { 1: selectedModuleDisciplines[0] }
+    );
 
     expect(actualRes).toBeFalsy();
   });
 
   it("update on change", () => {
     const actualRes = checkNeedModuleUpdateForConnectionId(
-      1, moduleSelections, {1: selectedModuleDisciplines[1]});
+      1,
+      moduleSelections,
+      { 1: selectedModuleDisciplines[1] }
+    );
 
     expect(actualRes).toBeTruthy();
   });
 });
 
-
 const mups: IMup[] = [
   {
-    id: 'm1',
-    name: 'M1',
-    shortName: 'M1',
+    id: "m1",
+    name: "M1",
+    shortName: "M1",
     ze: 3,
     teacherIds: [],
   },
   {
-    id: 'm2',
-    name: 'M2',
-    shortName: 'M2',
+    id: "m2",
+    name: "M2",
+    shortName: "M2",
     ze: 3,
     teacherIds: [],
-  }
+  },
 ];
 
 const mupData: IMupData = {
-  ids: ['m1', 'm2'],
+  ids: ["m1", "m2"],
   data: {
-    'm1': mups[0],
-    'm2': mups[1],
-  }
+    m1: mups[0],
+    m2: mups[1],
+  },
 };
-
 
 describe("checkIfNeedUpdateModules", () => {
   it("no update on same empty", () => {
-    const emptyModuleSelection = {'mn1': [], 'mn2': []};
+    const emptyModuleSelection = { mn1: [], mn2: [] };
     const actualRes = checkIfNeedUpdateModules(
-      'm1', [1, 2], {3: []}, mupData, selectionGroupMupData,
-      {1: emptyModuleSelection, 2: emptyModuleSelection}
-    )
-    
+      "m1",
+      [1, 2],
+      { 3: [] },
+      mupData,
+      selectionGroupMupData,
+      { 1: emptyModuleSelection, 2: emptyModuleSelection }
+    );
+
     expect(actualRes.length).toBe(2);
     expect(actualRes[0]).toBeFalsy();
     expect(actualRes[1]).toBeFalsy();
@@ -297,10 +306,14 @@ describe("checkIfNeedUpdateModules", () => {
 
   it("no update on same", () => {
     const actualRes = checkIfNeedUpdateModules(
-      'm1', [1, 2], {3: moduleSelections}, mupData, selectionGroupMupData,
-      {1: selectedModuleDisciplines[0], 2: selectedModuleDisciplines[1]}
-    )
-    
+      "m1",
+      [1, 2],
+      { 3: moduleSelections },
+      mupData,
+      selectionGroupMupData,
+      { 1: selectedModuleDisciplines[0], 2: selectedModuleDisciplines[1] }
+    );
+
     expect(actualRes.length).toBe(2);
     expect(actualRes[0]).toBeFalsy();
     expect(actualRes[1]).toBeFalsy();
@@ -308,11 +321,125 @@ describe("checkIfNeedUpdateModules", () => {
 
   it("update on different", () => {
     const actualRes = checkIfNeedUpdateModules(
-      'm2', [2], {3: moduleSelections}, mupData, selectionGroupMupData,
-      {2: selectedModuleDisciplines[1]}
-    )
-    
+      "m2",
+      [2],
+      { 3: moduleSelections },
+      mupData,
+      selectionGroupMupData,
+      { 2: selectedModuleDisciplines[1] }
+    );
+
     expect(actualRes.length).toBe(1);
     expect(actualRes[0]).toBeTruthy();
+  });
+});
+
+const selectionGroups: ISelectionGroup[] = [
+  {
+    id: 1,
+    name: "sg1",
+    year: 2022,
+    semesterId: 0,
+    semesterName: "Осенний",
+    eduSpaceId: 1,
+    unitSum: 6,
+    byPriority: 1,
+    competitionGroupId: null,
+    competitionGroupName: "",
+  },
+  {
+    id: 2,
+    name: "sg2",
+    year: 2022,
+    semesterId: 0,
+    semesterName: "Осенний",
+    eduSpaceId: 1,
+    unitSum: 6,
+    byPriority: 1,
+    competitionGroupId: null,
+    competitionGroupName: "",
+  },
+];
+
+const selectionGroupData: ISelectionGroupData = {
+  ids: [1, 2],
+  data: { 1: selectionGroups[0], 2: selectionGroups[1] },
+};
+
+describe("createDiffForMup", () => {
+  it("creates diff all ok", () => {
+    const actualRes = createDiffForMup(
+      "m1",
+      [1, 2],
+      ["2022-08-29", "2022-09-12"],
+      { 3: moduleSelections },
+      mupData,
+      selectionGroupMupData,
+      selectionGroupData,
+      { m1: periods },
+      { 1: selectedModuleDisciplines[0], 2: selectedModuleDisciplines[0] }
+    );
+
+    expect(actualRes.presentInGroups.length).toBe(2);
+    expect(actualRes.initLimits.length).toBe(2);
+    expect(actualRes.updateSelectedModuleDisciplines.length).toBe(2);
+
+    expect(actualRes.presentInGroups).toContain(1);
+    expect(actualRes.presentInGroups).toContain(2);
+
+    expect(actualRes.initLimits[0]).toBe(30);
+    expect(actualRes.initLimits[1]).toBe(30);
+
+    expect(actualRes.someLoads.length).toBe(3);
+    expect(actualRes.changeDates).toBe(false);
+
+    expect(actualRes.someLoads.length).toBe(3);
+
+    const courses = Object.keys(actualRes.courseToCurrentPeriod);
+    expect(courses.length).toBe(2);
+    expect(courses).toContain("3");
+    expect(courses).toContain("4");
+
+    expect(actualRes.updateSelectedModuleDisciplines[0]).toBe(false);
+    expect(actualRes.updateSelectedModuleDisciplines[1]).toBe(false);
+  });
+
+  it("creates diffs with some updates needed", () => {
+    const testPeriods = [periods[0], periods[2], periods[3]];
+    // console.log("testPeriods");
+    // console.log(JSON.stringify(testPeriods, null, 2));
+
+    const actualRes = createDiffForMup(
+      "m2",
+      [1, 2],
+      ["", "2022-09-11"],
+      { 3: moduleSelections },
+      mupData,
+      selectionGroupMupData,
+      selectionGroupData,
+      { m2: testPeriods },
+      { 1: selectedModuleDisciplines[1], 2: selectedModuleDisciplines[0] }
+    );
+
+    expect(actualRes.presentInGroups.length).toBe(1);
+    expect(actualRes.initLimits.length).toBe(2);
+    expect(actualRes.updateSelectedModuleDisciplines.length).toBe(2);
+
+    expect(actualRes.presentInGroups).toContain(2);
+
+    expect(actualRes.initLimits[0]).toBe(null);
+    expect(actualRes.initLimits[1]).toBe(15);
+
+    expect(actualRes.someLoads.length).toBe(3);
+    expect(actualRes.changeDates).toBe(true);
+
+    expect(actualRes.someLoads.length).toBe(3);
+
+    const courses = Object.keys(actualRes.courseToCurrentPeriod);
+    expect(courses.length).toBe(1);
+    expect(courses).toContain("4");
+
+    expect(actualRes.updateSelectedModuleDisciplines[0]).toBe(true);
+    expect(actualRes.updateSelectedModuleDisciplines[1]).toBe(false);
   });
 });

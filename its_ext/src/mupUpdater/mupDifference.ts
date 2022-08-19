@@ -35,6 +35,9 @@ export function findCourseToCurrentPeriod(
   semesterId: number,
   periods: IPeriod[]
 ): { [key: number]: IPeriod } {
+  // console.log(`findCourseToCurrentPeriod: ${year} ${semesterId}`);
+  // console.log("periods");
+  // console.log(JSON.stringify(periods, null, 2));
   let courseToCurrentPeriod: { [key: number]: IPeriod } = {};
   for (let period of periods) {
     if (period.year === year && period.semesterId === semesterId) {
@@ -55,7 +58,8 @@ export function checkIfNeedChangeDates(
   for (let course in courseToCurrentPeriod) {
     if (
       courseToCurrentPeriod.hasOwnProperty(course) &&
-      courseToCurrentPeriod[course]
+      courseToCurrentPeriod[course] &&
+      (course === "3" || course === "4")
     ) {
       const currentPeriod = courseToCurrentPeriod[course];
 
@@ -78,7 +82,8 @@ export function checkIfCanBeDeleted(courseToCurrentPeriod: {
   for (let course in courseToCurrentPeriod) {
     if (
       courseToCurrentPeriod.hasOwnProperty(course) &&
-      courseToCurrentPeriod[course]
+      courseToCurrentPeriod[course] &&
+      (course === "3" || course === "4")
     ) {
       const currentPeriod = courseToCurrentPeriod[course];
 
@@ -116,8 +121,8 @@ export function checkNeedModuleUpdateForConnectionId(
       return true;
     }
     if (
-      selectedModuleDisciplines[ms.id].sort().join(",") !==
-      ms.selected.sort().join(",")
+      [...selectedModuleDisciplines[ms.id]].sort().join(",") !==
+      [...ms.selected].sort().join(",")
     ) {
       return true;
     }
@@ -135,6 +140,11 @@ export function checkIfNeedUpdateModules(
     [key: number]: ISelectedModuleDisciplines;
   }
 ) {
+  // console.log(`checkIfNeedUpdateModules: ${mupId} ${selectionGroupIds}`);
+  // console.log("zeToModuleSelections");
+  // console.log(JSON.stringify(zeToModuleSelections, null, 2));
+  // console.log("selectionGroupModuleIdToSelectedModuleDisciplines");
+  // console.log(selectionGroupModuleIdToSelectedModuleDisciplines);
   const ze = mupData.data[mupId].ze;
   if (!zeToModuleSelections.hasOwnProperty(ze)) {
     // console.log(`ze: ${ze} not found in zeToModuleSelections`);
@@ -212,7 +222,7 @@ export function createDiffForMup(
   }
 
   let loads: IMupLoad[] = [];
-  const periodsSortedByYear = periods.sort((p1, p2) => p2.year - p1.year);
+  const periodsSortedByYear = [...periods].sort((p1, p2) => p2.year - p1.year);
   for (let period of periodsSortedByYear) {
     if (period.loads.length > 0) {
       loads = period.loads;
@@ -257,7 +267,8 @@ export function updateMupDiffDateInfo(
   for (let course in mupDiff.courseToCurrentPeriod) {
     if (
       mupDiff.courseToCurrentPeriod.hasOwnProperty(course) &&
-      mupDiff.courseToCurrentPeriod[course]
+      mupDiff.courseToCurrentPeriod[course] &&
+      (course === "3" || course === "4")
     ) {
       const period = mupDiff.courseToCurrentPeriod[course];
       if (

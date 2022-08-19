@@ -35,7 +35,7 @@ export interface IDistributionResult {
   mupIdToMupItem: { [key: string]: IMupDistributionItem };
 }
 
-function calcZE(
+export function calcZE(
   admissionIds: number[],
   mupData: IMupData,
   admissionIdToMupId: { [key: number]: string }

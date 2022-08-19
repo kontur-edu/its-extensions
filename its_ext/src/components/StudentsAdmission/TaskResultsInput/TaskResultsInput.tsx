@@ -63,7 +63,7 @@ export function getAdmissionIdsPerCompetitionGroup(
   return competitionGroupIdToAdmissionIds;
 }
 
-function getMupIdsToChoseFrom(
+function getMupIdsToChooseFrom(
   competitionGroupIds: number[],
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions
 ) {
@@ -181,7 +181,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
       );
     }
 
-    const newMupIds = getMupIdsToChoseFrom(
+    const newMupIds = getMupIdsToChooseFrom(
       props.competitionGroupIds,
       context.dataRepository.competitionGroupIdToMupAdmissions
     );

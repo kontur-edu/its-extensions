@@ -446,13 +446,11 @@ describe("createDiffForMup", () => {
   });
 });
 
-
-
 describe("updateMupDiffDateInfo", () => {
   const mupDiff: IMupDiff = {
     presentInGroups: [1, 2],
     initLimits: [0, 20],
-    courseToCurrentPeriod: {4: periods[0], 3: periods[1]},
+    courseToCurrentPeriod: { 4: periods[0], 3: periods[1] },
     someLoads: periods[0].loads,
     changeDates: false,
     canBeDeleted: true,
@@ -460,17 +458,16 @@ describe("updateMupDiffDateInfo", () => {
   };
 
   it("no update on no change", () => {
-    updateMupDiffDateInfo(
-      mupDiff, [periods[0].selectionBegin, periods[0].selectionDeadline]
-    );
+    updateMupDiffDateInfo(mupDiff, [
+      periods[0].selectionBegin,
+      periods[0].selectionDeadline,
+    ]);
 
     expect(mupDiff.changeDates).toBeFalsy();
   });
 
   it("update on change", () => {
-    updateMupDiffDateInfo(
-      mupDiff, ['', '']
-    );
+    updateMupDiffDateInfo(mupDiff, ["", ""]);
 
     expect(mupDiff.changeDates).toBeTruthy();
   });

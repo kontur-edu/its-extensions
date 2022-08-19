@@ -20,7 +20,7 @@ import {
 
 const DEFAULT_SUBGROUP_META_COUNT = 1;
 
-function generateUpdateSubgroupCountToDefaultActions(
+export function generateUpdateSubgroupCountToDefaultActions(
   competitionGroupId: number,
   selectedMupNamesSet: Set<string>,
   competitionGroupToSubgroupMetas: ICompetitionGroupToSubgroupMetas
@@ -56,7 +56,7 @@ function generateUpdateSubgroupCountToDefaultActions(
   return actions;
 }
 
-function checkSubgroupsCreated(
+export function checkSubgroupsCreated(
   competitionGroupId: number,
   mupNameToMupId: { [key: string]: string },
   competitionGroupToSubgroupMetas: ICompetitionGroupToSubgroupMetas,

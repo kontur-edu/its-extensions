@@ -18,10 +18,10 @@ export interface ISubgroupReferenceInfoItem {
 }
 
 export interface ISubgroupReferenceInfo {
+  // mupName
   [key: string]: {
-    // mupName
+    // load
     [key: string]: {
-      // load
       subgroupInfo: ISubgroupReferenceInfoItem[];
       count: number;
     };
@@ -68,9 +68,7 @@ export function createSubgroupReferenceInfoFromCompetitionGroup(
       if (!subgroupReferenceInfo.hasOwnProperty(subgroup.mupName)) continue;
       const loadToInfo = subgroupReferenceInfo[subgroup.mupName];
       if (!loadToInfo.hasOwnProperty(subgroup.load)) continue;
-      if (
-        subgroup.number > 0
-      ) {
+      if (subgroup.number > 0) {
         const sItem: ISubgroupReferenceInfoItem = {
           limit: subgroup.limit,
         };

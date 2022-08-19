@@ -9,6 +9,7 @@ import {
   IMup,
   ISelectionGroupData,
   ISelectionGroup,
+  IMupDiff,
 } from "../common/types";
 import {
   checkIfNeedChangeDates,
@@ -18,6 +19,7 @@ import {
   checkNeedModuleUpdateForConnectionId,
   checkIfNeedUpdateModules,
   createDiffForMup,
+  updateMupDiffDateInfo,
 } from "../mupUpdater/mupDifference";
 
 const selectionGroupMups: ISelectionGroupMup[] = [
@@ -441,5 +443,35 @@ describe("createDiffForMup", () => {
 
     expect(actualRes.updateSelectedModuleDisciplines[0]).toBe(true);
     expect(actualRes.updateSelectedModuleDisciplines[1]).toBe(false);
+  });
+});
+
+
+
+describe("updateMupDiffDateInfo", () => {
+  const mupDiff: IMupDiff = {
+    presentInGroups: [1, 2],
+    initLimits: [0, 20],
+    courseToCurrentPeriod: {4: periods[0], 3: periods[1]},
+    someLoads: periods[0].loads,
+    changeDates: false,
+    canBeDeleted: true,
+    updateSelectedModuleDisciplines: [false, false],
+  };
+
+  it("no update on no change", () => {
+    updateMupDiffDateInfo(
+      mupDiff, [periods[0].selectionBegin, periods[0].selectionDeadline]
+    );
+
+    expect(mupDiff.changeDates).toBeFalsy();
+  });
+
+  it("update on change", () => {
+    updateMupDiffDateInfo(
+      mupDiff, ['', '']
+    );
+
+    expect(mupDiff.changeDates).toBeTruthy();
   });
 });

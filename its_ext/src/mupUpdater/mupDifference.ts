@@ -54,12 +54,12 @@ export function checkIfNeedChangeDates(
 ): boolean {
   let changeDates = false;
 
-  // for (let course of [3, 4]) {
-  for (let course in courseToCurrentPeriod) {
+  for (let course of [3, 4]) {
+    // for (let course in courseToCurrentPeriod) {
     if (
       courseToCurrentPeriod.hasOwnProperty(course) &&
-      courseToCurrentPeriod[course] &&
-      (course === "3" || course === "4")
+      courseToCurrentPeriod[course]
+      // (course === "3" || course === "4")
     ) {
       const currentPeriod = courseToCurrentPeriod[course];
 
@@ -79,11 +79,12 @@ export function checkIfCanBeDeleted(courseToCurrentPeriod: {
 }): boolean {
   let canBeDeleted = true;
 
-  for (let course in courseToCurrentPeriod) {
+  for (let course of [3, 4]) {
+    // for (let course in courseToCurrentPeriod) {
     if (
       courseToCurrentPeriod.hasOwnProperty(course) &&
-      courseToCurrentPeriod[course] &&
-      (course === "3" || course === "4")
+      courseToCurrentPeriod[course]
+      // (course === "3" || course === "4")
     ) {
       const currentPeriod = courseToCurrentPeriod[course];
 
@@ -264,11 +265,12 @@ export function updateMupDiffDateInfo(
   dates: [string, string]
 ) {
   let needToChangeDates = false;
-  for (let course in mupDiff.courseToCurrentPeriod) {
+  for (let course of [3, 4]) {
+    // for (let course in mupDiff.courseToCurrentPeriod) {
     if (
       mupDiff.courseToCurrentPeriod.hasOwnProperty(course) &&
-      mupDiff.courseToCurrentPeriod[course] &&
-      (course === "3" || course === "4")
+      mupDiff.courseToCurrentPeriod[course]
+      // (course === "3" || course === "4")
     ) {
       const period = mupDiff.courseToCurrentPeriod[course];
       if (

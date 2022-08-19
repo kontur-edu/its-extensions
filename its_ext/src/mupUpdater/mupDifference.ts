@@ -125,7 +125,7 @@ export function checkNeedModuleUpdateForConnectionId(
   return false;
 }
 
-function checkIfNeedUpdateModules(
+export function checkIfNeedUpdateModules(
   mupId: string,
   selectionGroupIds: number[],
   zeToModuleSelections: { [key: number]: IModuleSelection[] },

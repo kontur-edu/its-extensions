@@ -5,6 +5,8 @@ import {
   IMupLoad,
   IModuleSelection,
   ISelectedModuleDisciplines,
+  IMupData,
+  IMup,
 } from "../common/types";
 import {
   checkIfNeedChangeDates,
@@ -12,6 +14,7 @@ import {
   checkIfCanBeDeleted,
   findCourseToCurrentPeriod,
   checkNeedModuleUpdateForConnectionId,
+  checkIfNeedUpdateModules,
 } from "../mupUpdater/mupDifference";
 
 const selectionGroupMups: ISelectionGroupMup[] = [
@@ -28,7 +31,7 @@ const selectionGroupMups: ISelectionGroupMup[] = [
 ];
 
 const selectionGroupMupData: ISelectionGroupToMupsData = {
-  ids: [1],
+  ids: [1, 2],
   data: {
     1: {
       ids: ["m1"],
@@ -249,5 +252,67 @@ describe("checkNeedModuleUpdateForConnectionId", () => {
       1, moduleSelections, {1: selectedModuleDisciplines[1]});
 
     expect(actualRes).toBeTruthy();
+  });
+});
+
+
+const mups: IMup[] = [
+  {
+    id: 'm1',
+    name: 'M1',
+    shortName: 'M1',
+    ze: 3,
+    teacherIds: [],
+  },
+  {
+    id: 'm2',
+    name: 'M2',
+    shortName: 'M2',
+    ze: 3,
+    teacherIds: [],
+  }
+];
+
+const mupData: IMupData = {
+  ids: ['m1', 'm2'],
+  data: {
+    'm1': mups[0],
+    'm2': mups[1],
+  }
+};
+
+
+describe("checkIfNeedUpdateModules", () => {
+  it("no update on same empty", () => {
+    const emptyModuleSelection = {'mn1': [], 'mn2': []};
+    const actualRes = checkIfNeedUpdateModules(
+      'm1', [1, 2], {3: []}, mupData, selectionGroupMupData,
+      {1: emptyModuleSelection, 2: emptyModuleSelection}
+    )
+    
+    expect(actualRes.length).toBe(2);
+    expect(actualRes[0]).toBeFalsy();
+    expect(actualRes[1]).toBeFalsy();
+  });
+
+  it("no update on same", () => {
+    const actualRes = checkIfNeedUpdateModules(
+      'm1', [1, 2], {3: moduleSelections}, mupData, selectionGroupMupData,
+      {1: selectedModuleDisciplines[0], 2: selectedModuleDisciplines[1]}
+    )
+    
+    expect(actualRes.length).toBe(2);
+    expect(actualRes[0]).toBeFalsy();
+    expect(actualRes[1]).toBeFalsy();
+  });
+
+  it("update on different", () => {
+    const actualRes = checkIfNeedUpdateModules(
+      'm2', [2], {3: moduleSelections}, mupData, selectionGroupMupData,
+      {2: selectedModuleDisciplines[1]}
+    )
+    
+    expect(actualRes.length).toBe(1);
+    expect(actualRes[0]).toBeTruthy();
   });
 });

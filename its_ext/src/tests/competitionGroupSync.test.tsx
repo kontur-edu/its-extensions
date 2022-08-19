@@ -9,6 +9,7 @@ import {
   ISubgroupReferenceInfo,
 } from "../components/SemesterPreparation/CompetitionGroupSync/utils";
 import { UpdateSubgroupAction } from "../subgroupUpdater/actions";
+import { cloneObject } from "../utils/helpers";
 
 const subgroupMetas: ISubgroupMeta[] = [
   {
@@ -272,9 +273,7 @@ describe("generateUpdateSubgroupActions", () => {
   });
 });
 
-function cloneObject<T>(obj: T) {
-  return JSON.parse(JSON.stringify(obj)) as T;
-}
+
 describe("getDiffMessagesBySubgroupReferenceInfo", () => {
   it("returns no messages same", () => {
     const actualRes = getDiffMessagesBySubgroupReferenceInfo(1, [2], {

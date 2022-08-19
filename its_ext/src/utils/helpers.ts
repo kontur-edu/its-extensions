@@ -209,9 +209,12 @@ export function isLocalAddress(ipAddress: string) {
 }
 
 export function checkObjectKeysAreSame(lhs: object, rhs: object) {
-  const tmp = {...lhs, ...rhs};
+  const tmp = { ...lhs, ...rhs };
   const totalKeyCount = Object.keys(tmp).length;
-  if (Object.keys(lhs).length !== totalKeyCount || Object.keys(rhs).length !== totalKeyCount) {
+  if (
+    Object.keys(lhs).length !== totalKeyCount ||
+    Object.keys(rhs).length !== totalKeyCount
+  ) {
     return false;
   }
   return true;
@@ -226,4 +229,8 @@ export function checkObjectKeysAreSame(lhs: object, rhs: object) {
   //   }
   // }
   // return true;
+}
+
+export function cloneObject<T>(obj: T) {
+  return JSON.parse(JSON.stringify(obj)) as T;
 }

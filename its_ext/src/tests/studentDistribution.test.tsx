@@ -14,6 +14,7 @@ import {
   tryDistributeMupsByStudentRatingAndAdmissionPriority,
   IMupDistributionItem,
 } from "../studentAdmission/studentDistributor";
+import { cloneObject } from "../utils/helpers";
 
 const mups: IMup[] = [
   {
@@ -253,76 +254,81 @@ describe("findMupIdsWithTestResultRequired", () => {
 });
 
 describe("tryDistributeMupsByStudentRatingAndAdmissionPriority", () => {
-  it("distributes", () => {
-    const personalNumberToStudentItem: {
-      [key: string]: IStudentAdmissionDistributionItem;
-    } = {
+  const personalNumberToStudentItem: {
+    [key: string]: IStudentAdmissionDistributionItem;
+  } = {
+    pn1: {
+      currentZ: 0,
+      admissionIds: [1, 2],
+      selectedAdmissionIds: [],
+      competitionGroupId: 1,
+    },
+    pn2: {
+      currentZ: 0,
+      admissionIds: [1, 2],
+      selectedAdmissionIds: [],
+      competitionGroupId: 1,
+    },
+  };
+  const mupIdToMupItem: { [key: string]: IMupDistributionItem } = {
+    m1: {
+      limit: 2,
+      count: 0,
+    },
+    m2: {
+      limit: 2,
+      count: 0,
+    },
+  };
+  const mupIdsWithTestResultRequired: Set<string> = new Set<string>();
+  const competitionGroupIdToZELimit: { [key: number]: number } = {
+    1: 6,
+  };
+  const personalNumbersSortedByRating: string[] = ["pn1", "pn2"];
+  const admissionIdToMupId: { [key: number]: string } = {
+    1: "m1",
+    2: "m2",
+  };
+  const admissionInfo: AdmissionInfo = {
+    1: {
       pn1: {
-        currentZ: 0,
-        admissionIds: [1, 2],
-        selectedAdmissionIds: [],
-        competitionGroupId: 1,
+        admissionId: 1,
+        priority: 1,
+        testResult: null,
+        status: 0,
       },
       pn2: {
-        currentZ: 0,
-        admissionIds: [1, 2],
-        selectedAdmissionIds: [],
-        competitionGroupId: 1,
+        admissionId: 1,
+        priority: 1,
+        testResult: null,
+        status: 0,
       },
-    };
-    const mupIdToMupItem: { [key: string]: IMupDistributionItem } = {
-      m1: {
-        limit: 2,
-        count: 0,
+    },
+    2: {
+      pn1: {
+        admissionId: 2,
+        priority: 1,
+        testResult: null,
+        status: 0,
       },
-      m2: {
-        limit: 2,
-        count: 0,
+      pn2: {
+        admissionId: 2,
+        priority: 1,
+        testResult: null,
+        status: 0,
       },
-    };
-    const mupIdsWithTestResultRequired: Set<string> = new Set<string>();
-    const competitionGroupIdToZELimit: { [key: number]: number } = {
-      1: 6,
-    };
-    const personalNumbersSortedByRating: string[] = ["pn1", "pn2"];
-    const admissionIdToMupId: { [key: number]: string } = {
-      1: "m1",
-      2: "m2",
-    };
-    const admissionInfo: AdmissionInfo = {
-      1: {
-        pn1: {
-          admissionId: 1,
-          priority: 1,
-          testResult: null,
-          status: 0,
-        },
-        pn2: {
-          admissionId: 1,
-          priority: 1,
-          testResult: null,
-          status: 0,
-        },
-      },
-      2: {
-        pn1: {
-          admissionId: 2,
-          priority: 1,
-          testResult: null,
-          status: 0,
-        },
-        pn2: {
-          admissionId: 2,
-          priority: 1,
-          testResult: null,
-          status: 0,
-        },
-      },
-    };
+    },
+  };
+
+  it("distributes", () => {
+    const testPersonalNumberToStudentItem = cloneObject(
+      personalNumberToStudentItem
+    );
+    const testMupIdToMupItem = cloneObject(mupIdToMupItem);
 
     tryDistributeMupsByStudentRatingAndAdmissionPriority(
-      personalNumberToStudentItem,
-      mupIdToMupItem,
+      testPersonalNumberToStudentItem,
+      testMupIdToMupItem,
       mupIdsWithTestResultRequired,
       competitionGroupIdToZELimit,
       personalNumbersSortedByRating,
@@ -331,20 +337,173 @@ describe("tryDistributeMupsByStudentRatingAndAdmissionPriority", () => {
       admissionInfo
     );
 
-    console.log(JSON.stringify(personalNumberToStudentItem, null, 2));
-    console.log(JSON.stringify(mupIdToMupItem, null, 2));
-
     for (const pn of ["pn1", "pn2"]) {
-      expect(personalNumberToStudentItem[pn].currentZ).toBe(6);
-      expect(personalNumberToStudentItem[pn].admissionIds).toContain(1);
-      expect(personalNumberToStudentItem[pn].admissionIds).toContain(2);
-      expect(personalNumberToStudentItem[pn].selectedAdmissionIds).toContain(1);
-      expect(personalNumberToStudentItem[pn].selectedAdmissionIds).toContain(2);
+      expect(testPersonalNumberToStudentItem[pn].currentZ).toBe(6);
+      expect(testPersonalNumberToStudentItem[pn].admissionIds).toContain(1);
+      expect(testPersonalNumberToStudentItem[pn].admissionIds).toContain(2);
+      expect(
+        testPersonalNumberToStudentItem[pn].selectedAdmissionIds
+      ).toContain(1);
+      expect(
+        testPersonalNumberToStudentItem[pn].selectedAdmissionIds
+      ).toContain(2);
     }
 
     for (const mId of ["m1", "m2"]) {
-      expect(mupIdToMupItem[mId].count).toBe(2);
-      expect(mupIdToMupItem[mId].limit).toBe(2);
+      expect(testMupIdToMupItem[mId].count).toBe(2);
+      expect(testMupIdToMupItem[mId].limit).toBe(2);
     }
+  });
+
+  it("takes into account mup limits", () => {
+    const testPersonalNumberToStudentItem = cloneObject(
+      personalNumberToStudentItem
+    );
+    const testMupIdToMupItem = cloneObject(mupIdToMupItem);
+    testMupIdToMupItem["m1"].limit = 1;
+
+    tryDistributeMupsByStudentRatingAndAdmissionPriority(
+      testPersonalNumberToStudentItem,
+      testMupIdToMupItem,
+      mupIdsWithTestResultRequired,
+      competitionGroupIdToZELimit,
+      personalNumbersSortedByRating,
+      mupData,
+      admissionIdToMupId,
+      admissionInfo
+    );
+
+    const pn1 = "pn1";
+    const pn2 = "pn2";
+
+    expect(testPersonalNumberToStudentItem[pn1].currentZ).toBe(6);
+    expect(testPersonalNumberToStudentItem[pn1].selectedAdmissionIds).toContain(
+      1
+    );
+    expect(testPersonalNumberToStudentItem[pn1].selectedAdmissionIds).toContain(
+      2
+    );
+
+    expect(testPersonalNumberToStudentItem[pn2].currentZ).toBe(3);
+    expect(
+      testPersonalNumberToStudentItem[pn2].selectedAdmissionIds.length
+    ).toBe(1);
+    expect(testPersonalNumberToStudentItem[pn2].selectedAdmissionIds).toContain(
+      2
+    );
+  });
+
+  it("takes into account student ze", () => {
+    const testPersonalNumberToStudentItem = cloneObject(
+      personalNumberToStudentItem
+    );
+    testPersonalNumberToStudentItem["pn1"].currentZ = 3;
+    const testMupIdToMupItem = cloneObject(mupIdToMupItem);
+
+    tryDistributeMupsByStudentRatingAndAdmissionPriority(
+      testPersonalNumberToStudentItem,
+      testMupIdToMupItem,
+      mupIdsWithTestResultRequired,
+      competitionGroupIdToZELimit,
+      personalNumbersSortedByRating,
+      mupData,
+      admissionIdToMupId,
+      admissionInfo
+    );
+
+    const pn1 = "pn1";
+    const pn2 = "pn2";
+
+    expect(testPersonalNumberToStudentItem[pn1].currentZ).toBe(6);
+    expect(testPersonalNumberToStudentItem[pn1].selectedAdmissionIds).toContain(
+      1
+    );
+
+    expect(testPersonalNumberToStudentItem[pn2].currentZ).toBe(6);
+    expect(
+      testPersonalNumberToStudentItem[pn2].selectedAdmissionIds.length
+    ).toBe(2);
+    expect(testPersonalNumberToStudentItem[pn2].selectedAdmissionIds).toContain(
+      1
+    );
+    expect(testPersonalNumberToStudentItem[pn2].selectedAdmissionIds).toContain(
+      2
+    );
+
+    expect(testMupIdToMupItem["m1"].count).toBe(2);
+    expect(testMupIdToMupItem["m2"].count).toBe(1);
+  });
+
+  it("takes into account student order", () => {
+    const testPersonalNumberToStudentItem = cloneObject(
+      personalNumberToStudentItem
+    );
+    const testMupIdToMupItem = cloneObject(mupIdToMupItem);
+    testMupIdToMupItem["m1"].limit = 1;
+
+    tryDistributeMupsByStudentRatingAndAdmissionPriority(
+      testPersonalNumberToStudentItem,
+      testMupIdToMupItem,
+      mupIdsWithTestResultRequired,
+      competitionGroupIdToZELimit,
+      ["pn2", "pn1"],
+      mupData,
+      admissionIdToMupId,
+      admissionInfo
+    );
+
+    const pn1 = "pn1";
+    const pn2 = "pn2";
+
+    expect(testPersonalNumberToStudentItem[pn2].currentZ).toBe(6);
+    expect(testPersonalNumberToStudentItem[pn1].currentZ).toBe(3);
+    expect(
+      testPersonalNumberToStudentItem[pn2].selectedAdmissionIds.length
+    ).toBe(2);
+    expect(
+      testPersonalNumberToStudentItem[pn1].selectedAdmissionIds.length
+    ).toBe(1);
+  });
+
+  it("takes into account priority", () => {
+    const testPersonalNumberToStudentItem = cloneObject(
+      personalNumberToStudentItem
+    );
+    testPersonalNumberToStudentItem["pn1"].admissionIds = [2, 1];
+    testPersonalNumberToStudentItem["pn2"].admissionIds = [1, 2];
+    const testMupIdToMupItem = cloneObject(mupIdToMupItem);
+    testMupIdToMupItem["m1"].limit = 1;
+    testMupIdToMupItem["m2"].limit = 1;
+
+    tryDistributeMupsByStudentRatingAndAdmissionPriority(
+      testPersonalNumberToStudentItem,
+      testMupIdToMupItem,
+      mupIdsWithTestResultRequired,
+      { 1: 3 },
+      personalNumbersSortedByRating,
+      mupData,
+      admissionIdToMupId,
+      admissionInfo
+    );
+
+    console.log(JSON.stringify(testPersonalNumberToStudentItem, null, 2));
+    console.log(JSON.stringify(testMupIdToMupItem, null, 2));
+    const pn1 = "pn1";
+    const pn2 = "pn2";
+
+    expect(testPersonalNumberToStudentItem[pn1].currentZ).toBe(3);
+    expect(testPersonalNumberToStudentItem[pn2].currentZ).toBe(3);
+    expect(
+      testPersonalNumberToStudentItem[pn1].selectedAdmissionIds.length
+    ).toBe(1);
+    expect(
+      testPersonalNumberToStudentItem[pn2].selectedAdmissionIds.length
+    ).toBe(1);
+    expect(testPersonalNumberToStudentItem[pn1].selectedAdmissionIds).toContain(
+      2
+    );
+    expect(testPersonalNumberToStudentItem[pn2].selectedAdmissionIds).toContain(
+      1
+    );
   });
 });

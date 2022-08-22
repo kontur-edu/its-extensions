@@ -283,8 +283,8 @@ export interface IStudentSubgroupMembership {
 }
 
 export type MupToLoadToSubgroupMembership = {
+  // mupName
   [key: string]: {
-    // mupName
     [key: string]: string[][]; // loadName => [['personalNumber', 'personalNumber'], ...]
   };
 };

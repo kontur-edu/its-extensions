@@ -17,6 +17,7 @@ export enum ActionType {
   UpdateSubgroup,
   UpdateTaskResult,
   UpdateStudentAdmission,
+  UpdateMembership,
 }
 
 export function isRefreshAction(action: ITSAction) {

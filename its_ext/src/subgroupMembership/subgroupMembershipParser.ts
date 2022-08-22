@@ -31,7 +31,7 @@ export function parseSubgroupMembershipFromText(
   return obj;
 }
 
-function checkSubgroupMetaCountsAreSame(
+export function checkSubgroupMetaCountsAreSame(
   mupName: string,
   load: string,
   competitionGroupIds: number[],

@@ -6,6 +6,8 @@ import {
   ISubgoupDiffInfo,
   IStudentData,
   IStudent,
+  IStudentSubgroupMembership,
+  ICompetitionGroupToSubgroupMetas,
 } from "../common/types";
 import {
   checkSubgroupMetaCountsAreSame,
@@ -15,6 +17,12 @@ import {
   trySubstituteMupShortNamesWithFullNames,
   validateSubgroupMembership,
 } from "../subgroupMembership/subgroupMembershipParser";
+import {
+  createSubgroupMembershipActions,
+  createSubgroupMembershipActionsForOneGroupPerLoadDistribution,
+} from "../subgroupMembership/actionCreator";
+import { ActionType } from "../common/actions";
+import { UpdateMembershipAction } from "../subgroupMembership/actions";
 
 const subgroupMetas: ISubgroupMeta[] = [
   {
@@ -369,5 +377,199 @@ describe("createMupToLoadToSubgroupMembership", () => {
     expect(actualRes["M1"]["load1"][1]).toContain("pn2");
     expect(actualRes["M1"]["load2"][0]).toContain("pn1");
     expect(actualRes["M1"]["load2"][0]).toContain("pn2");
+  });
+});
+
+describe("createSubgroupMembershipActionsForOneGroupPerLoadDistribution", () => {
+  it("adds student to subgroups with one group", () => {
+    const loadToMeta: { [key: string]: ISubgroupMeta } = {
+      load1: { ...subgroupMetas[0], load: "load1" },
+      load2: { ...subgroupMetas[0], load: "load2" },
+    };
+    const cgIdToLoadNumberToSubgroupIds: {
+      [key: number]: { [key: string]: number };
+    } = {
+      1: {
+        load1_1: 1,
+        load2_1: 2,
+      },
+      2: {
+        load1_1: 3,
+        load2_1: 4,
+      },
+    };
+    const testSubgroupDiffInfo: ISubgoupDiffInfo = {
+      subgroupAndMetaAreSameDiffs: {},
+      subgroupDiffs: {
+        M1: cgIdToLoadNumberToSubgroupIds,
+      },
+      metaDiffs: {
+        M1: {
+          1: loadToMeta,
+          2: loadToMeta,
+        },
+      },
+    };
+    const subgroupIdToStudentSubgroupMembership: {
+      [key: number]: IStudentSubgroupMembership[];
+    } = {
+      1: [{ studentId: "s1", included: false }],
+      2: [{ studentId: "s1", included: false }],
+      3: [{ studentId: "s2", included: false }],
+      4: [{ studentId: "s2", included: false }],
+    };
+    const competitionGroupToSubgroupMetas: ICompetitionGroupToSubgroupMetas = {
+      1: [loadToMeta["load1"], loadToMeta["load2"]],
+      2: [loadToMeta["load1"], loadToMeta["load2"]],
+    };
+    const actualRes =
+      createSubgroupMembershipActionsForOneGroupPerLoadDistribution(
+        [1, 2],
+        testSubgroupDiffInfo,
+        competitionGroupToSubgroupMetas,
+        subgroupIdToStudentSubgroupMembership
+      );
+    // console.log(JSON.stringify(actualRes));
+    expect(actualRes.length).toBe(4);
+    const subgroupIds = [];
+    const studentIds = [];
+    for (const action of actualRes) {
+      expect(action.actionType).toBe(ActionType.UpdateMembership);
+      const updateMembershipAction = action as UpdateMembershipAction;
+      expect(updateMembershipAction.included).toBe(true);
+      subgroupIds.push(updateMembershipAction.subgroupId);
+      studentIds.push(updateMembershipAction.studentId);
+    }
+    expect(subgroupIds).toContain(1);
+    expect(subgroupIds).toContain(2);
+    expect(subgroupIds).toContain(3);
+    expect(subgroupIds).toContain(4);
+    expect(studentIds).toContain("s1");
+    expect(studentIds).toContain("s2");
+  });
+
+  it("no actions if no loads with one group", () => {
+    const loadToMeta: { [key: string]: ISubgroupMeta } = {
+      load1: { ...subgroupMetas[0], load: "load1", count: 2 },
+    };
+    const cgIdToLoadNumberToSubgroupIds: {
+      [key: number]: { [key: string]: number };
+    } = {
+      1: {
+        load1_1: 1,
+        load1_2: 2,
+      },
+      2: {
+        load1_1: 3,
+        load1_2: 4,
+      },
+    };
+    const testSubgroupDiffInfo: ISubgoupDiffInfo = {
+      subgroupAndMetaAreSameDiffs: {},
+      subgroupDiffs: {
+        M1: cgIdToLoadNumberToSubgroupIds,
+      },
+      metaDiffs: {
+        M1: {
+          1: loadToMeta,
+          2: loadToMeta,
+        },
+      },
+    };
+    const subgroupIdToStudentSubgroupMembership: {
+      [key: number]: IStudentSubgroupMembership[];
+    } = {
+      1: [{ studentId: "s1", included: false }],
+      2: [{ studentId: "s1", included: false }],
+      3: [{ studentId: "s2", included: false }],
+      4: [{ studentId: "s2", included: false }],
+    };
+    const competitionGroupToSubgroupMetas: ICompetitionGroupToSubgroupMetas = {
+      1: [loadToMeta["load1"]],
+      2: [loadToMeta["load1"]],
+    };
+    const actualRes =
+      createSubgroupMembershipActionsForOneGroupPerLoadDistribution(
+        [1, 2],
+        testSubgroupDiffInfo,
+        competitionGroupToSubgroupMetas,
+        subgroupIdToStudentSubgroupMembership
+      );
+    expect(actualRes.length).toBe(0);
+  });
+});
+
+describe("createSubgroupMembershipActions", () => {
+  it("creates actions", () => {
+    const loadToMeta: { [key: string]: ISubgroupMeta } = {
+      load1: { ...subgroupMetas[0], load: "load1", count: 2 },
+    };
+    const cgIdToLoadNumberToSubgroupIds: {
+      [key: number]: { [key: string]: number };
+    } = {
+      1: {
+        load1_1: 1,
+        load1_2: 2,
+      },
+      2: {
+        load1_1: 3,
+        load1_2: 4,
+      },
+    };
+    const testSubgroupDiffInfo: ISubgoupDiffInfo = {
+      subgroupAndMetaAreSameDiffs: {},
+      subgroupDiffs: {
+        M1: cgIdToLoadNumberToSubgroupIds,
+      },
+      metaDiffs: {
+        M1: {
+          1: loadToMeta,
+          2: loadToMeta,
+        },
+      },
+    };
+    const subgroupIdToStudentSubgroupMembership: {
+      [key: number]: IStudentSubgroupMembership[];
+    } = {
+      1: [{ studentId: "s1", included: false }],
+      2: [{ studentId: "s1", included: false }],
+      3: [{ studentId: "s2", included: false }],
+      4: [{ studentId: "s2", included: false }],
+    };
+
+    const studentData: IStudentData = {
+      ids: ["pn1", "pn2"],
+      data: {
+        pn1: students[0],
+        pn2: {
+          ...students[0],
+          personalNumber: "pn2",
+          competitionGroupId: 2,
+          id: "s2",
+        },
+      },
+    };
+
+    const actualRes = createSubgroupMembershipActions(
+      testSubgroupDiffInfo,
+      { M1: { load1: [["pn1"], ["pn2"]] } },
+      subgroupIdToStudentSubgroupMembership,
+      studentData
+    );
+
+    expect(actualRes.length).toBe(2);
+    const subgroupIds = [];
+    const studentIds = [];
+    for (const action of actualRes) {
+      expect(action.actionType).toBe(ActionType.UpdateMembership);
+      const updateMembershipAction = action as UpdateMembershipAction;
+      expect(updateMembershipAction.included).toBe(true);
+      subgroupIds.push(updateMembershipAction.subgroupId);
+      studentIds.push(updateMembershipAction.studentId);
+    }
+    expect(subgroupIds).toContain(1);
+    expect(subgroupIds).toContain(4);
+    expect(studentIds).toContain("s1");
+    expect(studentIds).toContain("s2");
   });
 });

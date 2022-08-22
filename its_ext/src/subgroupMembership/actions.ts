@@ -9,7 +9,7 @@ export class UpdateMembershipAction extends ITSAction {
     public subgroupId: number,
     public included: boolean
   ) {
-    super(ActionType.UpdateTaskResult);
+    super(ActionType.UpdateMembership);
   }
 
   getMessage(): string {

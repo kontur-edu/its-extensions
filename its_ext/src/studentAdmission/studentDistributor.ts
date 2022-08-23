@@ -4,9 +4,11 @@
 import {
   AdmissionInfo,
   CompetitionGroupIdToMupAdmissions,
+  IMup,
   IMupData,
   IStudent,
   IStudentData,
+  MupIdToAdmission,
 } from "../common/types";
 
 function compareByRating(lhs: IStudent, rhs: IStudent) {
@@ -165,6 +167,203 @@ export function findMupIdsWithTestResultRequired(
   return result;
 }
 
+export interface IStudentDistributionAdmissionAlgoInfo {
+  admissionId: number;
+  mupId: string;
+  testPassed: boolean;
+  priority: number;
+  admitted: boolean;
+}
+
+export interface IMupAlgoInfo {
+  // admissionId: number;
+  ze: number;
+  limit: number;
+}
+
+export interface IStudentDistributionAlgoInfo {
+  personalNumber: string;
+  rating: number;
+  competitionGroupId: number;
+  admissions: IStudentDistributionAdmissionAlgoInfo[];
+  mupIdsAdmittedEarlier: Set<string>; // NOTE: mupIds
+}
+
+export interface IPersonalNumberToAdmissionIds {
+  [key: string]: Set<number>;
+}
+
+interface IMupAlgoItem {
+  count: number;
+}
+
+interface IStudentAlgoItem {
+  ze: number;
+}
+
+export function createStudentDistributionAlgoInfos(
+  personalNumbers: number[],
+  studentData: IStudentData,
+  personalNumberToAdmittedMupNames: { [key: string]: Set<string> },
+  admissionInfo: AdmissionInfo
+): IStudentDistributionAlgoInfo[] {
+  const result: IStudentDistributionAlgoInfo[] = [];
+
+  for (const pn of personalNumbers) {
+    const student = studentData.data[pn];
+    if (!student.rating) {
+      continue;
+    }
+    const mupIdsAdmittedEarlier =
+      personalNumberToAdmittedMupNames.hasOwnProperty(pn)
+        ? personalNumberToAdmittedMupNames[pn]
+        : new Set<string>();
+    const studentDistributionAlgoInfo: IStudentDistributionAlgoInfo = {
+      personalNumber: student.personalNumber,
+      rating: student.rating,
+      competitionGroupId: student.competitionGroupId,
+      admissions: [],
+      mupIdsAdmittedEarlier: mupIdsAdmittedEarlier,
+    };
+    for (const admissionId in admissionInfo) {
+      if (!admissionInfo[admissionId].hasOwnProperty(pn)) {
+        continue;
+      }
+      const admission = admissionInfo[admissionId][pn];
+      if (admission && admission.priority !== null) {
+        const studentDistributionAdmissionAlgoInfo: IStudentDistributionAdmissionAlgoInfo =
+          {
+            admissionId: Number(admissionId),
+            mupId: "",
+            testPassed:
+              admission.testResult !== null && admission.testResult > 0,
+            priority: admission.priority,
+            admitted: admission.status === 1,
+          };
+        studentDistributionAlgoInfo.admissions.push(
+          studentDistributionAdmissionAlgoInfo
+        );
+      }
+    }
+  }
+
+  return result;
+}
+
+export function createMupIdToMupAlgoInfo(
+  mupIds: string[],
+  mupIdToAdmissionMeta: MupIdToAdmission,
+  mupData: IMupData
+): { [key: string]: IMupAlgoInfo } {
+  const result: { [key: string]: IMupAlgoInfo } = {};
+  for (const mupId of mupIds) {
+    const admissionMeta = mupIdToAdmissionMeta[mupId];
+    const mup = mupData.data[mupId];
+    const mupAlgoInfo: IMupAlgoInfo = {
+      ze: mup.ze,
+      limit: admissionMeta.limit, // FIXME: limit is the same for both groups
+    }
+    result[mupId] = mupAlgoInfo;
+  }
+
+  return result;
+}
+
+export function createStudentDistribution(
+  studentDistributionAlgoInfos: IStudentDistributionAlgoInfo[],
+  mupIdToMupAlgoInfo: { [key: string]: IMupAlgoInfo },
+  competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions,
+  zeLimit: number
+) {
+  const mupIdToMupAlgoItem: {
+    [key: string]: IMupAlgoItem;
+  } = {};
+  for (const mupId in mupIdToMupAlgoInfo) {
+    mupIdToMupAlgoItem[mupId] = {
+      count: 0,
+    };
+  }
+  const personalNumberToStudentAlgoItem: { [key: string]: IStudentAlgoItem } =
+    {};
+  // FILL initial mup and student algo items
+  for (const studentAlgInfo of studentDistributionAlgoInfos) {
+    personalNumberToStudentAlgoItem[studentAlgInfo.personalNumber] = {
+      ze: 0,
+    };
+    for (const admissionAlgInfo of studentAlgInfo.admissions) {
+      if (admissionAlgInfo.admitted) {
+        const mupInfo = mupIdToMupAlgoInfo[admissionAlgInfo.mupId];
+        personalNumberToStudentAlgoItem[studentAlgInfo.personalNumber].ze +=
+          mupInfo.ze;
+        mupIdToMupAlgoItem[admissionAlgInfo.mupId].count++;
+      }
+    }
+  }
+
+  // distribute using priorities
+  const result: IPersonalNumberToAdmissionIds = {};
+  const studentDistributionAlgoInfosSortedByRating =
+    studentDistributionAlgoInfos.sort((s) => -s.rating);
+  for (const studentAlgInfo of studentDistributionAlgoInfosSortedByRating) {
+    result[studentAlgInfo.personalNumber] = new Set<number>();
+    const studentItem =
+      personalNumberToStudentAlgoItem[studentAlgInfo.personalNumber];
+    for (const admissionAlgInfo of studentAlgInfo.admissions) {
+      if (studentItem.ze >= zeLimit) {
+        break;
+      }
+      if (admissionAlgInfo.admitted) {
+        result[studentAlgInfo.personalNumber].add(admissionAlgInfo.admissionId);
+        continue;
+      }
+      const mupItem = mupIdToMupAlgoItem[admissionAlgInfo.mupId];
+      const mupInfo = mupIdToMupAlgoInfo[admissionAlgInfo.mupId];
+      if (mupItem.count > mupInfo.limit) {
+        continue;
+      }
+
+      personalNumberToStudentAlgoItem[studentAlgInfo.personalNumber].ze +=
+        mupInfo.ze;
+      mupIdToMupAlgoItem[admissionAlgInfo.mupId].count++;
+    }
+  }
+
+  // add random mups if needed
+  for (const studentAlgInfo of studentDistributionAlgoInfosSortedByRating) {
+    const studentItem =
+      personalNumberToStudentAlgoItem[studentAlgInfo.personalNumber];
+    if (studentItem.ze >= zeLimit) {
+      continue;
+    }
+    for (const mupId in mupIdToMupAlgoInfo) {
+      if (studentAlgInfo.mupIdsAdmittedEarlier.has(mupId)) {
+        continue;
+      }
+      const mupInfo = mupIdToMupAlgoInfo[mupId];
+
+      const mupIdToAdmission =
+        competitionGroupIdToMupAdmissions[studentAlgInfo.competitionGroupId];
+      if (!mupIdToAdmission.hasOwnProperty(mupId)) {
+        // console.log("no admission");
+        continue;
+      }
+
+      const admissionId = mupIdToAdmission[mupId].admissionsId;
+
+      if (result[studentAlgInfo.personalNumber].has(admissionId)) {
+        continue;
+      }
+      const mupItem = mupIdToMupAlgoItem[mupId];
+      if (mupItem.count < mupInfo.limit)
+        personalNumberToStudentAlgoItem[studentAlgInfo.personalNumber].ze +=
+          mupInfo.ze;
+      mupItem.count++;
+    }
+  }
+
+  return result;
+}
+
 // NOTE: Приоритет задается порядком списка admissions у student item
 export function tryDistributeMupsByStudentRatingAndAdmissionPriority(
   personalNumberToStudentItem: {
@@ -196,7 +395,8 @@ export function tryDistributeMupsByStudentRatingAndAdmissionPriority(
       const mupItem = mupIdToMupItem[mupId];
       const mupZe = mupData.data[mupId].ze;
       if (mupItem.count < mupItem.limit) {
-        if (mupIdsWithTestResultRequired.has(mupId) && !admission?.testResult) { // NOTE: admission can be null
+        if (mupIdsWithTestResultRequired.has(mupId) && !admission?.testResult) {
+          // NOTE: admission can be null
           continue; // testResult required but not present, skip mup
         }
         if (sItem.currentZ + mupZe > zeLimit) {
@@ -206,7 +406,6 @@ export function tryDistributeMupsByStudentRatingAndAdmissionPriority(
         sItem.selectedAdmissionIds.push(admissionId);
         sItem.currentZ += mupZe;
         mupItem.count++;
-      } else {
       }
     }
   }

@@ -592,7 +592,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           title="Скопировать приоритеты студентов на дисциплины по выбору"
           filename="StudentMupPriorities.json"
           data={mupPrioritiesText}
-        />
+        /> <br/>
 
         <Button
           onClick={handleDistributeRemainingStudents}

@@ -1,11 +1,12 @@
-const fetch = require("node-fetch");
+// const fetch = require("node-fetch");
+const axios = require("axios").default;
 
 function getCookiesFromHeadrs(headers) {
-  if (!headers.has("set-cookie")) {
+  if (!headers.hasOwnProperty("set-cookie")) {
     return [];
   }
 
-  const rawSetCookie = headers.raw()["set-cookie"];
+  const rawSetCookie = headers["set-cookie"];
   const preparedCookies = rawSetCookie.map((entry) => {
     const preparedCookie = entry
       .replace(/domain\s*=\s*[^;]+;\s?/gim, "")
@@ -76,7 +77,7 @@ async function processRequest(
     requestCookieString
   );
   const options = {
-    method: method,
+    method: method.toLowerCase(),
     headers: preparedRequestHeaders,
     redirect: redirect,
   };
@@ -89,11 +90,26 @@ async function processRequest(
     body &&
     !(body.constructor === Object && Object.keys(body).length === 0)
   ) {
-    options.body = body;
+    options.data = body;
   }
 
-  const resp = await fetch(url, options);
+  const maxRedirects = redirect === "manual" ? 0 : 21;
+  // const resp = await fetch(url, options);
+  const config = {
+    ...options,
+    url,
+    maxRedirects,
+    responseType: "arraybuffer",
+    decompress: true,
+    timeout: 1000 * 5,
+  };
 
+  let resp = null;
+  try {
+    resp = await axios(config);
+  } catch (err) {
+    resp = err.response;
+  }
   const newCookies = getCookiesFromHeadrs(resp.headers);
 
   const multiValueHeaders = {};
@@ -105,13 +121,10 @@ async function processRequest(
   }
 
   const resultHeaders = {};
-  for (let headerKeyValue of resp.headers.entries()) {
-    if (
-      headerKeyValue[0] === "set-cookie" ||
-      headerKeyValue[0] === "content-encoding"
-    )
-      continue;
-    resultHeaders[headerKeyValue[0]] = headerKeyValue[1];
+  for (const key in resp.headers) {
+    const value = resp.headers[key];
+    if (key === "set-cookie" || key === "content-encoding") continue;
+    resultHeaders[key] = value;
   }
 
   let status = resp.status;
@@ -143,8 +156,8 @@ async function processRequest(
         result.isBase64Encoded = true;
         return result;
       }
-      const bodyBlob = await resp.blob();
-      const arrayBuffer = await bodyBlob.arrayBuffer();
+      const arrayBuffer = resp.data;
+
       const base64 = convertArrayBufferToBase64(arrayBuffer);
       result.body = base64;
       result.isBase64Encoded = true;
@@ -183,3 +196,16 @@ module.exports.handler = async function (event, context) {
 
   return response;
 };
+
+function readStreamToBuffer(stream) {
+  return new Promise((resolve, reject) => {
+    const bufs = [];
+    stream.on("data", function (d) {
+      bufs.push(d);
+    });
+    stream.on("end", function () {
+      const buf = Buffer.concat(bufs);
+      resolve(buf);
+    });
+  });
+}

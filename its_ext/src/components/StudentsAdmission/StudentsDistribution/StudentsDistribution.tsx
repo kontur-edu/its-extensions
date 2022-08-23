@@ -27,7 +27,11 @@ import {
   IActionExecutionLogItem,
   ITSAction,
 } from "../../../common/actions";
-import { createStudentDistributionMupToErrorMessages } from "./utils";
+import {
+  createStudentDistributionMupToErrorMessages,
+  createStudentMupPriorityData,
+  createStudentNumberToMupPrioritiesData,
+} from "./utils";
 
 import Collapse from "@mui/material/Collapse";
 import ExpandLess from "@mui/icons-material/ExpandLess";
@@ -50,7 +54,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   const [mupIdToMupItems, setMupIdToMupItems] = useState<{
     [key: string]: IMupDistributionItem;
   }>({});
-
+  const [mupPrioritiesText, setMupPrioritiesText] = useState<string>("");
   const [studentAdmissionsText, setStudentAdmissionsText] =
     useState<string>("");
   const [studentAdmissionsTextInput, setStudentAdmissionsTextInput] =
@@ -59,6 +63,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     studentAdmissionsTextInputMessages,
     setStudentAdmissionsTextInputMessages,
   ] = useState<string[]>([]);
+
   const [mupIdsWithIncorrectLimits, setMupIdsWithIncorrectLimits] = useState<
     string[]
   >([]);
@@ -220,6 +225,27 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     setStudentAdmissionsText(
       JSON.stringify(newStudentDistributionData, null, 2)
     );
+
+    // const newStudentPersonalNumberToMupPriorities =
+    //   createStudentNumberToMupPrioritiesData(
+    //     props.competitionGroupIds,
+    //     context.dataRepository.competitionGroupIdToMupAdmissions,
+    //     context.dataRepository.admissionInfo
+    //   );
+    const newStudentPersonalNumberToMupPriorities =
+      createStudentMupPriorityData(
+        props.competitionGroupIds,
+        context.dataRepository.competitionGroupIdToMupAdmissions,
+        context.dataRepository.admissionInfo,
+        context.dataRepository.mupData,
+        context.dataRepository.studentData,
+      );
+    const newStudentPersonalNumberToMupPrioritiesJson = JSON.stringify(
+      newStudentPersonalNumberToMupPriorities,
+      null,
+      2
+    );
+    setMupPrioritiesText(newStudentPersonalNumberToMupPrioritiesJson);
   };
 
   useEffect(() => {
@@ -561,6 +587,12 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     return (
       <React.Fragment>
         {renderTable()}
+
+        <CopyOrDownload
+          title="Скопировать приоритеты студентов на дисциплины по выбору"
+          filename="StudentMupPriorities.json"
+          data={mupPrioritiesText}
+        />
 
         <Button
           onClick={handleDistributeRemainingStudents}

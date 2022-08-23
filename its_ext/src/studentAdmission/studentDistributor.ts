@@ -181,22 +181,22 @@ export function tryDistributeMupsByStudentRatingAndAdmissionPriority(
   for (const personalNumber of personalNumbersSortedByRating) {
     const sItem = personalNumberToStudentItem[personalNumber];
     const zeLimit = competitionGroupIdToZELimit[sItem.competitionGroupId];
-    if (sItem.currentZ >= zeLimit) continue;
     for (const admissionId of sItem.admissionIds) {
-      if (sItem.selectedAdmissionIds.includes(admissionId)) {
-        continue; // already admitted
-      }
-      const admission = admissionInfo[admissionId][personalNumber];
       if (sItem.currentZ >= zeLimit) {
         // Заканчиваем если набрали лимит и кончились курсы с первым приоритетом
         // personalNumber == '56904331' && console.log(`sItem.currentZ ${sItem.currentZ} >= zeLimit ${zeLimit}`);
         break;
       }
+      if (sItem.selectedAdmissionIds.includes(admissionId)) {
+        continue; // already admitted
+      }
+
+      const admission = admissionInfo[admissionId][personalNumber];
       const mupId = admissionIdToMupId[admissionId];
       const mupItem = mupIdToMupItem[mupId];
       const mupZe = mupData.data[mupId].ze;
       if (mupItem.count < mupItem.limit) {
-        if (mupIdsWithTestResultRequired.has(mupId) && !admission?.testResult) {
+        if (mupIdsWithTestResultRequired.has(mupId) && !admission?.testResult) { // NOTE: admission can be null
           continue; // testResult required but not present, skip mup
         }
         if (sItem.currentZ + mupZe > zeLimit) {

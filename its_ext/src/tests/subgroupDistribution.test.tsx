@@ -140,9 +140,6 @@ describe("trySubstituteMupShortNamesWithFullNames", () => {
 });
 
 describe("trySubstituteLoadWildcards", () => {
-  // const mupToLoadToSubgroupMembership: MupToLoadToSubgroupMembership = {
-  //     'M1': {'*': [["pn1", "pn2"]]},
-  // };
   const subgoupDiffInfo: ISubgoupDiffInfo = {
     subgroupAndMetaAreSameDiffs: {},
     subgroupDiffs: {},

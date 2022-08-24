@@ -189,14 +189,6 @@ function createSubgroupAndMetaAreSameDiffs(
       );
       res[mupName].push(same);
     }
-    // const same2 = checkIfMetasAndSubgroupsAreSameForMupAndSubgroup(
-    //   mupName,
-    //   competitionGroupIds[1],
-    //   metaDiffs,
-    //   subgroupDiffs,
-    //   subgroupData
-    // );
-    // res[mupName] = [same1, same2];
   }
 
   return res;

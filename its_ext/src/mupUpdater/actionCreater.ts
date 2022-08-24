@@ -300,8 +300,6 @@ function generateUpdateModulesAction(
       }
       return moduleSelection;
     });
-    // console.log("ms");
-    // console.log(ms);
     if (ms.length === 0) continue;
     for (let i = 0; i < selectionGroupsIds.length; i++) {
       const selectionGroupId = selectionGroupsIds[i];
@@ -375,7 +373,6 @@ export function createActions(
       ...generateRefreshActions(selectionGroupsIds, selectedMupsIds)
     );
   }
-  // TODO: remove refresh actions from the end if no actions after
 
   actions.push(
     ...generateUpdateLimitActions(

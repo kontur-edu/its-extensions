@@ -277,9 +277,6 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
       context.dataRepository.subgroupData
     );
 
-    // console.log("newSubgroupDiffInfo");
-    // console.log(newSubgroupDiffInfo);
-
     setSubgroupDiffInfo(newSubgroupDiffInfo);
 
     const personalNumberToStudentItems = prepareStudentItems(
@@ -325,8 +322,6 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
         newSubgroupDiffInfo.subgroupDiffs
       );
       if (!synced) {
-        // FIXME:
-        // alert("! NOT SYNCED !");
         setCompetitionGroupsErrorMessages([
           `Конкурсные группы имеют различные количества подгрупп или различные созданные подгруппы. Вернитесь к "Подготовке семестра" и синхронизируйте конкурсные группы.`,
         ]);
@@ -336,8 +331,6 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     }
 
     try {
-      // console.log("newSubgroupDiffInfo");
-      // console.log(newSubgroupDiffInfo);
       const mupToLoadToSubgroupMembership = createMupToLoadToSubgroupMembership(
         mupNames,
         props.competitionGroupIds,

@@ -376,6 +376,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     const mupAlgoInfo = createMupIdToMupAlgoInfo(
       availableMupIds,
       repo.mupData,
+      mupIdsWithTestResultRequired.current,
     );
 
 

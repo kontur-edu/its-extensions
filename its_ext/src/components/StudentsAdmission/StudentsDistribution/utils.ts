@@ -87,7 +87,7 @@ export function createStudentNumberToMupPrioritiesData(
       competitionGroupIdToMupAdmissions[competitionGroupId];
     for (const mupId in mupIdToAdmissionMeta) {
       const admissionMeta = mupIdToAdmissionMeta[mupId];
-      const admissionId = admissionMeta.admissionsId;
+      const admissionId = admissionMeta.admissionId;
 
       if (!admissionInfo.hasOwnProperty(admissionId)) {
         continue;
@@ -140,7 +140,7 @@ export function createStudentMupPriorityData(
     for (const mupId in mupIdToAdmissionMeta) {
       mupIds.add(mupId);
       const admissionMeta = mupIdToAdmissionMeta[mupId];
-      const admissionId = admissionMeta.admissionsId;
+      const admissionId = admissionMeta.admissionId;
 
       if (!admissionInfo.hasOwnProperty(admissionId)) {
         continue;
@@ -197,4 +197,28 @@ export function createStudentMupPriorityData(
   })
 
   return result;
+}
+
+
+export function getMupIdsWithDifferentLimits(
+  competitionGroupIds: number[],
+  competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions
+) {
+  const res: Set<string> = new Set<string>();
+  const mupIdToStudentLimit: {[key: string]: number} = {};
+  for (const competitionGroupId of competitionGroupIds) {
+    if (!competitionGroupIdToMupAdmissions.hasOwnProperty(competitionGroupId)) {
+      console.warn(`competitionGroupId: ${competitionGroupId} not found in competitionGroupIdToMupAdmissions`);
+    }
+    const mupIdToAdmissionInfo = competitionGroupIdToMupAdmissions[competitionGroupId];
+    for (const mupId in mupIdToAdmissionInfo) {
+      const admissionMeta = mupIdToAdmissionInfo[mupId];
+      if (!mupIdToStudentLimit.hasOwnProperty(mupId)) {
+        mupIdToStudentLimit[mupId] = admissionMeta.limit;
+      } else if (mupIdToStudentLimit[mupId] !== admissionMeta.limit) {
+        res.add(mupId);
+      }
+    }
+  }
+  return res;
 }

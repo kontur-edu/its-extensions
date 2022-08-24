@@ -216,7 +216,7 @@ export interface IAdmissionMeta {
   mupId: string;
   limit: number;
   count: number;
-  admissionsId: number;
+  admissionId: number;
 }
 
 export type MupIdToAdmission = {

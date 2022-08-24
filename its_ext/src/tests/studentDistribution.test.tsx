@@ -9,7 +9,7 @@ import {
 } from "../common/types";
 import {
   calcZE,
-  createMupIdToMupItemByStudentItems,
+  // createMupIdToMupItemByStudentItems,
   createPersonalNumberToStudentItem,
   IStudentAdmissionDistributionItem,
   findMupIdsWithTestResultRequired,
@@ -57,25 +57,25 @@ const admissionMetas: IAdmissionMeta[] = [
     mupId: "m1",
     limit: 2,
     count: 0,
-    admissionsId: 1,
+    admissionId: 1,
   },
   {
     mupId: "m1",
     limit: 2,
     count: 0,
-    admissionsId: 2,
+    admissionId: 2,
   },
   {
     mupId: "m2",
     limit: 2,
     count: 0,
-    admissionsId: 3,
+    admissionId: 3,
   },
   {
     mupId: "m2",
     limit: 2,
     count: 0,
-    admissionsId: 4,
+    admissionId: 4,
   },
 ];
 
@@ -106,7 +106,7 @@ describe("createPersonalNumberToStudentItem", () => {
     expect(personalNumbers.length).toBe(1);
     expect(personalNumbers).toContain("pn1");
     const studentItem = actualRes["pn1"];
-    expect(studentItem.currentZ).toBe(0);
+    expect(studentItem.currentZE).toBe(0);
     expect(studentItem.admissionIds.length).toBe(1);
     expect(studentItem.admissionIds).toContain(1);
     expect(studentItem.selectedAdmissionIds.length).toBe(0);
@@ -124,7 +124,7 @@ describe("createPersonalNumberToStudentItem", () => {
     expect(personalNumbers.length).toBe(2);
     expect(personalNumbers).toContain("pn2");
     const studentItem = actualRes["pn2"];
-    expect(studentItem.currentZ).toBe(0);
+    expect(studentItem.currentZE).toBe(0);
     expect(studentItem.admissionIds.length).toBe(0);
     expect(studentItem.selectedAdmissionIds.length).toBe(0);
     expect(studentItem.competitionGroupId).toBe(1);
@@ -141,74 +141,74 @@ describe("createPersonalNumberToStudentItem", () => {
     expect(personalNumbers.length).toBe(1);
     expect(personalNumbers).toContain("pn1");
     const studentItem = actualRes["pn1"];
-    expect(studentItem.currentZ).toBe(0); // NOTE: not set ze in this step
+    expect(studentItem.currentZE).toBe(0); // NOTE: not set ze in this step
     expect(studentItem.admissionIds.length).toBe(1);
     expect(studentItem.selectedAdmissionIds.length).toBe(1);
     expect(studentItem.competitionGroupId).toBe(1);
   });
 });
 
-const studentItems: IStudentAdmissionDistributionItem[] = [
-  {
-    currentZ: 3,
-    admissionIds: [1],
-    selectedAdmissionIds: [1],
-    competitionGroupId: 1,
-  },
-  {
-    currentZ: 3,
-    admissionIds: [2],
-    selectedAdmissionIds: [2],
-    competitionGroupId: 2,
-  },
-];
+// const studentItems: IStudentAdmissionDistributionItem[] = [
+//   {
+//     currentZE: 3,
+//     admissionIds: [1],
+//     selectedAdmissionIds: [1],
+//     competitionGroupId: 1,
+//   },
+//   {
+//     currentZE: 3,
+//     admissionIds: [2],
+//     selectedAdmissionIds: [2],
+//     competitionGroupId: 2,
+//   },
+// ];
 
-describe("createMupIdToMupItemByStudentItems", () => {
-  it("creates mup items", () => {
-    const actualRes = createMupIdToMupItemByStudentItems(
-      { pn: studentItems[0] },
-      [1],
-      { 1: { m1: admissionMetas[0] } },
-      { 1: "m1" }
-    );
+// describe("createMupIdToMupItemByStudentItems", () => {
+//   it("creates mup items", () => {
+//     const actualRes = createMupIdToMupItemByStudentItems(
+//       { pn: studentItems[0] },
+//       [1],
+//       { 1: { m1: admissionMetas[0] } },
+//       { 1: "m1" }
+//     );
 
-    expect(Object.keys(actualRes)).toContain("m1");
-    expect(actualRes["m1"].count).toBe(1);
-    expect(actualRes["m1"].limit).toBe(2);
-    expect(actualRes["m1"].valid).toBe(true);
-  });
+//     expect(Object.keys(actualRes)).toContain("m1");
+//     expect(actualRes["m1"].count).toBe(1);
+//     expect(actualRes["m1"].limit).toBe(2);
+//     expect(actualRes["m1"].valid).toBe(true);
+//   });
 
-  it("creates mup items with 2 competition groups", () => {
-    const actualRes = createMupIdToMupItemByStudentItems(
-      { pn1: studentItems[0], pn2: studentItems[1] },
-      [1, 2],
-      { 1: { m1: admissionMetas[0] }, 2: { m1: admissionMetas[1] } },
-      { 1: "m1", 2: "m1" }
-    );
+//   it("creates mup items with 2 competition groups", () => {
+//     const actualRes = createMupIdToMupItemByStudentItems(
+//       { pn1: studentItems[0], pn2: studentItems[1] },
+//       [1, 2],
+//       { 1: { m1: admissionMetas[0] }, 2: { m1: admissionMetas[1] } },
+//       { 1: "m1", 2: "m1" }
+//     );
 
-    expect(Object.keys(actualRes)).toContain("m1");
-    expect(actualRes["m1"].count).toBe(2);
-    expect(actualRes["m1"].limit).toBe(2);
-    expect(actualRes["m1"].valid).toBe(true);
-  });
+//     expect(Object.keys(actualRes)).toContain("m1");
+//     expect(actualRes["m1"].count).toBe(2);
+//     expect(actualRes["m1"].limit).toBe(2);
+//     expect(actualRes["m1"].valid).toBe(true);
+//   });
 
-  it("creates mup items with 2 competition groups adds count", () => {
-    const actualRes = createMupIdToMupItemByStudentItems(
-      { pn1: studentItems[0], pn2: studentItems[1] },
-      [1, 2],
-      {
-        1: { m1: { ...admissionMetas[0], count: 1 } },
-        2: { m1: { ...admissionMetas[1], count: 1 } },
-      },
-      { 1: "m1", 2: "m1" }
-    );
+//   it("creates mup items with 2 competition groups adds count", () => {
+//     const actualRes = createMupIdToMupItemByStudentItems(
+//       { pn1: studentItems[0], pn2: studentItems[1] },
+//       [1, 2],
+//       {
+//         1: { m1: { ...admissionMetas[0], count: 1 } },
+//         2: { m1: { ...admissionMetas[1], count: 1 } },
+//       },
+//       { 1: "m1", 2: "m1" }
+//     );
 
-    expect(Object.keys(actualRes)).toContain("m1");
-    expect(actualRes["m1"].count).toBe(2);
-    expect(actualRes["m1"].limit).toBe(2);
-    expect(actualRes["m1"].valid).toBe(true);
-  });
-});
+//     expect(Object.keys(actualRes)).toContain("m1");
+//     expect(actualRes["m1"].count).toBe(2);
+//     expect(actualRes["m1"].limit).toBe(2);
+//     expect(actualRes["m1"].valid).toBe(true);
+//   });
+// });
 
 describe("findMupIdsWithTestResultRequired", () => {
   it("nothing if no test results", () => {
@@ -261,13 +261,13 @@ const personalNumberToStudentItem: {
   [key: string]: IStudentAdmissionDistributionItem;
 } = {
   pn1: {
-    currentZ: 0,
+    currentZE: 0,
     admissionIds: [1, 2],
     selectedAdmissionIds: [],
     competitionGroupId: 1,
   },
   pn2: {
-    currentZ: 0,
+    currentZE: 0,
     admissionIds: [1, 2],
     selectedAdmissionIds: [],
     competitionGroupId: 1,
@@ -342,7 +342,7 @@ describe("tryDistributeMupsByStudentRatingAndAdmissionPriority", () => {
     );
 
     for (const pn of ["pn1", "pn2"]) {
-      expect(testPersonalNumberToStudentItem[pn].currentZ).toBe(6);
+      expect(testPersonalNumberToStudentItem[pn].currentZE).toBe(6);
       expect(testPersonalNumberToStudentItem[pn].admissionIds).toContain(1);
       expect(testPersonalNumberToStudentItem[pn].admissionIds).toContain(2);
       expect(
@@ -380,7 +380,7 @@ describe("tryDistributeMupsByStudentRatingAndAdmissionPriority", () => {
     const pn1 = "pn1";
     const pn2 = "pn2";
 
-    expect(testPersonalNumberToStudentItem[pn1].currentZ).toBe(6);
+    expect(testPersonalNumberToStudentItem[pn1].currentZE).toBe(6);
     expect(testPersonalNumberToStudentItem[pn1].selectedAdmissionIds).toContain(
       1
     );
@@ -388,7 +388,7 @@ describe("tryDistributeMupsByStudentRatingAndAdmissionPriority", () => {
       2
     );
 
-    expect(testPersonalNumberToStudentItem[pn2].currentZ).toBe(3);
+    expect(testPersonalNumberToStudentItem[pn2].currentZE).toBe(3);
     expect(
       testPersonalNumberToStudentItem[pn2].selectedAdmissionIds.length
     ).toBe(1);
@@ -401,7 +401,7 @@ describe("tryDistributeMupsByStudentRatingAndAdmissionPriority", () => {
     const testPersonalNumberToStudentItem = cloneObject(
       personalNumberToStudentItem
     );
-    testPersonalNumberToStudentItem["pn1"].currentZ = 3;
+    testPersonalNumberToStudentItem["pn1"].currentZE = 3;
     const testMupIdToMupItem = cloneObject(mupIdToMupItem);
 
     tryDistributeMupsByStudentRatingAndAdmissionPriority(
@@ -418,12 +418,12 @@ describe("tryDistributeMupsByStudentRatingAndAdmissionPriority", () => {
     const pn1 = "pn1";
     const pn2 = "pn2";
 
-    expect(testPersonalNumberToStudentItem[pn1].currentZ).toBe(6);
+    expect(testPersonalNumberToStudentItem[pn1].currentZE).toBe(6);
     expect(testPersonalNumberToStudentItem[pn1].selectedAdmissionIds).toContain(
       1
     );
 
-    expect(testPersonalNumberToStudentItem[pn2].currentZ).toBe(6);
+    expect(testPersonalNumberToStudentItem[pn2].currentZE).toBe(6);
     expect(
       testPersonalNumberToStudentItem[pn2].selectedAdmissionIds.length
     ).toBe(2);
@@ -459,8 +459,8 @@ describe("tryDistributeMupsByStudentRatingAndAdmissionPriority", () => {
     const pn1 = "pn1";
     const pn2 = "pn2";
 
-    expect(testPersonalNumberToStudentItem[pn2].currentZ).toBe(6);
-    expect(testPersonalNumberToStudentItem[pn1].currentZ).toBe(3);
+    expect(testPersonalNumberToStudentItem[pn2].currentZE).toBe(6);
+    expect(testPersonalNumberToStudentItem[pn1].currentZE).toBe(3);
     expect(
       testPersonalNumberToStudentItem[pn2].selectedAdmissionIds.length
     ).toBe(2);
@@ -493,8 +493,8 @@ describe("tryDistributeMupsByStudentRatingAndAdmissionPriority", () => {
     const pn1 = "pn1";
     const pn2 = "pn2";
 
-    expect(testPersonalNumberToStudentItem[pn1].currentZ).toBe(3);
-    expect(testPersonalNumberToStudentItem[pn2].currentZ).toBe(3);
+    expect(testPersonalNumberToStudentItem[pn1].currentZE).toBe(3);
+    expect(testPersonalNumberToStudentItem[pn2].currentZE).toBe(3);
     expect(
       testPersonalNumberToStudentItem[pn1].selectedAdmissionIds.length
     ).toBe(1);
@@ -531,8 +531,8 @@ describe("tryDistributeMupsByStudentRatingAndAdmissionPriority", () => {
     const pn1 = "pn1";
     const pn2 = "pn2";
 
-    expect(testPersonalNumberToStudentItem[pn1].currentZ).toBe(6);
-    expect(testPersonalNumberToStudentItem[pn2].currentZ).toBe(3);
+    expect(testPersonalNumberToStudentItem[pn1].currentZE).toBe(6);
+    expect(testPersonalNumberToStudentItem[pn2].currentZE).toBe(3);
     expect(testPersonalNumberToStudentItem[pn1].selectedAdmissionIds).toContain(
       1
     );
@@ -552,13 +552,13 @@ describe("tryDistributeMupsByStudentRatingAndAdmissionPriority", () => {
       [key: string]: IStudentAdmissionDistributionItem;
     } = {
       pn1: {
-        currentZ: 0,
+        currentZE: 0,
         admissionIds: [1, 2],
         selectedAdmissionIds: [],
         competitionGroupId: 1,
       },
       pn2: {
-        currentZ: 0,
+        currentZE: 0,
         admissionIds: [3, 4],
         selectedAdmissionIds: [],
         competitionGroupId: 2,
@@ -632,8 +632,8 @@ describe("tryDistributeMupsByStudentRatingAndAdmissionPriority", () => {
       testAdmissionInfo
     );
 
-    expect(testPersonalNumberToStudentItem["pn1"].currentZ).toBe(6);
-    expect(testPersonalNumberToStudentItem["pn2"].currentZ).toBe(6);
+    expect(testPersonalNumberToStudentItem["pn1"].currentZE).toBe(6);
+    expect(testPersonalNumberToStudentItem["pn2"].currentZE).toBe(6);
     expect(
       testPersonalNumberToStudentItem["pn1"].selectedAdmissionIds
     ).toContain(1);
@@ -654,13 +654,13 @@ describe("addRandomMupsForStudentIfNeeded", () => {
     [key: string]: IStudentAdmissionDistributionItem;
   } = {
     pn1: {
-      currentZ: 0,
+      currentZE: 0,
       admissionIds: [],
       selectedAdmissionIds: [],
       competitionGroupId: 1,
     },
     pn2: {
-      currentZ: 0,
+      currentZE: 0,
       admissionIds: [],
       selectedAdmissionIds: [],
       competitionGroupId: 1,
@@ -703,13 +703,13 @@ describe("addRandomMupsForStudentIfNeeded", () => {
         mupId: "m1",
         limit: 2,
         count: 0,
-        admissionsId: 1,
+        admissionId: 1,
       },
       m2: {
         mupId: "m2",
         limit: 2,
         count: 0,
-        admissionsId: 2,
+        admissionId: 2,
       },
     },
   };
@@ -736,12 +736,12 @@ describe("addRandomMupsForStudentIfNeeded", () => {
       admissionInfo
     );
 
-    expect(testPersonalNumberToStudentItem["pn1"].currentZ).toBe(3);
+    expect(testPersonalNumberToStudentItem["pn1"].currentZE).toBe(3);
     expect(
       testPersonalNumberToStudentItem["pn1"].selectedAdmissionIds.length
     ).toBe(1);
 
-    expect(testPersonalNumberToStudentItem["pn2"].currentZ).toBe(6);
+    expect(testPersonalNumberToStudentItem["pn2"].currentZE).toBe(6);
     expect(
       testPersonalNumberToStudentItem["pn2"].selectedAdmissionIds
     ).toContain(2);
@@ -755,7 +755,7 @@ describe("addRandomMupsForStudentIfNeeded", () => {
 
     testMupIdToMupItem["m2"].limit = 0;
 
-    testPersonalNumberToStudentItem["pn1"].currentZ = 3;
+    testPersonalNumberToStudentItem["pn1"].currentZE = 3;
     testPersonalNumberToStudentItem["pn1"].admissionIds = [1];
     testPersonalNumberToStudentItem["pn1"].selectedAdmissionIds = [1];
 
@@ -772,12 +772,12 @@ describe("addRandomMupsForStudentIfNeeded", () => {
       admissionInfo
     );
 
-    expect(testPersonalNumberToStudentItem["pn1"].currentZ).toBe(3);
+    expect(testPersonalNumberToStudentItem["pn1"].currentZE).toBe(3);
     expect(
       testPersonalNumberToStudentItem["pn1"].selectedAdmissionIds.length
     ).toBe(1);
 
-    expect(testPersonalNumberToStudentItem["pn2"].currentZ).toBe(3);
+    expect(testPersonalNumberToStudentItem["pn2"].currentZE).toBe(3);
     expect(
       testPersonalNumberToStudentItem["pn2"].selectedAdmissionIds
     ).toContain(1);

@@ -71,19 +71,19 @@ describe("fillDistributionByStudentRatingAndAdmissionPriority", () => {
 
     const personalNumberToStudentItem: IPnToStudentItem = {
       s1: {
-        currentZ: 0,
+        currentZE: 0,
         admissionIds: [1, 3, 5, 7],
         selectedAdmissionIds: [],
         competitionGroupId: 0,
       },
       s2: {
-        currentZ: 0,
+        currentZE: 0,
         admissionIds: [2, 4, 6, 8],
         selectedAdmissionIds: [],
         competitionGroupId: 1,
       },
       s3: {
-        currentZ: 0,
+        currentZE: 0,
         admissionIds: [1, 5],
         selectedAdmissionIds: [],
         competitionGroupId: 1,
@@ -107,9 +107,9 @@ describe("fillDistributionByStudentRatingAndAdmissionPriority", () => {
       admissionInfo
     );
 
-    expect(personalNumberToStudentItem["s1"].currentZ).toBe(9);
-    expect(personalNumberToStudentItem["s2"].currentZ).toBe(9);
-    expect(personalNumberToStudentItem["s3"].currentZ).toBe(3);
+    expect(personalNumberToStudentItem["s1"].currentZE).toBe(9);
+    expect(personalNumberToStudentItem["s2"].currentZE).toBe(9);
+    expect(personalNumberToStudentItem["s3"].currentZE).toBe(3);
   });
 
   it("takes test results into account", () => {
@@ -130,13 +130,13 @@ describe("fillDistributionByStudentRatingAndAdmissionPriority", () => {
 
     const personalNumberToStudentItem: IPnToStudentItem = {
       s1: {
-        currentZ: 0,
+        currentZE: 0,
         admissionIds: [1, 2],
         selectedAdmissionIds: [],
         competitionGroupId: 0,
       },
       s2: {
-        currentZ: 0,
+        currentZE: 0,
         admissionIds: [1, 2],
         selectedAdmissionIds: [],
         competitionGroupId: 0,
@@ -154,8 +154,8 @@ describe("fillDistributionByStudentRatingAndAdmissionPriority", () => {
       admissionInfo
     );
 
-    expect(personalNumberToStudentItem["s1"].currentZ).toBe(3);
-    expect(personalNumberToStudentItem["s2"].currentZ).toBe(6);
+    expect(personalNumberToStudentItem["s1"].currentZE).toBe(3);
+    expect(personalNumberToStudentItem["s2"].currentZE).toBe(6);
   });
 
   it("takes rating into account", () => {
@@ -187,13 +187,13 @@ describe("fillDistributionByStudentRatingAndAdmissionPriority", () => {
 
     const personalNumberToStudentItem: IPnToStudentItem = {
       s1: {
-        currentZ: 0,
+        currentZE: 0,
         admissionIds: [1, 2, 3, 4],
         selectedAdmissionIds: [],
         competitionGroupId: 0,
       },
       s2: {
-        currentZ: 0,
+        currentZE: 0,
         admissionIds: [1, 2, 3, 4],
         selectedAdmissionIds: [],
         competitionGroupId: 0,
@@ -217,8 +217,8 @@ describe("fillDistributionByStudentRatingAndAdmissionPriority", () => {
     // console.log(personalNumberToStudentItem);
     // console.log(mupIdToMupItem);
 
-    expect(personalNumberToStudentItem["s1"].currentZ).toBe(6);
-    expect(personalNumberToStudentItem["s2"].currentZ).toBe(6);
+    expect(personalNumberToStudentItem["s1"].currentZE).toBe(6);
+    expect(personalNumberToStudentItem["s2"].currentZE).toBe(6);
     expect(personalNumberToStudentItem["s1"].selectedAdmissionIds).toContain(1);
     expect(personalNumberToStudentItem["s1"].selectedAdmissionIds).toContain(2);
     expect(personalNumberToStudentItem["s2"].selectedAdmissionIds).toContain(3);
@@ -236,10 +236,10 @@ describe("addRandomMupsForStudentIfNeeded", () => {
 
   const competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions = {
     0: {
-      m1: { mupId: "m1", limit: 2, count: 1, admissionsId: 1 },
-      m2: { mupId: "m2", limit: 2, count: 2, admissionsId: 2 },
-      m3: { mupId: "m3", limit: 2, count: 1, admissionsId: 3 },
-      m4: { mupId: "m4", limit: 2, count: 1, admissionsId: 4 },
+      m1: { mupId: "m1", limit: 2, count: 1, admissionId: 1 },
+      m2: { mupId: "m2", limit: 2, count: 2, admissionId: 2 },
+      m3: { mupId: "m3", limit: 2, count: 1, admissionId: 3 },
+      m4: { mupId: "m4", limit: 2, count: 1, admissionId: 4 },
     },
   };
 
@@ -247,7 +247,7 @@ describe("addRandomMupsForStudentIfNeeded", () => {
     const mupIdToMupItem = cloneObject(baseMupIdToMupItem);
     const personalNumberToStudentItem: IPnToStudentItem = {
       s1: {
-        currentZ: 3,
+        currentZE: 3,
         admissionIds: [1],
         selectedAdmissionIds: [1],
         competitionGroupId: 0,
@@ -270,7 +270,7 @@ describe("addRandomMupsForStudentIfNeeded", () => {
     // console.log(personalNumberToStudentItem);
     const studentItem = personalNumberToStudentItem["s1"];
 
-    expect(studentItem.currentZ).toBe(6);
+    expect(studentItem.currentZE).toBe(6);
     expect(studentItem.selectedAdmissionIds).not.toContain(2);
     expect(new Set(studentItem.selectedAdmissionIds).size).toBe(2);
   });
@@ -279,7 +279,7 @@ describe("addRandomMupsForStudentIfNeeded", () => {
     const mupIdToMupItem = cloneObject(baseMupIdToMupItem);
     const personalNumberToStudentItem: IPnToStudentItem = {
       s1: {
-        currentZ: 0,
+        currentZE: 0,
         admissionIds: [],
         selectedAdmissionIds: [],
         competitionGroupId: 0,
@@ -302,7 +302,7 @@ describe("addRandomMupsForStudentIfNeeded", () => {
     // console.log(personalNumberToStudentItem);
     const studentItem = personalNumberToStudentItem["s1"];
 
-    expect(studentItem.currentZ).toBe(3);
+    expect(studentItem.currentZE).toBe(3);
     expect(studentItem.selectedAdmissionIds).not.toContain(1);
     expect(new Set(studentItem.selectedAdmissionIds).size).toBe(1);
   });

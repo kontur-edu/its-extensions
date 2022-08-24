@@ -35,9 +35,6 @@ export function findCourseToCurrentPeriod(
   semesterId: number,
   periods: IPeriod[]
 ): { [key: number]: IPeriod } {
-  // console.log(`findCourseToCurrentPeriod: ${year} ${semesterId}`);
-  // console.log("periods");
-  // console.log(JSON.stringify(periods, null, 2));
   let courseToCurrentPeriod: { [key: number]: IPeriod } = {};
   for (let period of periods) {
     if (period.year === year && period.semesterId === semesterId) {
@@ -55,11 +52,9 @@ export function checkIfNeedChangeDates(
   let changeDates = false;
 
   for (let course of [3, 4]) {
-    // for (let course in courseToCurrentPeriod) {
     if (
       courseToCurrentPeriod.hasOwnProperty(course) &&
       courseToCurrentPeriod[course]
-      // (course === "3" || course === "4")
     ) {
       const currentPeriod = courseToCurrentPeriod[course];
 
@@ -80,11 +75,9 @@ export function checkIfCanBeDeleted(courseToCurrentPeriod: {
   let canBeDeleted = true;
 
   for (let course of [3, 4]) {
-    // for (let course in courseToCurrentPeriod) {
     if (
       courseToCurrentPeriod.hasOwnProperty(course) &&
       courseToCurrentPeriod[course]
-      // (course === "3" || course === "4")
     ) {
       const currentPeriod = courseToCurrentPeriod[course];
 
@@ -141,11 +134,6 @@ export function checkIfNeedUpdateModules(
     [key: number]: ISelectedModuleDisciplines;
   }
 ) {
-  // console.log(`checkIfNeedUpdateModules: ${mupId} ${selectionGroupIds}`);
-  // console.log("zeToModuleSelections");
-  // console.log(JSON.stringify(zeToModuleSelections, null, 2));
-  // console.log("selectionGroupModuleIdToSelectedModuleDisciplines");
-  // console.log(selectionGroupModuleIdToSelectedModuleDisciplines);
   const ze = mupData.data[mupId].ze;
   if (!zeToModuleSelections.hasOwnProperty(ze)) {
     // console.log(`ze: ${ze} not found in zeToModuleSelections`);
@@ -266,11 +254,9 @@ export function updateMupDiffDateInfo(
 ) {
   let needToChangeDates = false;
   for (let course of [3, 4]) {
-    // for (let course in mupDiff.courseToCurrentPeriod) {
     if (
       mupDiff.courseToCurrentPeriod.hasOwnProperty(course) &&
       mupDiff.courseToCurrentPeriod[course]
-      // (course === "3" || course === "4")
     ) {
       const period = mupDiff.courseToCurrentPeriod[course];
       if (

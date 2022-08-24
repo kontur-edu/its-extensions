@@ -32,7 +32,7 @@ describe("createStudentDistribution", () => {
       personalNumber: "pn1",
       rating: 1,
       competitionGroupId: 1,
-      admissions: [studentDistributionAdmissionAlgoInfos[0]],
+      admissionsWithPriorityOrTestResult: [studentDistributionAdmissionAlgoInfos[0]],
       mupIdsAdmittedEarlier: new Set<string>(),
     },
   ];
@@ -98,7 +98,7 @@ describe("createStudentDistribution", () => {
     const testStudentDistributionAlgoInfos: IStudentDistributionAlgoInfo[] = [
       {
         ...studentDistributionAlgoInfos[0],
-        admissions: [
+        admissionsWithPriorityOrTestResult: [
           {
             ...studentDistributionAdmissionAlgoInfos[0],
             mupId: "m1",
@@ -124,7 +124,7 @@ describe("createStudentDistribution", () => {
       {
         ...studentDistributionAlgoInfos[0],
         personalNumber: "pn2",
-        admissions: [
+        admissionsWithPriorityOrTestResult: [
           {
             ...studentDistributionAdmissionAlgoInfos[0],
             mupId: "m1",
@@ -270,35 +270,35 @@ describe("createStudentDistribution", () => {
       {
         ...studentDistributionAlgoInfos[0],
         personalNumber: "pn1",
-        admissions: [
+        admissionsWithPriorityOrTestResult: [
           { ...studentDistributionAdmissionAlgoInfos[0], testPassed: false },
         ],
       },
       {
         ...studentDistributionAlgoInfos[0],
         personalNumber: "pn2",
-        admissions: [
+        admissionsWithPriorityOrTestResult: [
           { ...studentDistributionAdmissionAlgoInfos[0], testPassed: true },
         ],
       },
       {
         ...studentDistributionAlgoInfos[0],
         personalNumber: "pn3",
-        admissions: [
+        admissionsWithPriorityOrTestResult: [
           { ...studentDistributionAdmissionAlgoInfos[0], testPassed: false },
         ],
       },
       {
         ...studentDistributionAlgoInfos[0],
         personalNumber: "pn4",
-        admissions: [
+        admissionsWithPriorityOrTestResult: [
           { ...studentDistributionAdmissionAlgoInfos[0], testPassed: true },
         ],
       },
       {
         ...studentDistributionAlgoInfos[0],
         personalNumber: "pn5",
-        admissions: [
+        admissionsWithPriorityOrTestResult: [
           { ...studentDistributionAdmissionAlgoInfos[0], testPassed: false },
         ],
       },
@@ -341,7 +341,7 @@ describe("createStudentDistribution", () => {
       {
         ...studentDistributionAlgoInfos[0],
         personalNumber: "pn1",
-        admissions: [
+        admissionsWithPriorityOrTestResult: [
           {
             ...studentDistributionAdmissionAlgoInfos[0],
             testPassed: false,
@@ -352,7 +352,7 @@ describe("createStudentDistribution", () => {
       {
         ...studentDistributionAlgoInfos[0],
         personalNumber: "pn2",
-        admissions: [
+        admissionsWithPriorityOrTestResult: [
           {
             ...studentDistributionAdmissionAlgoInfos[0],
             testPassed: true,
@@ -363,7 +363,7 @@ describe("createStudentDistribution", () => {
       {
         ...studentDistributionAlgoInfos[0],
         personalNumber: "pn3",
-        admissions: [
+        admissionsWithPriorityOrTestResult: [
           {
             ...studentDistributionAdmissionAlgoInfos[0],
             testPassed: false,
@@ -374,7 +374,7 @@ describe("createStudentDistribution", () => {
       {
         ...studentDistributionAlgoInfos[0],
         personalNumber: "pn4",
-        admissions: [
+        admissionsWithPriorityOrTestResult: [
           {
             ...studentDistributionAdmissionAlgoInfos[0],
             testPassed: true,
@@ -421,7 +421,7 @@ describe("createStudentDistribution", () => {
         ...studentDistributionAlgoInfos[0],
         personalNumber: "pn1",
         rating: 100,
-        admissions: [
+        admissionsWithPriorityOrTestResult: [
           {
             ...studentDistributionAdmissionAlgoInfos[0],
             mupId: "m1",
@@ -451,7 +451,7 @@ describe("createStudentDistribution", () => {
         ...studentDistributionAlgoInfos[0],
         personalNumber: "pn2",
         rating: 90,
-        admissions: [
+        admissionsWithPriorityOrTestResult: [
           {
             ...studentDistributionAdmissionAlgoInfos[0],
             mupId: "m1",
@@ -480,7 +480,7 @@ describe("createStudentDistribution", () => {
         ...studentDistributionAlgoInfos[0],
         personalNumber: "pn3",
         rating: 80,
-        admissions: [
+        admissionsWithPriorityOrTestResult: [
           {
             ...studentDistributionAdmissionAlgoInfos[0],
             mupId: "m1",
@@ -503,7 +503,7 @@ describe("createStudentDistribution", () => {
         ...studentDistributionAlgoInfos[0],
         personalNumber: "pn4",
         rating: 70,
-        admissions: [
+        admissionsWithPriorityOrTestResult: [
           {
             ...studentDistributionAdmissionAlgoInfos[0],
             mupId: "m1",
@@ -532,7 +532,7 @@ describe("createStudentDistribution", () => {
         ...studentDistributionAlgoInfos[0],
         personalNumber: "pn5",
         rating: 60,
-        admissions: [
+        admissionsWithPriorityOrTestResult: [
           {
             ...studentDistributionAdmissionAlgoInfos[0],
             mupId: "m5",
@@ -620,7 +620,7 @@ describe("createStudentDistribution", () => {
         personalNumber: "pn1",
         competitionGroupId: 1,
         rating: 100,
-        admissions: [
+        admissionsWithPriorityOrTestResult: [
           {
             ...studentDistributionAdmissionAlgoInfos[0],
             mupId: "m1",
@@ -651,7 +651,7 @@ describe("createStudentDistribution", () => {
         personalNumber: "pn2",
         competitionGroupId: 2,
         rating: 90,
-        admissions: [
+        admissionsWithPriorityOrTestResult: [
           {
             ...studentDistributionAdmissionAlgoInfos[0],
             mupId: "m1",
@@ -681,7 +681,7 @@ describe("createStudentDistribution", () => {
         personalNumber: "pn3",
         competitionGroupId: 1,
         rating: 80,
-        admissions: [
+        admissionsWithPriorityOrTestResult: [
           {
             ...studentDistributionAdmissionAlgoInfos[0],
             mupId: "m1",
@@ -705,7 +705,7 @@ describe("createStudentDistribution", () => {
         personalNumber: "pn4",
         competitionGroupId: 1,
         rating: 70,
-        admissions: [
+        admissionsWithPriorityOrTestResult: [
           {
             ...studentDistributionAdmissionAlgoInfos[0],
             mupId: "m1",
@@ -735,7 +735,7 @@ describe("createStudentDistribution", () => {
         personalNumber: "pn5",
         competitionGroupId: 2,
         rating: 60,
-        admissions: [
+        admissionsWithPriorityOrTestResult: [
           {
             ...studentDistributionAdmissionAlgoInfos[0],
             mupId: "m5",
@@ -937,11 +937,11 @@ describe("createStudentDistributionAlgoInfos", () => {
     expect(
       Object.keys(studentInfosSorted[0].mupIdsAdmittedEarlier).length
     ).toBe(0);
-    expect(studentInfosSorted[0].admissions.length).toBe(1);
-    expect(studentInfosSorted[0].admissions[0].mupId).toBe("m1");
-    expect(studentInfosSorted[0].admissions[0].priority).toBe(1);
-    expect(studentInfosSorted[0].admissions[0].testPassed).toBeFalsy();
-    expect(studentInfosSorted[0].admissions[0].admitted).toBeFalsy();
+    expect(studentInfosSorted[0].admissionsWithPriorityOrTestResult.length).toBe(1);
+    expect(studentInfosSorted[0].admissionsWithPriorityOrTestResult[0].mupId).toBe("m1");
+    expect(studentInfosSorted[0].admissionsWithPriorityOrTestResult[0].priority).toBe(1);
+    expect(studentInfosSorted[0].admissionsWithPriorityOrTestResult[0].testPassed).toBeFalsy();
+    expect(studentInfosSorted[0].admissionsWithPriorityOrTestResult[0].admitted).toBeFalsy();
 
     expect(studentInfosSorted[1].personalNumber).toBe("pn2");
     expect(studentInfosSorted[1].rating).toBe(1);
@@ -949,6 +949,6 @@ describe("createStudentDistributionAlgoInfos", () => {
     expect(
       Object.keys(studentInfosSorted[0].mupIdsAdmittedEarlier).length
     ).toBe(0);
-    expect(studentInfosSorted[1].admissions.length).toBe(2);
+    expect(studentInfosSorted[1].admissionsWithPriorityOrTestResult.length).toBe(2);
   });
 });

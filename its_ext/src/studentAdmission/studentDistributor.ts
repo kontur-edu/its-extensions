@@ -177,7 +177,7 @@ export interface IStudentDistributionAlgoInfo {
   personalNumber: string;
   rating: number;
   competitionGroupId: number;
-  admissions: IStudentDistributionAdmissionAlgoInfo[];
+  admissionsWithPriorityOrTestResult: IStudentDistributionAdmissionAlgoInfo[];
   mupIdsAdmittedEarlier: Set<string>; // NOTE: mupIds
 }
 
@@ -226,7 +226,7 @@ export function createStudentDistributionAlgoInfos(
       personalNumber: student.personalNumber,
       rating: student.rating,
       competitionGroupId: student.competitionGroupId,
-      admissions: [],
+      admissionsWithPriorityOrTestResult: [],
       mupIdsAdmittedEarlier: mupIdsAdmittedEarlier,
     };
     const mupToAdmissionMeta =
@@ -251,7 +251,7 @@ export function createStudentDistributionAlgoInfos(
             priority: admission.priority,
             admitted: admission.status === 1,
           };
-        studentDistributionAlgoInfo.admissions.push(
+        studentDistributionAlgoInfo.admissionsWithPriorityOrTestResult.push(
           studentDistributionAdmissionAlgoInfo
         );
       }
@@ -337,7 +337,7 @@ function createInitAlgoItems(
     const mupIdToAdmissionMeta =
       competitionGroupIdToMupAdmissions[studentAlgInfo.competitionGroupId];
     // const mup
-    for (const admissionAlgInfo of studentAlgInfo.admissions) {
+    for (const admissionAlgInfo of studentAlgInfo.admissionsWithPriorityOrTestResult) {
       if (admissionAlgInfo.admitted) {
         const mupInfo = mupIdToMupAlgoInfo[admissionAlgInfo.mupId];
         personalNumberToStudentAlgoItem[studentAlgInfo.personalNumber].ze +=
@@ -390,7 +390,7 @@ export function createStudentDistribution(
       personalNumberToStudentAlgoItem[studentAlgInfo.personalNumber];
     const mupIdToAdmissionMeta =
       competitionGroupIdToMupAdmissions[studentAlgInfo.competitionGroupId];
-    const admissionsSortedByPriority = studentAlgInfo.admissions.sort(
+    const admissionsSortedByPriority = studentAlgInfo.admissionsWithPriorityOrTestResult.sort(
       compareAdmissionAlgoInfos
     );
     for (const admissionAlgInfo of admissionsSortedByPriority) {
@@ -438,7 +438,7 @@ export function createStudentDistribution(
     const mupIdToAdmissionAlgoInfo: {
       [key: string]: IStudentDistributionAdmissionAlgoInfo;
     } = {};
-    for (const admissionAlgoInfo of studentAlgInfo.admissions) {
+    for (const admissionAlgoInfo of studentAlgInfo.admissionsWithPriorityOrTestResult) {
       mupIdToAdmissionAlgoInfo[admissionAlgoInfo.mupId] = admissionAlgoInfo;
     }
     for (const mupId in mupIdToMupAlgoInfo) {

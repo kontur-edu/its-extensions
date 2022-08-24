@@ -5,7 +5,6 @@ import { IStudentsDistributionProps } from "./types";
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 import {
   IStudentAdmissionDistributionItem,
-  // IMupDistributionItem,
   getAllPersonalNumbers,
   prepareStudentItems,
   getAvailableAdmissionIds,
@@ -15,8 +14,6 @@ import {
   validateStudentAdmissions,
   createAdmissionRecord,
   findMupIdsWithTestResultRequired,
-  // tryDistributeMupsByStudentRatingAndAdmissionPriority,
-  // addRandomMupsForStudentIfNeeded,
   createStudentDistributionAlgoInfos,
   getAvailableMupIds,
   createMupIdToMupAlgoInfo,
@@ -57,9 +54,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     useState<{
       [key: string]: IStudentAdmissionDistributionItem;
     }>({});
-  // const [mupIdToMupItems, setMupIdToMupItems] = useState<{
-  //   [key: string]: IMupDistributionItem;
-  // }>({});
   const [mupPrioritiesText, setMupPrioritiesText] = useState<string>("");
   const [studentAdmissionsText, setStudentAdmissionsText] =
     useState<string>("");
@@ -195,7 +189,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     setMupIdsWithIncorrectLimits(newMupIdsWithIncorrectLimits);
 
     setPersonalNumberToStudentItems(newPersonalNumberToStudentItems);
-    // setMupIdToMupItems(studentAndMupItems.mupIdToMupItems);
 
     mupIdsWithTestResultRequired.current = findMupIdsWithTestResultRequired(
       props.competitionGroupIds,
@@ -232,12 +225,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       JSON.stringify(newStudentDistributionData, null, 2)
     );
 
-    // const newStudentPersonalNumberToMupPriorities =
-    //   createStudentNumberToMupPrioritiesData(
-    //     props.competitionGroupIds,
-    //     context.dataRepository.competitionGroupIdToMupAdmissions,
-    //     context.dataRepository.admissionInfo
-    //   );
     const newStudentPersonalNumberToMupPriorities =
       createStudentMupPriorityData(
         props.competitionGroupIds,
@@ -321,7 +308,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       );
 
       setPersonalNumberToStudentItems(newPersonalNumberToStudentItems);
-      // setMupIdToMupItems(studentAndMupItems.mupIdToMupItems);
 
       generateActions(newPersonalNumberToStudentItems);
     } else {
@@ -342,17 +328,11 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     const newPersonalNumberToStudentItems: {
       [key: string]: IStudentAdmissionDistributionItem;
     } = {};
-    // const newMupIdToMupItems: {
-    //   [key: string]: IMupDistributionItem;
-    // } = {};
     for (const pn in personalNumberToStudentItems) {
       newPersonalNumberToStudentItems[pn] = {
         ...personalNumberToStudentItems[pn],
       };
     }
-    // for (const mupId in mupIdToMupItems) {
-    //   newMupIdToMupItems[mupId] = { ...mupIdToMupItems[mupId] };
-    // }
 
     const repo = context.dataRepository;
 
@@ -365,8 +345,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       repo.competitionGroupIdToMupAdmissions
     );
 
-    // console.log("studentDistributionAlgoInfos");
-    // console.log(studentDistributionAlgoInfos);
 
     const availableMupIds = getAvailableMupIds(
       props.competitionGroupIds,
@@ -398,34 +376,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         Array.from(enrolledAdmissionIds);
     }
 
-    // tryDistributeMupsByStudentRatingAndAdmissionPriority(
-    //   newPersonalNumberToStudentItems,
-    //   newMupIdToMupItems,
-    //   mupIdsWithTestResultRequired.current,
-    //   competitionGroupIdToZELimit.current,
-    //   personalNumbersOfActiveStudentsSortedByRating.current,
-    //   repo.mupData,
-    //   repo.admissionIdToMupId,
-    //   repo.admissionInfo
-    // );
-
-    // addRandomMupsForStudentIfNeeded(
-    //   personalNumbersOfActiveStudentsSortedByRating.current,
-    //   newPersonalNumberToStudentItems,
-    //   newMupIdToMupItems,
-    //   mupIdsWithTestResultRequired.current,
-    //   competitionGroupIdToZELimit.current,
-    //   repo.personalNumberToAdmittedMupNames,
-    //   repo.admissionIdToMupId,
-    //   repo.mupData,
-    //   repo.competitionGroupIdToMupAdmissions,
-    //   repo.admissionInfo
-    // );
-
-    // FIXME:
-
     setPersonalNumberToStudentItems(newPersonalNumberToStudentItems);
-    // setMupIdToMupItems(newMupIdToMupItems);
 
     return newPersonalNumberToStudentItems;
   };
@@ -488,9 +439,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   };
 
   const renderRows = () => {
-    // console.log("renderRows");
-    // console.log("personalNumberToStudentItems");
-    // console.log(personalNumberToStudentItems);
     return personalNumbersOfActiveStudentsSortedByRating.current.map(
       (personalNumber) => {
         if (!personalNumberToStudentItems.hasOwnProperty(personalNumber)) {

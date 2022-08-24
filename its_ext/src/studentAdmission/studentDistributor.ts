@@ -1,6 +1,3 @@
-// CG -> AdmissionMeta[]  // mupName, admissionId
-// admissionMeta -> StudentWithAdmision[] (=> students, => admissionInfo)
-
 import {
   AdmissionInfo,
   CompetitionGroupIdToMupAdmissions,
@@ -8,12 +5,6 @@ import {
   IStudent,
   IStudentData,
 } from "../common/types";
-
-function compareByRating(lhs: IStudent, rhs: IStudent) {
-  const r1 = lhs.rating ?? -1;
-  const r2 = rhs.rating ?? -1;
-  return r2 - r1;
-}
 
 export interface IStudentAdmissionDistributionItem {
   currentZE: number;
@@ -35,19 +26,7 @@ export interface IDistributionResult {
   mupIdToMupItem: { [key: string]: IMupDistributionItem };
 }
 
-export function calcZE(
-  admissionIds: number[] | Set<number>,
-  mupData: IMupData,
-  admissionIdToMupId: { [key: number]: string }
-): number {
-  let res = 0;
-  admissionIds.forEach((admissionId) => {
-    const mupId = admissionIdToMupId[admissionId];
-    const mup = mupData.data[mupId];
-    res += mup.ze;
-  });
-  return res;
-}
+
 
 export function createPersonalNumberToStudentItem(
   competitionGroupIds: number[],
@@ -94,7 +73,7 @@ export function createPersonalNumberToStudentItem(
     studentState.admissionIds = studentState.admissionIds.sort((lhs, rhs) => {
       const lhsStudentAdmission = admissionInfo[lhs][pn]!;
       const rhsStudentAdmission = admissionInfo[rhs][pn]!;
-      return lhsStudentAdmission.priority! - rhsStudentAdmission.priority!; //NOTE: should be filtered to not contain priority = null
+      return lhsStudentAdmission.priority! - rhsStudentAdmission.priority!; //NOTE: can contain null if have "test result"
     });
   }
 
@@ -181,7 +160,7 @@ export function createStudentDistributionAlgoInfos(
       const mupId = mupNameToMupId[mupName];
       mupIdsAdmittedEarlier.add(mupId);
     });
-    // for (const )
+
     const studentDistributionAlgoInfo: IStudentDistributionAlgoInfo = {
       personalNumber: student.personalNumber,
       rating: student.rating,
@@ -462,6 +441,12 @@ export function getAllPersonalNumbers(
   return allPersonalNumbers;
 }
 
+function compareByRating(lhs: IStudent, rhs: IStudent) {
+  const r1 = lhs.rating ?? -1;
+  const r2 = rhs.rating ?? -1;
+  return r2 - r1;
+}
+
 export function filterActiveStudentsAndSortByRating(
   allPersonalNumbers: string[],
   studentData: IStudentData
@@ -566,6 +551,20 @@ export function createStudentsDistributionData(
     result.mupIdToMupName[mupId] = mupData.data[mupId].shortName;
   }
   return result;
+}
+
+export function calcZE(
+  admissionIds: number[] | Set<number>,
+  mupData: IMupData,
+  admissionIdToMupId: { [key: number]: string }
+): number {
+  let res = 0;
+  admissionIds.forEach((admissionId) => {
+    const mupId = admissionIdToMupId[admissionId];
+    const mup = mupData.data[mupId];
+    res += mup.ze;
+  });
+  return res;
 }
 
 export function prepareStudentItems(

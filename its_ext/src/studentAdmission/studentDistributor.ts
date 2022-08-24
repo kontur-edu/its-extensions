@@ -500,6 +500,7 @@ export function createStudentDistribution(
   return result;
 }
 
+/*
 // NOTE: Приоритет задается порядком списка admissions у student item
 export function tryDistributeMupsByStudentRatingAndAdmissionPriority(
   personalNumberToStudentItem: {
@@ -621,6 +622,7 @@ export function addRandomMupsForStudentIfNeeded(
     }
   }
 }
+*/
 
 export function getAllPersonalNumbers(
   competitionGroupIds: number[],

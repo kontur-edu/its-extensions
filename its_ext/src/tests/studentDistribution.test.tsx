@@ -3,22 +3,22 @@ import {
   IMup,
   IMupData,
   IStudentAdmission,
-  AdmissionInfo,
-  CompetitionGroupIdToMupAdmissions,
+  // AdmissionInfo,
+  // CompetitionGroupIdToMupAdmissions,
   IStudent,
 } from "../common/types";
 import {
   calcZE,
   // createMupIdToMupItemByStudentItems,
   createPersonalNumberToStudentItem,
-  IStudentAdmissionDistributionItem,
+  // IStudentAdmissionDistributionItem,
   findMupIdsWithTestResultRequired,
-  tryDistributeMupsByStudentRatingAndAdmissionPriority,
-  IMupDistributionItem,
-  addRandomMupsForStudentIfNeeded,
+  // tryDistributeMupsByStudentRatingAndAdmissionPriority,
+  // IMupDistributionItem,
+  // addRandomMupsForStudentIfNeeded,
   filterActiveStudentsAndSortByRating,
 } from "../studentAdmission/studentDistributor";
-import { cloneObject } from "../utils/helpers";
+// import { cloneObject } from "../utils/helpers";
 
 const mups: IMup[] = [
   {
@@ -256,7 +256,7 @@ describe("findMupIdsWithTestResultRequired", () => {
     expect(mupNameArr).toContain("m2");
   });
 });
-
+/*
 const personalNumberToStudentItem: {
   [key: string]: IStudentAdmissionDistributionItem;
 } = {
@@ -322,6 +322,7 @@ const admissionInfo: AdmissionInfo = {
     },
   },
 };
+
 
 describe("tryDistributeMupsByStudentRatingAndAdmissionPriority", () => {
   it("distributes", () => {
@@ -783,6 +784,7 @@ describe("addRandomMupsForStudentIfNeeded", () => {
     ).toContain(1);
   });
 });
+*/
 
 describe("filterActiveStudentsAndSortByRating", () => {
   it("filter and sorts", () => {

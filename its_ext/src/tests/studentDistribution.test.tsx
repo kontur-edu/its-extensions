@@ -148,20 +148,20 @@ describe("createPersonalNumberToStudentItem", () => {
   });
 });
 
-const studentItems: IStudentAdmissionDistributionItem[] = [
-  {
-    currentZE: 3,
-    admissionIds: [1],
-    selectedAdmissionIds: [1],
-    competitionGroupId: 1,
-  },
-  {
-    currentZE: 3,
-    admissionIds: [2],
-    selectedAdmissionIds: [2],
-    competitionGroupId: 2,
-  },
-];
+// const studentItems: IStudentAdmissionDistributionItem[] = [
+//   {
+//     currentZE: 3,
+//     admissionIds: [1],
+//     selectedAdmissionIds: [1],
+//     competitionGroupId: 1,
+//   },
+//   {
+//     currentZE: 3,
+//     admissionIds: [2],
+//     selectedAdmissionIds: [2],
+//     competitionGroupId: 2,
+//   },
+// ];
 
 // describe("createMupIdToMupItemByStudentItems", () => {
 //   it("creates mup items", () => {

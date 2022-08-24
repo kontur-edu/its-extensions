@@ -188,13 +188,13 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       props.competitionGroupIds,
       context.dataRepository.competitionGroupIdToMupAdmissions
     );
-    const newMupIdsWithIncorrectLimits: string[] = Array.from(newMupIdsWithIncorrectLimitsSet);
-    
+    const newMupIdsWithIncorrectLimits: string[] = Array.from(
+      newMupIdsWithIncorrectLimitsSet
+    );
+
     setMupIdsWithIncorrectLimits(newMupIdsWithIncorrectLimits);
 
-    setPersonalNumberToStudentItems(
-      newPersonalNumberToStudentItems
-    );
+    setPersonalNumberToStudentItems(newPersonalNumberToStudentItems);
     // setMupIdToMupItems(studentAndMupItems.mupIdToMupItems);
 
     mupIdsWithTestResultRequired.current = findMupIdsWithTestResultRequired(
@@ -244,7 +244,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         context.dataRepository.competitionGroupIdToMupAdmissions,
         context.dataRepository.admissionInfo,
         context.dataRepository.mupData,
-        context.dataRepository.studentData,
+        context.dataRepository.studentData
       );
     const newStudentPersonalNumberToMupPrioritiesJson = JSON.stringify(
       newStudentPersonalNumberToMupPriorities,
@@ -320,9 +320,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         personalNumberToSelectedAdmissionIds
       );
 
-      setPersonalNumberToStudentItems(
-        newPersonalNumberToStudentItems
-      );
+      setPersonalNumberToStudentItems(newPersonalNumberToStudentItems);
       // setMupIdToMupItems(studentAndMupItems.mupIdToMupItems);
 
       generateActions(newPersonalNumberToStudentItems);
@@ -364,37 +362,41 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       repo.personalNumberToAdmittedMupNames,
       repo.mupData,
       repo.admissionInfo,
-      repo.competitionGroupIdToMupAdmissions,
+      repo.competitionGroupIdToMupAdmissions
     );
-    
 
-    console.log("studentDistributionAlgoInfos");
-    console.log(studentDistributionAlgoInfos);
+    // console.log("studentDistributionAlgoInfos");
+    // console.log(studentDistributionAlgoInfos);
 
-    const availableMupIds = getAvailableMupIds(props.competitionGroupIds, repo.competitionGroupIdToMupAdmissions);
-    
+    const availableMupIds = getAvailableMupIds(
+      props.competitionGroupIds,
+      repo.competitionGroupIdToMupAdmissions
+    );
+
     const mupAlgoInfo = createMupIdToMupAlgoInfo(
       availableMupIds,
       repo.mupData,
-      mupIdsWithTestResultRequired.current,
+      mupIdsWithTestResultRequired.current
     );
-
 
     const personalNumberToAdmissionIds = createStudentDistribution(
       studentDistributionAlgoInfos,
       mupAlgoInfo,
       competitionGroupIdToZELimit.current,
-      repo.competitionGroupIdToMupAdmissions,
+      repo.competitionGroupIdToMupAdmissions
     );
-    
+
     for (const pn in personalNumberToAdmissionIds) {
       const enrolledAdmissionIds = personalNumberToAdmissionIds[pn];
-      const ze = calcZE(enrolledAdmissionIds, repo.mupData, repo.admissionIdToMupId);
+      const ze = calcZE(
+        enrolledAdmissionIds,
+        repo.mupData,
+        repo.admissionIdToMupId
+      );
       newPersonalNumberToStudentItems[pn].currentZE = ze;
-      newPersonalNumberToStudentItems[pn].selectedAdmissionIds = Array.from(enrolledAdmissionIds);
+      newPersonalNumberToStudentItems[pn].selectedAdmissionIds =
+        Array.from(enrolledAdmissionIds);
     }
-
-
 
     // tryDistributeMupsByStudentRatingAndAdmissionPriority(
     //   newPersonalNumberToStudentItems,
@@ -640,13 +642,12 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     return (
       <React.Fragment>
         {renderTable()}
-
         <CopyOrDownload
           title="Скопировать приоритеты студентов на дисциплины по выбору"
           filename="StudentMupPriorities.json"
           data={mupPrioritiesText}
-        /> <br/>
-
+        />{" "}
+        <br />
         <Button
           onClick={handleDistributeRemainingStudents}
           variant="contained"
@@ -658,7 +659,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           {" "}
           Дораспределить студентов по курсам
         </Button>
-
         <Button
           onClick={toggleManualEditSection}
           style={{
@@ -682,13 +682,11 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
             {renderAdmissionsInput()}
           </div>
         </Collapse>
-
         {Object.keys(mupToErrorMessages).length > 0 && (
           <article className={style.error_list_container}>
             <ul className="warning">{renderMupToErrorMessages()}</ul>
           </article>
         )}
-
         <ApplyButtonWithActionDisplay
           showErrorWarning={true}
           showSuccessMessage={true}

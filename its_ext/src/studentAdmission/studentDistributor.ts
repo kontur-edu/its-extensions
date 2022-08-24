@@ -4,11 +4,9 @@
 import {
   AdmissionInfo,
   CompetitionGroupIdToMupAdmissions,
-  IMup,
   IMupData,
   IStudent,
   IStudentData,
-  MupIdToAdmission,
 } from "../common/types";
 
 function compareByRating(lhs: IStudent, rhs: IStudent) {

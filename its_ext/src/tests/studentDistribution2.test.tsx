@@ -1,25 +1,13 @@
 import {
   IAdmissionMeta,
-  IMup,
-  IMupData,
-  IStudentAdmission,
-  AdmissionInfo,
   CompetitionGroupIdToMupAdmissions,
-  IStudent,
 } from "../common/types";
 import {
-  calcZE,
-  createPersonalNumberToStudentItem,
-  IStudentAdmissionDistributionItem,
-  findMupIdsWithTestResultRequired,
-  IMupDistributionItem,
-  filterActiveStudentsAndSortByRating,
   createStudentDistribution,
   IStudentDistributionAlgoInfo,
   IStudentDistributionAdmissionAlgoInfo,
   IMupAlgoInfo,
 } from "../studentAdmission/studentDistributor";
-import { cloneObject } from "../utils/helpers";
 
 describe("createStudentDistribution", () => {
   const studentDistributionAdmissionAlgoInfos: IStudentDistributionAdmissionAlgoInfo[] =

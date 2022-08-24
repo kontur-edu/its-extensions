@@ -311,13 +311,11 @@ function compareAdmissionAlgoInfos(
   return lhsPriority - rhsPriority;
 }
 
-export function createStudentDistribution(
+function createInitAlgoItems(
   studentDistributionAlgoInfos: IStudentDistributionAlgoInfo[],
   mupIdToMupAlgoInfo: { [key: string]: IMupAlgoInfo },
-  competitionGroupIdToZELimit: { [key: number]: number },
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions
 ) {
-  // console.log("createStudentDistribution");
   const mupIdToMupAlgoItem: {
     [key: string]: IMupAlgoItem;
   } = {};
@@ -328,10 +326,11 @@ export function createStudentDistribution(
   }
   const personalNumberToStudentAlgoItem: { [key: string]: IStudentAlgoItem } =
     {};
-  const result: IPersonalNumberToAdmissionIds = {};
+  const personalNumberToAdmissionIds: IPersonalNumberToAdmissionIds = {};
   // FILL initial mup and student algo items
   for (const studentAlgInfo of studentDistributionAlgoInfos) {
-    result[studentAlgInfo.personalNumber] = new Set<number>();
+    personalNumberToAdmissionIds[studentAlgInfo.personalNumber] =
+      new Set<number>();
     personalNumberToStudentAlgoItem[studentAlgInfo.personalNumber] = {
       ze: 0,
     };
@@ -345,13 +344,37 @@ export function createStudentDistribution(
           mupInfo.ze;
         mupIdToMupAlgoItem[admissionAlgInfo.mupId].count++;
         const admissionMeta = mupIdToAdmissionMeta[admissionAlgInfo.mupId];
-        result[studentAlgInfo.personalNumber].add(admissionMeta.admissionId);
+        personalNumberToAdmissionIds[studentAlgInfo.personalNumber].add(
+          admissionMeta.admissionId
+        );
       }
     }
   }
+  return {
+    mupIdToMupAlgoItem,
+    personalNumberToStudentAlgoItem,
+    personalNumberToAdmissionIds,
+  };
+}
+
+export function createStudentDistribution(
+  studentDistributionAlgoInfos: IStudentDistributionAlgoInfo[],
+  mupIdToMupAlgoInfo: { [key: string]: IMupAlgoInfo },
+  competitionGroupIdToZELimit: { [key: number]: number },
+  competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions
+) {
+  const {
+    mupIdToMupAlgoItem,
+    personalNumberToStudentAlgoItem,
+    personalNumberToAdmissionIds,
+  } = createInitAlgoItems(
+    studentDistributionAlgoInfos,
+    mupIdToMupAlgoInfo,
+    competitionGroupIdToMupAdmissions
+  );
+  const result = personalNumberToAdmissionIds;
 
   // distribute using priorities
-  // console.log(`---------------- Distribution by priority --------------------`);
   const studentDistributionAlgoInfosSortedByRating =
     studentDistributionAlgoInfos.sort((lhs, rhs) => {
       return rhs.rating - lhs.rating;
@@ -406,7 +429,6 @@ export function createStudentDistribution(
     }
   }
 
-  // console.log(`---------------- Add random mups --------------------`);
   // add random mups if needed
   for (const studentAlgInfo of studentDistributionAlgoInfosSortedByRating) {
     const studentItem =

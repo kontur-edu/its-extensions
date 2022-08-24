@@ -37,9 +37,10 @@ import {
 } from "../../../subgroupMembership/subgroupMembershipParser";
 
 import {
-  prepareStudentAndMupItems,
+  // prepareStudentAndMupItems,
   getAvailableAdmissionIds,
   createStudentsDistributionData,
+  prepareStudentItems,
 } from "../../../studentAdmission/studentDistributor";
 import { OuterLink } from "../../OuterLink";
 import { CopyOrDownload } from "../../CopyOrDownload";
@@ -242,7 +243,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
             context.dataRepository.competitionGroupIdToMupAdmissions[cgId];
           competitionGroupIdToAdmissionIds[cgId] = Object.values(
             mupIdToAdmissions
-          ).map((a) => a.admissionsId);
+          ).map((a) => a.admissionId);
         }
         const hasStudentAndAdmissionData =
           !refresh &&
@@ -281,7 +282,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
 
     setSubgroupDiffInfo(newSubgroupDiffInfo);
 
-    const studentAndMupItems = prepareStudentAndMupItems(
+    const personalNumberToStudentItems = prepareStudentItems(
       props.competitionGroupIds,
       context.dataRepository.mupData,
       context.dataRepository.competitionGroupIdToMupAdmissions,
@@ -296,7 +297,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     );
 
     const newStudentDistributionData = createStudentsDistributionData(
-      studentAndMupItems.personalNumberToStudentItems,
+      personalNumberToStudentItems,
       context.dataRepository.studentData,
       context.dataRepository.mupData,
       context.dataRepository.admissionIdToMupId,

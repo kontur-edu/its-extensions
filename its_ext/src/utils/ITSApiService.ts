@@ -411,7 +411,7 @@ export class ITSApiService {
         mupId: obj["MUPId"],
         limit: obj["Limit"],
         count: obj["Admitted"],
-        admissionsId: obj["MUPItsInSelectionGroupId"],
+        admissionId: obj["MUPItsInSelectionGroupId"],
       };
       return admissionMeta;
     });

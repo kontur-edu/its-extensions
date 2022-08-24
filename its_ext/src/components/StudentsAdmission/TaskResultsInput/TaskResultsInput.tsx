@@ -57,7 +57,7 @@ export function getAdmissionIdsPerCompetitionGroup(
       competitionGroupIdToAdmissionIds[competitionGroupId] = [];
     }
     competitionGroupIdToAdmissionIds[competitionGroupId].push(
-      mupIdToAdmissionId[mupId].admissionsId
+      mupIdToAdmissionId[mupId].admissionId
     );
   }
   return competitionGroupIdToAdmissionIds;

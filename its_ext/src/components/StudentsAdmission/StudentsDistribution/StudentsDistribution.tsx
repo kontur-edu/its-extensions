@@ -5,9 +5,9 @@ import { IStudentsDistributionProps } from "./types";
 import { ApplyButtonWithActionDisplay } from "../../ApplyButtonWithActionDisplay";
 import {
   IStudentAdmissionDistributionItem,
-  IMupDistributionItem,
+  // IMupDistributionItem,
   getAllPersonalNumbers,
-  prepareStudentAndMupItems,
+  prepareStudentItems,
   getAvailableAdmissionIds,
   createStudentsDistributionData,
   filterActiveStudentsAndSortByRating,
@@ -15,8 +15,13 @@ import {
   validateStudentAdmissions,
   createAdmissionRecord,
   findMupIdsWithTestResultRequired,
-  tryDistributeMupsByStudentRatingAndAdmissionPriority,
-  addRandomMupsForStudentIfNeeded,
+  // tryDistributeMupsByStudentRatingAndAdmissionPriority,
+  // addRandomMupsForStudentIfNeeded,
+  createStudentDistributionAlgoInfos,
+  getAvailableMupIds,
+  createMupIdToMupAlgoInfo,
+  createStudentDistribution,
+  calcZE,
 } from "../../../studentAdmission/studentDistributor";
 import { ITSContext } from "../../../common/Context";
 import { DEBOUNCE_MS } from "../../../utils/constants";
@@ -30,7 +35,8 @@ import {
 import {
   createStudentDistributionMupToErrorMessages,
   createStudentMupPriorityData,
-  createStudentNumberToMupPrioritiesData,
+  // createStudentNumberToMupPrioritiesData,
+  getMupIdsWithDifferentLimits,
 } from "./utils";
 
 import Collapse from "@mui/material/Collapse";
@@ -51,9 +57,9 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     useState<{
       [key: string]: IStudentAdmissionDistributionItem;
     }>({});
-  const [mupIdToMupItems, setMupIdToMupItems] = useState<{
-    [key: string]: IMupDistributionItem;
-  }>({});
+  // const [mupIdToMupItems, setMupIdToMupItems] = useState<{
+  //   [key: string]: IMupDistributionItem;
+  // }>({});
   const [mupPrioritiesText, setMupPrioritiesText] = useState<string>("");
   const [studentAdmissionsText, setStudentAdmissionsText] =
     useState<string>("");
@@ -119,7 +125,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           ];
         for (const mupId in mupToAdmission) {
           competitionGroupIdToAdmissionIds[competitionGroupId].push(
-            mupToAdmission[mupId].admissionsId
+            mupToAdmission[mupId].admissionId
           );
         }
       }
@@ -169,7 +175,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         context.dataRepository.studentData
       );
 
-    const studentAndMupItems = prepareStudentAndMupItems(
+    const newPersonalNumberToStudentItems = prepareStudentItems(
       props.competitionGroupIds,
       context.dataRepository.mupData,
       context.dataRepository.competitionGroupIdToMupAdmissions,
@@ -178,18 +184,18 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       context.dataRepository.studentData
     );
 
-    const newMupIdsWithIncorrectLimits: string[] = [];
-    for (const mupId in studentAndMupItems.mupIdToMupItems) {
-      if (!studentAndMupItems.mupIdToMupItems[mupId].valid) {
-        newMupIdsWithIncorrectLimits.push(mupId);
-      }
-    }
+    const newMupIdsWithIncorrectLimitsSet = getMupIdsWithDifferentLimits(
+      props.competitionGroupIds,
+      context.dataRepository.competitionGroupIdToMupAdmissions
+    );
+    const newMupIdsWithIncorrectLimits: string[] = Array.from(newMupIdsWithIncorrectLimitsSet);
+    
     setMupIdsWithIncorrectLimits(newMupIdsWithIncorrectLimits);
 
     setPersonalNumberToStudentItems(
-      studentAndMupItems.personalNumberToStudentItems
+      newPersonalNumberToStudentItems
     );
-    setMupIdToMupItems(studentAndMupItems.mupIdToMupItems);
+    // setMupIdToMupItems(studentAndMupItems.mupIdToMupItems);
 
     mupIdsWithTestResultRequired.current = findMupIdsWithTestResultRequired(
       props.competitionGroupIds,
@@ -216,7 +222,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       context.dataRepository.competitionGroupIdToMupAdmissions
     );
     const newStudentDistributionData = createStudentsDistributionData(
-      studentAndMupItems.personalNumberToStudentItems,
+      newPersonalNumberToStudentItems,
       context.dataRepository.studentData,
       context.dataRepository.mupData,
       context.dataRepository.admissionIdToMupId,
@@ -304,7 +310,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
           studentInfo.mupIds;
       }
       // Отобразить распределение в таблице
-      const studentAndMupItems = prepareStudentAndMupItems(
+      const newPersonalNumberToStudentItems = prepareStudentItems(
         props.competitionGroupIds,
         context.dataRepository.mupData,
         context.dataRepository.competitionGroupIdToMupAdmissions,
@@ -315,11 +321,11 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       );
 
       setPersonalNumberToStudentItems(
-        studentAndMupItems.personalNumberToStudentItems
+        newPersonalNumberToStudentItems
       );
-      setMupIdToMupItems(studentAndMupItems.mupIdToMupItems);
+      // setMupIdToMupItems(studentAndMupItems.mupIdToMupItems);
 
-      generateActions(studentAndMupItems.personalNumberToStudentItems);
+      generateActions(newPersonalNumberToStudentItems);
     } else {
     }
   };
@@ -338,46 +344,85 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     const newPersonalNumberToStudentItems: {
       [key: string]: IStudentAdmissionDistributionItem;
     } = {};
-    const newMupIdToMupItems: {
-      [key: string]: IMupDistributionItem;
-    } = {};
+    // const newMupIdToMupItems: {
+    //   [key: string]: IMupDistributionItem;
+    // } = {};
     for (const pn in personalNumberToStudentItems) {
       newPersonalNumberToStudentItems[pn] = {
         ...personalNumberToStudentItems[pn],
       };
     }
-    for (const mupId in mupIdToMupItems) {
-      newMupIdToMupItems[mupId] = { ...mupIdToMupItems[mupId] };
-    }
+    // for (const mupId in mupIdToMupItems) {
+    //   newMupIdToMupItems[mupId] = { ...mupIdToMupItems[mupId] };
+    // }
 
     const repo = context.dataRepository;
 
-    tryDistributeMupsByStudentRatingAndAdmissionPriority(
-      newPersonalNumberToStudentItems,
-      newMupIdToMupItems,
-      mupIdsWithTestResultRequired.current,
-      competitionGroupIdToZELimit.current,
+    const studentDistributionAlgoInfos = createStudentDistributionAlgoInfos(
       personalNumbersOfActiveStudentsSortedByRating.current,
+      repo.studentData,
+      repo.personalNumberToAdmittedMupNames,
       repo.mupData,
-      repo.admissionIdToMupId,
-      repo.admissionInfo
+      repo.admissionInfo,
+      repo.competitionGroupIdToMupAdmissions,
+    );
+    
+
+    console.log("studentDistributionAlgoInfos");
+    console.log(studentDistributionAlgoInfos);
+
+    const availableMupIds = getAvailableMupIds(props.competitionGroupIds, repo.competitionGroupIdToMupAdmissions);
+    
+    const mupAlgoInfo = createMupIdToMupAlgoInfo(
+      availableMupIds,
+      repo.mupData,
     );
 
-    addRandomMupsForStudentIfNeeded(
-      personalNumbersOfActiveStudentsSortedByRating.current,
-      newPersonalNumberToStudentItems,
-      newMupIdToMupItems,
-      mupIdsWithTestResultRequired.current,
+
+    const personalNumberToAdmissionIds = createStudentDistribution(
+      studentDistributionAlgoInfos,
+      mupAlgoInfo,
       competitionGroupIdToZELimit.current,
-      repo.personalNumberToAdmittedMupNames,
-      repo.admissionIdToMupId,
-      repo.mupData,
       repo.competitionGroupIdToMupAdmissions,
-      repo.admissionInfo
     );
+    
+    for (const pn in personalNumberToAdmissionIds) {
+      const enrolledAdmissionIds = personalNumberToAdmissionIds[pn];
+      const ze = calcZE(enrolledAdmissionIds, repo.mupData, repo.admissionIdToMupId);
+      newPersonalNumberToStudentItems[pn].currentZE = ze;
+      newPersonalNumberToStudentItems[pn].selectedAdmissionIds = Array.from(enrolledAdmissionIds);
+    }
+
+
+
+    // tryDistributeMupsByStudentRatingAndAdmissionPriority(
+    //   newPersonalNumberToStudentItems,
+    //   newMupIdToMupItems,
+    //   mupIdsWithTestResultRequired.current,
+    //   competitionGroupIdToZELimit.current,
+    //   personalNumbersOfActiveStudentsSortedByRating.current,
+    //   repo.mupData,
+    //   repo.admissionIdToMupId,
+    //   repo.admissionInfo
+    // );
+
+    // addRandomMupsForStudentIfNeeded(
+    //   personalNumbersOfActiveStudentsSortedByRating.current,
+    //   newPersonalNumberToStudentItems,
+    //   newMupIdToMupItems,
+    //   mupIdsWithTestResultRequired.current,
+    //   competitionGroupIdToZELimit.current,
+    //   repo.personalNumberToAdmittedMupNames,
+    //   repo.admissionIdToMupId,
+    //   repo.mupData,
+    //   repo.competitionGroupIdToMupAdmissions,
+    //   repo.admissionInfo
+    // );
+
+    // FIXME:
 
     setPersonalNumberToStudentItems(newPersonalNumberToStudentItems);
-    setMupIdToMupItems(newMupIdToMupItems);
+    // setMupIdToMupItems(newMupIdToMupItems);
 
     return newPersonalNumberToStudentItems;
   };
@@ -440,8 +485,15 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   };
 
   const renderRows = () => {
+    // console.log("renderRows");
+    // console.log("personalNumberToStudentItems");
+    // console.log(personalNumberToStudentItems);
     return personalNumbersOfActiveStudentsSortedByRating.current.map(
       (personalNumber) => {
+        if (!personalNumberToStudentItems.hasOwnProperty(personalNumber)) {
+          // console.warn(`${personalNumber} not found in personalNumberToStudentItems`)
+          return null;
+        }
         const studentItem = personalNumberToStudentItems[personalNumber];
         const student = context.dataRepository.studentData.data[personalNumber];
         const selectedMupRecords = studentItem.selectedAdmissionIds.map((aId) =>
@@ -472,7 +524,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
             </td>
             <td>{student.groupName}</td>
             <td>{student.rating}</td>
-            <td>{studentItem.currentZ}</td>
+            <td>{studentItem.currentZE}</td>
             <td>
               <ul className="list_without_decorations">
                 {selectedMupRecords.map((record, index) => (

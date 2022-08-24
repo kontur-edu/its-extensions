@@ -260,7 +260,7 @@ export class ITSRepository {
       if (resp.status === "fulfilled") {
         for (const admissionMeta of resp.value) {
           mupIdToAdmission[admissionMeta.mupId] = admissionMeta;
-          this.admissionIdToMupId[admissionMeta.admissionsId] =
+          this.admissionIdToMupId[admissionMeta.admissionId] =
             admissionMeta.mupId;
         }
       } else {
@@ -471,7 +471,7 @@ export async function createPersonalNumberToAdmittedMupNames(
     const admissionMetas = await api.GetStudentAdmissionMetas(cgId);
     if (admissionMetas.length > 0) {
       const meta = admissionMetas[0];
-      const admissionId = meta.admissionsId;
+      const admissionId = meta.admissionId;
       const mupId = meta.mupId;
       const mupName = mupData.data[mupId].name;
       const studentsRaw = await api.GetStudentsForAdmission(admissionId);

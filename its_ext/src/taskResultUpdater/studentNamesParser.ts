@@ -48,7 +48,6 @@ export function getNameRecords(text: string): TaskResultNameRecord[] {
   return result;
 }
 
-// Определить фамилию по окончанию
 // Составить Фамилия -> personalNumber[]
 // Если несколько проверить вхождение остальных частей
 // Если нет проверить вхождение остальных частей

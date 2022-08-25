@@ -19,15 +19,15 @@ function createAdmissionToStatusToStudentsUpdates(
     const sItem = personalNumberToDistributionItem[personalNumber];
     const student = studentData.data[personalNumber];
     const allAdmissionIds = new Set<number>([
-      ...sItem.admissionIds,
-      ...sItem.selectedAdmissionIds,
+      ...sItem.admissionIdsWithPriorityOrTestResult,
+      ...sItem.assignedAdmissionIds,
     ]);
     allAdmissionIds.forEach((admissionId) => {
       if (!admissionToStudents.hasOwnProperty(admissionId)) {
         admissionToStudents[admissionId] = { 0: [], 1: [] };
       }
       const statusToStudentIds = admissionToStudents[admissionId];
-      const isSelected = sItem.selectedAdmissionIds.includes(admissionId);
+      const isSelected = sItem.assignedAdmissionIds.includes(admissionId);
       if (admissionInfo[admissionId].hasOwnProperty(personalNumber)) {
         const admission = admissionInfo[admissionId][personalNumber];
         // status = 1 admitted, 2 - not

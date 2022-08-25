@@ -9,8 +9,8 @@ import { StudentDistributor } from "./studentDistributor";
 
 export interface IStudentAdmissionDistributionItem {
   currentZE: number;
-  admissionIds: number[];
-  selectedAdmissionIds: number[];
+  admissionIdsWithPriorityOrTestResult: number[];
+  assignedAdmissionIds: number[];
   competitionGroupId: number;
 }
 
@@ -47,8 +47,8 @@ export function createPersonalNumberToStudentItem(
         if (!personalNumberToStudentItem.hasOwnProperty(personalNumber)) {
           personalNumberToStudentItem[personalNumber] = {
             currentZE: 0,
-            admissionIds: [],
-            selectedAdmissionIds: [],
+            admissionIdsWithPriorityOrTestResult: [],
+            assignedAdmissionIds: [],
             competitionGroupId: competitionGroupId,
           };
         }
@@ -56,12 +56,12 @@ export function createPersonalNumberToStudentItem(
         const admission = personalNumberToAdmission[personalNumber];
 
         if (admission?.priority || admission?.status === 1) {
-          studentState.admissionIds.push(admissionId);
+          studentState.admissionIdsWithPriorityOrTestResult.push(admissionId);
         }
         if (admission?.status === 1) {
           // status === 1 то есть уже зачислен на курс
           // studentState.currentZE += mupData.data[mId].ze;
-          studentState.selectedAdmissionIds.push(admissionId);
+          studentState.assignedAdmissionIds.push(admissionId);
         }
       }
     }
@@ -69,7 +69,7 @@ export function createPersonalNumberToStudentItem(
 
   for (const pn in personalNumberToStudentItem) {
     const studentState = personalNumberToStudentItem[pn];
-    studentState.admissionIds = studentState.admissionIds.sort((lhs, rhs) => {
+    studentState.admissionIdsWithPriorityOrTestResult = studentState.admissionIdsWithPriorityOrTestResult.sort((lhs, rhs) => {
       const lhsStudentAdmission = admissionInfo[lhs][pn]!;
       const rhsStudentAdmission = admissionInfo[rhs][pn]!;
       return lhsStudentAdmission.priority! - rhsStudentAdmission.priority!; //NOTE: can contain null if have "test result"
@@ -366,7 +366,7 @@ export function createStudentsDistributionData(
     const student = studentData.data[personalNumber];
     const mupIds = newPersonalNumberToStudentItems[
       personalNumber
-    ].selectedAdmissionIds.map((aId) => admissionIdToMupId[aId]);
+    ].assignedAdmissionIds.map((aId) => admissionIdToMupId[aId]);
     if (student.status === "Активный" && student.rating !== null) {
       const studentInfo: IStudentDistributionInfo = {
         personalNumber: student.personalNumber,
@@ -425,14 +425,14 @@ export function prepareStudentItems(
             competitionGroupIdToMupAdmissions[student.competitionGroupId][mId]
               .admissionId
         );
-        personalNumberToStudentItems[pn].selectedAdmissionIds =
+        personalNumberToStudentItems[pn].assignedAdmissionIds =
           newSelectedAdmissionIds;
       }
     }
   }
   for (const pn in personalNumberToStudentItems) {
     personalNumberToStudentItems[pn].currentZE = calcZE(
-      personalNumberToStudentItems[pn].selectedAdmissionIds,
+      personalNumberToStudentItems[pn].assignedAdmissionIds,
       mupData,
       admissionIdToMupId
     );

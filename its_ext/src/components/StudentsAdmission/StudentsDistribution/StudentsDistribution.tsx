@@ -19,7 +19,7 @@ import {
   createMupIdToMupAlgoInfo,
   createStudentDistribution,
   calcZE,
-} from "../../../studentAdmission/studentDistributor";
+} from "../../../studentAdmission/studentDistribution";
 import { ITSContext } from "../../../common/Context";
 import { DEBOUNCE_MS } from "../../../utils/constants";
 import { createDebouncedWrapper } from "../../../utils/helpers";
@@ -344,7 +344,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       repo.admissionInfo,
       repo.competitionGroupIdToMupAdmissions
     );
-
 
     const availableMupIds = getAvailableMupIds(
       props.competitionGroupIds,

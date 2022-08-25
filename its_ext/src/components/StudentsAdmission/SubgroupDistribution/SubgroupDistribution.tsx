@@ -41,7 +41,7 @@ import {
   getAvailableAdmissionIds,
   createStudentsDistributionData,
   prepareStudentItems,
-} from "../../../studentAdmission/studentDistributor";
+} from "../../../studentAdmission/studentDistribution";
 import { OuterLink } from "../../OuterLink";
 import { CopyOrDownload } from "../../CopyOrDownload";
 import { RefreshButton } from "../../RefreshButton";

@@ -2,7 +2,7 @@ import { ITSAction } from "../common/actions";
 
 import { AdmissionInfo, IStudentData } from "../common/types";
 import { UpdateStudentAdmissionAction } from "./actions";
-import { IStudentAdmissionDistributionItem } from "./studentDistributor";
+import { IStudentAdmissionDistributionItem } from "./studentDistribution";
 
 function createAdmissionToStatusToStudentsUpdates(
   personalNumberToDistributionItem: {

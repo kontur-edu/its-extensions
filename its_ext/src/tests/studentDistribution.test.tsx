@@ -10,7 +10,7 @@ import {
   createPersonalNumberToStudentItem,
   findMupIdsWithTestResultRequired,
   filterActiveStudentsAndSortByRating,
-} from "../studentAdmission/studentDistributor";
+} from "../studentAdmission/studentDistribution";
 
 const mups: IMup[] = [
   {

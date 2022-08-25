@@ -14,7 +14,7 @@ import {
   IStudentDistributionAdmissionAlgoInfo,
   IMupAlgoInfo,
   createStudentDistributionAlgoInfos,
-} from "../studentAdmission/studentDistributor";
+} from "../studentAdmission/studentDistribution";
 
 describe("createStudentDistribution", () => {
   const studentDistributionAdmissionAlgoInfos: IStudentDistributionAdmissionAlgoInfo[] =
@@ -32,7 +32,9 @@ describe("createStudentDistribution", () => {
       personalNumber: "pn1",
       rating: 1,
       competitionGroupId: 1,
-      admissionsWithPriorityOrTestResult: [studentDistributionAdmissionAlgoInfos[0]],
+      admissionsWithPriorityOrTestResult: [
+        studentDistributionAdmissionAlgoInfos[0],
+      ],
       mupIdsAdmittedEarlier: new Set<string>(),
     },
   ];
@@ -937,11 +939,21 @@ describe("createStudentDistributionAlgoInfos", () => {
     expect(
       Object.keys(studentInfosSorted[0].mupIdsAdmittedEarlier).length
     ).toBe(0);
-    expect(studentInfosSorted[0].admissionsWithPriorityOrTestResult.length).toBe(1);
-    expect(studentInfosSorted[0].admissionsWithPriorityOrTestResult[0].mupId).toBe("m1");
-    expect(studentInfosSorted[0].admissionsWithPriorityOrTestResult[0].priority).toBe(1);
-    expect(studentInfosSorted[0].admissionsWithPriorityOrTestResult[0].testPassed).toBeFalsy();
-    expect(studentInfosSorted[0].admissionsWithPriorityOrTestResult[0].admitted).toBeFalsy();
+    expect(
+      studentInfosSorted[0].admissionsWithPriorityOrTestResult.length
+    ).toBe(1);
+    expect(
+      studentInfosSorted[0].admissionsWithPriorityOrTestResult[0].mupId
+    ).toBe("m1");
+    expect(
+      studentInfosSorted[0].admissionsWithPriorityOrTestResult[0].priority
+    ).toBe(1);
+    expect(
+      studentInfosSorted[0].admissionsWithPriorityOrTestResult[0].testPassed
+    ).toBeFalsy();
+    expect(
+      studentInfosSorted[0].admissionsWithPriorityOrTestResult[0].admitted
+    ).toBeFalsy();
 
     expect(studentInfosSorted[1].personalNumber).toBe("pn2");
     expect(studentInfosSorted[1].rating).toBe(1);
@@ -949,6 +961,8 @@ describe("createStudentDistributionAlgoInfos", () => {
     expect(
       Object.keys(studentInfosSorted[0].mupIdsAdmittedEarlier).length
     ).toBe(0);
-    expect(studentInfosSorted[1].admissionsWithPriorityOrTestResult.length).toBe(2);
+    expect(
+      studentInfosSorted[1].admissionsWithPriorityOrTestResult.length
+    ).toBe(2);
   });
 });

@@ -19,7 +19,7 @@ import {
   createMupIdToMupAlgoInfo,
   createStudentDistribution,
   calcZE,
-} from "../../../studentAdmission/studentDistributor";
+} from "../../../studentAdmission/studentDistribution";
 import { ITSContext } from "../../../common/Context";
 import { DEBOUNCE_MS } from "../../../utils/constants";
 import { createDebouncedWrapper } from "../../../utils/helpers";
@@ -345,7 +345,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
       repo.competitionGroupIdToMupAdmissions
     );
 
-
     const availableMupIds = getAvailableMupIds(
       props.competitionGroupIds,
       repo.competitionGroupIdToMupAdmissions
@@ -372,7 +371,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         repo.admissionIdToMupId
       );
       newPersonalNumberToStudentItems[pn].currentZE = ze;
-      newPersonalNumberToStudentItems[pn].selectedAdmissionIds =
+      newPersonalNumberToStudentItems[pn].assignedAdmissionIds =
         Array.from(enrolledAdmissionIds);
     }
 
@@ -401,6 +400,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
 
   const handleRealApplyDebounced = () => {
     debouncedWrapperForApply(() => {
+      // return; // TODO: delte this
       executeActions(studentAdmissionActions, context)
         .then((actionResults) => {
           setStudentAdmissionActionResults(actionResults);
@@ -447,7 +447,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         }
         const studentItem = personalNumberToStudentItems[personalNumber];
         const student = context.dataRepository.studentData.data[personalNumber];
-        const selectedMupRecords = studentItem.selectedAdmissionIds.map((aId) =>
+        const selectedMupRecords = studentItem.assignedAdmissionIds.map((aId) =>
           createAdmissionRecord(
             aId,
             personalNumber,
@@ -456,8 +456,8 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
             context.dataRepository.admissionIdToMupId
           )
         );
-        const remainingMupRecords = studentItem.admissionIds
-          .filter((aId, idx) => !studentItem.selectedAdmissionIds.includes(aId))
+        const remainingMupRecords = studentItem.admissionIdsWithPriorityOrTestResult
+          .filter((aId, idx) => !studentItem.assignedAdmissionIds.includes(aId))
           .map((aId) =>
             createAdmissionRecord(
               aId,

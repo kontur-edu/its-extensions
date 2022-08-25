@@ -218,17 +218,6 @@ export function checkObjectKeysAreSame(lhs: object, rhs: object) {
     return false;
   }
   return true;
-  // for (const key in lhs) {
-  //   if (!rhs.hasOwnProperty(key)) {
-  //     return false;
-  //   }
-  // }
-  // for (const key in rhs) {
-  //   if (!lhs.hasOwnProperty(key)) {
-  //     return false;
-  //   }
-  // }
-  // return true;
 }
 
 export function cloneObject<T>(obj: T) {

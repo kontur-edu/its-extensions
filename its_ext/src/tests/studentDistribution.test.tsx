@@ -10,7 +10,7 @@ import {
   createPersonalNumberToStudentItem,
   findMupIdsWithTestResultRequired,
   filterActiveStudentsAndSortByRating,
-} from "../studentAdmission/studentDistributor";
+} from "../studentAdmission/studentDistribution";
 
 const mups: IMup[] = [
   {
@@ -99,9 +99,9 @@ describe("createPersonalNumberToStudentItem", () => {
     expect(personalNumbers).toContain("pn1");
     const studentItem = actualRes["pn1"];
     expect(studentItem.currentZE).toBe(0);
-    expect(studentItem.admissionIds.length).toBe(1);
-    expect(studentItem.admissionIds).toContain(1);
-    expect(studentItem.selectedAdmissionIds.length).toBe(0);
+    expect(studentItem.admissionIdsWithPriorityOrTestResult.length).toBe(1);
+    expect(studentItem.admissionIdsWithPriorityOrTestResult).toContain(1);
+    expect(studentItem.assignedAdmissionIds.length).toBe(0);
     expect(studentItem.competitionGroupId).toBe(1);
   });
 
@@ -117,8 +117,8 @@ describe("createPersonalNumberToStudentItem", () => {
     expect(personalNumbers).toContain("pn2");
     const studentItem = actualRes["pn2"];
     expect(studentItem.currentZE).toBe(0);
-    expect(studentItem.admissionIds.length).toBe(0);
-    expect(studentItem.selectedAdmissionIds.length).toBe(0);
+    expect(studentItem.admissionIdsWithPriorityOrTestResult.length).toBe(0);
+    expect(studentItem.assignedAdmissionIds.length).toBe(0);
     expect(studentItem.competitionGroupId).toBe(1);
   });
 
@@ -134,8 +134,8 @@ describe("createPersonalNumberToStudentItem", () => {
     expect(personalNumbers).toContain("pn1");
     const studentItem = actualRes["pn1"];
     expect(studentItem.currentZE).toBe(0); // NOTE: not set ze in this step
-    expect(studentItem.admissionIds.length).toBe(1);
-    expect(studentItem.selectedAdmissionIds.length).toBe(1);
+    expect(studentItem.admissionIdsWithPriorityOrTestResult.length).toBe(1);
+    expect(studentItem.assignedAdmissionIds.length).toBe(1);
     expect(studentItem.competitionGroupId).toBe(1);
   });
 });

@@ -73,9 +73,6 @@ async function getFilenamesFromDir(result, dir) {
 }
 
 async function sync() {
-  // delete all files from website/
-
-  // putObjects()
   const bucketName = env.BUCKET_NAME;
   const websiteBucketDir = env.WEBSITE_BUCKET_DIR || "website";
   let srcDir = env.WEBSITE_SRC;

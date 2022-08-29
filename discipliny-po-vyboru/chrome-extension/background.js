@@ -10,8 +10,6 @@ const SETTINGS = {
 };
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  // console.log(`chrome.runtime.onMessage.addListener`);
-  // console.log(request);
   if (request.type === "set") {
     if (request.hasOwnProperty("key") && request.hasOwnProperty("value")) {
       const key = request["key"];
@@ -40,5 +38,4 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 });
 
 chrome.runtime.onInstalled.addListener(() => {
-  // console.log(`Extension Loaded`);
 });

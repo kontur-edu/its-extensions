@@ -27,7 +27,6 @@ export function CompetitionGroupSelect(props: ICompetitionGroupSelectProps) {
 
   useEffect(() => {
     return () => {
-      // console.warn("CompetitionGroupSelect UNMOUNTED");
     };
   }, []);
 

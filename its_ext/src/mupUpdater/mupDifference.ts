@@ -136,7 +136,6 @@ export function checkIfNeedUpdateModules(
 ) {
   const ze = mupData.data[mupId].ze;
   if (!zeToModuleSelections.hasOwnProperty(ze)) {
-    // console.log(`ze: ${ze} not found in zeToModuleSelections`);
     return selectionGroupIds.map(() => false);
   }
   const referenceModuleDisciplines = zeToModuleSelections[ze];

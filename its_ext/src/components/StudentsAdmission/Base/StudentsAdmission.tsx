@@ -35,19 +35,16 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
   const [stepThreeLoaded, setStepThreeLoaded] = useState<boolean>(false);
 
   const handleStepTwoLoaded = () => {
-    // console.log("handleStepTwoLoaded");
     setStepTwoLoaded(true);
   };
 
   const handleStepThreeLoaded = () => {
-    // console.log("handleStepThreeLoaded");
     setStepThreeLoaded(true);
   };
 
   const isGroupSelectionValid = () => {
     const res =
       competitionGroupIds.length > 0 && competitionGroupIds.length <= 2;
-    // console.log(`isGroupSelectionValid: ${res}`);
     return res;
   };
 
@@ -97,10 +94,6 @@ export function StudentsAdmission(props: IStudentsAdmissionProps) {
   }, [props.isUnauthorized]);
 
   useEffect(() => {
-    // console.warn("StudentsAdmission MONUTED");
-    // return () => {
-    //   console.warn("StudentsAdmission UNMOUNTED X");
-    // };
   }, []);
 
   const handleCompetitionGroupsSelect = (newCompetitionGroupIds: number[]) => {

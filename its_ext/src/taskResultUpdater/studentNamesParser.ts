@@ -99,9 +99,6 @@ function tryFindByNameParts(
       nameRecord.group &&
       nameRecord.group.toLowerCase() !== testStudent.groupName.toLowerCase()
     ) {
-      // console.log(
-      //   `${nameRecord.group.toLowerCase()} !== ${testStudent.groupName.toLowerCase()}`
-      // );
       continue;
     }
     const fname = testStudent.firstname.toLowerCase().replace("ё", "e");

@@ -42,15 +42,11 @@ export function getAdmissionIdsPerCompetitionGroup(
   const competitionGroupIdToAdmissionIds: { [key: number]: number[] } = {};
   for (const competitionGroupId of competitionGroupIds) {
     if (!competitionGroupIdToMupAdmissions.hasOwnProperty(competitionGroupId)) {
-      // console.log(
-      //   `competitionGroupId: ${competitionGroupId} not found in competitionGroupIdToMupAdmissions`
-      // );
       continue;
     }
     const mupIdToAdmissionId =
       competitionGroupIdToMupAdmissions[competitionGroupId];
     if (!mupIdToAdmissionId.hasOwnProperty(mupId)) {
-      // console.log(`mupId: ${mupId} not found in mupIdToAdmissionId`);
       continue;
     }
     if (!competitionGroupIdToAdmissionIds.hasOwnProperty(competitionGroupId)) {
@@ -203,12 +199,7 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
     }
   };
 
-  useEffect(() => {
-    // console.warn("TaskResultInput: MOUNTED");
-    // return () => {
-    //   console.warn("TaskResultInput UNMOUNTED X");
-    // };
-  }, []);
+  useEffect(() => {}, []);
 
   useEffect(() => {
     debouncedWrapperForApply(() => ensureData().finally(() => props.onLoad()));
@@ -397,7 +388,6 @@ export function TaskResultsInput(props: ITaskResultsInputProps) {
   }) => debouncedWrapperForApply(() => generateActions(newStudentItems));
 
   const handleRealApply = () => {
-    // alert(`Настоящее применение изменений`);
     setApplyClicked(true);
     executeActions(taskResultsActions, context)
       .then((actionResults) => {

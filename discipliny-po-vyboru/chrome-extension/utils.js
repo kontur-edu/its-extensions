@@ -68,7 +68,6 @@ function paginate(arr, size) {
 }
 
 function getUrlParts(url) {
-  // console.log(`getUrlParts: ${url}`);
   const matches = url.match(
     /^(?:(http[s]?|ftp):\/)?\/?([^:\/\s]+)((?:\/[\-\w]+)*\/?)([\w\-\.]+[^#?\s]+)?(.*)?(#[\w\-]+)?$/i
   );
@@ -119,8 +118,6 @@ function extractCollectionIds(notionData) {
       continue;
     }
     const viewValue = view["value"];
-    // console.log("viewValue");
-    // console.log(viewValue);
     if (viewValue["type"] !== "table") {
       continue;
     }
@@ -156,17 +153,12 @@ async function prepareMupNameToNotionInfo(mainPage, proxyUrl) {
     notionBase += "/";
   }
 
-  // console.log(
-  //   `prepareMupNameToNotionPage: ${notionBase}, ${mainPage}, ${proxyUrl}`
-  // );
   const mainPageResp = await getNotionRaw(mainPage, proxyUrl, "page");
   if (mainPageResp.status !== 200 || !mainPageResp.data) {
     return null;
   }
   const collectionIds = extractCollectionIds(mainPageResp.data);
-  // console.log(`collectionIds: `, collectionIds);
   const queryParams = formatQueryParams(collectionIds);
-  // console.log(`queryParams: `, queryParams);
   let mainPageWithParams = mainPage;
   mainPageWithParams += mainPage.includes("?") ? "&" : "?";
   mainPageWithParams += queryParams;
@@ -231,12 +223,8 @@ function parseCollectionData(notionData) {
     };
     if (blockValue.hasOwnProperty("properties")) {
       for (const propName in blockValue.properties) {
-        // console.log("blockValue.properties");
-        // console.log(blockValue.properties[propName]);
         const propValues = blockValue.properties[propName].flat(Infinity);
         const propValue = propValues.length > 0 ? propValues[0] : "";
-        // console.log("propValue");
-        // console.log(propValue);
         blockInfo.properties[propName] = propValue;
       }
       if (blockInfo.properties.hasOwnProperty("title")) {

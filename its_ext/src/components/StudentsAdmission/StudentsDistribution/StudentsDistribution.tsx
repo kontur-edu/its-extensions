@@ -92,7 +92,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   };
 
   const ensureData = (refresh: boolean) => {
-    // console.log("StudentsDistribution: ensureData");
     if (currentEnsurePromise.current !== null) {
       return currentEnsurePromise.current;
     }
@@ -143,16 +142,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
         currentEnsurePromise.current = null;
         setEnsureInProgress(false);
       });
-    // .catch((err) => {
-    //   currentEnsurePromise.current = null;
-    //   setEnsureInProgress(false);
-    //   console.warn(`catch: ${err.message}`);
-    //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-    //     props.onUnauthorized();
-    //     return;
-    //   }
-    //   throw err;
-    // });
   };
 
   const refreshData = () => ensureData(true);
@@ -242,9 +231,7 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
   };
 
   useEffect(() => {
-    return () => {
-      // console.warn("StudentDistribution UNMOUNTED");
-    };
+    return () => {};
   }, []);
 
   useEffect(() => {
@@ -400,7 +387,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
 
   const handleRealApplyDebounced = () => {
     debouncedWrapperForApply(() => {
-      // return; // TODO: delte this
       executeActions(studentAdmissionActions, context)
         .then((actionResults) => {
           setStudentAdmissionActionResults(actionResults);
@@ -442,7 +428,6 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
     return personalNumbersOfActiveStudentsSortedByRating.current.map(
       (personalNumber) => {
         if (!personalNumberToStudentItems.hasOwnProperty(personalNumber)) {
-          // console.warn(`${personalNumber} not found in personalNumberToStudentItems`)
           return null;
         }
         const studentItem = personalNumberToStudentItems[personalNumber];
@@ -456,17 +441,20 @@ export function StudentsDistribution(props: IStudentsDistributionProps) {
             context.dataRepository.admissionIdToMupId
           )
         );
-        const remainingMupRecords = studentItem.admissionIdsWithPriorityOrTestResult
-          .filter((aId, idx) => !studentItem.assignedAdmissionIds.includes(aId))
-          .map((aId) =>
-            createAdmissionRecord(
-              aId,
-              personalNumber,
-              context.dataRepository.admissionInfo,
-              context.dataRepository.mupData,
-              context.dataRepository.admissionIdToMupId
+        const remainingMupRecords =
+          studentItem.admissionIdsWithPriorityOrTestResult
+            .filter(
+              (aId, idx) => !studentItem.assignedAdmissionIds.includes(aId)
             )
-          );
+            .map((aId) =>
+              createAdmissionRecord(
+                aId,
+                personalNumber,
+                context.dataRepository.admissionInfo,
+                context.dataRepository.mupData,
+                context.dataRepository.admissionIdToMupId
+              )
+            );
         return (
           <tr key={personalNumber}>
             <td>

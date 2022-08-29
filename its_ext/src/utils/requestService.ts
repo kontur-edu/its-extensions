@@ -169,7 +169,6 @@ export class RequestService {
       responseAuth = await fetch(urlWithProxy, options);
     } catch (err) {
       this.onConnectionRefused?.();
-      // throw new Error(REQUEST_ERROR_CONNECTION_REFUSED);
     }
     if (responseAuth.status === 200 || responseAuth.status === 204) {
       return true;
@@ -179,8 +178,6 @@ export class RequestService {
   }
 
   async GetJson(url: string): Promise<any> {
-    // console.log(`GetJson ${url}`);
-
     const urlWithProxy = `${this.proxyUrl}/${url}`;
     const headers = {
       "X-KL-Ajax-Request": "Ajax_Request",
@@ -209,8 +206,6 @@ export class RequestService {
   }
 
   async PostFormData(url: string, data: FormBodyObj) {
-    // console.log(`PostFormData: ${url}`);
-
     const urlWithProxy = `${this.proxyUrl}/${url}`;
     const headers = {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -232,8 +227,6 @@ export class RequestService {
   }
 
   async SendJson(url: string, data: any, method: string = "POST") {
-    // console.log(`SendJson: ${url}`);
-
     const urlWithProxy = `${this.proxyUrl}/${url}`;
     const headers = {
       "Content-Type": "application/json",

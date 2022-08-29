@@ -68,9 +68,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
     refresh: boolean = false,
     forceRefreshSubgroups: boolean = false
   ) => {
-    // console.log("SubgroupSelection: ensureData");
     if (currentEnsurePromise.current !== null) {
-      // console.log("SubgroupSelection: ensureData is already in progress");
       return currentEnsurePromise.current;
     }
     setEnsureInProgress(true);
@@ -126,15 +124,6 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
         currentEnsurePromise.current = null;
         setEnsureInProgress(false);
       });
-    // .catch((err) => {
-    //   currentEnsurePromise.current = null;
-    //   setEnsureInProgress(false);
-    //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-    //     props.onUnauthorized();
-    //     return;
-    //   }
-    //   throw err;
-    // });
 
     currentEnsurePromise.current = ensurePromise;
     return ensurePromise;
@@ -296,11 +285,9 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
         competitionGroupIdToInfo,
       } = prepareData(competitionGroupId);
       if (newReferenceCompetitionGroupId === null) {
-        // console.warn(`newReferenceCompetitionGroupId is null`);
         return;
       }
       if (!newCanBeSync) {
-        // console.warn(`Cannot be synchronized`);
         return;
       }
       const actions = generateActions(
@@ -333,11 +320,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
   };
 
   useEffect(() => {
-    // console.warn(
-    //   `CompetitionGroupSync: useEffect [${props.refreshCounter}]`
-    // );
     if (props.refreshCounter > 0) {
-      // console.warn(`refreshing on counter`);
       if (props.selectionGroupIds.length !== 2) {
         return;
       }
@@ -355,9 +338,6 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
   }, [props.selectionGroupIds]);
 
   useEffect(() => {
-    // console.warn(
-    //   `NEW referenceCompetitionGroupId: ${props.referenceCompetitionGroupId}`
-    // );
     if (props.referenceCompetitionGroupId !== null) {
       setReferenceCompetitionGroupId(props.referenceCompetitionGroupId);
       refreshDataForNewReferenceCompetitionGroupDebounced(
@@ -424,12 +404,6 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
       </h3>
     );
   };
-
-  // const compareMupIds = (lhsMupId: string, rhsMupId: string) => {
-  //   const lhsName = context.dataRepository.mupData.data[lhsMupId]?.name ?? "";
-  //   const rhsName = context.dataRepository.mupData.data[rhsMupId]?.name ?? "";
-  //   return lhsName.localeCompare(rhsName);
-  // };
 
   const renderRows = () => {
     if (!canBeSync) return null;
@@ -499,15 +473,7 @@ export function CompetitionGroupSync(props: ICompetitionGroupSyncProps) {
     setSyncInProgress(true);
     executeActions(syncActions, context)
       .then((results) => setSyncActionResults(results))
-      // .then(() => alert("Применение изменений завершено"))
       .then(() => refreshDataDebounced())
-      // .catch((err) => {
-      //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-      //     props.onUnauthorized();
-      //     return;
-      //   }
-      //   throw err;
-      // })
       .finally(() => setSyncInProgress(false));
   };
 

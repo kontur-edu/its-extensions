@@ -135,8 +135,6 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     );
 
     setSubgroupDistributionTextInputMessages(messages);
-    // console.log("validateStudentAdmissions");
-    // console.log({ success, messages });
 
     if (success) {
       setMupToLoadToSubgroupMembership(
@@ -364,12 +362,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     debouncedWrapperForApply(handleRefreshData);
   };
 
-  useEffect(() => {
-    // console.warn("SubgroupDistribution MOUNTED");
-    // return () => {
-    //   console.warn("SubgroupDistribution UNMOUNTED X");
-    // };
-  }, []);
+  useEffect(() => {}, []);
 
   useEffect(() => {
     debouncedWrapperForEnsureData(() =>
@@ -415,9 +408,7 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
     newMupToLoadToSubgroupMembership: MupToLoadToSubgroupMembership,
     newSubgroupDiffInfo: ISubgoupDiffInfo
   ) => {
-    // console.log("generateActionsForSubgroupDistribution");
     if (!newSubgroupDiffInfo) {
-      // console.log(`subgroupDiffInfo is null`);
       return;
     }
 
@@ -458,7 +449,6 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
 
   const handleSubgroupDistributionRealApplyDebounced = () => {
     debouncedWrapperForApply(() => {
-      // alert(`Настоящее применение изменений`);
       setFirstApplyClicked(false);
       setSecondApplyClicked(true);
       executeActions(subgroupDistributionActions, context)
@@ -487,7 +477,6 @@ export function SubgroupDistribution(props: ISubgroupDistributionProps) {
 
   const handleSubgroupDistributionForOneGroupPerLoadApplyDebounced = () => {
     debouncedWrapperForApply(() => {
-      // alert(`Настоящее применение изменений`);
       setFirstApplyClicked(true);
       setSecondApplyClicked(false);
       executeActions(subgroupDistributionForOneGroupPerLoadActions, context)

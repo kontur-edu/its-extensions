@@ -27,7 +27,6 @@ export function GroupSelect(props: IGroupSelectProps) {
 
   useEffect(() => {
     return () => {
-      // console.warn("GroupSelect UNMOUNTED");
     };
   }, []);
 

@@ -136,7 +136,6 @@ export function createStudentDistributionAlgoInfos(
   admissionInfo: AdmissionInfo,
   competitionGroupIdToMupAdmissions: CompetitionGroupIdToMupAdmissions
 ): IStudentDistributionAlgoInfo[] {
-  // console.log("createStudentDistributionAlgoInfos");
   const result: IStudentDistributionAlgoInfo[] = [];
 
   const mupNameToMupId = createMupNameToMupId(mupData);
@@ -182,7 +181,6 @@ export function createStudentDistributionAlgoInfos(
       if (admission && (admission.priority !== null || admission.testResult)) {
         const studentDistributionAdmissionAlgoInfo: IStudentDistributionAdmissionAlgoInfo =
           {
-            // admissionId: Number(admissionId),
             mupId: mupId,
             testPassed:
               admission.testResult !== null && admission.testResult > 0,

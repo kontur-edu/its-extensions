@@ -67,7 +67,6 @@ export function getCompetitionGroupName(
   return competitionGroupId;
 }
 
-
 const debouncedWrapperForApply = createDebouncedWrapper(DEBOUNCE_MS);
 
 export function CompetitionGroupPreparation(
@@ -114,11 +113,7 @@ export function CompetitionGroupPreparation(
     refresh: boolean = false,
     forceRefreshSubgroups: boolean = false
   ) => {
-    // console.log("CompetitionGroupPreparation: ensureData");
     if (currentEnsurePromise.current !== null) {
-      // console.log(
-      //   "CompetitionGroupPreparation: ensureData is already in progress"
-      // );
       return currentEnsurePromise.current;
     }
     setEnsureInProgress(true);
@@ -181,15 +176,6 @@ export function CompetitionGroupPreparation(
         currentEnsurePromise.current = null;
         setEnsureInProgress(false);
       });
-    // .catch((err) => {
-    //   currentEnsurePromise.current = null;
-    //   setEnsureInProgress(false);
-    //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-    //     props.onUnauthorized();
-    //     return;
-    //   }
-    //   throw err;
-    // });
 
     currentEnsurePromise.current = ensurePromise;
     return ensurePromise;
@@ -373,18 +359,12 @@ export function CompetitionGroupPreparation(
       })
       .finally(() => props.onLoad());
 
-    return () => {
-      // console.warn("CompetitionGroupPreparation UNMOUNTED");
-    };
+    return () => {};
     // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
-    // console.warn(
-    //   `CompetitionGroupPreparation: useEffect [${props.refreshCounter}]`
-    // );
     if (props.refreshCounter > 0) {
-      // console.warn(`refreshing on counter`);
       ensureData(false, true).then(() => {
         const { newSelectedCompetitionGroupId, allMupIds } = prepareData();
         newSelectedCompetitionGroupId !== null &&

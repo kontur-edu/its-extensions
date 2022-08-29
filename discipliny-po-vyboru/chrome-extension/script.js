@@ -30,12 +30,8 @@ function finishLoading() {
 
 async function waitForMups(mupNameToNotionInfo) {
   const locations = getMupCardLocations();
-  // console.log("locations");
-  // console.log(locations);
   if (locations.length > 0 && locations.every((i) => i.descriptionElement)) {
     prepareItems(locations, mupNameToItems);
-    // console.log("mupNameToItems");
-    // console.log(mupNameToItems);
     await placeButtonsAndFrames(mupNameToItems, mupNameToNotionInfo);
   } else {
     await timeout(1000);
@@ -198,8 +194,6 @@ function addFrame(item, url) {
   iframe.classList.add("its_ext_display_none", "its_ext_iframe");
   item.descriptionElement.appendChild(iframe);
   item.frame = iframe;
-
-  // item.descriptionElement.appendChild(div);
 }
 
 function addBr(item) {
@@ -225,15 +219,10 @@ function addMarkup(item, mupNameToNotionInfo) {
     addFrame(item, url);
 
     item.button.addEventListener("click", () => {
-      // console.log("button click");
       if (item.frame) {
         item.frame.classList.toggle("its_ext_display_none");
-      } else {
-        // console.log("frame not set");
       }
     });
-  } else {
-    // console.warn(`Page not found for ${item.mupName}`);
   }
 }
 
@@ -269,21 +258,18 @@ function onLoad() {
       return Promise.allSettled([
         getSettingsPromise(PROXY_URL_KEY).then((resp) => {
           const url = resp.value;
-          // console.log(`${PROXY_URL_KEY}: ${url}`);
           if (url) {
             SETTINGS[PROXY_URL_KEY] = url;
           }
         }),
         getSettingsPromise(NOTION_MAIN_PAGE_KEY).then((resp) => {
           const url = resp.value;
-          // console.log(`${NOTION_MAIN_PAGE_KEY}: ${url}`);
           if (url) {
             SETTINGS[NOTION_MAIN_PAGE_KEY] = url;
           }
         }),
       ]);
     })
-    // .then(() => console.log(SETTINGS))
     .then(() => {
       return prepareMupNameToNotionInfo(
         SETTINGS[NOTION_MAIN_PAGE_KEY],
@@ -291,8 +277,6 @@ function onLoad() {
       );
     })
     .then((mupNameToNotionInfo) => {
-      // console.log("mupNameToNotionInfo");
-      // console.log(mupNameToNotionInfo);
       if (!mupNameToNotionInfo) {
         alert(
           "Не получилось подготовить данные, проверьте настройки расширения Дисциплин по выбору"

@@ -207,9 +207,7 @@ export function MupEditor(props: IMupEditorProps) {
   };
 
   const ensureData = (mupIds: string[], refresh: boolean) => {
-    // console.log(`ensureData mupIds: ${mupIds.length} refresh: ${refresh}`);
     if (currentEnsurePromise.current !== null) {
-      // console.log("refreshInProgress is already in progress");
       return currentEnsurePromise.current;
     }
     setEnsureInProgress(true);
@@ -292,15 +290,6 @@ export function MupEditor(props: IMupEditorProps) {
         currentEnsurePromise.current = null;
         setEnsureInProgress(false);
       });
-    // .catch((err) => {
-    //   currentEnsurePromise.current = null;
-    //   setEnsureInProgress(false);
-    //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-    //     props.onUnauthorized();
-    //     return;
-    //   }
-    //   throw err;
-    // });
     currentEnsurePromise.current = ensureDataPromise;
     return ensureDataPromise;
   };
@@ -324,7 +313,6 @@ export function MupEditor(props: IMupEditorProps) {
 
   useEffect(() => {
     return () => {
-      // console.warn("MupEditor UNMOUNTED");
     };
   }, []);
 
@@ -595,7 +583,6 @@ export function MupEditor(props: IMupEditorProps) {
     newDates: [string, string],
     zeToModuleSelections: { [key: number]: IModuleSelection[] }
   ) => {
-    // console.log("Debounce handleApply");
     debouncedWrapperForApply(() => {
       const actions = generateActions(
         mupDiffs,
@@ -613,25 +600,14 @@ export function MupEditor(props: IMupEditorProps) {
     setExecutingActionsInProgress(true);
     executeActions(mupEditorActions, context)
       .then((results) => setMupEditorActionResults(results))
-      // .then(() => alert("Применение изменений завершено"))
       .then(() => handleRefresh()) // refresh
       .finally(() => {
         setExecutingActionsInProgress(false);
         props.onApplyFinish();
       });
-    // .catch((err) => {
-    //   setExecutingActionsInProgress(false);
-    //   if (err.message === REQUEST_ERROR_UNAUTHORIZED) {
-    //     props.onUnauthorized();
-    //     return;
-    //   }
-    //   throw err;
-    // });
   };
 
   const handleApplyRealDebounced = () => {
-    // console.log("Debounce handleApplyRealDebounced");
-
     debouncedWrapperForApply(() => handleApplyReal());
   };
 

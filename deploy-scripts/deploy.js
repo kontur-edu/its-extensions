@@ -187,8 +187,6 @@ async function deploy() {
     serviceAccountName
   );
 
-  // console.log(policyUpdateRes);
-  // const buckets = await getBuckets(s3Client, bucketName);
   const { functionId, notionFunctionId } = await prepareFunctions(
     functionName,
     notionFunctionName

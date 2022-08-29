@@ -68,7 +68,6 @@ function execCommand(command) {
   return new Promise((resolve, reject) => {
     child_process.exec(command, (error, stdout, stderr) => {
       console.log(`command: ${command}`);
-      //   console.log({ error, stdout, stderr });
       resolve({ error, stdout, stderr });
     });
   });
@@ -79,10 +78,8 @@ async function execCommandAndGetField(command, key) {
   let re = new RegExp(`${key}:\\s+([\\w\\.-]+)\\n`, "i");
   const m = res.stdout.match(re);
   if (m && m.length > 1) {
-    // console.log(`key: ${key}, val: ${m[1]}`);
     return m[1];
   }
-  //   console.log(`key: ${key}, val: null`);
   return null;
 }
 

@@ -79,7 +79,7 @@ function findModuleSelection(
   for (const moduleId in moduleData.data) {
     const module = moduleData.data[moduleId];
     for (const course of semesterNumbers) {
-      if (
+      if ((module.id === 'pstcim195e3pg0000o13i07oq01761us' || module.id === 'pstcim195e3pg0000nhl2mnmp9pj2bmk') &&
         module.name.toLocaleLowerCase().includes(`специальные курсы ${course}`)
       ) {
         const moduleSelection: IModuleSelection = {

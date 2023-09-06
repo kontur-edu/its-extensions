@@ -46,7 +46,7 @@ export class ITSApiService {
   async GetSelectionGroupsForEduSpace(
     eduSpaceId: number
   ): Promise<ISelectionGroup[]> {
-    const url = `https://its.urfu.ru/EduSpace/SelectionGroups?id=${eduSpaceId}&page=1&start=0&limit=${LIMIT_PER_PAGE}`;
+    const url = `https://its.urfu.ru/EduSpace/GetSelectionGroups?eduSpaceId=${eduSpaceId}`;
     const res = await this.requestService.GetJson(url);
     return res.map((obj: any) => {
       const selectionGroup: ISelectionGroup = {
@@ -73,6 +73,7 @@ export class ITSApiService {
     const responses = await Promise.allSettled(requests);
     const result: ISelectionGroup[] = [];
     for (let resp of responses) {
+      console.log(resp.status);
       if (resp.status === "fulfilled") {
         result.push(...resp.value);
       }
@@ -168,7 +169,7 @@ export class ITSApiService {
       MUPItsIds: mupIds,
     };
     console.log("UpdateSelectionGroups");
-    // console.log(data);
+    //console.log(data);
     const response = await this.requestService.PostFormData(url, data);
     const result = addSummary(response, url, data);
 

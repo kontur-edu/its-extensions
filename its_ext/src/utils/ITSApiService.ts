@@ -159,14 +159,15 @@ export class ITSApiService {
   ): Promise<IActionResponse> {
     const url = "https://its.urfu.ru/EduSpace/UpdateSelectionGroup";
     const competitionGroupId = selectionGroup.competitionGroupId ?? "";
+    const today = new Date().toLocaleDateString("ru-ru");
     const data = {
       Id: selectionGroup.id,
       EduSpaceId: selectionGroup.eduSpaceId,
       Name: selectionGroup.name,
       UnitsSum: selectionGroup.unitSum,
       ByPriority: selectionGroup.byPriority ? "true" : "false",
-      Publish: "true",
-      PublishDate: "08.09.2023", // TODO HACK!!!
+      Publish: "false", // change to TRUE when need to publish without ITS UI
+      PublishDate: today,
       CompetitionGroupId: competitionGroupId,
       MUPItsIds: mupIds,
     };

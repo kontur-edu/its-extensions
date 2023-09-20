@@ -165,6 +165,8 @@ export class ITSApiService {
       Name: selectionGroup.name,
       UnitsSum: selectionGroup.unitSum,
       ByPriority: selectionGroup.byPriority ? "true" : "false",
+      Publish: "true",
+      PublishDate: "08.09.2023", // TODO HACK!!!
       CompetitionGroupId: competitionGroupId,
       MUPItsIds: mupIds,
     };

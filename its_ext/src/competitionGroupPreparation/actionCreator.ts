@@ -174,7 +174,8 @@ export function generateUpdateTeacherAndLimitActions(
 
     const mup = mupData.data[mupId];
     const refTeacher =
-      mup.teacherIds.length === 1 ? mup.teacherIds[0] : undefined;
+      mup.teacherIds.length > 0 ? mup.teacherIds[0] : undefined;
+    console.log(`Teacher: ${refTeacher} for mupId: ${mup.name} teachersCount: ${mup.teacherIds.length}`);
 
     for (let i = 0; i < meta.count; i++) {
       const subgroupInfo: ISubgroupInfo = {
@@ -187,6 +188,7 @@ export function generateUpdateTeacherAndLimitActions(
       let updateLimit = true;
       if (subgroupReferenceInfoItems.length > i) {
         if (subgroupReferenceInfoItems[i].teacher) {
+          console.log("reference teacher: " + subgroupReferenceInfoItems[i].teacher + " refTeacher: " + refTeacher);
           updateTeacher = false;
         }
         if (subgroupReferenceInfoItems[i].limit === limitPerGroup) {

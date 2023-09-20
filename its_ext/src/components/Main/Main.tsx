@@ -109,7 +109,7 @@ export function Main(props: IMainProps) {
             variant="contained"
             style={{ fontSize: "1em" }}
           >
-            Закрать
+            Закрыть
           </Button>
         </div>
       </Modal>

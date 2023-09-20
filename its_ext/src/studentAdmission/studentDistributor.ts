@@ -101,11 +101,13 @@ export class StudentDistributor {
         studentAlgInfo.admissionsWithPriorityOrTestResult.sort(
           compareAdmissionAlgoInfos
         );
+      const zeLimit =
+        this.competitionGroupIdToZELimit[studentAlgInfo.competitionGroupId];
+      console.log(studentAlgInfo.rating, studentAlgInfo.personalNumber, admissionsSortedByPriority, zeLimit);
       for (const admissionAlgInfo of admissionsSortedByPriority) {
         const admissionMeta = mupIdToAdmissionMeta[admissionAlgInfo.mupId];
-        const zeLimit =
-          this.competitionGroupIdToZELimit[studentAlgInfo.competitionGroupId];
         if (studentState.ze >= zeLimit) {
+          console.log("Done with ze " + studentState.ze + " of " + zeLimit);
           break;
         }
         if (admissionAlgInfo.admitted) {
@@ -117,19 +119,23 @@ export class StudentDistributor {
         const mupState = this.mupIdToMupAlgoState[admissionAlgInfo.mupId];
         const mupInfo = this.mupIdToMupAlgoInfo[admissionAlgInfo.mupId];
         if (mupState.count >= admissionMeta.limit) {
+          //console.log(admissionAlgInfo.mupId + " limit reached: " + mupState.count + " of " + admissionMeta.limit);
           continue;
         }
         if (mupInfo.testResultRequired && !admissionAlgInfo.testPassed) {
+          console.log(admissionAlgInfo.mupId + " test not passed");
           continue;
         }
 
         if (studentState.ze + mupInfo.ze > zeLimit) {
+          console.log(admissionAlgInfo.mupId + " too many ze for this mup");
           continue;
         }
         this.result[studentAlgInfo.personalNumber].add(
           admissionMeta.admissionId
         );
         studentState.ze += mupInfo.ze;
+        console.log(admissionAlgInfo.mupId + " admitted! student ZE: " + studentState.ze);
         this.mupIdToMupAlgoState[admissionAlgInfo.mupId].count++;
       }
     }
